@@ -1,6 +1,16 @@
-# DIGIMON : TOWER OF RUIN - CURRENT VERSION : a0.0.1
+# DIGIMON : TOWER OF RUIN
 
-## a0.0.1
+## CURRENT VERSION : a0.0.2
+
+### a0.0.0
+Setting up all of the basic structure for the system, to begin actual work
+
+#### a0.0.2
+* Setup Basic Debug Menu
+* Built CSS for Game Frame
+* Created Test framework
+
+#### a0.0.1
 * Initialized the repository
 * Installed NPM
 * Setup Babel with Rollup to compile

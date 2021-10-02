@@ -175,7 +175,16 @@ var Controller = function Controller(setKeyState) {
   };
 
   this.connectEventListener();
-};
+}
+/**------------------------------------------------------------------------
+ * CONNECT EVENT LISTENER
+ * ------------------------------------------------------------------------
+ * Sets up the Key Listeners on the Window
+ * TODO - Set this up to track config values to send specific
+ *        actions to the System, rather than the direct key
+ * TODO - Setup Touch Events with 'touchstart' and 'touchend'
+ * ----------------------------------------------------------------------*/
+;
 
 /**------------------------------------------------------------------------
  * SYSTEM CLASS
@@ -196,7 +205,6 @@ var System = function System() {
 
   _defineProperty(this, "setKeyState", function (key, value) {
     _this.keyState[key] = value;
-    console.log("KEYS? ", _this.keyState);
   });
 
   _defineProperty(this, "pluginController", function () {
@@ -214,9 +222,12 @@ var System = function System() {
  * ----------------------------------------------------------------------*/
 ;
 
-// EVENTUALLY, THIS SHOULD BE BUILT OUT OF A DATABASE
+// TODO - This needs to eventually be built out of a database
 var config = {
-  userName: 'Debug User'
+  userName: 'Debug User',
+  keyBindings: {
+    /* TODO - Add some Key Bindings, so I can use this, rather than hard-coded inputs */
+  }
 };
 
 window.onload = function () {
