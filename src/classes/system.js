@@ -1,5 +1,7 @@
 import { debugLog } from "../utils/log-utils";
+import { inDebug } from "../utils/url-utils";
 import Controller from "./controller";
+import DebugMenu from "./debug-menu";
 
 /**------------------------------------------------------------------------
  * SYSTEM CLASS
@@ -11,6 +13,8 @@ class System{
     debugLog("Loading System...");
     this.controllers = [];
     this.keyState = {};
+
+    this.debugMenu;
   }
 
   /**------------------------------------------------------------------------
@@ -21,6 +25,9 @@ class System{
   start = () => {
     debugLog("Starting System...");
     this.pluginController();
+    if(inDebug()){
+      this.debugMenu = new DebugMenu();
+    }
   }
 
   /**------------------------------------------------------------------------

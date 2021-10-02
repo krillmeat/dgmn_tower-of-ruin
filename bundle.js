@@ -186,6 +186,13 @@ var Controller = function Controller(setKeyState) {
  * ----------------------------------------------------------------------*/
 ;
 
+var DebugMenu = function DebugMenu() {
+  _classCallCheck(this, DebugMenu);
+
+  debugLog('Booting Debug Menu...');
+  this.state = 'active'; // Is the debug menu supposed to be visible or not [active | inactive]
+};
+
 /**------------------------------------------------------------------------
  * SYSTEM CLASS
  * ------------------------------------------------------------------------
@@ -201,6 +208,10 @@ var System = function System() {
     debugLog("Starting System...");
 
     _this.pluginController();
+
+    if (inDebug()) {
+      _this.debugMenu = new DebugMenu();
+    }
   });
 
   _defineProperty(this, "setKeyState", function (key, value) {
@@ -214,6 +225,7 @@ var System = function System() {
   debugLog("Loading System...");
   this.controllers = [];
   this.keyState = {};
+  this.debugMenu;
 }
 /**------------------------------------------------------------------------
  * START
