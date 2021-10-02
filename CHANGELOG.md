@@ -3,6 +3,7 @@
 ## 0.0.1
 * Initialized the repository
 * Installed NPM
+* Setup Babel with Rollup to compile
 * Set up the base folder structure with basic files
 * Built out basic CSS and game-frame
 * Created boot file
