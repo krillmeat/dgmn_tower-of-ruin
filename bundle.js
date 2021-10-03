@@ -6,6 +6,22 @@ function _classCallCheck(instance, Constructor) {
   }
 }
 
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
+
 function _defineProperty(obj, key, value) {
   if (key in obj) {
     Object.defineProperty(obj, key, {
@@ -175,7 +191,37 @@ var Controller = function Controller(setKeyState) {
   };
 
   this.connectEventListener();
-};
+}
+/**------------------------------------------------------------------------
+ * CONNECT EVENT LISTENER
+ * ------------------------------------------------------------------------
+ * Sets up the Key Listeners on the Window
+ * TODO - Set this up to track config values to send specific
+ *        actions to the System, rather than the direct key
+ * TODO - Setup Touch Events with 'touchstart' and 'touchend'
+ * ----------------------------------------------------------------------*/
+;
+
+var DebugMenu = /*#__PURE__*/function () {
+  function DebugMenu() {
+    _classCallCheck(this, DebugMenu);
+
+    debugLog('Booting Debug Menu...');
+    this.elem = document.getElementById("debug-menu");
+    this.state = 'active'; // Is the debug menu supposed to be visible or not [active | inactive]
+
+    this.activate();
+  }
+
+  _createClass(DebugMenu, [{
+    key: "activate",
+    value: function activate() {
+      this.elem.classList.add('active');
+    }
+  }]);
+
+  return DebugMenu;
+}();
 
 /**------------------------------------------------------------------------
  * SYSTEM CLASS
@@ -192,11 +238,14 @@ var System = function System() {
     debugLog("Starting System...");
 
     _this.pluginController();
+
+    if (inDebug()) {
+      _this.debugMenu = new DebugMenu();
+    }
   });
 
   _defineProperty(this, "setKeyState", function (key, value) {
     _this.keyState[key] = value;
-    console.log("KEYS? ", _this.keyState);
   });
 
   _defineProperty(this, "pluginController", function () {
@@ -206,6 +255,7 @@ var System = function System() {
   debugLog("Loading System...");
   this.controllers = [];
   this.keyState = {};
+  this.debugMenu;
 }
 /**------------------------------------------------------------------------
  * START
@@ -214,9 +264,12 @@ var System = function System() {
  * ----------------------------------------------------------------------*/
 ;
 
-// EVENTUALLY, THIS SHOULD BE BUILT OUT OF A DATABASE
+// TODO - This needs to eventually be built out of a database
 var config = {
-  userName: 'Debug User'
+  userName: 'Debug User',
+  keyBindings: {
+    /* TODO - Add some Key Bindings, so I can use this, rather than hard-coded inputs */
+  }
 };
 
 window.onload = function () {

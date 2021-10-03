@@ -1,11 +1,11 @@
 {
   "name": "dgmn_tower-of-ruin",
-  "version": "0.0.1",
+  "version": "0.0.0-alpha.2",
   "description": "I'm making a Digimon Rogue-like about a kid transported to the digital world, who needs to reach the top of a mysterious tower to get back home",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "test",
+    "test": "jest",
     "build": "rollup -c"
   },
   "repository": {
@@ -23,6 +23,7 @@
     "@babel/core": "^7.15.5",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-node-resolve": "^13.0.5",
+    "jest": "^27.2.4",
     "rollup": "^2.58.0",
     "rollup-plugin-babel": "^3.0.7"
   },
