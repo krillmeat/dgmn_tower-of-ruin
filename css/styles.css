@@ -35,8 +35,30 @@ body{
   width: 100vw;
   height: 32px;
   background: #C4CFA1;
+  padding: 8px;
+
+  font-family: sans-serif;
 }
 
 #debug-menu.active{
   display: flex;
+}
+
+#debug-menu .go-to{
+  display: flex;
+}
+
+#debug-menu .go-to p{
+  text-transform: uppercase;
+  font-weight: 900;
+  margin-right: 8px;
+}
+
+#debug-menu .go-to ul{
+  display: flex;
+}
+
+#debug-menu .go-to ul li button{
+  background: none;
+  border: none;
 }

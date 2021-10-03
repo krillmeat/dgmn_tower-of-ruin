@@ -6,7 +6,7 @@ window.onload = function(){
   init();
 }
 
-export function init(){
+function init(){
   debugLog(`Booting for ${config.userName}...`);
   
   let system = new System();
