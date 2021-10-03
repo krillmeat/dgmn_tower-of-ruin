@@ -7,3 +7,36 @@
 ::::::::::::::::::::                                                                         ::::::::::::::::::::
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+body{
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #00131A;
+  display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game-screen{
+  width: 160px;
+  height: 140px;
+  border: 1px solid #C4CFA1;
+
+  transform: scale(2);
+  overflow: hidden;
+}
+
+#debug-menu{
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 32px;
+  background: #C4CFA1;
+}
+
+#debug-menu.active{
+  display: flex;
+}

@@ -1,9 +1,27 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
   }
+}
+
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
 }
 
 function _defineProperty(obj, key, value) {
@@ -186,12 +204,26 @@ var Controller = function Controller(setKeyState) {
  * ----------------------------------------------------------------------*/
 ;
 
-var DebugMenu = function DebugMenu() {
-  _classCallCheck(this, DebugMenu);
+var DebugMenu = /*#__PURE__*/function () {
+  function DebugMenu() {
+    _classCallCheck(this, DebugMenu);
 
-  debugLog('Booting Debug Menu...');
-  this.state = 'active'; // Is the debug menu supposed to be visible or not [active | inactive]
-};
+    debugLog('Booting Debug Menu...');
+    this.elem = document.getElementById("debug-menu");
+    this.state = 'active'; // Is the debug menu supposed to be visible or not [active | inactive]
+
+    this.activate();
+  }
+
+  _createClass(DebugMenu, [{
+    key: "activate",
+    value: function activate() {
+      this.elem.classList.add('active');
+    }
+  }]);
+
+  return DebugMenu;
+}();
 
 /**------------------------------------------------------------------------
  * SYSTEM CLASS
@@ -253,3 +285,5 @@ function init() {
     system.start();
   }, 1000);
 }
+
+exports.init = init;

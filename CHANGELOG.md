@@ -3,7 +3,7 @@
 ## CURRENT VERSION : 0.0.0-alpha.2
 
 ### 0.0.0
-Setting up all of the basic structure for the system, to begin actual work
+Setting up all of the basic structure for the system, until the game is in any way testable with other users
 
 #### v0.0.0-alpha.2
 * Setup Basic Debug Menu (Mouse Input Only)
