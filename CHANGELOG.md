@@ -5,6 +5,12 @@
 ### 0.0.0
 Setting up all of the basic structure for the system, until the game is in any way testable with other users
 
+### v0.0.0-alpha.3
+* Setup the basics for Canvas
+* Put together basic images for building
+* Created System Timer
+* Created Action Queue for System
+
 #### v0.0.0-alpha.2
 * Setup Basic Debug Menu (Mouse Input Only)
 * Built CSS for Game Frame

@@ -1,5 +1,8 @@
+import config from "../config";
 import { debugLog } from "../utils/log-utils";
 import { inDebug } from "../utils/url-utils";
+import BackgroundCanvas from "./background-canvas";
+import GameCanvas from "./canvas";
 import Controller from "./controller";
 import DebugMenu from "./debug-menu";
 
@@ -14,7 +17,19 @@ class System{
     this.controllers = [];
     this.keyState = {};
 
+    this.systemScreen = document.getElementById('game-screen');
+    this.systemScreen.style.width = (160 * config.screenSize)+'px';
+    this.systemScreen.style.height = (144 * config.screenSize)+'px';
     this.debugMenu;
+
+    this.gameTimer;
+    this.systemCount = 0;
+    this.actionQueue = [];
+
+    this.screenCanvas = new GameCanvas('screen-canvas',160,144);
+    this.backgroundCanvas = new BackgroundCanvas('background-canvas',160,144); // TODO - this should be loaded and then built
+
+    this.subCanvases = [this.backgroundCanvas]; // TODO - this should be loaded
   }
 
   /**------------------------------------------------------------------------
@@ -28,6 +43,36 @@ class System{
     if(inDebug()){
       this.debugMenu = new DebugMenu();
     }
+
+    // Draw Canvases
+    this.systemScreen.appendChild(this.screenCanvas.elem);
+    
+    this.backgroundCanvas.loadImages(images => {
+      this.backgroundCanvas.imageStack = images;
+      this.backgroundCanvas.animate(1000);
+    });
+
+    setTimeout(()=>{
+      this.startGameTimer();
+    },1000);
+  }
+
+  /**------------------------------------------------------------------------
+   * START GAME TIMER
+   * ------------------------------------------------------------------------
+   * Handles all of the initial actions and starts the game timer
+   * ----------------------------------------------------------------------*/
+  startGameTimer = () => {
+    this.gameTimer = setInterval( () => {
+      this.systemCount++;
+      this.screenCanvas.paintCanvas(this.backgroundCanvas.elem); // TODO - Should be a full compiler of all other canvases
+      if(this.actionQueue.length > 0){
+        if(this.actionQueue[0] === null){ /* SPACER */ } else{
+          debugLog("Taking Action ",this.actionQueue[0]);
+        }
+        this.actionQueue.shift();
+      }
+    }, 20);
   }
 
   /**------------------------------------------------------------------------

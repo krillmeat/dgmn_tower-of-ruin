@@ -37,6 +37,87 @@ function _defineProperty(obj, key, value) {
   return obj;
 }
 
+function _inherits(subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function");
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) _setPrototypeOf(subClass, superClass);
+}
+
+function _getPrototypeOf(o) {
+  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+    return o.__proto__ || Object.getPrototypeOf(o);
+  };
+  return _getPrototypeOf(o);
+}
+
+function _setPrototypeOf(o, p) {
+  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  };
+
+  return _setPrototypeOf(o, p);
+}
+
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return self;
+}
+
+function _possibleConstructorReturn(self, call) {
+  if (call && (typeof call === "object" || typeof call === "function")) {
+    return call;
+  } else if (call !== void 0) {
+    throw new TypeError("Derived constructors may only return object or undefined");
+  }
+
+  return _assertThisInitialized(self);
+}
+
+function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
+  return function _createSuperInternal() {
+    var Super = _getPrototypeOf(Derived),
+        result;
+
+    if (hasNativeReflectConstruct) {
+      var NewTarget = _getPrototypeOf(this).constructor;
+
+      result = Reflect.construct(Super, arguments, NewTarget);
+    } else {
+      result = Super.apply(this, arguments);
+    }
+
+    return _possibleConstructorReturn(this, result);
+  };
+}
+
 function _unsupportedIterableToArray(o, minLen) {
   if (!o) return;
   if (typeof o === "string") return _arrayLikeToArray(o, minLen);
@@ -111,6 +192,16 @@ function _createForOfIteratorHelper(o, allowArrayLike) {
   };
 }
 
+// TODO - This needs to eventually be built out of a database
+var config = {
+  userName: 'Debug User',
+  keyBindings: {
+    /* TODO - Add some Key Bindings, so I can use this, rather than hard-coded inputs */
+  },
+  screenSize: 4 // How much larger the screen is than the actual
+
+};
+
 /**------------------------------------------------------------------------
  * IN DEBUG
  * ------------------------------------------------------------------------
@@ -163,6 +254,122 @@ var getAllQueryParams = function getAllQueryParams() {
 var debugLog = function debugLog(message, object) {
   if (inDebug()) object ? console.log("%c".concat(message), 'color:#A6E22E', object) : console.log("%c".concat(message), 'color:#A6E22E');
 };
+
+var GameCanvas = function GameCanvas(canvasClass, width, height, hasIdleAnimation) {
+  var _this = this;
+
+  _classCallCheck(this, GameCanvas);
+
+  _defineProperty(this, "animate", function (speed) {
+    var counter = 0;
+    setInterval(function () {
+      _this.clearCanvas();
+
+      if (counter % 4 === 0) {
+        _this.paintImage(_this.imageStack);
+      }
+
+      counter++;
+    }, speed);
+  });
+
+  _defineProperty(this, "loadImages", function (callback) {
+    var loadedImages = {};
+    var loadedCount = 0;
+    var totalImages = Object.keys(_this.imageUrlStack).length;
+
+    for (var img in _this.imageUrlStack) {
+      loadedImages[img] = new Image();
+
+      loadedImages[img].onload = function () {
+        if (++loadedCount >= totalImages) {
+          callback(loadedImages);
+        }
+      };
+
+      loadedImages[img].src = _this.imageUrlStack[img];
+    }
+  });
+
+  _defineProperty(this, "clearCanvas", function () {
+    _this.ctx.clearRect(0, 0, _this.elem.width, _this.elem.height);
+  });
+
+  _defineProperty(this, "buildCanvas", function () {
+    var canvasElem = document.createElement('canvas');
+    canvasElem.width = _this.width;
+    canvasElem.height = _this.height;
+    canvasElem.classList.add(_this.canvasClass);
+    _this.ctx = canvasElem.getContext('2d');
+    return canvasElem;
+  });
+
+  _defineProperty(this, "paintCanvas", function (canvas) {
+    _this.ctx.clearRect(0, 0, _this.elem.width, _this.elem.height);
+
+    _this.ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+  });
+
+  _defineProperty(this, "paintImage", function (images) {
+    for (var img in images) {
+      var imgHeight = images[img].height / 8 * config.screenSize;
+      var imgWidth = images[img].width / 8 * config.screenSize;
+
+      _this.ctx.drawImage(images[img], 0, 0, imgWidth, imgHeight);
+    }
+  });
+
+  this.canvasClass = canvasClass;
+  this.width = width * config.screenSize;
+  this.height = height * config.screenSize;
+  this.elem = this.buildCanvas();
+  this.ctx;
+  this.imageUrlStack = {};
+  this.imageStack = {};
+  this.imagesLoaded = false;
+  this.hasIdleAnimation = hasIdleAnimation;
+  this.idleAnimationImages = {};
+  this.idleAnimationRate = 0; // TODO - Gather from Database?
+}
+/**------------------------------------------------------------------------
+ * IDLE ANIMATE
+ * ------------------------------------------------------------------------
+ * Creates a time-based animation that switches between two different images
+ * TODO - Switch over to "IDLE" version
+ * ------------------------------------------------------------------------
+ * @param {Number} speed  How fast the animation will check to change
+ * ----------------------------------------------------------------------*/
+;
+
+var BackgroundCanvas = /*#__PURE__*/function (_GameCanvas) {
+  _inherits(BackgroundCanvas, _GameCanvas);
+
+  var _super = _createSuper(BackgroundCanvas);
+
+  function BackgroundCanvas() {
+    var _this;
+
+    _classCallCheck(this, BackgroundCanvas);
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = _super.call.apply(_super, [this].concat(args));
+
+    _defineProperty(_assertThisInitialized(_this), "loadImageStack", function () {
+      _this.imageUrlStack = {
+        battleBack: './sprites/testing/battle-background.png'
+      };
+    });
+
+    _this.loadImageStack();
+
+    return _this;
+  }
+
+  return BackgroundCanvas;
+}(GameCanvas);
 
 /**------------------------------------------------------------------------
  * CONTROLLER CLASS
@@ -241,7 +448,37 @@ var System = function System() {
 
     if (inDebug()) {
       _this.debugMenu = new DebugMenu();
-    }
+    } // Draw Canvases
+
+
+    _this.systemScreen.appendChild(_this.screenCanvas.elem);
+
+    _this.backgroundCanvas.loadImages(function (images) {
+      _this.backgroundCanvas.imageStack = images;
+
+      _this.backgroundCanvas.animate(1000);
+    });
+
+    setTimeout(function () {
+      _this.startGameTimer();
+    }, 1000);
+  });
+
+  _defineProperty(this, "startGameTimer", function () {
+    _this.gameTimer = setInterval(function () {
+      _this.systemCount++;
+
+      _this.screenCanvas.paintCanvas(_this.backgroundCanvas.elem); // TODO - Should be a full compiler of all other canvases
+
+
+      if (_this.actionQueue.length > 0) {
+        if (_this.actionQueue[0] === null) ; else {
+          debugLog("Taking Action ", _this.actionQueue[0]);
+        }
+
+        _this.actionQueue.shift();
+      }
+    }, 20);
   });
 
   _defineProperty(this, "setKeyState", function (key, value) {
@@ -255,7 +492,17 @@ var System = function System() {
   debugLog("Loading System...");
   this.controllers = [];
   this.keyState = {};
+  this.systemScreen = document.getElementById('game-screen');
+  this.systemScreen.style.width = 160 * config.screenSize + 'px';
+  this.systemScreen.style.height = 144 * config.screenSize + 'px';
   this.debugMenu;
+  this.gameTimer;
+  this.systemCount = 0;
+  this.actionQueue = [];
+  this.screenCanvas = new GameCanvas('screen-canvas', 160, 144);
+  this.backgroundCanvas = new BackgroundCanvas('background-canvas', 160, 144); // TODO - this should be loaded and then built
+
+  this.subCanvases = [this.backgroundCanvas]; // TODO - this should be loaded
 }
 /**------------------------------------------------------------------------
  * START
@@ -263,14 +510,6 @@ var System = function System() {
  * Starts the System
  * ----------------------------------------------------------------------*/
 ;
-
-// TODO - This needs to eventually be built out of a database
-var config = {
-  userName: 'Debug User',
-  keyBindings: {
-    /* TODO - Add some Key Bindings, so I can use this, rather than hard-coded inputs */
-  }
-};
 
 window.onload = function () {
   init();
