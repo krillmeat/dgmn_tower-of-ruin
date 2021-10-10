@@ -5,7 +5,12 @@
 ### 0.0.0
 Setting up all of the basic structure for the system, until the game is in any way testable with other users
 
-### v0.0.0-alpha.3
+#### v0.0.0-alpha.4
+* Built Battle Outline
+* Built basic Game structure
+* Built basic Dgmn structure
+
+#### v0.0.0-alpha.3
 * Setup the basics for Canvas
 * Put together basic images for building
 * Created System Timer
