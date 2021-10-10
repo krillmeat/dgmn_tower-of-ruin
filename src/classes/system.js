@@ -1,7 +1,9 @@
 import config from "../config";
 import { debugLog } from "../utils/log-utils";
 import { inDebug } from "../utils/url-utils";
+import Game from "./game";
 import BackgroundCanvas from "./background-canvas";
+import Battle from './battle';
 import GameCanvas from "./canvas";
 import Controller from "./controller";
 import DebugMenu from "./debug-menu";
@@ -27,8 +29,7 @@ class System{
     this.actionQueue = [];
 
     this.screenCanvas = new GameCanvas('screen-canvas',160,144);
-    this.backgroundCanvas = new BackgroundCanvas('background-canvas',160,144); // TODO - this should be loaded and then built
-
+    this.game = new Game(this.paintToScreen.bind(this));
     this.subCanvases = [this.backgroundCanvas]; // TODO - this should be loaded
   }
 
@@ -41,20 +42,23 @@ class System{
     debugLog("Starting System...");
     this.pluginController();
     if(inDebug()){
-      this.debugMenu = new DebugMenu();
+      this.debugMenu = new DebugMenu(this.game.startBattle);
     }
+
+    // Load Game
+    this.game.bootGame(); // TODO - Eventually, this needs to wait until loaded to take actions
 
     // Draw Canvases
     this.systemScreen.appendChild(this.screenCanvas.elem);
-    
-    this.backgroundCanvas.loadImages(images => {
-      this.backgroundCanvas.imageStack = images;
-      this.backgroundCanvas.animate(1000);
-    });
 
     setTimeout(()=>{
       this.startGameTimer();
     },1000);
+  }
+
+  paintToScreen = canvas => {
+    this.screenCanvas.clearCanvas();
+    this.screenCanvas.paintCanvas(canvas);
   }
 
   /**------------------------------------------------------------------------
@@ -64,15 +68,23 @@ class System{
    * ----------------------------------------------------------------------*/
   startGameTimer = () => {
     this.gameTimer = setInterval( () => {
-      this.systemCount++;
-      this.screenCanvas.paintCanvas(this.backgroundCanvas.elem); // TODO - Should be a full compiler of all other canvases
-      if(this.actionQueue.length > 0){
-        if(this.actionQueue[0] === null){ /* SPACER */ } else{
-          debugLog("Taking Action ",this.actionQueue[0]);
+      
+      try{
+        this.systemCount++;
+        this.screenCanvas.paintCanvas(this.game.gameCanvas); // TODO - Should be a full compiler of all other canvases
+        if(this.actionQueue.length > 0){
+          if(this.actionQueue[0] === null){ /* SPACER */ } else{
+            debugLog("Taking Action ",this.actionQueue[0]);
+          }
+          this.actionQueue.shift();
         }
-        this.actionQueue.shift();
-      }
-    }, 20);
+      } catch(e){ console.log("GAME ERROR!"); clearInterval(this.gameTimer) }
+
+    }, 33);
+  }
+
+  addToActionQueue = action => {
+    this.actionQueue.push(action);
   }
 
   /**------------------------------------------------------------------------

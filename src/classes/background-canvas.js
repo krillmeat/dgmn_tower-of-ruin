@@ -4,13 +4,7 @@ class BackgroundCanvas extends GameCanvas{
   constructor(...args){
     super(...args);
 
-    this.loadImageStack();
-  }
-
-  loadImageStack = () => {
-    this.imageUrlStack = {
-      battleBack: './sprites/testing/battle-background.png'
-    };
+    this.loadImageStack(['./sprites/testing/battle-background.png']); // TODO - Dynamically Grab this stuff
   }
 }
 
