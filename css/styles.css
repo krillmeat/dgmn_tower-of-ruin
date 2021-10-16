@@ -16,15 +16,50 @@ body{
   display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
+}
+
+body[data-view='mobile']{
+  padding-top: 32px;
+  justify-content: space-between;
 }
 
 #game-screen{
   width: 160px;
   height: 144px;
-  border: 1px solid #C4CFA1;
+  /* border: 1px solid #C4CFA1; */
+  box-shadow: 0 0 0 2px #C4CFA1;
 
   overflow: hidden;
 }
+
+
+.mobile-controls{
+  display: none;
+  position: relative;
+  left: 0px; bottom: 0px;
+  width: 100vw;
+}
+
+body[data-view='mobile'] .mobile-controls{
+  display: block;
+  background: pink;
+  padding-top: 32px;
+}
+
+.mobile-controls .d-pad{
+  position: absolute;
+  left: 0px; top: 32px;
+  width: 40vw; height: 200px;
+  background: green;
+}
+
+
+
+
+
+
+
 
 #debug-menu{
   display: none;
@@ -41,23 +76,24 @@ body{
 
 #debug-menu.active{
   display: flex;
+  justify-content: space-between;
 }
 
 #debug-menu .go-to{
   display: flex;
 }
 
-#debug-menu .go-to p{
+#debug-menu p{
   text-transform: uppercase;
   font-weight: 900;
   margin-right: 8px;
 }
 
-#debug-menu .go-to ul{
+#debug-menu ul{
   display: flex;
 }
 
-#debug-menu .go-to ul li button{
+#debug-menu ul li button{
   background: none;
   border: none;
 }

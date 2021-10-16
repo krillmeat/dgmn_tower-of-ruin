@@ -7,6 +7,8 @@ import Battle from './battle';
 import GameCanvas from "./canvas";
 import Controller from "./controller";
 import DebugMenu from "./debug-menu";
+import ImageHandler from "./image-handler";
+import { fontImages, genericImages } from "../data/images.db";
 
 /**------------------------------------------------------------------------
  * SYSTEM CLASS
@@ -24,12 +26,14 @@ class System{
     this.systemScreen.style.height = (144 * config.screenSize)+'px';
     this.debugMenu;
 
+    this.imageHandler = new ImageHandler();
+
     this.gameTimer;
     this.systemCount = 0;
     this.actionQueue = [];
 
     this.screenCanvas = new GameCanvas('screen-canvas',160,144);
-    this.game = new Game(this.paintToScreen.bind(this));
+    this.game = new Game(this.imageHandler.addToQueue.bind(this), imageName => { return this.imageHandler.fetchImage(imageName) });
     this.subCanvases = [this.backgroundCanvas]; // TODO - this should be loaded
   }
 
@@ -45,15 +49,15 @@ class System{
       this.debugMenu = new DebugMenu(this.game.startBattle);
     }
 
-    // Load Game
-    this.game.bootGame(); // TODO - Eventually, this needs to wait until loaded to take actions
+    // Load Base Images - Run game once that is all done
+    this.imageHandler.addToQueue(genericImages.concat(fontImages),()=>{ 
+      this.game.bootGame(); // TODO - Eventually, this needs to wait until loaded to take actions
 
-    // Draw Canvases
-    this.systemScreen.appendChild(this.screenCanvas.elem);
+      this.systemScreen.appendChild(this.screenCanvas.elem);
 
-    setTimeout(()=>{
-      this.startGameTimer();
-    },1000);
+      setTimeout(()=>{ this.startGameTimer();
+      },1000);
+    })
   }
 
   paintToScreen = canvas => {
@@ -71,6 +75,7 @@ class System{
       
       try{
         this.systemCount++;
+        this.game.keyHandler(this.keyState);
         this.screenCanvas.paintCanvas(this.game.gameCanvas); // TODO - Should be a full compiler of all other canvases
         if(this.actionQueue.length > 0){
           if(this.actionQueue[0] === null){ /* SPACER */ } else{
@@ -78,7 +83,7 @@ class System{
           }
           this.actionQueue.shift();
         }
-      } catch(e){ console.log("GAME ERROR!"); clearInterval(this.gameTimer) }
+      } catch(e){ console.log("GAME ERROR! - ",e.message); clearInterval(this.gameTimer) }
 
     }, 33);
   }

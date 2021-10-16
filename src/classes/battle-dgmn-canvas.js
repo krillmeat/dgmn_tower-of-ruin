@@ -7,8 +7,6 @@ class BattleDgmnCanvas extends GameCanvas{
     this.dgmnName = dgmnName;
     this.frames = [];
     this.animateSpeed = 2000;
-
-    this.loadImageStack([`./sprites/Battle/Dgmn/${this.dgmnName}_idle_0.png`,`./sprites/Battle/Dgmn/${this.dgmnName}_idle_1.png`]);
   }
 }
 
