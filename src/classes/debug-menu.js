@@ -19,6 +19,19 @@ class DebugMenu {
     this.elem.querySelector("button.battle-launch").addEventListener('click',() => {
       this.launchBattle();
     });
+
+    this.elem.querySelector("button.mobile-switch").addEventListener('click',()=>{
+      let newValue = document.body.dataset.view === 'mobile' ? 'dotcom' : 'mobile';
+      document.body.dataset.view = newValue;
+      if(newValue === 'mobile'){
+        let mobileControllerElem = document.querySelector(".mobile-controls");
+        if(document.body.dataset.view === 'mobile'){
+          let windowHeight = window.innerHeight;
+          let screenHeight = document.getElementById("game-screen").offsetHeight;
+          mobileControllerElem.style.height = `${windowHeight - screenHeight}px`;
+        }
+      }
+    })
   }
 }
 

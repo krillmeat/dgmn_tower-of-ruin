@@ -2,7 +2,16 @@
 
 let config = {
   userName: 'Debug User',
-  keyBindings: { /* TODO - Add some Key Bindings, so I can use this, rather than hard-coded inputs */ },
+  keyBindings: { 
+    action: 'ArrowRight',
+    cancel: 'ArrowDown',
+    up: 'w',
+    right: 'd',
+    down: 's',
+    left: 'a',
+    start: 'Shift',
+    select: 'q'
+   },
   screenSize: 2 // How much larger the screen is than the actual
 }
 

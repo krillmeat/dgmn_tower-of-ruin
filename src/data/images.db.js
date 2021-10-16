@@ -1,0 +1,7 @@
+export const genericImages = ['./sprites/Battle/Menu/miniCursor.png','./sprites/Menus/typeLabel.png','./sprites/Menus/costLabel.png','./sprites/Menus/targetLabel.png','./sprites/Menus/powerLabel.png','./sprites/Menus/hitLabel.png','./sprites/Menus/fireTypeIcon.png','./sprites/Menus/targetOne.png','./sprites/Menus/targetAll.png','./sprites/Menus/pwrEIcon.png','./sprites/Menus/oneHitIcon.png','./sprites/Menus/costMeter100.png','./sprites/Menus/costMeter75.png','./sprites/Menus/costMeter50.png','./sprites/Menus/costMeter25.png','./sprites/Menus/costMeter0.png'];
+
+export const fontImages = ['./sprites/Fonts/fontsBlack.png','./sprites/Fonts/fontsWhite.png','./sprites/Fonts/fontsLightGreen.png']
+
+export const battleImages = ['./sprites/Battle/battleBackground.png','./sprites/Battle/Menu/cursor.png','./sprites/Battle/Menu/cursorLeft.png','./sprites/Battle/Menu/attackDeselected.png','./sprites/Battle/Menu/attackSelected.png','./sprites/Battle/Menu/defendDeselected.png','./sprites/Battle/Menu/defendSelected.png','./sprites/Battle/Menu/statsDeselected.png','./sprites/Battle/Menu/statsSelected.png','./sprites/Battle/Menu/dgmnBarWhite.png','./sprites/Battle/Menu/dgmnBarLightGreen.png','./sprites/Battle/Menu/battleOptionSelectBaseRight.png'];
+
+export const typeImages = ['./sprites/Menus/fireTypeIcon.png']

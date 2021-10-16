@@ -115,18 +115,23 @@ class GameCanvas{
    * PAINT IMAGE
    * ------------------------------------------------------------------------
    * Takes a list of images and adds them one at a time to the canvas
+   * Note: When Flipping, this is more like an action, rather than
+   *       a permanent state. If an image gets (isFlipped) once, it does not
+   *       need it again, until you actually want to flip
    * ------------------------------------------------------------------------
    * @param {Object} images Object of images to be drawn
    * @param {Boolean} isFlipped Should the Image be reversed (used for Battle DGMN)
    * ----------------------------------------------------------------------*/
-  paintImage = (image, isFlipped) => {
+  paintImage = (image, x, y, isFlipped) => {
       let imgHeight = (image.height / 8) * config.screenSize;
       let imgWidth = (image.width / 8) * config.screenSize;
+      let imgX = x || 0;
+      let imgY = y || 0;
       if(isFlipped){
          this.ctx.scale(-1,1);
          this.ctx.translate((imgWidth * -1),0);
       }
-      this.ctx.drawImage(image,0,0,imgWidth,imgHeight);
+      this.ctx.drawImage(image,imgX,imgY,imgWidth,imgHeight);
   }
 }
 

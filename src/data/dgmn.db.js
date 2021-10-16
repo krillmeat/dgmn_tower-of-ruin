@@ -1,14 +1,19 @@
 import { evolutions } from "./evolutions.db"
 
 export const dgmnDB = {
-  agu: {
+  Agu: {
     stage: 3, class: 'vaccine', crests: [0],
     stats: [5,5,5,5,5,5,5,5,5],
     evolutions: evolutions['agu'],
   },
-  grey: {
+  Gabu: {
+    stage: 3, class: 'data', crests: [0],
+    stats: [5,5,5,5,5,5,5,5,6],
+    evolutions: evolutions['agu'],
+  },
+  Grey: {
     stage: 4, class: 'vaccine', crests: [0],
-    stats: [5,5,5,5,5,5,5,5,10],
+    stats: [6,5,5,5,5,5,5,5,6],
     evolutions: evolutions['agu'],
   }
 }

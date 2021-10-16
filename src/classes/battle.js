@@ -3,9 +3,13 @@ import { debugLog } from "../utils/log-utils";
 import BackgroundCanvas from "./background-canvas";
 import Dgmn from "./dgmn";
 import config from "../config";
+import BattleMenu from "./menu/battle-menu";
+import { battleImages } from "../data/images.db";
+import Attack from "./attack";
 
 class Battle {
-  constructor(dgmnList,enemyDgmnList,loadedCallback,addObjectCallback,gameScreenRedrawCallback){
+  constructor(dgmnList,enemyDgmnList,loadedCallback,addObjectCallback,gameScreenRedrawCallback, loadImageCallback, fetchImageCallback){
+    this.battleActive = true;
     this.dgmnList = dgmnList;
     this.enemyDgmnList = enemyDgmnList;
 
@@ -22,15 +26,24 @@ class Battle {
         imagesLoaded: false,
         dgmnLoaded: false,
         dgmnLoadedCount: false
+      },
+      menu: {
+        loadingMenu: false,
+        imagesLoaded: false
       }
     }
 
-    this.battleBackground = new BackgroundCanvas('background-canvas',160,144);
-
     this.triggerGameScreenRedraw = () => { gameScreenRedrawCallback() }
     this.addObject = newObject => { addObjectCallback(newObject) }
-    
-    this.loadBattle(loadedCallback);
+
+    this.loadImages = (imageList,callback) => { loadImageCallback(imageList,callback) }
+    this.fetchImage = imageName => { return fetchImageCallback(imageName) }
+
+    this.battleBackground = new BackgroundCanvas('background-canvas',160,144);
+    this.battleMenu = new BattleMenu(this.dgmnList.concat(this.enemyDgmnList),gameScreenRedrawCallback, loadImageCallback, this.fetchImage);
+
+    this.onLoaded = () => {loadedCallback()}
+    this.loadBattle();
   }
 
   /**------------------------------------------------------------------------
@@ -40,96 +53,175 @@ class Battle {
    * ------------------------------------------------------------------------
    * @param {Function} loadedCallback Function called after everything is loaded
    * ----------------------------------------------------------------------*/
-  loadBattle = loadedCallback => {
+  loadBattle = () => {
     debugLog("-- Loading Battle");
 
-    // Load Background
-    this.battleBackground.loadImages(images => {
-      this.battleBackground.imageStack = images;
-      this.battleBackground.paintImage(this.battleBackground.imageStack[0]);
-      this.loadedState.battleBackgroundLoaded = true;
-      this.addObject(this.battleBackground);
-    });
+    this.loadBattleImages(() => {
+      // LOAD DATA
 
-    // Start Interval
-    let loadingInterval = setInterval(() => {
+      this.loadDgmn(this.dgmnList,false);
+      this.addDgmnToObjectList(this.dgmnList,false);
 
-      // Load Party Dgmn
-      if(this.loadedState.battleBackgroundLoaded && !this.loadedState.party.loadingDgmn){
-        debugLog("---- Background Loaded");
-        this.loadedState.party.loadingDgmn = true;
-        this.loadDgmn(this.dgmnList,false);
-      }
+      this.loadDgmn(this.enemyDgmnList,true);
+      this.addDgmnToObjectList(this.enemyDgmnList,true);
 
-      // Load Enemy Dgmn
-      if(this.loadedState.party.imagesLoaded && !this.loadedState.enemy.loadingDgmn){
-        debugLog("---- Party Images Loaded");
-        this.loadedState.enemy.loadingDgmn = true;
-        this.addDgmnToObjectList(this.dgmnList,false);
-        this.loadDgmn(this.enemyDgmnList,true);
-      }
-
-      // Done Loading
-      if(this.loadedState.enemy.imagesLoaded){
-        debugLog("---- Enemy Images Loaded");
-        this.addDgmnToObjectList(this.enemyDgmnList,true);
-      }
+      this.addObject(this.battleMenu.menuCanvas);
+      this.battleMenu.buildBattleMenus();
+      this.battleMenu.paintInitialCanvas();
       
-      // Every done? Stop Loading
-      if(this.isBattleLoaded()){
-        loadedCallback();
-        clearInterval(loadingInterval);
-      }
-    }, 100);
+      this.onLoaded();
+    });
   }
 
-  addDgmnToObjectList = (dgmnList, isEnemy) => {
+  /**------------------------------------------------------------------------
+   * LOAD BATTLE IMAGES
+   * ------------------------------------------------------------------------
+   * Adds all of the Battle Images together into one Array and sends them
+   *   to the image manager to be loaded
+   * ------------------------------------------------------------------------
+   * @param {Function} loadedCallback Function called after everything is loaded
+   * ----------------------------------------------------------------------*/
+  loadBattleImages = loadedCallback => {
+    // Get all of the Dgmn-related Images together
+    let allDgmn = this.dgmnList.concat(this.enemyDgmnList);
+    let dgmnImages = [];
+    for(let i = 0; i < allDgmn.length; i++){
+      let urlOne = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Idle0.png`;
+      let urlTwo = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Idle1.png`;
+      let urlThree = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Portrait.png`;
+      if(!dgmnImages.includes(urlOne)){
+        dgmnImages.push(urlOne);
+        dgmnImages.push(urlTwo);
+        dgmnImages.push(urlThree);
+      }
+    }
+
+    let allImages = battleImages.concat(dgmnImages); // Battle Images + Dgmn Images
+
+    this.loadImages(allImages, () => {
+      this.battleBackground.imageStack = [this.fetchImage('battleBackground')];
+      this.battleBackground.paintImage(this.battleBackground.imageStack[0]);
+      this.addObject(this.battleBackground);
+
+      loadedCallback();
+    });
+  }
+
+  /**------------------------------------------------------------------------
+   * ADD DGMN TO OBJECT LIST
+   * ------------------------------------------------------------------------
+   * Sends the Dgmn canvas to the Game Screen for rendering
+   * ------------------------------------------------------------------------
+   * @param {Array} dgmnList List of Dgmn
+   * ----------------------------------------------------------------------*/
+  addDgmnToObjectList = (dgmnList) => {
     for(let i = 0; i < dgmnList.length; i++){
       this.addObject(dgmnList[i].battleCanvas);
-      if(i === dgmnList.length - 1){
-        isEnemy ? 
-          this.loadedState.enemy.dgmnLoaded = true : 
-          this.loadedState.party.dgmnLoaded = true;
-      }
     }
   }
 
+  /**------------------------------------------------------------------------
+   * LOAD DGMN
+   * ------------------------------------------------------------------------
+   * Load all of the dgmn data and Images
+   * ------------------------------------------------------------------------
+   * @param {Array}   dgmnList List of Dgmn
+   * @param {Boolean} isEnemy Whether or not the Dgmn is Party or Enemy
+   * ----------------------------------------------------------------------*/
   loadDgmn = (dgmnList,isEnemy) => {
     for(let i = 0; i < dgmnList.length; i++){
       let dgmn = dgmnList[i];
-      dgmn.initBattleCanvas(this.triggerGameScreenRedraw);
+      
+      // TODO - Remove this, this manually loads the Dgmn, but that shouldn't
+      //        have to be done
+      dgmn.buildDgmn();
+      dgmn.loadDgmn({permAttacks: [new Attack('babyFlame')]})
+
+      let imageStack = [
+        this.fetchImage(`${dgmn.name.toLowerCase()}Idle0`),
+        this.fetchImage(`${dgmn.name.toLowerCase()}Idle1`)
+      ];
+
+      dgmn.initBattleCanvas(this.triggerGameScreenRedraw, imageStack);
       dgmn.battleCanvas.x = isEnemy ? 
                             2 * (16 * config.screenSize) : 
                             6 * (16 * config.screenSize);
-      dgmn.battleCanvas.y = (16 * config.screenSize)+( (33 * i * config.screenSize));
-
-      dgmn.battleCanvas.loadImages(images => {
-        isEnemy ? 
-          this.loadedState.enemy.dgmnLoadedCount++ : 
-          this.loadedState.party.dgmnLoadedCount++;
-        dgmn.battleCanvas.imageStack = images;
-        dgmn.battleCanvas.paintImage(dgmn.battleCanvas.imageStack[0],isEnemy);
-        let speed = 1000 - (Math.floor(dgmn.baseStats[8]*2) * 33); // DGMN with a higher base speed will idle faster
-        dgmn.battleCanvas.animate(speed);
-        isEnemy ? 
-          this.loadedState.enemy.imagesLoaded = this.loadedState.enemy.dgmnLoadedCount >= dgmnList.length : 
-          this.loadedState.party.imagesLoaded = this.loadedState.party.dgmnLoadedCount >= dgmnList.length;
-      });
+      dgmn.battleCanvas.y = (16 * config.screenSize)+( (32 * i * config.screenSize));
+      dgmn.battleCanvas.paintImage(dgmn.battleCanvas.imageStack[0],0,0,isEnemy);
+      let speed = 1200 - (Math.floor(dgmn.baseStats[8]*2) * 33);
+      dgmn.battleCanvas.animate(speed);
     }
-  }
-
-  isBattleLoaded = () => {
-    return (this.loadedState.battleBackgroundLoaded && 
-            this.loadedState.party.dgmnLoaded && 
-            this.loadedState.enemy.dgmnLoaded);
   }
 
   generateEnemies = encounterData => {
     // new Dgmn / enemy
   }
 
-  attack = (target, attacker) => {
+  /**------------------------------------------------------------------------
+   * ATTACK
+   * ------------------------------------------------------------------------
+   * Have one Dgmn attack another
+   * ------------------------------------------------------------------------
+   * @param {Dgmn}    target    Dgmn getting hit by the attack
+   * @param {Dgmn}    attacker  Dgmn doing the attacking
+   * @param {Attack}  attack    Attack being used  
+   * ----------------------------------------------------------------------*/
+  attack = (target, attacker, attack) => {
+    let atkDefDiff = attacker.currStats[2] / target.currStats[3];
+    let preMods = ( ( atkDefDiff * attacker.level ) / 2 ) * attack.power;
+    let postMods = preMods * 1; // TODO - Add all of the mods
+    target.currHP -= postMods;
+    this.battleMenu.updateAllStatusBars();
+  }
 
+  keyTriage = key => {
+    if(key === 'action'){
+      this.actionKeyHandler();
+    } else if(key === 'cancel'){
+      this.cancelKeyHandler();
+    } else if(key === 'right'){
+      this.rightKeyHandler();
+    } else if(key === 'left'){
+      this.leftKeyHandler();
+    }
+  }
+
+  actionKeyHandler = () => {
+    if(this.battleMenu.currentState === 'dgmn'){
+      if(this.battleMenu.menus.dgmn.currentIndex === 0){
+        this.battleMenu.launchDgmnAttackMenu();
+      }
+    } else if(this.battleMenu.currentState === 'attack'){
+      let chosenAttack = this.battleMenu.dgmnAttackMenu.attackList[this.battleMenu.dgmnAttackMenu.currentChoice];
+      this.battleMenu.selectedAttack = chosenAttack;
+      console.log("SELECTED ATTACK = ",this.battleMenu.selectedAttack);
+      this.battleMenu.launchSelectTarget();
+    } else if(this.battleMenu.currentState === 'targetSelect'){
+      this.battleMenu.menuCanvas.ctx.clearRect( 8 * (8 * config.screenSize), 2 * (8 * config.screenSize), 2 * (8 * config.screenSize), 12 * (8 * config.screenSize) );
+      this.triggerGameScreenRedraw();
+      this.attack(this.enemyDgmnList[this.battleMenu.menus.targetSelect.currentIndex],this.dgmnList[this.battleMenu.currentDgmnActor],this.battleMenu.selectedAttack);
+    }
+  }
+
+  rightKeyHandler = () => {
+    if(this.battleMenu.currentState === 'dgmn'){
+      let newIndex = this.battleMenu.menus.dgmn.currentIndex === this.battleMenu.menus.dgmn.totalIcons -1 ? 0 : this.battleMenu.menus.dgmn.currentIndex + 1;
+      this.battleMenu.setCurrentIcon(newIndex);
+    } 
+  }
+
+  leftKeyHandler = () => {
+    if(this.battleMenu.currentState === 'dgmn'){
+      let newIndex = this.battleMenu.menus.dgmn.currentIndex === 0 ? this.battleMenu.menus.dgmn.totalIcons -1 : this.battleMenu.menus.dgmn.currentIndex - 1;
+      this.battleMenu.setCurrentIcon(newIndex);
+    } 
+  }
+
+  cancelKeyHandler = () => {
+    if(this.battleMenu.currentState === 'attack'){
+      this.battleMenu.currentState = 'dgmn';
+      this.battleMenu.closeDgmnAttackMenu();
+    }
   }
 }
 

@@ -180,7 +180,14 @@ function _createForOfIteratorHelper(o, allowArrayLike) {
 var config = {
   userName: 'Debug User',
   keyBindings: {
-    /* TODO - Add some Key Bindings, so I can use this, rather than hard-coded inputs */
+    action: 'ArrowRight',
+    cancel: 'ArrowDown',
+    up: 'w',
+    right: 'd',
+    down: 's',
+    left: 'a',
+    start: 'Shift',
+    select: 'q'
   },
   screenSize: 2 // How much larger the screen is than the actual
 
@@ -239,7 +246,7 @@ var debugLog = function debugLog(message, object) {
   if (inDebug()) object ? console.log("%c".concat(message), 'color:#A6E22E', object) : console.log("%c".concat(message), 'color:#A6E22E');
 };
 
-var GameCanvas = function GameCanvas(canvasClass, width, height, x, y, hasIdleAnimation, gameScreenRedrawCallback) {
+var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdleAnimation, gameScreenRedrawCallback) {
   var _this = this;
 
   _classCallCheck(this, GameCanvas);
@@ -299,9 +306,11 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, x, y, hasIdleAn
     _this.ctx.drawImage(canvas.elem, canvas.x, canvas.y, canvas.width, canvas.height);
   });
 
-  _defineProperty(this, "paintImage", function (image, isFlipped) {
+  _defineProperty(this, "paintImage", function (image, x, y, isFlipped) {
     var imgHeight = image.height / 8 * config.screenSize;
     var imgWidth = image.width / 8 * config.screenSize;
+    var imgX = x || 0;
+    var imgY = y || 0;
 
     if (isFlipped) {
       _this.ctx.scale(-1, 1);
@@ -309,12 +318,12 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, x, y, hasIdleAn
       _this.ctx.translate(imgWidth * -1, 0);
     }
 
-    _this.ctx.drawImage(image, 0, 0, imgWidth, imgHeight);
+    _this.ctx.drawImage(image, imgX, imgY, imgWidth, imgHeight);
   });
 
   this.canvasClass = canvasClass;
-  this.x = x || 0;
-  this.y = y || 0;
+  this.x = _x || 0;
+  this.y = _y || 0;
   this.width = width * config.screenSize;
   this.height = height * config.screenSize;
   this.elem = this.buildCanvas();
@@ -391,18 +400,25 @@ var evolutions = {
 };
 
 var dgmnDB = {
-  agu: {
+  Agu: {
     stage: 3,
     "class": 'vaccine',
     crests: [0],
     stats: [5, 5, 5, 5, 5, 5, 5, 5, 5],
     evolutions: evolutions['agu']
   },
-  grey: {
+  Gabu: {
+    stage: 3,
+    "class": 'data',
+    crests: [0],
+    stats: [5, 5, 5, 5, 5, 5, 5, 5, 6],
+    evolutions: evolutions['agu']
+  },
+  Grey: {
     stage: 4,
     "class": 'vaccine',
     crests: [0],
-    stats: [5, 5, 5, 5, 5, 5, 5, 5, 10],
+    stats: [6, 5, 5, 5, 5, 5, 5, 5, 6],
     evolutions: evolutions['agu']
   }
 };
@@ -425,35 +441,60 @@ var BattleDgmnCanvas = /*#__PURE__*/function (_GameCanvas) {
     _this.dgmnName = dgmnName;
     _this.frames = [];
     _this.animateSpeed = 2000;
-
-    _this.loadImageStack(["./sprites/Battle/Dgmn/".concat(_this.dgmnName, "_idle_0.png"), "./sprites/Battle/Dgmn/".concat(_this.dgmnName, "_idle_1.png")]);
-
     return _this;
   }
 
   return BattleDgmnCanvas;
 }(GameCanvas);
 
-var Dgmn = function Dgmn(id, name, level) {
+/**
+ * DIGIMON
+ * @param {Number}  id              Each Dgmn is assigned a basic number ID, to track
+ * @param {String}  nickname        Name given to a Dgmn by the Player
+ * @param {String}  name            The species name (does not include MON)
+ * @param {Number}  level           Dgmn's Level, grown by EXP
+ * @param {Number}  battleLocation  Where in your party they are located (0-2)
+ * @param {Boolean} isEnemy         Whether the Dgmn is an Enemy or not
+ */
+
+var Dgmn = function Dgmn(id, nickname, name, level, battleLocation, isEnemy) {
   var _this = this;
 
   _classCallCheck(this, Dgmn);
 
-  _defineProperty(this, "loadDgmn", function (dgmnData) {// This how the data will be loaded into a DGMN when a new instance is created
+  _defineProperty(this, "loadDgmn", function (loadData) {
+    // Go through and load in all of the data
+    _this.level = loadData.level || _this.level;
+    _this.permAttacks = loadData.permAttacks || _this.permAttacks;
   });
 
-  _defineProperty(this, "initBattleCanvas", function (gameScreenRedrawCallback) {
+  _defineProperty(this, "initBattleCanvas", function (gameScreenRedrawCallback, imageStack) {
     _this.battleCanvas = new BattleDgmnCanvas(_this.name, 'dgmn-canvas', 32, 32, 0, 0, true, gameScreenRedrawCallback);
+    _this.battleCanvas.imageStack = imageStack;
+  });
+
+  _defineProperty(this, "buildDgmn", function () {
+    for (var i = 0; i < _this.baseStats.length; i++) {
+      var finalStat = _this.baseStats[i] * _this.level;
+      finalStat *= i < 2 ? 1.5 : 1;
+      finalStat = Math.floor(finalStat);
+
+      _this.currStats.push(finalStat);
+    } // TODO - Remove, only for mocking
+
+
+    _this.permAttacks = [];
   });
 
   this.dgmnId = id;
+  this.nickname = nickname;
   this.name = name;
   this.stage = dgmnDB[name].stage;
   this["class"] = dgmnDB[name]["class"];
   this.baseStats = dgmnDB[name].stats;
   this.crests = dgmnDB[name].crests; // Permanent
 
-  this.permAttacks = {};
+  this.permAttacks = [];
   this.permCrests = {};
   this.permSync = {};
   this.fullDgmnList = []; // Every Dgmn this Dgmn has ever been
@@ -462,106 +503,641 @@ var Dgmn = function Dgmn(id, name, level) {
   this.level = level || 1;
   this.currDgmnPath = []; // The Dgmn this Dgmn has become since it hatched
 
-  this.currHP = 0;
+  this.currHP = 24;
+  this.currEN = 10;
   this.currHunger = 0;
-  this.currEnergy = 0;
   this.currPoop = 0;
+  this.currStats = [];
   this.battleCanvas;
+  this.battleLocation = battleLocation || 0;
+  this.isEnemy = isEnemy || false;
 };
 
-var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjectCallback, gameScreenRedrawCallback) {
+var fontData = {
+  A: [0, 0],
+  a: [0, 2],
+  B: [1, 0],
+  b: [1, 2],
+  C: [2, 0],
+  c: [2, 2],
+  D: [3, 0],
+  d: [3, 2],
+  E: [4, 0],
+  e: [4, 2],
+  F: [5, 0],
+  f: [5, 2],
+  G: [6, 0],
+  g: [6, 2],
+  H: [7, 0],
+  h: [7, 2],
+  I: [8, 0],
+  i: [8, 2],
+  J: [9, 0],
+  j: [9, 2],
+  K: [10, 0],
+  k: [10, 2],
+  L: [11, 0],
+  l: [11, 2],
+  M: [12, 0],
+  m: [12, 2],
+  N: [13, 0],
+  n: [13, 2],
+  O: [14, 0],
+  o: [14, 2],
+  P: [15, 0],
+  p: [15, 2],
+  Q: [16, 0],
+  q: [16, 2],
+  R: [17, 0],
+  r: [17, 2],
+  S: [0, 1],
+  s: [0, 3],
+  T: [1, 1],
+  t: [1, 3],
+  U: [2, 1],
+  u: [2, 3],
+  V: [3, 1],
+  v: [3, 3],
+  W: [4, 1],
+  w: [4, 3],
+  X: [5, 1],
+  x: [5, 3],
+  Y: [6, 1],
+  y: [6, 3],
+  Z: [7, 1],
+  z: [7, 3],
+  space: [8, 1],
+  dotM: [0, 4],
+  hp: [1, 4],
+  en: [2, 4],
+  0: [3, 4],
+  1: [4, 4],
+  2: [5, 4],
+  3: [6, 4],
+  4: [7, 4],
+  5: [8, 4],
+  6: [9, 4],
+  7: [10, 4],
+  8: [11, 4],
+  9: [12, 4]
+};
+
+/**------------------------------------------------------------------------
+ * TEXT MANAGER
+ * ------------------------------------------------------------------------
+ * Handles all Text displays
+ * ------------------------------------------------------------------------
+ * @param {Array} colors List of Images that correlate to the font image
+ * @param {Number} rows
+ * @param {Number} cols
+ * @param {Number} x
+ * @param {Number} y
+ * @param {Function} colorizeCallback
+ * ----------------------------------------------------------------------*/
+
+var TextManager = function TextManager(colors, rows, cols, x, y, colorizeCallback) {
+  var _this = this;
+
+  _classCallCheck(this, TextManager);
+
+  _defineProperty(this, "getFontCoord", function (_char) {
+    return fontData[_char];
+  });
+
+  _defineProperty(this, "clearTextBox", function (canvas) {
+    canvas.ctx.clearRect(_this.x * 8 * config.screenSize, _this.y * 8 * config.screenSize, _this.cols * 7 * config.screenSize, _this.rows * 7 * config.screenSize);
+    canvas.ctx.fillStyle = '#00131a';
+    canvas.ctx.fillRect(_this.x * 8 * config.screenSize, _this.y * 8 * config.screenSize, _this.cols * 7 * config.screenSize, _this.rows * 7 * config.screenSize);
+  });
+
+  _defineProperty(this, "instantPaint", function (canvas, message) {
+    var ctx = canvas.ctx;
+
+    var splitMessage = _this.replaceSpecials(message);
+
+    _this.clearTextBox(canvas);
+
+    for (var i = 0; i < splitMessage.length; i++) {
+      var _char2 = splitMessage[i];
+      var charX = fontData[_char2][0] * 64;
+      var charY = fontData[_char2][1] * 64;
+
+      var fontIndex = _this.colorize(_char2); // image, sX, sY, sW, sH, dX, dY, dW, dH || s = source | d = destination
+
+
+      ctx.drawImage(_this.colors[fontIndex], charX, charY, 64, 64, 8 * config.screenSize * i + _this.x * 8 * config.screenSize, _this.y * 8 * config.screenSize, 8 * config.screenSize, 8 * config.screenSize);
+    }
+  });
+
+  _defineProperty(this, "replaceSpecials", function (message) {
+    // Eventually, I might have to swap this stuff out for a loop method
+    var modString = message;
+    modString = modString.replace('.M', '^');
+    modString = modString.replace('.hp', '%');
+    modString = modString.replace('.en', '@');
+    var modArray = modString.split('');
+    if (modArray.indexOf('^') !== -1) modArray[modArray.indexOf('^')] = 'dotM';
+    if (modArray.indexOf('%') !== -1) modArray[modArray.indexOf('%')] = 'hp';
+    if (modArray.indexOf('@') !== -1) modArray[modArray.indexOf('@')] = 'en';
+    if (modArray.indexOf(' ') !== -1) modArray[modArray.indexOf(' ')] = 'space';
+    return modArray;
+  });
+
+  _defineProperty(this, "progressivePaint", function (speed) {// Paints one letter at a time. Used for messages, talking, etc.
+  });
+
+  _defineProperty(this, "paintToCanvas", function (canvas) {// canvas.
+  });
+
+  this.colors = colors;
+  this.rows = rows;
+  this.cols = cols;
+  this.x = x || 0;
+  this.y = y || 0;
+
+  this.colorize = function (_char3) {
+    var fontIndex = 0;
+    if (colorizeCallback) fontIndex = colorizeCallback(_char3);
+    return fontIndex;
+  };
+};
+
+var BattleMeter = function BattleMeter(stat) {
+  _classCallCheck(this, BattleMeter);
+
+  _defineProperty(this, "paintBase", function () {});
+
+  this.stat = stat;
+  this.currentValue = 0;
+  this.maxValue = 100;
+};
+
+var DgmnBattleStatus = function DgmnBattleStatus(listIndex, dgmnData) {
+  var _this = this;
+
+  _classCallCheck(this, DgmnBattleStatus);
+
+  _defineProperty(this, "drawMeter", function (canvas, meter, image, meterLength, color) {
+    // TODO - Clear the original
+    var meterOffset = meter === 'hp' ? 0 : 8 * config.screenSize;
+    var leftOffset = _this.dgmnData.isEnemy ? 8 * config.screenSize : 17 * 8 * config.screenSize;
+    var battleLocationOffset = _this.dgmnData.battleLocation * 32 * config.screenSize;
+    canvas.ctx.clearRect(leftOffset, 16 * config.screenSize + meterOffset + battleLocationOffset, 24 * config.screenSize, 8 * config.screenSize);
+    canvas.ctx.drawImage(image, leftOffset, 16 * config.screenSize + meterOffset + battleLocationOffset, 24 * config.screenSize, 8 * config.screenSize);
+    canvas.ctx.fillStyle = color === 'White' ? "#c4cfa1" : "#6ca66c";
+    canvas.ctx.fillRect(leftOffset + 4 * config.screenSize, 16 * config.screenSize + meterOffset + battleLocationOffset + 2 * config.screenSize, meterLength * config.screenSize, 3 * config.screenSize);
+  });
+
+  this.listIndex = listIndex;
+  this.dgmnData = dgmnData;
+  this.currHP = new BattleMeter();
+  this.currEN = new BattleMeter();
+  this.statuses = [];
+};
+
+var attacksDB = {
+  babyFlame: {
+    displayName: 'Baby Flame',
+    type: 'fire',
+    targets: 'single'
+  }
+};
+
+var DgmnAttackMenu = function DgmnAttackMenu(fetchImageCallback) {
+  var _this = this;
+
+  _classCallCheck(this, DgmnAttackMenu);
+
+  _defineProperty(this, "loadAttackList", function (attackData) {
+    _this.attackList = attackData;
+  });
+
+  _defineProperty(this, "refreshList", function (canvas, index) {
+    var attack = _this.attackList[index];
+
+    _this.textManagers[0].instantPaint(canvas, attacksDB[attack.attackName].displayName);
+
+    canvas.ctx.drawImage(_this.fetchImage('costLabel'), 5 * (8 * config.screenSize), 3 * (8 * config.screenSize), 16 * config.screenSize, 8 * config.screenSize);
+
+    _this.calculateCost(canvas, attack);
+
+    canvas.ctx.drawImage(_this.fetchImage('fireTypeIcon'), 16 * (8 * config.screenSize), 3 * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
+    canvas.ctx.drawImage(_this.fetchImage('pwrEIcon'), 17 * (8 * config.screenSize), 3 * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
+    canvas.ctx.drawImage(_this.fetchImage('targetOne'), 18 * (8 * config.screenSize), 3 * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
+    canvas.ctx.drawImage(_this.fetchImage('oneHitIcon'), 19 * (8 * config.screenSize), 3 * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
+  });
+
+  _defineProperty(this, "calculateCost", function (canvas, attack) {
+    var blockCount = attack.maxCost / 4;
+    var remCount = attack.currCost;
+
+    for (var i = 0; i < blockCount; i++) {
+      var remove = attack.maxCost - (i + 1) * 4;
+      var check = attack.maxCost - remove - i * 4;
+
+      var _final = 25 * (remCount - check);
+
+      _final = _final >= 0 ? 0 : _final;
+      _final = _final < 0 ? -100 : _final;
+      canvas.ctx.drawImage(_this.fetchImage("costMeter".concat(100 + _final)), (7 + i) * (8 * config.screenSize), 3 * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
+      remCount -= 4;
+    }
+  });
+
+  this.attackList = [];
+  this.currentChoice = 0;
+  this.textManagers = [new TextManager([fetchImageCallback('fontsWhite')], 1, 15, 5, 2)];
+
+  this.fetchImage = function (imageName) {
+    return fetchImageCallback(imageName);
+  };
+};
+
+var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback) {
+  var _this = this;
+
+  _classCallCheck(this, BattleMenu);
+
+  _defineProperty(this, "buildStatusList", function () {
+    for (var i = 0; i < _this.dgmnData.length; i++) {
+      _this.dgmnStatusList.push(new DgmnBattleStatus(i, _this.dgmnData[i]));
+    }
+  });
+
+  _defineProperty(this, "buildBattleMenus", function () {
+    _this.menus.beetle = [];
+    _this.menus.dgmn = {
+      currentIndex: 0,
+      totalIcons: 3,
+      icons: [{
+        label: 'Attack',
+        activeImg: _this.fetchImage('attackSelected'),
+        inactiveImg: _this.fetchImage('attackDeselected')
+      }, {
+        label: 'Defend',
+        activeImg: _this.fetchImage('defendSelected'),
+        inactiveImg: _this.fetchImage('defendDeselected')
+      }, {
+        label: 'Stats',
+        activeImg: _this.fetchImage('statsSelected'),
+        inactiveImg: _this.fetchImage('statsDeselected')
+      }]
+    };
+    _this.menus.attack = {
+      currentIndex: 0,
+      currentPage: 0,
+      currentPageMax: 0
+    };
+    _this.menus.targetSelect = {
+      currentIndex: 0
+    };
+  });
+
+  _defineProperty(this, "paintInitialCanvas", function () {
+    // TODO - All temporary, the inital screen should be based on Beetle Action, not DGMN action
+    _this.menuCanvas.paintImage(_this.fetchImage('cursor'), 80 * config.screenSize, 16 * config.screenSize + 8 * config.screenSize); // Battle Cursor
+
+
+    _this.menuCanvas.paintImage(_this.menus.dgmn.icons[0].activeImg, 112 * config.screenSize, 128 * config.screenSize);
+
+    _this.menuCanvas.paintImage(_this.menus.dgmn.icons[1].inactiveImg, 128 * config.screenSize, 128 * config.screenSize);
+
+    _this.menuCanvas.paintImage(_this.menus.dgmn.icons[2].inactiveImg, 144 * config.screenSize, 128 * config.screenSize);
+
+    _this.updateAllStatusBars(); // Text Management
+
+
+    _this.topTextManager.instantPaint(_this.menuCanvas, 'Attack');
+
+    _this.dgmnNameTextManager.instantPaint(_this.menuCanvas, _this.dgmnData[_this.currentDgmnActor].nickname);
+
+    _this.dgmnSpeciesTextManager.instantPaint(_this.menuCanvas, "".concat(_this.dgmnData[_this.currentDgmnActor].name, ".MON"));
+
+    _this.currDgmnHP.instantPaint(_this.menuCanvas, ".hp".concat(_this.dgmnData[_this.currentDgmnActor].currHP));
+
+    _this.currDgmnEN.instantPaint(_this.menuCanvas, ".en".concat(_this.dgmnData[_this.currentDgmnActor].currEN));
+
+    _this.setDgmnPortrait(_this.dgmnData[_this.currentDgmnActor].name);
+  });
+
+  _defineProperty(this, "clearIcon", function (index) {
+    _this.menuCanvas.ctx.clearRect((112 + 16 * index) * config.screenSize, 128 * config.screenSize, 16 * config.screenSize, 16 * config.screenSize);
+  });
+
+  _defineProperty(this, "setDgmnPortrait", function (species) {
+    // TODO - Clear Portrait
+    _this.menuCanvas.ctx.drawImage(_this.fetchImage("".concat(species.toLowerCase(), "Portrait")), 0, 0, 32 * 8, (32 - 1) * 8, 0 * 8 * config.screenSize, 14 * 8 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
+  });
+
+  _defineProperty(this, "updateAllStatusBars", function () {
+    for (var i = 0; i < _this.dgmnStatusList.length; i++) {
+      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currHP, _this.dgmnData[_this.dgmnStatusList[i].listIndex].currStats[0], 'hp');
+
+      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currEN, _this.dgmnData[_this.dgmnStatusList[i].listIndex].currStats[1], 'en');
+    }
+  });
+
+  _defineProperty(this, "updateStatusBar", function (status, curr, max, bar) {
+    var calcValue = Math.floor(curr / max * 18);
+    var barColor = calcValue >= 9 ? 'White' : 'LightGreen';
+    status.drawMeter(_this.menuCanvas, bar, _this.fetchImage("dgmnBar".concat(barColor)), calcValue, barColor);
+  });
+
+  _defineProperty(this, "launchDgmnAttackMenu", function (attackList) {
+    debugLog("Attacking");
+    debugLog("-- Selecting attack...");
+    _this.currentState = 'attack';
+
+    _this.topTextManager.instantPaint(_this.menuCanvas, 'Select Attack');
+
+    _this.menuCanvas.paintImage(_this.fetchImage('battleOptionSelectBaseRight'), 0, 0);
+
+    _this.menuCanvas.paintImage(_this.fetchImage('miniCursor'), 4 * (8 * config.screenSize), 2 * (8 * config.screenSize)); // Build initial page
+
+
+    _this.dgmnAttackMenu.loadAttackList(_this.dgmnData[_this.currentDgmnActor].permAttacks);
+
+    _this.dgmnAttackMenu.refreshList(_this.menuCanvas, 0);
+
+    _this.triggerGameScreenRedraw();
+  });
+
+  _defineProperty(this, "closeDgmnAttackMenu", function () {
+    _this.topTextManager.instantPaint(_this.menuCanvas, 'Attack');
+
+    _this.menuCanvas.ctx.clearRect(4 * (8 * config.screenSize), 2 * (8 * config.screenSize), 16 * (8 * config.screenSize), 12 * (8 * config.screenSize));
+
+    for (var i = 0; i < _this.dgmnStatusList.length; i++) {
+      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currHP, _this.dgmnData[_this.dgmnStatusList[i].listIndex].currStats[0], 'hp');
+
+      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currEN, _this.dgmnData[_this.dgmnStatusList[i].listIndex].currStats[1], 'en');
+    }
+
+    _this.triggerGameScreenRedraw();
+  });
+
+  _defineProperty(this, "launchSelectTarget", function () {
+    debugLog("-- Selecting target...");
+    _this.currentState = 'targetSelect';
+
+    _this.closeDgmnAttackMenu();
+
+    var attackData = attacksDB[_this.dgmnAttackMenu.attackList[_this.dgmnAttackMenu.currentChoice].attackName];
+
+    if (attackData.targets === 'single') {
+      _this.menuCanvas.paintImage(_this.fetchImage('cursorLeft'), 8 * (8 * config.screenSize), 16 * config.screenSize + 8 * config.screenSize);
+    } else {
+      console.log("MULTI TARGET");
+    }
+
+    _this.triggerGameScreenRedraw();
+  });
+
+  _defineProperty(this, "setCurrentIcon", function (index) {
+    var prevIndex = _this.menus[_this.currentState].currentIndex;
+    _this.menus[_this.currentState].currentIndex = index;
+
+    _this.clearIcon(prevIndex);
+
+    _this.clearIcon(index);
+
+    _this.menuCanvas.paintImage(_this.menus[_this.currentState].icons[prevIndex].inactiveImg, (112 + 16 * prevIndex) * config.screenSize, 128 * config.screenSize);
+
+    _this.menuCanvas.paintImage(_this.menus[_this.currentState].icons[index].activeImg, (112 + 16 * index) * config.screenSize, 128 * config.screenSize);
+
+    _this.topTextManager.clearTextBox(_this.menuCanvas);
+
+    _this.topTextManager.instantPaint(_this.menuCanvas, _this.menus[_this.currentState].icons[index].label);
+
+    _this.triggerGameScreenRedraw();
+  });
+
+  // TODO - I do not want (if I can help it) ANY dgmnData in this file
+  this.dgmnData = dgmnData;
+  this.currentState = 'dgmn'; // none | beetle | dgmn | attack | item
+
+  this.currentDgmnActor = 0;
+  this.selectedAttack;
+  this.topTextManager = new TextManager([fetchImageCallback('fontsWhite')], 1, 20, 0, 1); // TODO - I'm not worried about the font loading slower than anything else, but just in case, I should change this a little...
+
+  this.dgmnNameTextManager = new TextManager([fetchImageCallback('fontsWhite')], 1, 10, 4, 14);
+  this.dgmnSpeciesTextManager = new TextManager([fetchImageCallback('fontsLightGreen')], 1, 16, 4, 15);
+  this.currDgmnHP = new TextManager([fetchImageCallback('fontsWhite'), fetchImageCallback('fontsLightGreen')], 1, 6, 4, 16, function (_char) {
+    if (_char === 'hp') {
+      return 1;
+    }
+
+    return 0;
+  });
+  this.currDgmnEN = new TextManager([fetchImageCallback('fontsWhite'), fetchImageCallback('fontsLightGreen')], 1, 6, 4, 17, function (_char2) {
+    if (_char2 === 'en') {
+      return 1;
+    }
+
+    return 0;
+  });
+  this.dgmnStatusList = [];
+  this.menus = {};
+  this.menuImages = ['./sprites/Battle/Menu/dgmn-bar-white.png', './sprites/Battle/Menu/dgmn-bar-light-green.png', './sprites/Battle/Menu/attack-select-popup-base.png'];
+  this.menuCanvas = new GameCanvas('battle-menu-canvas', 160, 144, 0, 0, false);
+  this.menuCanvas.loadImageStack(this.menuImages); // this.dgmnPortraits = new DgmnPortrait(this.dgmnData,'sm'); // TODO - Find a way to load this in post, without the constructor needing any dgmnData
+
+  this.dgmnAttackMenu = new DgmnAttackMenu(function (imageName) {
+    return fetchImageCallback(imageName);
+  });
+  this.buildStatusList();
+
+  this.triggerGameScreenRedraw = function () {
+    gameScreenRedrawCallback();
+  };
+
+  this.fetchImage = function (imageName) {
+    return fetchImageCallback(imageName);
+  };
+}
+/**------------------------------------------------------------------------
+ * BUILD STATUS LIST
+ * ------------------------------------------------------------------------
+ * Creates the List of Status Elements (HP/EN/Spec Conditions).
+ * TODO - This should be in the Battle Element
+ * ----------------------------------------------------------------------*/
+;
+
+var genericImages = ['./sprites/Battle/Menu/miniCursor.png', './sprites/Menus/typeLabel.png', './sprites/Menus/costLabel.png', './sprites/Menus/targetLabel.png', './sprites/Menus/powerLabel.png', './sprites/Menus/hitLabel.png', './sprites/Menus/fireTypeIcon.png', './sprites/Menus/targetOne.png', './sprites/Menus/targetAll.png', './sprites/Menus/pwrEIcon.png', './sprites/Menus/oneHitIcon.png', './sprites/Menus/costMeter100.png', './sprites/Menus/costMeter75.png', './sprites/Menus/costMeter50.png', './sprites/Menus/costMeter25.png', './sprites/Menus/costMeter0.png'];
+var fontImages = ['./sprites/Fonts/fontsBlack.png', './sprites/Fonts/fontsWhite.png', './sprites/Fonts/fontsLightGreen.png'];
+var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png'];
+
+var Attack = function Attack(attackName) {
+  _classCallCheck(this, Attack);
+
+  this.attackName = attackName;
+  this.maxCost = 8;
+  this.currCost = 8;
+  this.power = 4;
+};
+
+var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjectCallback, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback) {
   var _this = this;
 
   _classCallCheck(this, Battle);
 
-  _defineProperty(this, "loadBattle", function (loadedCallback) {
-    debugLog("-- Loading Battle"); // Load Background
+  _defineProperty(this, "loadBattle", function () {
+    debugLog("-- Loading Battle");
 
-    _this.battleBackground.loadImages(function (images) {
-      _this.battleBackground.imageStack = images;
+    _this.loadBattleImages(function () {
+      // LOAD DATA
+      _this.loadDgmn(_this.dgmnList, false);
+
+      _this.addDgmnToObjectList(_this.dgmnList, false);
+
+      _this.loadDgmn(_this.enemyDgmnList, true);
+
+      _this.addDgmnToObjectList(_this.enemyDgmnList, true);
+
+      _this.addObject(_this.battleMenu.menuCanvas);
+
+      _this.battleMenu.buildBattleMenus();
+
+      _this.battleMenu.paintInitialCanvas();
+
+      _this.onLoaded();
+    });
+  });
+
+  _defineProperty(this, "loadBattleImages", function (loadedCallback) {
+    var allDgmn = _this.dgmnList.concat(_this.enemyDgmnList);
+
+    var dgmnImages = [];
+
+    for (var i = 0; i < allDgmn.length; i++) {
+      var urlOne = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Idle0.png");
+      var urlTwo = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Idle1.png");
+      var urlThree = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Portrait.png");
+
+      if (!dgmnImages.includes(urlOne)) {
+        dgmnImages.push(urlOne);
+        dgmnImages.push(urlTwo);
+        dgmnImages.push(urlThree);
+      }
+    }
+
+    var allImages = battleImages.concat(dgmnImages);
+
+    _this.loadImages(allImages, function () {
+      // Load Background
+      _this.battleBackground.imageStack = [_this.fetchImage('battleBackground')];
 
       _this.battleBackground.paintImage(_this.battleBackground.imageStack[0]);
 
-      _this.loadedState.battleBackgroundLoaded = true;
-
       _this.addObject(_this.battleBackground);
-    }); // Start Interval
 
-
-    var loadingInterval = setInterval(function () {
-      // Load Party Dgmn
-      if (_this.loadedState.battleBackgroundLoaded && !_this.loadedState.party.loadingDgmn) {
-        debugLog("---- Background Loaded");
-        _this.loadedState.party.loadingDgmn = true;
-
-        _this.loadDgmn(_this.dgmnList, false);
-      } // Load Enemy Dgmn
-
-
-      if (_this.loadedState.party.imagesLoaded && !_this.loadedState.enemy.loadingDgmn) {
-        debugLog("---- Party Images Loaded");
-        _this.loadedState.enemy.loadingDgmn = true;
-
-        _this.addDgmnToObjectList(_this.dgmnList, false);
-
-        _this.loadDgmn(_this.enemyDgmnList, true);
-      } // Done Loading
-
-
-      if (_this.loadedState.enemy.imagesLoaded) {
-        debugLog("---- Enemy Images Loaded");
-
-        _this.addDgmnToObjectList(_this.enemyDgmnList, true);
-      } // Every done? Stop Loading
-
-
-      if (_this.isBattleLoaded()) {
-        loadedCallback();
-        clearInterval(loadingInterval);
-      }
-    }, 100);
+      loadedCallback();
+    });
   });
 
   _defineProperty(this, "addDgmnToObjectList", function (dgmnList, isEnemy) {
     for (var i = 0; i < dgmnList.length; i++) {
       _this.addObject(dgmnList[i].battleCanvas);
-
-      if (i === dgmnList.length - 1) {
-        isEnemy ? _this.loadedState.enemy.dgmnLoaded = true : _this.loadedState.party.dgmnLoaded = true;
-      }
     }
   });
 
   _defineProperty(this, "loadDgmn", function (dgmnList, isEnemy) {
-    var _loop = function _loop(i) {
-      var dgmn = dgmnList[i];
-      dgmn.initBattleCanvas(_this.triggerGameScreenRedraw);
-      dgmn.battleCanvas.x = isEnemy ? 2 * (16 * config.screenSize) : 6 * (16 * config.screenSize);
-      dgmn.battleCanvas.y = 16 * config.screenSize + 33 * i * config.screenSize;
-      dgmn.battleCanvas.loadImages(function (images) {
-        isEnemy ? _this.loadedState.enemy.dgmnLoadedCount++ : _this.loadedState.party.dgmnLoadedCount++;
-        dgmn.battleCanvas.imageStack = images;
-        dgmn.battleCanvas.paintImage(dgmn.battleCanvas.imageStack[0], isEnemy);
-        var speed = 1000 - Math.floor(dgmn.baseStats[8] * 2) * 33;
-        dgmn.battleCanvas.animate(speed);
-        isEnemy ? _this.loadedState.enemy.imagesLoaded = _this.loadedState.enemy.dgmnLoadedCount >= dgmnList.length : _this.loadedState.party.imagesLoaded = _this.loadedState.party.dgmnLoadedCount >= dgmnList.length;
-      });
-    };
-
     for (var i = 0; i < dgmnList.length; i++) {
-      _loop(i);
+      var dgmn = dgmnList[i];
+      dgmn.buildDgmn(); // TODO - REMOVE
+
+      dgmn.loadDgmn({
+        permAttacks: [new Attack('babyFlame')]
+      });
+      var imageStack = [_this.fetchImage("".concat(dgmn.name.toLowerCase(), "Idle0")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Idle1"))];
+      dgmn.initBattleCanvas(_this.triggerGameScreenRedraw, imageStack);
+      dgmn.battleCanvas.x = isEnemy ? 2 * (16 * config.screenSize) : 6 * (16 * config.screenSize);
+      dgmn.battleCanvas.y = 16 * config.screenSize + 32 * i * config.screenSize;
+      dgmn.battleCanvas.paintImage(dgmn.battleCanvas.imageStack[0], 0, 0, isEnemy);
+      var speed = 1200 - Math.floor(dgmn.baseStats[8] * 2) * 33;
+      dgmn.battleCanvas.animate(speed);
     }
   });
 
   _defineProperty(this, "isBattleLoaded", function () {
-    return _this.loadedState.battleBackgroundLoaded && _this.loadedState.party.dgmnLoaded && _this.loadedState.enemy.dgmnLoaded;
+    return _this.loadedState.party.dgmnLoaded && _this.loadedState.enemy.dgmnLoaded && _this.loadedState.menu.imagesLoaded;
   });
 
   _defineProperty(this, "generateEnemies", function (encounterData) {// new Dgmn / enemy
   });
 
-  _defineProperty(this, "attack", function (target, attacker) {});
+  _defineProperty(this, "attack", function (target, attacker, attack) {
+    console.log("TARGET = ", target);
+    console.log("ATTACKER = ", attacker);
+    console.log("ATTACK = ", attack);
+    var atkDefDiff = attacker.currStats[2] / target.currStats[3];
+    console.log("ATK / DEF ", atkDefDiff);
+    var preMods = atkDefDiff * attacker.level / 2 * attack.power;
+    console.log("PRE MODS = ", preMods);
+    var postMods = preMods * 1; // TODO - Add all of the mods
 
+    target.currHP -= postMods;
+
+    _this.battleMenu.updateAllStatusBars();
+  });
+
+  _defineProperty(this, "keyTriage", function (key) {
+    if (key === 'action') {
+      _this.actionKeyHandler();
+    } else if (key === 'cancel') {
+      _this.cancelKeyHandler();
+    } else if (key === 'right') {
+      _this.rightKeyHandler();
+    } else if (key === 'left') {
+      _this.leftKeyHandler();
+    }
+  });
+
+  _defineProperty(this, "actionKeyHandler", function () {
+    if (_this.battleMenu.currentState === 'dgmn') {
+      if (_this.battleMenu.menus.dgmn.currentIndex === 0) {
+        _this.battleMenu.launchDgmnAttackMenu();
+      }
+    } else if (_this.battleMenu.currentState === 'attack') {
+      var chosenAttack = _this.battleMenu.dgmnAttackMenu.attackList[_this.battleMenu.dgmnAttackMenu.currentChoice];
+      _this.battleMenu.selectedAttack = chosenAttack;
+      console.log("SELECTED ATTACK = ", _this.battleMenu.selectedAttack);
+
+      _this.battleMenu.launchSelectTarget();
+    } else if (_this.battleMenu.currentState === 'targetSelect') {
+      _this.battleMenu.menuCanvas.ctx.clearRect(8 * (8 * config.screenSize), 2 * (8 * config.screenSize), 2 * (8 * config.screenSize), 12 * (8 * config.screenSize));
+
+      _this.triggerGameScreenRedraw();
+
+      _this.attack(_this.enemyDgmnList[_this.battleMenu.menus.targetSelect.currentIndex], _this.dgmnList[_this.battleMenu.currentDgmnActor], _this.battleMenu.selectedAttack);
+    }
+  });
+
+  _defineProperty(this, "rightKeyHandler", function () {
+    if (_this.battleMenu.currentState === 'dgmn') {
+      var newIndex = _this.battleMenu.menus.dgmn.currentIndex === _this.battleMenu.menus.dgmn.totalIcons - 1 ? 0 : _this.battleMenu.menus.dgmn.currentIndex + 1;
+
+      _this.battleMenu.setCurrentIcon(newIndex);
+    }
+  });
+
+  _defineProperty(this, "leftKeyHandler", function () {
+    if (_this.battleMenu.currentState === 'dgmn') {
+      var newIndex = _this.battleMenu.menus.dgmn.currentIndex === 0 ? _this.battleMenu.menus.dgmn.totalIcons - 1 : _this.battleMenu.menus.dgmn.currentIndex - 1;
+
+      _this.battleMenu.setCurrentIcon(newIndex);
+    }
+  });
+
+  _defineProperty(this, "cancelKeyHandler", function () {
+    if (_this.battleMenu.currentState === 'attack') {
+      _this.battleMenu.currentState = 'dgmn';
+
+      _this.battleMenu.closeDgmnAttackMenu();
+    }
+  });
+
+  this.battleActive = true;
   this.dgmnList = _dgmnList;
   this.enemyDgmnList = enemyDgmnList;
   this.loadedState = {
@@ -577,9 +1153,12 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
       imagesLoaded: false,
       dgmnLoaded: false,
       dgmnLoadedCount: false
+    },
+    menu: {
+      loadingMenu: false,
+      imagesLoaded: false
     }
   };
-  this.battleBackground = new BackgroundCanvas('background-canvas', 160, 144);
 
   this.triggerGameScreenRedraw = function () {
     gameScreenRedrawCallback();
@@ -589,7 +1168,22 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     addObjectCallback(newObject);
   };
 
-  this.loadBattle(_loadedCallback);
+  this.loadImages = function (imageList, callback) {
+    loadImageCallback(imageList, callback);
+  };
+
+  this.fetchImage = function (imageName) {
+    return fetchImageCallback(imageName);
+  };
+
+  this.battleBackground = new BackgroundCanvas('background-canvas', 160, 144);
+  this.battleMenu = new BattleMenu(this.dgmnList.concat(this.enemyDgmnList), gameScreenRedrawCallback, loadImageCallback, this.fetchImage);
+
+  this.onLoaded = function () {
+    _loadedCallback();
+  };
+
+  this.loadBattle();
 }
 /**------------------------------------------------------------------------
  * LOAD BATTLE
@@ -600,18 +1194,79 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
  * ----------------------------------------------------------------------*/
 ;
 
-var Game = function Game(paintToScreenCallback) {
+var mockDgmn = [new Dgmn(0, 'FLARE', 'Agu', 5, 0), new Dgmn(1, 'BLITZ', 'Grey', 10, 1), new Dgmn(2, 'FROST', 'Gabu', 5, 2)];
+var mockEnemyDgmn = [new Dgmn(0, 'ENEMY', 'Agu', 5, 0, true)];
+/**------------------------------------------------------------------------
+ * GAME
+ * ------------------------------------------------------------------------
+ * Manager for all Game Elements, which includes most things
+ * ------------------------------------------------------------------------
+ * @param {Function} loadImageCallback  Callback used by the System to load Images
+ * @param {Function} fetchImageCallback Gets an image from the System
+ * ----------------------------------------------------------------------*/
+
+var Game = function Game(loadImageCallback, fetchImageCallback) {
   var _this = this;
 
   _classCallCheck(this, Game);
 
-  _defineProperty(this, "bootGame", function () {// Shrug for now
+  _defineProperty(this, "bootGame", function () {// TODO - Once the game is more fleshed-out, run through this, rather than debuggers
+  });
+
+  _defineProperty(this, "keyHandler", function (keyState) {
+    if (keyState[config.keyBindings.action]) {
+      _this.keyManager('action');
+    } else {
+      _this.keyTimers.action = 0;
+    }
+
+    if (keyState[config.keyBindings.cancel]) {
+      _this.keyManager('cancel');
+    } else {
+      _this.keyTimers.cancel = 0;
+    }
+
+    if (keyState[config.keyBindings.up]) {
+      console.log("UP");
+    }
+
+    if (keyState[config.keyBindings.right]) {
+      _this.keyManager('right');
+    } else {
+      _this.keyTimers.right = 0;
+    }
+
+    if (keyState[config.keyBindings.down]) {
+      console.log("DOWN");
+    }
+
+    if (keyState[config.keyBindings.left]) {
+      _this.keyManager('left');
+    } else {
+      _this.keyTimers.left = 0;
+    }
+  });
+
+  _defineProperty(this, "keyManager", function (key) {
+    _this.keyTimers[key]++; // DGMN MENU
+
+    if (_this.battle.battleActive) {
+      if (_this.keyTimers[key] === 2) {
+        // Prevent instant tap from taking action
+        _this.battle.keyTriage(key);
+      }
+
+      if ((key === 'right' || key === 'left' || key === 'down' || key === 'up') && _this.keyTimers[key] > 15) {
+        // Only directions can be held to take action
+        _this.keyTimers[key] = 0;
+      }
+    }
   });
 
   _defineProperty(this, "startBattle", function () {
     debugLog("Starting Battle..."); // TODO - ALL OF THIS IS TEMP RIGHT NOW
 
-    _this.battle = new Battle([new Dgmn(0, 'agu', 5), new Dgmn(1, 'grey', 5), new Dgmn(2, 'agu', 6)], [new Dgmn(0, 'agu', 5)], _this.onBattleLoad, _this.addToObjectList, _this.drawGameScreen);
+    _this.battle = new Battle(mockDgmn, mockEnemyDgmn, _this.onBattleLoad, _this.addToObjectList, _this.drawGameScreen, _this.loadImages, _this.fetchImage);
   });
 
   _defineProperty(this, "onBattleLoad", function () {
@@ -644,11 +1299,40 @@ var Game = function Game(paintToScreenCallback) {
   });
 
   debugLog('Game Created...');
-  this.battle;
-  this.gameCanvas = new GameCanvas('game-canvas', 160, 144);
-  this.renderTimer;
-  this.objectList = [];
-};
+  this.battle; // Init Battle (cleared and created by Game Logic)
+
+  this.gameCanvas = // Canvas Every in-game Element is drawn on
+  new GameCanvas('game-canvas', 160, 144);
+  this.keyState = {}; // Sent in from System, holds true/false value for all Keys Pressed
+
+  this.keyTimers = {
+    // Keeps track of how many ms each action has been held
+    action: 0,
+    cancel: 0,
+    up: 0,
+    right: 0,
+    down: 0,
+    left: 0,
+    start: 0,
+    select: 0
+  };
+  this.objectList = []; // All of the Images to be drawn on the Game Canvas
+
+  this.loadImages = function (imageList, callback) {
+    loadImageCallback(imageList, callback);
+  };
+
+  this.fetchImage = function (imageName) {
+    return fetchImageCallback(imageName);
+  };
+}
+/**------------------------------------------------------------------------
+ * BOOT GAME
+ * ------------------------------------------------------------------------
+ * Start the Game
+ * Runs all functionality that would boot a game up (load screen, company, etc.)
+ * ----------------------------------------------------------------------*/
+;
 
 /**------------------------------------------------------------------------
  * CONTROLLER CLASS
@@ -660,6 +1344,16 @@ var Controller = function Controller(setKeyState) {
   var _this = this;
 
   _classCallCheck(this, Controller);
+
+  _defineProperty(this, "setupMobileController", function () {
+    var mobileControllerElem = document.querySelector(".mobile-controls");
+
+    if (document.body.dataset.view === 'mobile') {
+      var windowHeight = window.innerHeight;
+      var screenHeight = document.getElementById("game-screen").offsetHeight;
+      mobileControllerElem.style.height = "".concat(windowHeight - screenHeight, "px");
+    }
+  });
 
   _defineProperty(this, "connectEventListener", function () {
     window.addEventListener("keydown", function (e) {
@@ -676,17 +1370,9 @@ var Controller = function Controller(setKeyState) {
     setKeyState(key, value);
   };
 
+  this.setupMobileController();
   this.connectEventListener();
-}
-/**------------------------------------------------------------------------
- * CONNECT EVENT LISTENER
- * ------------------------------------------------------------------------
- * Sets up the Key Listeners on the Window
- * TODO - Set this up to track config values to send specific
- *        actions to the System, rather than the direct key
- * TODO - Setup Touch Events with 'touchstart' and 'touchend'
- * ----------------------------------------------------------------------*/
-;
+};
 
 var DebugMenu = function DebugMenu(launchBattleCallback) {
   var _this = this;
@@ -699,6 +1385,21 @@ var DebugMenu = function DebugMenu(launchBattleCallback) {
     _this.elem.querySelector("button.battle-launch").addEventListener('click', function () {
       _this.launchBattle();
     });
+
+    _this.elem.querySelector("button.mobile-switch").addEventListener('click', function () {
+      var newValue = document.body.dataset.view === 'mobile' ? 'dotcom' : 'mobile';
+      document.body.dataset.view = newValue;
+
+      if (newValue === 'mobile') {
+        var mobileControllerElem = document.querySelector(".mobile-controls");
+
+        if (document.body.dataset.view === 'mobile') {
+          var windowHeight = window.innerHeight;
+          var screenHeight = document.getElementById("game-screen").offsetHeight;
+          mobileControllerElem.style.height = "".concat(windowHeight - screenHeight, "px");
+        }
+      }
+    });
   });
 
   debugLog('Booting Debug Menu...');
@@ -710,6 +1411,44 @@ var DebugMenu = function DebugMenu(launchBattleCallback) {
   this.launchBattle = function () {
     launchBattleCallback();
   };
+};
+
+var ImageHandler = function ImageHandler() {
+  var _this = this;
+
+  _classCallCheck(this, ImageHandler);
+
+  _defineProperty(this, "addToQueue", function (imageList, callback) {
+    var loadedImages = {};
+    var loadedCount = 0;
+    var totalImages = imageList.length;
+
+    for (var i = 0; i < totalImages; i++) {
+      var modName = _this.modImageName(imageList[i]);
+
+      loadedImages[modName] = new Image();
+      loadedImages[modName].src = imageList[i];
+
+      loadedImages[modName].onload = function () {
+        if (++loadedCount >= totalImages) {
+          _this.loadedImages = Object.assign(_this.loadedImages, loadedImages);
+          callback();
+        }
+      };
+    }
+  });
+
+  _defineProperty(this, "modImageName", function (fileName) {
+    var modName = fileName.substring(fileName.lastIndexOf('/') + 1, fileName.lastIndexOf(".png"));
+    return modName;
+  });
+
+  _defineProperty(this, "fetchImage", function (imgName) {
+    return _this.loadedImages[imgName];
+  });
+
+  this.loadQueue = [];
+  this.loadedImages = {};
 };
 
 /**------------------------------------------------------------------------
@@ -730,18 +1469,19 @@ var System = function System() {
 
     if (inDebug()) {
       _this.debugMenu = new DebugMenu(_this.game.startBattle);
-    } // Load Game
+    } // Load Base Images - Run game once that is all done
 
 
-    _this.game.bootGame(); // TODO - Eventually, this needs to wait until loaded to take actions
-    // Draw Canvases
+    _this.imageHandler.addToQueue(genericImages.concat(fontImages), function () {
+      _this.game.bootGame(); // TODO - Eventually, this needs to wait until loaded to take actions
 
 
-    _this.systemScreen.appendChild(_this.screenCanvas.elem);
+      _this.systemScreen.appendChild(_this.screenCanvas.elem);
 
-    setTimeout(function () {
-      _this.startGameTimer();
-    }, 1000);
+      setTimeout(function () {
+        _this.startGameTimer();
+      }, 1000);
+    });
   });
 
   _defineProperty(this, "paintToScreen", function (canvas) {
@@ -754,6 +1494,8 @@ var System = function System() {
     _this.gameTimer = setInterval(function () {
       try {
         _this.systemCount++;
+
+        _this.game.keyHandler(_this.keyState);
 
         _this.screenCanvas.paintCanvas(_this.game.gameCanvas); // TODO - Should be a full compiler of all other canvases
 
@@ -768,7 +1510,7 @@ var System = function System() {
           _this.actionQueue.shift();
         }
       } catch (e) {
-        console.log("GAME ERROR!");
+        console.log("GAME ERROR! - ", e.message);
         clearInterval(_this.gameTimer);
       }
     }, 33);
@@ -793,11 +1535,14 @@ var System = function System() {
   this.systemScreen.style.width = 160 * config.screenSize + 'px';
   this.systemScreen.style.height = 144 * config.screenSize + 'px';
   this.debugMenu;
+  this.imageHandler = new ImageHandler();
   this.gameTimer;
   this.systemCount = 0;
   this.actionQueue = [];
   this.screenCanvas = new GameCanvas('screen-canvas', 160, 144);
-  this.game = new Game(this.paintToScreen.bind(this));
+  this.game = new Game(this.imageHandler.addToQueue.bind(this), function (imageName) {
+    return _this.imageHandler.fetchImage(imageName);
+  });
   this.subCanvases = [this.backgroundCanvas]; // TODO - this should be loaded
 }
 /**------------------------------------------------------------------------

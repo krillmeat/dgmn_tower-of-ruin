@@ -9,7 +9,17 @@ class Controller{
   constructor(setKeyState){
     debugLog("Plugged In Controller...");
     this.setKeyState = (key,value) => { setKeyState(key, value) }
+    this.setupMobileController();
     this.connectEventListener();
+  }
+
+  setupMobileController = () => {
+    let mobileControllerElem = document.querySelector(".mobile-controls");
+    if(document.body.dataset.view === 'mobile'){
+      let windowHeight = window.innerHeight;
+      let screenHeight = document.getElementById("game-screen").offsetHeight;
+      mobileControllerElem.style.height = `${windowHeight - screenHeight}px`;
+    }
   }
 
   /**------------------------------------------------------------------------
