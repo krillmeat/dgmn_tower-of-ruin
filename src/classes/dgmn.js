@@ -11,7 +11,7 @@ import BattleDgmnCanvas from "./battle-dgmn-canvas";
  * @param {Boolean} isEnemy         Whether the Dgmn is an Enemy or not
  */
 class Dgmn {
-  constructor(id, nickname, name, level, battleLocation, isEnemy){
+  constructor(id, nickname, name, battleLocation, isEnemy){
     this.dgmnId = id;
     this.nickname = nickname;
     this.name = name;
@@ -28,7 +28,7 @@ class Dgmn {
     this.fullDgmnList = []; // Every Dgmn this Dgmn has ever been
 
     // Temporary - Only Matters per hatch, resets on reversion to egg
-    this.level = level || 1;
+    this.level = 1;
     this.currDgmnPath = []; // The Dgmn this Dgmn has become since it hatched
 
     this.currHP = 24;
@@ -63,9 +63,6 @@ class Dgmn {
           finalStat = Math.floor(finalStat);
       this.currStats.push(finalStat);
     }
-
-    // TODO - Remove, only for mocking
-    this.permAttacks = [];
   }
 }
 

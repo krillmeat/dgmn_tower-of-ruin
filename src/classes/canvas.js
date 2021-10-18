@@ -41,7 +41,7 @@ class GameCanvas{
         this.paintImage(this.imageStack[currentFrame]);
         this.triggerGameScreenRedraw();
         currentFrame++;
-        if(currentFrame >= this.imageStack.length) currentFrame = 0;
+        if(currentFrame > 1) currentFrame = 0;
       // }
       counter++;
     },speed);

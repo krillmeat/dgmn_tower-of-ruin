@@ -82,15 +82,13 @@ class BattleMenu{
   }
 
   /**------------------------------------------------------------------------
-   * PAINT INITIAL CANVAS
+   * FULL MENU PAINT
    * ------------------------------------------------------------------------
-   * When the Battle is Loaded, draws all of the initial imagery
-   * TODO - This needs to be split up into many different actions, a lot of
-   *        them need to be moved into the Battle Layer
+   * Used on itial Paint
+   * Draws the icons, labels, and dgmn data for the first Dgmn
    * ----------------------------------------------------------------------*/
-  paintInitialCanvas = () => {
-    // TODO - All temporary, the inital screen should be based on Beetle Action, not DGMN action
-    this.menuCanvas.paintImage(this.fetchImage('cursor'),80 * config.screenSize,(16 * config.screenSize) + (8 * config.screenSize)); // Battle Cursor
+  fullMenuPaint = () => {
+    this.paintMenu(0);
 
     this.menuCanvas.paintImage(this.menus.dgmn.icons[0].activeImg,(112 * config.screenSize),(128 * config.screenSize));
     this.menuCanvas.paintImage(this.menus.dgmn.icons[1].inactiveImg,(128 * config.screenSize),(128 * config.screenSize));
@@ -100,12 +98,50 @@ class BattleMenu{
     
     // Text Management
     this.topTextManager.instantPaint(this.menuCanvas,'Attack');
-    this.dgmnNameTextManager.instantPaint(this.menuCanvas,this.dgmnData[this.currentDgmnActor].nickname);
-    this.dgmnSpeciesTextManager.instantPaint(this.menuCanvas,`${this.dgmnData[this.currentDgmnActor].name}.MON`);
-    this.currDgmnHP.instantPaint(this.menuCanvas, `.hp${this.dgmnData[this.currentDgmnActor].currHP}`);
-    this.currDgmnEN.instantPaint(this.menuCanvas, `.en${this.dgmnData[this.currentDgmnActor].currEN}`);
+  }
 
-    this.setDgmnPortrait(this.dgmnData[this.currentDgmnActor].name);
+  /**------------------------------------------------------------------------
+   * SETUP DGMN
+   * ------------------------------------------------------------------------
+   * Sets up the Menu for the Dgmn at a specific Index
+   * ------------------------------------------------------------------------
+   * @param {Number}  index Spot of the currently selecting Dgmn
+   * ----------------------------------------------------------------------*/
+  setupDgmn = index => {
+    this.menuCanvas.ctx.clearRect( 10 * (8 * config.screenSize), 2 * (8 * config.screenSize), 4 * (8 * config.screenSize), 12 * (8 * config.screenSize));
+    this.paintMenu(index);
+  }
+
+  /**------------------------------------------------------------------------
+   * PAINT MENU
+   * ------------------------------------------------------------------------
+   * Paints the Menu for a specific Dgmn
+   * ------------------------------------------------------------------------
+   * @param {Number} index Spot of the currently selecting Dgmn
+   * ----------------------------------------------------------------------*/
+  paintMenu = index => {
+    // TODO - All temporary, the inital screen should be based on Beetle Action, not DGMN action
+    this.menuCanvas.paintImage(this.fetchImage('cursor'),80 * config.screenSize,( ( 2 + (4 * (index) ) ) * (8 * config.screenSize) ) + (8 * config.screenSize)); // Battle Cursor
+
+    this.paintBottomData(this.dgmnData[index]);
+  }
+
+  /**------------------------------------------------------------------------
+   * PAINT BOTTOM DATA
+   * ------------------------------------------------------------------------
+   * Draws the info in the bottom section of the Battle Screen.
+   * ------------------------------------------------------------------------
+   * @param {Dgmn}  dgmn  Dgmn who's data needs to be painted 
+   * ----------------------------------------------------------------------*/
+  paintBottomData = dgmn => {
+    this.dgmnNameTextManager.instantPaint(this.menuCanvas,dgmn.nickname);
+    this.dgmnSpeciesTextManager.instantPaint(this.menuCanvas,`${dgmn.name}.MON`);
+    this.currDgmnHP.instantPaint(this.menuCanvas, `.hp${dgmn.currHP}`);
+    this.currDgmnEN.instantPaint(this.menuCanvas, `.en${dgmn.currEN}`);
+
+    this.setDgmnPortrait(dgmn.name);
+
+    this.triggerGameScreenRedraw();
   }
 
   /**------------------------------------------------------------------------
@@ -137,6 +173,11 @@ class BattleMenu{
                                0 * 8 * config.screenSize, 14 * 8 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
   }
 
+  /**------------------------------------------------------------------------
+   * UPDATE ALL STATUS BARS
+   * ------------------------------------------------------------------------
+   * Loop through all Status Bars and update All of them
+   * ----------------------------------------------------------------------*/
   updateAllStatusBars = () => {
     for(let i = 0; i < this.dgmnStatusList.length; i++){
       this.updateStatusBar(this.dgmnStatusList[i],this.dgmnData[this.dgmnStatusList[i].listIndex].currHP,this.dgmnData[this.dgmnStatusList[i].listIndex].currStats[0], 'hp');
@@ -158,6 +199,7 @@ class BattleMenu{
     let calcValue = Math.floor( (curr / max) * 18 );
     let barColor = calcValue >= 9 ? 'White' : 'LightGreen';
     status.drawMeter(this.menuCanvas,bar,this.fetchImage(`dgmnBar${barColor}`),calcValue, barColor);
+    this.triggerGameScreenRedraw();
   }
 
   /**------------------------------------------------------------------------
@@ -182,6 +224,12 @@ class BattleMenu{
     this.triggerGameScreenRedraw();
   }
 
+  /**------------------------------------------------------------------------
+   * CLOSE DGMN ATTACK MENU
+   * ------------------------------------------------------------------------
+   * Clears away the Attack Menu
+   * Can be caused by Selecting an Attack OR hitting Cancel
+   * ----------------------------------------------------------------------*/
   closeDgmnAttackMenu = () => {
     this.topTextManager.instantPaint(this.menuCanvas, 'Attack');
     this.menuCanvas.ctx.clearRect( 4 * (8 * config.screenSize), 
@@ -195,6 +243,11 @@ class BattleMenu{
     this.triggerGameScreenRedraw();
   }
 
+  /**------------------------------------------------------------------------
+   * LAUNCH SELECT TARGET
+   * ------------------------------------------------------------------------
+   * After selecting an Attack, show Target selection
+   * ----------------------------------------------------------------------*/
   launchSelectTarget = () => {
     debugLog("-- Selecting target...");
     this.currentState = 'targetSelect';

@@ -1,3 +1,5 @@
+import { setupMockDgmn } from "../debug/dgmn.mock";
+
 import { debugLog } from "../utils/log-utils";
 
 import BackgroundCanvas from "./background-canvas";
@@ -6,6 +8,7 @@ import config from "../config";
 import BattleMenu from "./menu/battle-menu";
 import { battleImages } from "../data/images.db";
 import Attack from "./attack";
+import { powerRanks } from "../data/ranks.db";
 
 class Battle {
   constructor(dgmnList,enemyDgmnList,loadedCallback,addObjectCallback,gameScreenRedrawCallback, loadImageCallback, fetchImageCallback){
@@ -32,6 +35,8 @@ class Battle {
         imagesLoaded: false
       }
     }
+
+    this.attackActions = {};
 
     this.triggerGameScreenRedraw = () => { gameScreenRedrawCallback() }
     this.addObject = newObject => { addObjectCallback(newObject) }
@@ -67,7 +72,7 @@ class Battle {
 
       this.addObject(this.battleMenu.menuCanvas);
       this.battleMenu.buildBattleMenus();
-      this.battleMenu.paintInitialCanvas();
+      this.battleMenu.fullMenuPaint();
       
       this.onLoaded();
     });
@@ -134,12 +139,13 @@ class Battle {
       
       // TODO - Remove this, this manually loads the Dgmn, but that shouldn't
       //        have to be done
-      dgmn.buildDgmn();
-      dgmn.loadDgmn({permAttacks: [new Attack('babyFlame')]})
+      // dgmn.buildDgmn();
+      // dgmn.loadDgmn({permAttacks: [new Attack('babyFlame'), new Attack('bubbles')]})
 
       let imageStack = [
         this.fetchImage(`${dgmn.name.toLowerCase()}Idle0`),
-        this.fetchImage(`${dgmn.name.toLowerCase()}Idle1`)
+        this.fetchImage(`${dgmn.name.toLowerCase()}Idle1`),
+        this.fetchImage(`${dgmn.name.toLowerCase()}Attack`)
       ];
 
       dgmn.initBattleCanvas(this.triggerGameScreenRedraw, imageStack);
@@ -148,13 +154,42 @@ class Battle {
                             6 * (16 * config.screenSize);
       dgmn.battleCanvas.y = (16 * config.screenSize)+( (32 * i * config.screenSize));
       dgmn.battleCanvas.paintImage(dgmn.battleCanvas.imageStack[0],0,0,isEnemy);
-      let speed = 1200 - (Math.floor(dgmn.baseStats[8]*2) * 33);
+      let speed = 1200 - (Math.floor(dgmn.baseStats[7]*2) * 33);
       dgmn.battleCanvas.animate(speed);
     }
   }
 
   generateEnemies = encounterData => {
     // new Dgmn / enemy
+  }
+
+  setupOrder = () => {
+    let order = this.dgmnList.concat(this.enemyDgmnList);
+
+    for(let i = 0; i < order.length; i++){
+      for(let r = 0; r < order.length - 1; r++){
+        let temp = order[r];
+        let currSpeed = order[r].currStats[7];
+        let nextSpeed = order[r+1].currStats[7];
+        if(currSpeed < nextSpeed){
+          order[r] = order[r+1];
+          order[r+1] = temp;
+        }
+      }
+    }
+
+    return order;
+  }
+
+  runAttacks = () => {
+    // I need an object of each Digimon's action during the battle
+    // Then, run through them, using an interval tool
+
+    let turnOrder = this.setupOrder();
+
+    for(let i = 0; i < turnOrder.length; i++){
+      this.attack(this.attackActions[turnOrder[i].dgmnId].target,this.attackActions[turnOrder[i].dgmnId].attacker,this.attackActions[turnOrder[i].dgmnId].attack);
+    }
   }
 
   /**------------------------------------------------------------------------
@@ -168,7 +203,7 @@ class Battle {
    * ----------------------------------------------------------------------*/
   attack = (target, attacker, attack) => {
     let atkDefDiff = attacker.currStats[2] / target.currStats[3];
-    let preMods = ( ( atkDefDiff * attacker.level ) / 2 ) * attack.power;
+    let preMods = ( ( atkDefDiff * attacker.level ) / 2 ) * powerRanks[attack.power];
     let postMods = preMods * 1; // TODO - Add all of the mods
     target.currHP -= postMods;
     this.battleMenu.updateAllStatusBars();
@@ -194,12 +229,35 @@ class Battle {
     } else if(this.battleMenu.currentState === 'attack'){
       let chosenAttack = this.battleMenu.dgmnAttackMenu.attackList[this.battleMenu.dgmnAttackMenu.currentChoice];
       this.battleMenu.selectedAttack = chosenAttack;
-      console.log("SELECTED ATTACK = ",this.battleMenu.selectedAttack);
       this.battleMenu.launchSelectTarget();
     } else if(this.battleMenu.currentState === 'targetSelect'){
       this.battleMenu.menuCanvas.ctx.clearRect( 8 * (8 * config.screenSize), 2 * (8 * config.screenSize), 2 * (8 * config.screenSize), 12 * (8 * config.screenSize) );
       this.triggerGameScreenRedraw();
-      this.attack(this.enemyDgmnList[this.battleMenu.menus.targetSelect.currentIndex],this.dgmnList[this.battleMenu.currentDgmnActor],this.battleMenu.selectedAttack);
+      let dgmnId = this.dgmnList[this.battleMenu.currentDgmnActor].dgmnId;
+      // TODO - Switch Out for a Run Attack Cycle
+      // this.attack(this.enemyDgmnList[this.battleMenu.menus.targetSelect.currentIndex],this.dgmnList[this.battleMenu.currentDgmnActor],this.battleMenu.selectedAttack);
+      this.attackActions[dgmnId] = {
+        attacker: this.dgmnList[this.battleMenu.currentDgmnActor],
+        target: this.enemyDgmnList[this.battleMenu.menus.targetSelect.currentIndex],
+        attack: this.battleMenu.selectedAttack
+      }
+      if(this.battleMenu.currentDgmnActor === this.dgmnList.length -1){
+        // Last Digimon, begin attack cycle
+        // Generate Enemy Attacks
+        // TEMP
+        this.attackActions[4] = {
+          attacker: this.enemyDgmnList[0],
+          target: this.dgmnList[0],
+          attack: new Attack('babyFlame')
+        }
+        debugLog("Running Attacks...");
+        this.runAttacks();
+      } else {
+        this.battleMenu.currentState = 'dgmn';
+        this.battleMenu.currentDgmnActor++;
+
+        this.battleMenu.setupDgmn(this.battleMenu.currentDgmnActor);
+      }
     }
   }
 

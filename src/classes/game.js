@@ -4,14 +4,11 @@ import GameCanvas from "./canvas";
 import Dgmn from "./dgmn";
 
 import config from "../config";
+import { setupMockDgmn, setupMockEnemyDgmn } from "../debug/dgmn.mock";
 
 // TODO - There has to be a better way to mock this stuff up...
-const mockDgmn = [
-  new Dgmn(0, 'FLARE', 'Agu',5,0),
-  new Dgmn(1, 'BLITZ', 'Grey',10,1),
-  new Dgmn(2, 'FROST', 'Gabu',5,2),
-];
-const mockEnemyDgmn = [new Dgmn(0,'ENEMY','Agu',5,0,true)];
+const mockDgmn = setupMockDgmn();
+const mockEnemyDgmn = setupMockEnemyDgmn();
 
 /**------------------------------------------------------------------------
  * GAME
