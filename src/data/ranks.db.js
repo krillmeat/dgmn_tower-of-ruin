@@ -1,3 +1,5 @@
 // Handles all of the actual values for Ranks (F - S)
 
-export const powerRanks = { F: 4, E: 5, D: 6, C: 7, B: 8, A: 9, S: 10 }
+export const powerRanks = { F: .5, E: .75, D: 1, C: 1.5, B: 2, A: 4, S: 8 }
+
+export const comboRanks = { F: .75, E: 1, D: 1.5, C: 2, B: 3, A: 4, S: 6 }

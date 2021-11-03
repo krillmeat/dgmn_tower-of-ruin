@@ -15,6 +15,8 @@ class GameCanvas{
     this.imageStack = [];
     this.imagesLoaded = false;
 
+    this.isIdle = true;
+
     this.hasIdleAnimation = hasIdleAnimation;
     this.idleAnimationImages = [];
     this.idleAnimationRate = 0; // TODO - Gather from Database?
@@ -36,13 +38,15 @@ class GameCanvas{
     let counter = 0;
     let currentFrame = 0;
     setInterval( () => {
-      this.clearCanvas();
-      // if(counter % 4 === 0){
-        this.paintImage(this.imageStack[currentFrame]);
-        this.triggerGameScreenRedraw();
-        currentFrame++;
-        if(currentFrame > 1) currentFrame = 0;
-      // }
+      if(this.isIdle){
+        this.clearCanvas();
+        // if(counter % 4 === 0){
+          this.paintImage(this.imageStack[currentFrame]);
+          this.triggerGameScreenRedraw();
+          currentFrame++;
+          if(currentFrame > 1) currentFrame = 0;
+        // }
+      }
       counter++;
     },speed);
   }

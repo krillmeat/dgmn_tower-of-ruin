@@ -189,7 +189,9 @@ var config = {
     start: 'Shift',
     select: 'q'
   },
-  screenSize: 2 // How much larger the screen is than the actual
+  screenSize: 2,
+  // How much larger the screen is than the actual
+  textSpeed: 2 // 1 is fastest, 4 is slowest
 
 };
 
@@ -246,112 +248,6 @@ var debugLog = function debugLog(message, object) {
   if (inDebug()) object ? console.log("%c".concat(message), 'color:#A6E22E', object) : console.log("%c".concat(message), 'color:#A6E22E');
 };
 
-var attacksDB = {
-  bubbles: {
-    displayName: 'Bubbles',
-    type: 'none',
-    power: 'F',
-    maxCost: 32,
-    targets: 'single',
-    hits: 1
-  },
-  babyFlame: {
-    displayName: 'Baby Flame',
-    power: 'E',
-    maxCost: 8,
-    type: 'fire',
-    targets: 'single',
-    hits: 1
-  },
-  megaFlame: {
-    displayName: 'Mega Flame',
-    power: 'D',
-    maxCost: 8,
-    type: 'fire',
-    targets: 'single',
-    hits: 1
-  },
-  petitFire: {
-    displayName: 'Petit Fire',
-    power: 'F',
-    maxCost: 8,
-    type: 'fire',
-    targets: 'all',
-    hits: 1
-  }
-};
-
-// Handles all of the actual values for Ranks (F - S)
-var powerRanks = {
-  F: 4,
-  E: 5,
-  D: 6,
-  C: 7,
-  B: 8,
-  A: 9,
-  S: 10
-};
-
-var Attack = function Attack(attackName) {
-  _classCallCheck(this, Attack);
-
-  this.attackName = attackName;
-  this.type = attacksDB[this.attackName].type;
-  this.maxCost = attacksDB[this.attackName].maxCost;
-  this.currCost = 6;
-  this.power = attacksDB[this.attackName].power;
-  this.targets = attacksDB[this.attackName].targets;
-};
-
-/* 
-  ATK - Courage - Fire / Dragons (Dragon's Roar)
-  SPD - Friendship - Beast (Nature Spirits)
-  HP  - Love - Sky / Plants (Wind Guardians)
-  INT - Knowledge - Metal / Bugs (Metal Empire)
-  RES - Purity - Plants / Bugs (Jungle Trooper)
-  DEF - Honesty - Water / Metal (Deep Savers)
-  HIT - Hope - Light (Holy Warriors)
-  SP  - Light - Light (Holy Beasts)
-  AVO - Kindness - Dark (Nightmare Soldiers)
-*/
-var evolutions = {
-  agu: [{
-    grey: {
-      crests: [10, 0, 0, 0, 0, 0, 0, 0, 0],
-      bond: 0
-    }
-  }, {
-    geoGrey: {
-      crests: [8, 0, 0, 0, 0, 0, 0, 2, 0],
-      bond: 0
-    }
-  }]
-};
-
-var dgmnDB = {
-  Agu: {
-    stage: 3,
-    "class": 'vaccine',
-    crests: [0],
-    stats: [5, 5, 5, 5, 5, 5, 5, 5],
-    evolutions: evolutions['agu']
-  },
-  Gabu: {
-    stage: 3,
-    "class": 'data',
-    crests: [0],
-    stats: [5, 5, 5, 5, 5, 5, 5, 6],
-    evolutions: evolutions['agu']
-  },
-  Grey: {
-    stage: 4,
-    "class": 'vaccine',
-    crests: [0],
-    stats: [6, 5, 5, 5, 5, 5, 5, 6],
-    evolutions: evolutions['agu']
-  }
-};
-
 var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdleAnimation, gameScreenRedrawCallback) {
   var _this = this;
 
@@ -360,15 +256,17 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdle
   _defineProperty(this, "animate", function (speed) {
     var currentFrame = 0;
     setInterval(function () {
-      _this.clearCanvas(); // if(counter % 4 === 0){
+      if (_this.isIdle) {
+        _this.clearCanvas(); // if(counter % 4 === 0){
 
 
-      _this.paintImage(_this.imageStack[currentFrame]);
+        _this.paintImage(_this.imageStack[currentFrame]);
 
-      _this.triggerGameScreenRedraw();
+        _this.triggerGameScreenRedraw();
 
-      currentFrame++;
-      if (currentFrame > 1) currentFrame = 0; // }
+        currentFrame++;
+        if (currentFrame > 1) currentFrame = 0; // }
+      }
     }, speed);
   });
 
@@ -437,6 +335,7 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdle
   this.imageUrlStack = [];
   this.imageStack = [];
   this.imagesLoaded = false;
+  this.isIdle = true;
   this.hasIdleAnimation = hasIdleAnimation;
   this.idleAnimationImages = [];
   this.idleAnimationRate = 0; // TODO - Gather from Database?
@@ -454,129 +353,6 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdle
  * @param {Number} speed  How fast the animation will check to change
  * ----------------------------------------------------------------------*/
 ;
-
-var BattleDgmnCanvas = /*#__PURE__*/function (_GameCanvas) {
-  _inherits(BattleDgmnCanvas, _GameCanvas);
-
-  var _super = _createSuper(BattleDgmnCanvas);
-
-  function BattleDgmnCanvas(dgmnName) {
-    var _this;
-
-    _classCallCheck(this, BattleDgmnCanvas);
-
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-
-    _this = _super.call.apply(_super, [this].concat(args));
-    _this.dgmnName = dgmnName;
-    _this.frames = [];
-    _this.animateSpeed = 2000;
-    return _this;
-  }
-
-  return BattleDgmnCanvas;
-}(GameCanvas);
-
-/**
- * DIGIMON
- * @param {Number}  id              Each Dgmn is assigned a basic number ID, to track
- * @param {String}  nickname        Name given to a Dgmn by the Player
- * @param {String}  name            The species name (does not include MON)
- * @param {Number}  level           Dgmn's Level, grown by EXP
- * @param {Number}  battleLocation  Where in your party they are located (0-2)
- * @param {Boolean} isEnemy         Whether the Dgmn is an Enemy or not
- */
-
-var Dgmn = function Dgmn(id, nickname, name, battleLocation, isEnemy) {
-  var _this = this;
-
-  _classCallCheck(this, Dgmn);
-
-  _defineProperty(this, "loadDgmn", function (loadData) {
-    // Go through and load in all of the data
-    _this.level = loadData.level || _this.level;
-    _this.permAttacks = loadData.permAttacks || _this.permAttacks;
-  });
-
-  _defineProperty(this, "initBattleCanvas", function (gameScreenRedrawCallback, imageStack) {
-    _this.battleCanvas = new BattleDgmnCanvas(_this.name, 'dgmn-canvas', 32, 32, 0, 0, true, gameScreenRedrawCallback);
-    _this.battleCanvas.imageStack = imageStack;
-  });
-
-  _defineProperty(this, "buildDgmn", function () {
-    for (var i = 0; i < _this.baseStats.length; i++) {
-      var finalStat = _this.baseStats[i] * _this.level;
-      finalStat *= i < 2 ? 1.5 : 1;
-      finalStat = Math.floor(finalStat);
-
-      _this.currStats.push(finalStat);
-    }
-  });
-
-  this.dgmnId = id;
-  this.nickname = nickname;
-  this.name = name;
-  this.stage = dgmnDB[name].stage;
-  this["class"] = dgmnDB[name]["class"];
-  this.baseStats = dgmnDB[name].stats;
-  this.crests = dgmnDB[name].crests; // Permanent
-
-  this.permAttacks = [];
-  this.permCrests = {};
-  this.permSync = {};
-  this.fullDgmnList = []; // Every Dgmn this Dgmn has ever been
-  // Temporary - Only Matters per hatch, resets on reversion to egg
-
-  this.level = 1;
-  this.currDgmnPath = []; // The Dgmn this Dgmn has become since it hatched
-
-  this.currHP = 24;
-  this.currEN = 10;
-  this.currHunger = 0;
-  this.currPoop = 0;
-  this.currStats = [];
-  this.battleCanvas;
-  this.battleLocation = battleLocation || 0;
-  this.isEnemy = isEnemy || false;
-};
-
-var setupMockDgmn = function setupMockDgmn() {
-  var dgmnList = [new Dgmn(0, 'FLAME', 'Agu', 0) // new Dgmn(1,'BLITZ','Grey',1),
-  // new Dgmn(2,'FROST','Gabu',2)
-  ]; // MOCK DGMN
-
-  dgmnList[0].level = 5;
-  dgmnList[0].permAttacks = [new Attack('babyFlame'), new Attack('bubbles')];
-  dgmnList[0].permAttacks[0].currCost = 4;
-  dgmnList[0].permAttacks[1].currCost = 24;
-  dgmnList[0].buildDgmn(); // dgmnList[1].level = 7;
-  // dgmnList[1].permAttacks = [
-  //   new Attack('megaFlame'),
-  //   new Attack('babyFlame'),
-  //   new Attack('bubbles')
-  // ];
-  // dgmnList[1].permAttacks[0].currCost = 8;
-  // dgmnList[1].permAttacks[1].currCost = 4;
-  // dgmnList[1].permAttacks[2].currCost = 30;
-  // dgmnList[1].buildDgmn();
-  // dgmnList[2].level = 4;
-  // dgmnList[2].buildDgmn();
-  // dgmnList[2].permAttacks = [
-  //   new Attack('petitFire'),
-  //   new Attack('bubbles')
-  // ]
-  // dgmnList[2].permAttacks[0].currCost = 6;
-
-  return dgmnList;
-};
-var setupMockEnemyDgmn = function setupMockEnemyDgmn() {
-  var dgmnList = [new Dgmn(4, 'ENEMY', 'Agu', 0, true)];
-  dgmnList[0].level = 4;
-  dgmnList[0].buildDgmn();
-  return dgmnList;
-};
 
 var BackgroundCanvas = /*#__PURE__*/function (_GameCanvas) {
   _inherits(BackgroundCanvas, _GameCanvas);
@@ -662,7 +438,9 @@ var fontData = {
   6: [9, 4],
   7: [10, 4],
   8: [11, 4],
-  9: [12, 4]
+  9: [12, 4],
+  exclamation: [13, 4],
+  period: [14, 4]
 };
 
 /**------------------------------------------------------------------------
@@ -712,18 +490,84 @@ var TextManager = function TextManager(colors, rows, cols, x, y, colorizeCallbac
     }
   });
 
+  _defineProperty(this, "slowPaint", function (canvas, message, triggerRedraw) {
+    var ctx = canvas.ctx;
+    var splitWords = message.split(" ");
+
+    for (var i = 0; i < splitWords.length; i++) {
+      splitWords[i] = _this.replaceSpecials(splitWords[i]);
+    }
+
+    _this.clearTextBox(canvas);
+
+    var c = 0; // Paint column
+
+    var r = 0; // Paint row
+
+    var word = 0;
+    var _char3 = 0;
+    var paintInterval = setInterval(function () {
+      _this.drawCharacter(ctx, splitWords[word][_char3], c, r);
+
+      triggerRedraw();
+      _char3++;
+      c++;
+
+      if (c === _this.cols) {
+        c = 0;
+        r++;
+      }
+
+      if (r === _this.rows) ;
+
+      if (_char3 >= splitWords[word].length) {
+        if (c !== 0) {
+          _this.drawCharacter(ctx, 'space', c, r);
+
+          triggerRedraw();
+          c++;
+        } // If next word exists and its length plus the current spot is greater than the space available...
+        //    go to a new row
+
+
+        if (word + 1 <= splitWords.length - 1 && splitWords[word + 1].length + c > _this.cols) {
+          r++;
+          c = 0;
+        }
+
+        _char3 = 0;
+        word++;
+      }
+
+      if (word >= splitWords.length) {
+        clearInterval(paintInterval);
+      } // Out of words, it's totally done
+
+    }, config.textSpeed * 33);
+  });
+
   _defineProperty(this, "replaceSpecials", function (message) {
-    // Eventually, I might have to swap this stuff out for a loop method
+    // TODO - This is awful
     var modString = message;
-    modString = modString.replace('.M', '^');
-    modString = modString.replace('.hp', '%');
-    modString = modString.replace('.en', '@');
+    modString = modString.replaceAll('.M', '^');
+    modString = modString.replaceAll('.hp', '%');
+    modString = modString.replaceAll('.en', '@');
     var modArray = modString.split('');
-    if (modArray.indexOf('^') !== -1) modArray[modArray.indexOf('^')] = 'dotM';
-    if (modArray.indexOf('%') !== -1) modArray[modArray.indexOf('%')] = 'hp';
-    if (modArray.indexOf('@') !== -1) modArray[modArray.indexOf('@')] = 'en';
-    if (modArray.indexOf(' ') !== -1) modArray[modArray.indexOf(' ')] = 'space';
+
+    for (var i = 0; i < modArray.length; i++) {
+      if (modArray[i] === '^') modArray[i] = 'dotM';
+      if (modArray[i] === '%') modArray[i] = 'hp';
+      if (modArray[i] === '@') modArray[i] = 'en';
+      if (modArray[i] === ' ') modArray[i] = 'space';
+      if (modArray[i] === '!') modArray[i] = 'exclamation';
+      if (modArray[i] === '.') modArray[i] = 'period';
+    }
+
     return modArray;
+  });
+
+  _defineProperty(this, "drawCharacter", function (ctx, _char4, c, r) {
+    ctx.drawImage(_this.colors[0], fontData[_char4][0] * 64, fontData[_char4][1] * 64, 64, 64, 8 * config.screenSize * c + _this.x * 8 * config.screenSize, 8 * config.screenSize * r + _this.y * 8 * config.screenSize, 8 * config.screenSize, 8 * config.screenSize);
   });
 
   _defineProperty(this, "progressivePaint", function (speed) {// Paints one letter at a time. Used for messages, talking, etc.
@@ -738,9 +582,9 @@ var TextManager = function TextManager(colors, rows, cols, x, y, colorizeCallbac
   this.x = x || 0;
   this.y = y || 0;
 
-  this.colorize = function (_char3) {
+  this.colorize = function (_char5) {
     var fontIndex = 0;
-    if (colorizeCallback) fontIndex = colorizeCallback(_char3);
+    if (colorizeCallback) fontIndex = colorizeCallback(_char5);
     return fontIndex;
   };
 };
@@ -771,11 +615,65 @@ var DgmnBattleStatus = function DgmnBattleStatus(listIndex, dgmnData) {
     canvas.ctx.fillRect(leftOffset + 4 * config.screenSize, 16 * config.screenSize + meterOffset + battleLocationOffset + 2 * config.screenSize, meterLength * config.screenSize, 3 * config.screenSize);
   });
 
+  _defineProperty(this, "setCombo", function (canvas, combo, comboImg) {
+    var tileMod = 8 * config.screenSize;
+    var leftOffset = _this.dgmnData.isEnemy ? 3 * tileMod : 19 * tileMod;
+    var battleLocationOffset = _this.dgmnData.battleLocation * 4 * tileMod;
+    var _char = combo;
+    canvas.ctx.clearRect(leftOffset, 4 * tileMod + battleLocationOffset, tileMod, tileMod);
+
+    if (combo !== 'F') {
+      canvas.ctx.drawImage(comboImg, fontData[_char][0] * 64, fontData[_char][1] * 64, 64, 64, leftOffset, 4 * tileMod + battleLocationOffset, tileMod, tileMod);
+    }
+  });
+
   this.listIndex = listIndex;
   this.dgmnData = dgmnData;
   this.currHP = new BattleMeter();
   this.currEN = new BattleMeter();
   this.statuses = [];
+};
+
+var attacksDB = {
+  bubbles: {
+    displayName: 'Bubbles',
+    type: 'none',
+    power: 'F',
+    maxCost: 32,
+    targets: 'single',
+    hits: 2,
+    animationFrames: [['bubbles1', 1], ['bubbles2', 4], ['bubbles1', 1]],
+    animationFrameCount: 2
+  },
+  babyFlame: {
+    displayName: 'BabyFlame',
+    power: 'E',
+    maxCost: 8,
+    type: 'fire',
+    targets: 'single',
+    hits: 1,
+    species: 'agu',
+    animationFrames: [['babyFlame1', 1], ['babyFlame2', 1], ['babyFlame3', 4], ['babyFlame2', 1], ['babyFlame1', 1]],
+    animationFrameCount: 3
+  },
+  megaFlame: {
+    displayName: 'Mega Flame',
+    power: 'D',
+    maxCost: 8,
+    type: 'fire',
+    targets: 'single',
+    hits: 1,
+    animationFrames: [['babyFlame1', 1], ['babyFlame2', 1], ['babyFlame3', 4], ['babyFlame2', 1], ['babyFlame1', 1]],
+    animationFrameCount: 3
+  },
+  petitFire: {
+    displayName: 'Petit Fire',
+    power: 'F',
+    maxCost: 8,
+    type: 'fire',
+    targets: 'all',
+    hits: 1
+  }
 };
 
 var DgmnAttackMenu = function DgmnAttackMenu(fetchImageCallback) {
@@ -787,6 +685,40 @@ var DgmnAttackMenu = function DgmnAttackMenu(fetchImageCallback) {
     _this.attackList = attackData;
   });
 
+  _defineProperty(this, "selectUp", function (canvas, newIndex) {
+    if (newIndex >= 0) {
+      _this.setSelection(canvas, newIndex);
+    } else {
+      console.log("Can't go up");
+    }
+  });
+
+  _defineProperty(this, "selectDown", function (canvas, newIndex) {
+    if (newIndex < _this.attackList.length) {
+      _this.setSelection(canvas, newIndex);
+    } else {
+      console.log("Can't go down");
+    }
+  });
+
+  _defineProperty(this, "setSelection", function (canvas, newIndex) {
+    _this.clearCursor(canvas, _this.currentChoice);
+
+    _this.paintCursor(canvas, newIndex);
+
+    _this.currentChoice = newIndex;
+  });
+
+  _defineProperty(this, "clearCursor", function (canvas, index) {
+    var tileMod = 8 * config.screenSize;
+    canvas.ctx.fillStyle = '#00131A';
+    canvas.ctx.fillRect((4 * 8 + 1) * config.screenSize, (2 + index * 2) * tileMod, tileMod - 1 * config.screenSize, tileMod);
+  });
+
+  _defineProperty(this, "paintCursor", function (canvas, index) {
+    canvas.paintImage(_this.fetchImage('miniCursor'), 4 * (8 * config.screenSize), (2 + index * 2) * (8 * config.screenSize));
+  });
+
   _defineProperty(this, "refreshList", function (canvas) {
     var loopCount = _this.attackList.length > 6 ? 6 : _this.attackList.length;
 
@@ -794,7 +726,7 @@ var DgmnAttackMenu = function DgmnAttackMenu(fetchImageCallback) {
       var attack = _this.attackList[i];
       var targetCount = attack.targets === 'single' ? 'targetOne' : 'targetAll';
 
-      _this.textManagers[i].instantPaint(canvas, attacksDB[attack.attackName].displayName);
+      _this.textManagers[i].instantPaint(canvas, attack.displayName);
 
       canvas.ctx.drawImage(_this.fetchImage('costLabel'), 5 * (8 * config.screenSize), (3 + 2 * i) * (8 * config.screenSize), 16 * config.screenSize, 8 * config.screenSize);
 
@@ -818,7 +750,7 @@ var DgmnAttackMenu = function DgmnAttackMenu(fetchImageCallback) {
       var _final = 25 * (remCount - check);
 
       _final = _final >= 0 ? 0 : _final;
-      _final = _final < 0 ? -100 : _final;
+      _final = _final / 25 < -3 ? -100 : _final;
       canvas.ctx.drawImage(_this.fetchImage("costMeter".concat(100 + _final)), (7 + i) * (8 * config.screenSize), (3 + index * 2) * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
       remCount -= 4;
     }
@@ -842,6 +774,22 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
     for (var i = 0; i < _this.dgmnData.length; i++) {
       _this.dgmnStatusList.push(new DgmnBattleStatus(i, _this.dgmnData[i]));
     }
+  });
+
+  _defineProperty(this, "getStatusIndex", function (dgmnId) {
+    var index = -1;
+
+    for (var i = 0; i < _this.dgmnStatusList.length; i++) {
+      if (_this.dgmnStatusList[i].dgmnData.dgmnId === dgmnId) {
+        index = i;
+      }
+    }
+
+    return index;
+  });
+
+  _defineProperty(this, "setTopText", function (message) {
+    _this.topTextManager.instantPaint(_this.menuCanvas, message);
   });
 
   _defineProperty(this, "buildBattleMenus", function () {
@@ -876,16 +824,25 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
   _defineProperty(this, "fullMenuPaint", function () {
     _this.paintMenu(0);
 
-    _this.menuCanvas.paintImage(_this.menus.dgmn.icons[0].activeImg, 112 * config.screenSize, 128 * config.screenSize);
+    _this.paintInitialIcons('dgmn'); // TODO - This should be set to Beetle, not DGMN
 
-    _this.menuCanvas.paintImage(_this.menus.dgmn.icons[1].inactiveImg, 128 * config.screenSize, 128 * config.screenSize);
 
-    _this.menuCanvas.paintImage(_this.menus.dgmn.icons[2].inactiveImg, 144 * config.screenSize, 128 * config.screenSize);
+    _this.updateAllStatusBars();
 
-    _this.updateAllStatusBars(); // Text Management
+    _this.drawAllComboLabels(); // Text Management
 
 
     _this.topTextManager.instantPaint(_this.menuCanvas, 'Attack');
+  });
+
+  _defineProperty(this, "paintInitialIcons", function (phase) {
+    _this.menuCanvas.paintImage(_this.menus[phase].icons[0].activeImg, 112 * config.screenSize, 128 * config.screenSize);
+
+    _this.menuCanvas.paintImage(_this.menus[phase].icons[1].inactiveImg, 128 * config.screenSize, 128 * config.screenSize);
+
+    _this.menuCanvas.paintImage(_this.menus[phase].icons[2].inactiveImg, 144 * config.screenSize, 128 * config.screenSize);
+
+    _this.triggerGameScreenRedraw();
   });
 
   _defineProperty(this, "setupDgmn", function (index) {
@@ -902,7 +859,19 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
     _this.paintBottomData(_this.dgmnData[index]);
   });
 
+  _defineProperty(this, "clearBottomData", function (clearIcons) {
+    if (clearIcons) {
+      _this.menuCanvas.ctx.clearRect(0 * (8 * config.screenSize), 14 * (8 * config.screenSize), 20 * (8 * config.screenSize), 4 * (8 * config.screenSize));
+    } else {
+      _this.menuCanvas.ctx.clearRect(0 * (8 * config.screenSize), 14 * (8 * config.screenSize), 20 * (8 * config.screenSize), 2 * (8 * config.screenSize));
+
+      _this.menuCanvas.ctx.clearRect(0 * (8 * config.screenSize), 16 * (8 * config.screenSize), 14 * (8 * config.screenSize), 2 * (8 * config.screenSize));
+    }
+  });
+
   _defineProperty(this, "paintBottomData", function (dgmn) {
+    _this.clearBottomData();
+
     _this.dgmnNameTextManager.instantPaint(_this.menuCanvas, dgmn.nickname);
 
     _this.dgmnSpeciesTextManager.instantPaint(_this.menuCanvas, "".concat(dgmn.name, ".MON"));
@@ -929,13 +898,25 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
     for (var i = 0; i < _this.dgmnStatusList.length; i++) {
       _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currHP, _this.dgmnData[_this.dgmnStatusList[i].listIndex].currStats[0], 'hp');
 
-      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currEN, _this.dgmnData[_this.dgmnStatusList[i].listIndex].currStats[1], 'en');
+      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currEN, 100, 'en');
+    }
+  });
+
+  _defineProperty(this, "drawAllComboLabels", function () {
+    var tileMod = 8 * config.screenSize;
+
+    for (var i = 0; i < _this.dgmnStatusList.length; i++) {
+      var battleLocationOffset = _this.dgmnStatusList[i].dgmnData.battleLocation * 4 * tileMod;
+      var leftOffset = _this.dgmnStatusList[i].dgmnData.isEnemy ? 0 : 16 * tileMod;
+
+      _this.menuCanvas.paintImage(_this.fetchImage('comboLabel'), leftOffset, 4 * tileMod + battleLocationOffset);
     }
   });
 
   _defineProperty(this, "updateStatusBar", function (status, curr, max, bar) {
     var calcValue = Math.floor(curr / max * 18);
     var barColor = calcValue >= 9 ? 'White' : 'LightGreen';
+    barColor = curr <= 0 ? 'DarkGreen' : barColor;
     status.drawMeter(_this.menuCanvas, bar, _this.fetchImage("dgmnBar".concat(barColor)), calcValue, barColor);
 
     _this.triggerGameScreenRedraw();
@@ -953,6 +934,8 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
     _this.menuCanvas.paintImage(_this.fetchImage('miniCursor'), 4 * (8 * config.screenSize), 2 * (8 * config.screenSize)); // Build initial page
 
 
+    _this.dgmnAttackMenu.currentChoice = 0;
+
     _this.dgmnAttackMenu.loadAttackList(_this.dgmnData[_this.currentDgmnActor].permAttacks);
 
     _this.dgmnAttackMenu.refreshList(_this.menuCanvas, 0);
@@ -963,13 +946,18 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
   _defineProperty(this, "closeDgmnAttackMenu", function () {
     _this.topTextManager.instantPaint(_this.menuCanvas, 'Attack');
 
-    _this.menuCanvas.ctx.clearRect(4 * (8 * config.screenSize), 2 * (8 * config.screenSize), 16 * (8 * config.screenSize), 12 * (8 * config.screenSize));
+    _this.menuCanvas.ctx.clearRect(4 * (8 * config.screenSize), 2 * (8 * config.screenSize), 16 * (8 * config.screenSize), 12 * (8 * config.screenSize)); // Redraw the Status Sections
+
 
     for (var i = 0; i < _this.dgmnStatusList.length; i++) {
       _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currHP, _this.dgmnData[_this.dgmnStatusList[i].listIndex].currStats[0], 'hp');
 
-      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currEN, _this.dgmnData[_this.dgmnStatusList[i].listIndex].currStats[1], 'en');
+      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currEN, 100, 'en');
+
+      _this.dgmnStatusList[i].setCombo(_this.menuCanvas, _this.dgmnStatusList[i].dgmnData.comboLetter, _this.fetchImage('fontsWhite'));
     }
+
+    _this.drawAllComboLabels();
 
     _this.triggerGameScreenRedraw();
   });
@@ -1018,6 +1006,7 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
   this.selectedAttack;
   this.topTextManager = new TextManager([fetchImageCallback('fontsWhite')], 1, 20, 0, 1); // TODO - I'm not worried about the font loading slower than anything else, but just in case, I should change this a little...
 
+  this.bottomTextManager = new TextManager([fetchImageCallback('fontsWhite')], 4, 16, 4, 14);
   this.dgmnNameTextManager = new TextManager([fetchImageCallback('fontsWhite')], 1, 10, 4, 14);
   this.dgmnSpeciesTextManager = new TextManager([fetchImageCallback('fontsLightGreen')], 1, 16, 4, 15);
   this.currDgmnHP = new TextManager([fetchImageCallback('fontsWhite'), fetchImageCallback('fontsLightGreen')], 1, 6, 4, 16, function (_char) {
@@ -1063,7 +1052,102 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
 
 var genericImages = ['./sprites/Battle/Menu/miniCursor.png', './sprites/Menus/typeLabel.png', './sprites/Menus/costLabel.png', './sprites/Menus/targetLabel.png', './sprites/Menus/powerLabel.png', './sprites/Menus/hitLabel.png', './sprites/Menus/noneTypeIcon.png', './sprites/Menus/fireTypeIcon.png', './sprites/Menus/targetOne.png', './sprites/Menus/targetAll.png', './sprites/Menus/pwrFIcon.png', './sprites/Menus/pwrEIcon.png', './sprites/Menus/pwrDIcon.png', './sprites/Menus/oneHitIcon.png', './sprites/Menus/costMeter100.png', './sprites/Menus/costMeter75.png', './sprites/Menus/costMeter50.png', './sprites/Menus/costMeter25.png', './sprites/Menus/costMeter0.png'];
 var fontImages = ['./sprites/Fonts/fontsBlack.png', './sprites/Fonts/fontsWhite.png', './sprites/Fonts/fontsLightGreen.png'];
-var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png'];
+var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/dgmnBarDarkGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png', './sprites/Battle/Menu/comboLabel.png', './sprites/Battle/Menu/weak1.png', './sprites/Battle/Menu/weak2.png', './sprites/Battle/Menu/weak3.png'];
+
+// Handles all of the actual values for Ranks (F - S)
+var powerRanks = {
+  F: .5,
+  E: .75,
+  D: 1,
+  C: 1.5,
+  B: 2,
+  A: 4,
+  S: 8
+};
+var comboRanks = {
+  F: .75,
+  E: 1,
+  D: 1.5,
+  C: 2,
+  B: 3,
+  A: 4,
+  S: 6
+};
+
+var Attack = function Attack(attackName) {
+  var _this = this;
+
+  _classCallCheck(this, Attack);
+
+  _defineProperty(this, "calculateDamage", function (targetDefense, attackerAttack, attackerLevel) {
+    // FORMULA: ( ( ATK / DEF ) * (LV / 2 ) ) * ( PWR / 2 )
+    // The reason you have /2's is because the "weight" of that variable needs to be weaker
+    var atkDefDiff = attackerAttack / targetDefense;
+    var preMods = Math.floor(atkDefDiff * (attackerLevel / 2) * powerRanks[_this.power] / _this.hits);
+    return preMods;
+  });
+
+  _defineProperty(this, "animate", function (target, attacker, triggerRedraw, canvas, fetchImage, callback) {
+    attacker.battleCanvas.attackAnimation();
+    target.battleCanvas.hurtAnimation();
+    var x = target.isEnemy ? 4 * (8 * config.screenSize) : 12 * (8 * config.screenSize);
+    var y = (2 + target.battleLocation * 4) * (8 * config.screenSize);
+    triggerRedraw();
+    var animationCounter = 0;
+    var animationSection = 0;
+    canvas.clearCanvas();
+    var attackAnimation = setInterval(function () {
+      if (animationCounter === 0) {
+        canvas.clearCanvas();
+
+        if (animationSection === _this.animationFrames.length) {
+          canvas.clearCanvas();
+          triggerRedraw();
+          clearInterval(attackAnimation);
+          setTimeout(function () {
+            attacker.battleCanvas.isIdle = true;
+            if (!target.isDead) target.battleCanvas.isIdle = true;
+            triggerRedraw();
+          }, 200);
+          setTimeout(function () {
+            callback();
+          }, 1200);
+        } else {
+          canvas.paintImage(fetchImage(_this.animationFrames[animationSection][0]), x, y);
+          triggerRedraw();
+        }
+
+        animationCounter++;
+      } else if (animationCounter !== 0 && animationCounter >= _this.animationFrames[animationSection][1]) {
+        animationSection++;
+        animationCounter = 0;
+      } else {
+        animationCounter++;
+      }
+    }, 66);
+  });
+
+  this.attackName = attackName;
+  this.displayName = attacksDB[this.attackName].displayName;
+  this.type = attacksDB[this.attackName].type;
+  this.maxCost = attacksDB[this.attackName].maxCost;
+  this.currCost = 6;
+  this.power = attacksDB[this.attackName].power;
+  this.targets = attacksDB[this.attackName].targets;
+  this.hits = attacksDB[this.attackName].hits;
+  this.animationFrames = attacksDB[this.attackName].animationFrames;
+}
+/**------------------------------------------------------------------------
+ * CALCULATE DAMAGE
+ * ------------------------------------------------------------------------
+ * Calculates the amount of damage the attack will do.
+ * Does NOT include modifiers like weakness, criticals, etc.
+ * ------------------------------------------------------------------------
+ * @param {Number} targetDefense  DEF/RES stat of the Dgmn being attacked
+ * @param {Number} attackerAttack ATK/INT stat of the Dgmn attacking
+ * @param {Number} attackerLevel  Level of the Dgmn attacking
+ * ----------------------------------------------------------------------*/
+;
 
 var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjectCallback, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback) {
   var _this = this;
@@ -1074,20 +1158,25 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     debugLog("-- Loading Battle");
 
     _this.loadBattleImages(function () {
-      // LOAD DATA
+      // Load Player Dgmn
       _this.loadDgmn(_this.dgmnList, false);
 
-      _this.addDgmnToObjectList(_this.dgmnList, false);
+      _this.addDgmnToObjectList(_this.dgmnList, false); // Load Enemy Dgmn
+
 
       _this.loadDgmn(_this.enemyDgmnList, true);
 
-      _this.addDgmnToObjectList(_this.enemyDgmnList, true);
+      _this.addDgmnToObjectList(_this.enemyDgmnList, true); // Setup Initial Battle Menu
+
 
       _this.addObject(_this.battleMenu.menuCanvas);
 
       _this.battleMenu.buildBattleMenus();
 
-      _this.battleMenu.fullMenuPaint();
+      _this.battleMenu.fullMenuPaint(); // Load Attack Canvas
+
+
+      _this.addObject(_this.attackCanvas);
 
       _this.onLoaded();
     });
@@ -1100,14 +1189,19 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     var dgmnImages = [];
 
     for (var i = 0; i < allDgmn.length; i++) {
+      // TODO - I need to push these to an array, and loop them, rather than declaring each
       var urlOne = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Idle0.png");
       var urlTwo = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Idle1.png");
+      var attackUrl = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Attack.png");
+      var hurtUrl = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Hurt.png");
       var urlThree = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Portrait.png");
 
       if (!dgmnImages.includes(urlOne)) {
         dgmnImages.push(urlOne);
         dgmnImages.push(urlTwo);
         dgmnImages.push(urlThree);
+        dgmnImages.push(attackUrl);
+        dgmnImages.push(hurtUrl);
       }
     }
 
@@ -1132,12 +1226,8 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 
   _defineProperty(this, "loadDgmn", function (dgmnList, isEnemy) {
     for (var i = 0; i < dgmnList.length; i++) {
-      var dgmn = dgmnList[i]; // TODO - Remove this, this manually loads the Dgmn, but that shouldn't
-      //        have to be done
-      // dgmn.buildDgmn();
-      // dgmn.loadDgmn({permAttacks: [new Attack('babyFlame'), new Attack('bubbles')]})
-
-      var imageStack = [_this.fetchImage("".concat(dgmn.name.toLowerCase(), "Idle0")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Idle1")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Attack"))];
+      var dgmn = dgmnList[i];
+      var imageStack = [_this.fetchImage("".concat(dgmn.name.toLowerCase(), "Idle0")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Idle1")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Attack")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Hurt"))];
       dgmn.initBattleCanvas(_this.triggerGameScreenRedraw, imageStack);
       dgmn.battleCanvas.x = isEnemy ? 2 * (16 * config.screenSize) : 6 * (16 * config.screenSize);
       dgmn.battleCanvas.y = 16 * config.screenSize + 32 * i * config.screenSize;
@@ -1148,6 +1238,15 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
   });
 
   _defineProperty(this, "generateEnemies", function (encounterData) {// new Dgmn / enemy
+  });
+
+  _defineProperty(this, "generateEnemyAttacks", function () {
+    // TODO - This is manual right now, needs to have a BUNCH of logic and Data here...
+    _this.attackActions[4] = {
+      attacker: _this.enemyDgmnList[0],
+      target: _this.dgmnList[0],
+      attack: new Attack('babyFlame')
+    };
   });
 
   _defineProperty(this, "setupOrder", function () {
@@ -1169,26 +1268,252 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     return order;
   });
 
-  _defineProperty(this, "runAttacks", function () {
-    // I need an object of each Digimon's action during the battle
-    // Then, run through them, using an interval tool
-    var turnOrder = _this.setupOrder();
+  _defineProperty(this, "buildAttackImageList", function (attackList) {
+    var imagesList = [];
 
-    for (var i = 0; i < turnOrder.length; i++) {
-      console.log("ACTION ? ", _this.attackActions[turnOrder[i].dgmnId]);
+    for (var prop in attackList) {
+      var attackName = attackList[prop].attack.attackName;
 
-      _this.attack(_this.attackActions[turnOrder[i].dgmnId].target, _this.attackActions[turnOrder[i].dgmnId].attacker, _this.attackActions[turnOrder[i].dgmnId].attack);
+      if (!_this.loadedAttacks.includes(attackName)) {
+        _this.loadedAttacks.push(attackName);
+
+        for (var r = 0; r < attacksDB[attackName].animationFrameCount; r++) {
+          var url = "./sprites/Battle/Attacks/".concat(attackName).concat(r + 1, ".png");
+          if (!imagesList.includes(url)) imagesList.push(url);
+        }
+      }
+    }
+
+    return imagesList;
+  });
+
+  _defineProperty(this, "loadAttacks", function () {
+    _this.battleMenu.clearBottomData(true);
+
+    var attackImageList = _this.buildAttackImageList(_this.attackActions);
+
+    if (attackImageList.length !== 0) {
+      _this.loadImages(attackImageList, function () {
+        _this.runAttacks();
+      });
+    } else {
+      _this.runAttacks();
     }
   });
 
-  _defineProperty(this, "attack", function (target, attacker, attack) {
-    var atkDefDiff = attacker.currStats[2] / target.currStats[3];
-    var preMods = atkDefDiff * attacker.level / 2 * powerRanks[attack.power];
-    var postMods = preMods * 1; // TODO - Add all of the mods
+  _defineProperty(this, "runAttacks", function () {
+    var turnOrder = _this.setupOrder();
 
-    target.currHP -= postMods;
+    var i = 0;
+    var prevI = -1; // Runs every frame and checks for the currently attacking Dgmn to be 'done'
+
+    var attackInterval = setInterval(function () {
+      if (i !== prevI) {
+        prevI = i;
+
+        if (!turnOrder[i].isDead) {
+          _this.attack(_this.attackActions[turnOrder[i].dgmnId]);
+        }
+      }
+
+      if (_this.attackActions[turnOrder[i].dgmnId].status === 'done') i++;
+
+      if (i === turnOrder.length) {
+        _this.startNewTurn();
+
+        clearInterval(attackInterval);
+      } else if (_this.battleResult !== 'ongoing') {
+        // If the battle is ever switched "off", stop Attacks
+        clearInterval(attackInterval);
+      }
+    }, 33);
+  });
+
+  _defineProperty(this, "attack", function (attackAction) {
+    var target = attackAction.target;
+    var attacker = attackAction.attacker;
+    var attack = attackAction.attack;
+    debugLog("-- ".concat(attacker.nickname, " uses ").concat(attack.attackName, " on ").concat(target.nickname)); // Reduce EN / Cost
+
+    attack.currCost--;
+    var enCost = Math.floor(100 / 4 / attack.maxCost);
+    enCost = enCost <= 0 ? 1 : enCost;
+    attacker.currEN -= enCost; // Handle Types
+
+    var typeMod = target.types[attack.type] || 1;
+    var totalDamage = 0; // Loop through the Hit Count and do Damage
+
+    for (var i = 0; i < attack.hits; i++) {
+      // Handle Combo
+      var comboMod = .75;
+
+      if (typeMod === 1) {
+        target.currCombo++;
+      } else if (typeMod > 1) {
+        target.currCombo += 2;
+      }
+
+      var comboLetter = _this.getComboLetter(target.currCombo);
+
+      target.comboLetter = comboLetter;
+      comboMod = comboRanks[comboLetter]; // Update Statuses and Messaging
+
+      var topMessage = "";
+
+      if (typeMod > 1) {
+        topMessage += 'Strong Attack!';
+      } else if (typeMod < 1) {
+        topMessage += 'Weak Attack. ';
+      }
+
+      if (attack.hits > 1) {
+        topMessage += "".concat(attack.hits, " hits! ");
+      }
+
+      _this.battleMenu.setTopText(topMessage);
+
+      _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(target.dgmnId)].setCombo(_this.battleMenu.menuCanvas, target.comboLetter, _this.fetchImage('fontsWhite')); // Calculate Damage
+
+
+      var damage = attack.calculateDamage(target.currStats[3], attacker.currStats[2], attacker.level);
+      var postMods = damage * typeMod * comboMod; // TODO - Add all of the mods
+
+      var rando = Math.floor(Math.random() * (4 - 1) + 1); // Add in a Random number from 1-3
+
+      var finalDamage = Math.floor(postMods) + rando;
+      debugLog("---- Attack Damage = ", finalDamage);
+      totalDamage += finalDamage; // Handle "effects"
+    }
+
+    target.currHP -= totalDamage; // Handle Bottom information
+
+    _this.battleMenu.clearBottomData(true);
+
+    _this.battleMenu.setDgmnPortrait(attacker.name);
+
+    var attackMessage = attacker.isEnemy ? "Enemy ".concat(attacker.name, ".MON used ").concat(attack.displayName, "!") : "".concat(attacker.nickname, " used ").concat(attack.displayName, "!");
+
+    _this.battleMenu.bottomTextManager.slowPaint(_this.battleMenu.menuCanvas, attackMessage, _this.triggerGameScreenRedraw);
+
+    attack.animate(target, attacker, _this.triggerGameScreenRedraw, _this.attackCanvas, _this.fetchImage, function () {
+      _this.attackCanvas.clearCanvas();
+
+      attackAction.status = 'done';
+    });
+    if (target.currHP <= 0) _this.knockOut(target);
 
     _this.battleMenu.updateAllStatusBars();
+  });
+
+  _defineProperty(this, "knockOut", function (target) {
+    target.currHP = 0;
+    target.currEN = 0;
+    target.battleCanvas.isIdle = false;
+    target.battleCanvas.clearCanvas();
+    debugLog("Target DGMN was KO'd");
+    target.isDead = true;
+
+    _this.checkAllDead(target.isEnemy);
+  });
+
+  _defineProperty(this, "checkAllDead", function (isEnemy) {
+    var checkList = isEnemy ? _this.enemyDgmnList : _this.dgmnList;
+    var dgmnCount = 0;
+
+    var _iterator = _createForOfIteratorHelper(checkList),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var dgmn = _step.value;
+        if (dgmn.isDead) dgmnCount++;
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+
+    if (dgmnCount >= checkList.length) {
+      isEnemy ? _this.battleWin() : _this.battleLose();
+    }
+  });
+
+  _defineProperty(this, "getComboLetter", function (combo) {
+    var letter = 'F';
+
+    if (combo > 1 && combo < 5) {
+      letter = 'E';
+    } else if (combo > 4 && combo < 9) {
+      letter = 'D';
+    } else if (combo > 8 && combo < 14) {
+      letter = 'C';
+    } else if (combo > 13 && combo < 19) {
+      letter = 'B';
+    } else if (combo > 18 && combo < 24) {
+      letter = 'A';
+    } else if (combo >= 25) {
+      letter = 'S';
+    }
+
+    return letter;
+  });
+
+  _defineProperty(this, "resetCombos", function (isEnemy) {
+    var list = isEnemy ? _this.enemyDgmnList : _this.dgmnList;
+
+    for (var i = 0; i < list.length; i++) {
+      var combo = list[i].currCombo - 5;
+      combo = combo < 0 ? 0 : combo;
+
+      var comboLetter = _this.getComboLetter(combo);
+
+      list[i].currCombo = combo;
+      list[i].comboLetter = comboLetter;
+
+      _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(_this.battleMenu.menuCanvas, comboLetter, _this.fetchImage('fontsWhite'));
+    }
+  });
+
+  _defineProperty(this, "startNewTurn", function () {
+    _this.turn++;
+    _this.attackActions = {}; // Reset Combos - Ally, then Enemy
+
+    _this.resetCombos();
+
+    _this.resetCombos(true); // Reset Battle Menu
+
+
+    _this.battleMenu.menus.dgmn.currentIndex = 0;
+    _this.battleMenu.currentState = 'dgmn';
+    _this.battleMenu.currentDgmnActor = 0;
+
+    _this.battleMenu.setTopText(_this.battleMenu.menus.dgmn.icons[0].label);
+
+    _this.battleMenu.menuCanvas.paintImage(_this.fetchImage('cursor'), 80 * config.screenSize, (2 + 4 * 0) * (8 * config.screenSize) + 8 * config.screenSize);
+
+    _this.battleMenu.paintBottomData(_this.dgmnList[0]);
+
+    _this.battleMenu.paintInitialIcons('dgmn');
+  });
+
+  _defineProperty(this, "battleWin", function () {
+    _this.battleResult = 'win';
+
+    _this.battleMenu.setTopText('Victory');
+
+    debugLog('You Win!!'); //TODO - Below
+    // Calculate EXP
+    // Calculate Drops
+    // End Battle State
+  });
+
+  _defineProperty(this, "battleLose", function () {
+    _this.battleResult = 'lose';
+    debugLog('You lost...'); // TODO - All of the below:
+    //        Reset Dgmn to Egg
+    //        Put you back in town
+    //        Clear Items
   });
 
   _defineProperty(this, "keyTriage", function (key) {
@@ -1196,8 +1521,12 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
       _this.actionKeyHandler();
     } else if (key === 'cancel') {
       _this.cancelKeyHandler();
+    } else if (key === 'up') {
+      _this.upKeyHandler();
     } else if (key === 'right') {
       _this.rightKeyHandler();
+    } else if (key === 'down') {
+      _this.downKeyHandler();
     } else if (key === 'left') {
       _this.leftKeyHandler();
     }
@@ -1218,27 +1547,21 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 
       _this.triggerGameScreenRedraw();
 
-      var dgmnId = _this.dgmnList[_this.battleMenu.currentDgmnActor].dgmnId; // TODO - Switch Out for a Run Attack Cycle
-      // this.attack(this.enemyDgmnList[this.battleMenu.menus.targetSelect.currentIndex],this.dgmnList[this.battleMenu.currentDgmnActor],this.battleMenu.selectedAttack);
+      var dgmnId = _this.dgmnList[_this.battleMenu.currentDgmnActor].dgmnId; // Add Attack to Attack Actions List
 
       _this.attackActions[dgmnId] = {
         attacker: _this.dgmnList[_this.battleMenu.currentDgmnActor],
         target: _this.enemyDgmnList[_this.battleMenu.menus.targetSelect.currentIndex],
-        attack: _this.battleMenu.selectedAttack
+        attack: _this.battleMenu.selectedAttack,
+        status: 'todo'
       };
 
       if (_this.battleMenu.currentDgmnActor === _this.dgmnList.length - 1) {
-        // Last Digimon, begin attack cycle
-        // Generate Enemy Attacks
-        // TEMP
-        _this.attackActions[4] = {
-          attacker: _this.enemyDgmnList[0],
-          target: _this.dgmnList[0],
-          attack: new Attack('babyFlame')
-        };
+        _this.generateEnemyAttacks();
+
         debugLog("Running Attacks...");
 
-        _this.runAttacks();
+        _this.loadAttacks();
       } else {
         _this.battleMenu.currentState = 'dgmn';
         _this.battleMenu.currentDgmnActor++;
@@ -1248,11 +1571,27 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     }
   });
 
+  _defineProperty(this, "upKeyHandler", function () {
+    if (_this.battleMenu.currentState === 'attack') {
+      _this.battleMenu.dgmnAttackMenu.selectUp(_this.battleMenu.menuCanvas, _this.battleMenu.dgmnAttackMenu.currentChoice - 1);
+
+      _this.triggerGameScreenRedraw();
+    }
+  });
+
   _defineProperty(this, "rightKeyHandler", function () {
     if (_this.battleMenu.currentState === 'dgmn') {
       var newIndex = _this.battleMenu.menus.dgmn.currentIndex === _this.battleMenu.menus.dgmn.totalIcons - 1 ? 0 : _this.battleMenu.menus.dgmn.currentIndex + 1;
 
       _this.battleMenu.setCurrentIcon(newIndex);
+    }
+  });
+
+  _defineProperty(this, "downKeyHandler", function () {
+    if (_this.battleMenu.currentState === 'attack') {
+      _this.battleMenu.dgmnAttackMenu.selectDown(_this.battleMenu.menuCanvas, _this.battleMenu.dgmnAttackMenu.currentChoice + 1);
+
+      _this.triggerGameScreenRedraw();
     }
   });
 
@@ -1275,25 +1614,8 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
   this.battleActive = true;
   this.dgmnList = _dgmnList;
   this.enemyDgmnList = enemyDgmnList;
-  this.loadedState = {
-    battleBackgroundLoaded: false,
-    party: {
-      loadingDgmn: false,
-      imagesLoaded: false,
-      dgmnLoaded: false,
-      dgmnLoadedCount: false
-    },
-    enemy: {
-      loadingDgmn: false,
-      imagesLoaded: false,
-      dgmnLoaded: false,
-      dgmnLoadedCount: false
-    },
-    menu: {
-      loadingMenu: false,
-      imagesLoaded: false
-    }
-  };
+  this.battleResult = 'ongoing';
+  this.turn = 0;
   this.attackActions = {};
 
   this.triggerGameScreenRedraw = function () {
@@ -1312,8 +1634,10 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     return fetchImageCallback(imageName);
   };
 
+  this.loadedAttacks = [];
   this.battleBackground = new BackgroundCanvas('background-canvas', 160, 144);
   this.battleMenu = new BattleMenu(this.dgmnList.concat(this.enemyDgmnList), gameScreenRedrawCallback, loadImageCallback, this.fetchImage);
+  this.attackCanvas = new GameCanvas('attack-canvas', 160, 144);
 
   this.onLoaded = function () {
     _loadedCallback();
@@ -1324,11 +1648,223 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 /**------------------------------------------------------------------------
  * LOAD BATTLE
  * ------------------------------------------------------------------------
- * Interval used to load all images and data for a Battle
- * ------------------------------------------------------------------------
- * @param {Function} loadedCallback Function called after everything is loaded
+ * Loads all data and then preps the menus.
+ * Relies on all Battle Images being loaded
  * ----------------------------------------------------------------------*/
 ;
+
+/* 
+  ATK - Courage - Fire / Dragons (Dragon's Roar)
+  SPD - Friendship - Beast (Nature Spirits)
+  HP  - Love - Sky / Plants (Wind Guardians)
+  INT - Knowledge - Metal / Bugs (Metal Empire)
+  RES - Purity - Plants / Bugs (Jungle Trooper)
+  DEF - Honesty - Water / Metal (Deep Savers)
+  HIT - Hope - Light (Holy Warriors)
+  SP  - Light - Light (Holy Beasts)
+  AVO - Kindness - Dark (Nightmare Soldiers)
+*/
+var evolutions = {
+  agu: [{
+    grey: {
+      crests: [10, 0, 0, 0, 0, 0, 0, 0, 0],
+      bond: 0
+    }
+  }, {
+    geoGrey: {
+      crests: [8, 0, 0, 0, 0, 0, 0, 2, 0],
+      bond: 0
+    }
+  }]
+};
+
+var dgmnDB = {
+  Agu: {
+    stage: 3,
+    "class": 'vaccine',
+    crests: [0],
+    stats: [5, 5, 5, 5, 5, 5, 5, 5],
+    evolutions: evolutions['agu'],
+    types: {
+      fire: .5,
+      water: 1.5,
+      plant: .75,
+      evil: 2
+    }
+  },
+  Gabu: {
+    stage: 3,
+    "class": 'data',
+    crests: [0],
+    stats: [5, 5, 5, 5, 5, 5, 5, 6],
+    evolutions: evolutions['agu']
+  },
+  Grey: {
+    stage: 4,
+    "class": 'vaccine',
+    crests: [0],
+    stats: [6, 5, 5, 5, 5, 5, 5, 6],
+    evolutions: evolutions['agu'],
+    types: {
+      fire: .5,
+      water: 1.5,
+      plant: .75,
+      evil: 2
+    }
+  }
+};
+
+var BattleDgmnCanvas = /*#__PURE__*/function (_GameCanvas) {
+  _inherits(BattleDgmnCanvas, _GameCanvas);
+
+  var _super = _createSuper(BattleDgmnCanvas);
+
+  function BattleDgmnCanvas(dgmnName) {
+    var _this;
+
+    _classCallCheck(this, BattleDgmnCanvas);
+
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    _this = _super.call.apply(_super, [this].concat(args));
+
+    _defineProperty(_assertThisInitialized(_this), "attackAnimation", function () {
+      _this.isIdle = false;
+
+      _this.clearCanvas();
+
+      _this.paintImage(_this.imageStack[2]);
+
+      _this.triggerGameScreenRedraw();
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "hurtAnimation", function () {
+      _this.isIdle = false;
+
+      _this.clearCanvas();
+
+      _this.paintImage(_this.imageStack[3]);
+
+      _this.triggerGameScreenRedraw();
+    });
+
+    _this.dgmnName = dgmnName;
+    _this.frames = [];
+    _this.animateSpeed = 2000;
+    return _this;
+  }
+
+  return BattleDgmnCanvas;
+}(GameCanvas);
+
+/**
+ * DIGIMON
+ * @param {Number}  id              Each Dgmn is assigned a basic number ID, to track
+ * @param {String}  nickname        Name given to a Dgmn by the Player
+ * @param {String}  name            The species name (does not include MON)
+ * @param {Number}  level           Dgmn's Level, grown by EXP
+ * @param {Number}  battleLocation  Where in your party they are located (0-2)
+ * @param {Boolean} isEnemy         Whether the Dgmn is an Enemy or not
+ */
+
+var Dgmn = function Dgmn(id, nickname, name, battleLocation, isEnemy) {
+  var _this = this;
+
+  _classCallCheck(this, Dgmn);
+
+  _defineProperty(this, "loadDgmn", function (loadData) {
+    // Go through and load in all of the data
+    _this.level = loadData.level || _this.level;
+    _this.permAttacks = loadData.permAttacks || _this.permAttacks;
+  });
+
+  _defineProperty(this, "initBattleCanvas", function (gameScreenRedrawCallback, imageStack) {
+    _this.battleCanvas = new BattleDgmnCanvas(_this.name, 'dgmn-canvas', 32, 32, 0, 0, true, gameScreenRedrawCallback);
+    _this.battleCanvas.imageStack = imageStack;
+  });
+
+  _defineProperty(this, "calcEnergyCost", function (maxCost) {
+    var cost = 0;
+    cost = Math.floor(_this.currStats[1] / maxCost);
+    cost = cost <= 0 ? 0 : cost;
+    return cost;
+  });
+
+  _defineProperty(this, "buildDgmn", function () {
+    for (var i = 0; i < _this.baseStats.length; i++) {
+      var finalStat = _this.baseStats[i] * _this.level;
+      finalStat *= i < 2 ? 1.5 : 1;
+      finalStat = Math.floor(finalStat);
+
+      _this.currStats.push(finalStat);
+    }
+  });
+
+  this.dgmnId = id;
+  this.nickname = nickname;
+  this.name = name;
+  this.stage = dgmnDB[name].stage;
+  this["class"] = dgmnDB[name]["class"];
+  this.baseStats = dgmnDB[name].stats;
+  this.crests = dgmnDB[name].crests;
+  this.types = dgmnDB[name].types; // Permanent
+
+  this.permAttacks = [];
+  this.permCrests = {};
+  this.permSync = {};
+  this.fullDgmnList = []; // Every Dgmn this Dgmn has ever been
+  // Temporary - Only Matters per hatch, resets on reversion to egg
+
+  this.level = 1;
+  this.currDgmnPath = []; // The Dgmn this Dgmn has become since it hatched
+
+  this.currHP = 52;
+  this.currEN = 70;
+  this.currHunger = 0;
+  this.currPoop = 0;
+  this.currStats = [];
+  this.currCombo = 0;
+  this.comboLetter = 'F';
+  this.currConditions = [];
+  this.currBuffs = [];
+  this.battleCanvas;
+  this.battleLocation = battleLocation || 0;
+  this.isEnemy = isEnemy || false;
+  this.isDead = false;
+};
+
+var setupMockDgmn = function setupMockDgmn() {
+  var dgmnList = [new Dgmn(0, 'FLAME', 'Agu', 0), new Dgmn(1, 'BLITZ', 'Grey', 1) // new Dgmn(2,'FROST','Gabu',2)
+  ]; // MOCK DGMN
+
+  dgmnList[0].level = 12;
+  dgmnList[0].permAttacks = [new Attack('babyFlame'), new Attack('bubbles')];
+  dgmnList[0].permAttacks[0].currCost = 3;
+  dgmnList[0].permAttacks[1].currCost = 24;
+  dgmnList[0].buildDgmn();
+  dgmnList[1].level = 7;
+  dgmnList[1].permAttacks = [new Attack('megaFlame'), new Attack('babyFlame'), new Attack('bubbles')];
+  dgmnList[1].permAttacks[0].currCost = 8;
+  dgmnList[1].permAttacks[1].currCost = 4;
+  dgmnList[1].permAttacks[2].currCost = 30;
+  dgmnList[1].buildDgmn(); // dgmnList[2].level = 4;
+  // dgmnList[2].buildDgmn();
+  // dgmnList[2].permAttacks = [
+  //   new Attack('petitFire'),
+  //   new Attack('bubbles')
+  // ]
+  // dgmnList[2].permAttacks[0].currCost = 6;
+
+  return dgmnList;
+};
+var setupMockEnemyDgmn = function setupMockEnemyDgmn() {
+  var dgmnList = [new Dgmn(4, 'ENEMY', 'Agu', 0, true)];
+  dgmnList[0].level = 8;
+  dgmnList[0].buildDgmn();
+  return dgmnList;
+};
 
 var mockDgmn = setupMockDgmn();
 var mockEnemyDgmn = setupMockEnemyDgmn();
@@ -1363,7 +1899,9 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
     }
 
     if (keyState[config.keyBindings.up]) {
-      console.log("UP");
+      _this.keyManager('up');
+    } else {
+      _this.keyTimers.up = 0;
     }
 
     if (keyState[config.keyBindings.right]) {
@@ -1373,7 +1911,9 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
     }
 
     if (keyState[config.keyBindings.down]) {
-      console.log("DOWN");
+      _this.keyManager('down');
+    } else {
+      _this.keyTimers.down = 0;
     }
 
     if (keyState[config.keyBindings.left]) {

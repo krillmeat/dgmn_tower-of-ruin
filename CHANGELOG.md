@@ -7,8 +7,11 @@ Setting up all of the basic structure for the system, until the game is in any w
 
 ### v0.0.0-alpha.6
 * Cleaned up the battle system
-* Added more than one possible attacker
-* Added Defend Option
+* Added basics for the Combo System
+* Added core for Attack animations
+* Added basic Attack Mods (type-effective, combo, weakened)
+* Added multi-hit attacks
+* Added victory and loss functionality
 
 #### v0.0.0-alpha.5
 * Built Battle Menu

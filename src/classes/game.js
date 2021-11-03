@@ -64,16 +64,14 @@ class Game{
     if(keyState[config.keyBindings.cancel]){ this.keyManager('cancel')
     } else { this.keyTimers.cancel = 0 }
 
-    if(keyState[config.keyBindings.up]){
-      console.log("UP");
-    }
+    if(keyState[config.keyBindings.up]){ this.keyManager('up')
+    } else { this.keyTimers.up = 0 }
     
     if(keyState[config.keyBindings.right]){ this.keyManager('right')
     } else { this.keyTimers.right = 0 }
     
-    if(keyState[config.keyBindings.down]){
-      console.log("DOWN");
-    }
+    if(keyState[config.keyBindings.down]){ this.keyManager('down')
+    } else { this.keyTimers.down = 0 }
     
     if(keyState[config.keyBindings.left]){ this.keyManager('left')
     } else { this.keyTimers.left = 0 }

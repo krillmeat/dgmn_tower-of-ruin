@@ -15,6 +15,7 @@ class BattleMenu{
     this.selectedAttack;
 
     this.topTextManager = new TextManager([fetchImageCallback('fontsWhite')],1,20, 0,1 ); // TODO - I'm not worried about the font loading slower than anything else, but just in case, I should change this a little...
+    this.bottomTextManager = new TextManager([fetchImageCallback('fontsWhite')],4,16, 4,14 );
     this.dgmnNameTextManager = new TextManager([fetchImageCallback('fontsWhite')],1,10, 4,14) ;
     this.dgmnSpeciesTextManager = new TextManager([fetchImageCallback('fontsLightGreen')],1,16, 4,15 );
     this.currDgmnHP = new TextManager([fetchImageCallback('fontsWhite'),fetchImageCallback('fontsLightGreen')],1,6, 4,16, char => {
@@ -54,6 +55,28 @@ class BattleMenu{
     }
   }
 
+  getStatusIndex = dgmnId => {
+    let index = -1;
+    for(let i = 0; i < this.dgmnStatusList.length; i++){
+      if(this.dgmnStatusList[i].dgmnData.dgmnId === dgmnId){
+        index = i;
+      }
+    }
+    return index;
+  }
+
+  /**------------------------------------------------------------------------
+   * SET TOP TEXT
+   * ------------------------------------------------------------------------
+   * Sets the small info text at the top of the screen.
+   * Should mostly be used for labels, and not for blocks of text
+   * ------------------------------------------------------------------------
+   * @param {String}  message Text to display in the top bar
+   * ----------------------------------------------------------------------*/
+  setTopText = message => {
+    this.topTextManager.instantPaint(this.menuCanvas,message);
+  }
+
   /**------------------------------------------------------------------------
    * BUILD BATTLE MENUS
    * ------------------------------------------------------------------------
@@ -90,14 +113,28 @@ class BattleMenu{
   fullMenuPaint = () => {
     this.paintMenu(0);
 
-    this.menuCanvas.paintImage(this.menus.dgmn.icons[0].activeImg,(112 * config.screenSize),(128 * config.screenSize));
-    this.menuCanvas.paintImage(this.menus.dgmn.icons[1].inactiveImg,(128 * config.screenSize),(128 * config.screenSize));
-    this.menuCanvas.paintImage(this.menus.dgmn.icons[2].inactiveImg,(144 * config.screenSize),(128 * config.screenSize));
+    this.paintInitialIcons('dgmn'); // TODO - This should be set to Beetle, not DGMN
 
     this.updateAllStatusBars();
+    this.drawAllComboLabels();
     
     // Text Management
     this.topTextManager.instantPaint(this.menuCanvas,'Attack');
+  }
+
+  /**------------------------------------------------------------------------
+   * PAINT INITIAL ICONS
+   * ------------------------------------------------------------------------
+   * Paints the initial icons for a specific phase
+   * ------------------------------------------------------------------------
+   * @param {String}  phase Which Phase of icons to show 
+   * ----------------------------------------------------------------------*/
+  paintInitialIcons = phase => {
+    this.menuCanvas.paintImage(this.menus[phase].icons[0].activeImg,(112 * config.screenSize),(128 * config.screenSize));
+    this.menuCanvas.paintImage(this.menus[phase].icons[1].inactiveImg,(128 * config.screenSize),(128 * config.screenSize));
+    this.menuCanvas.paintImage(this.menus[phase].icons[2].inactiveImg,(144 * config.screenSize),(128 * config.screenSize));
+
+    this.triggerGameScreenRedraw();
   }
 
   /**------------------------------------------------------------------------
@@ -127,6 +164,20 @@ class BattleMenu{
   }
 
   /**------------------------------------------------------------------------
+   * CLEAR BOTTOM DATA
+   * ------------------------------------------------------------------------
+   * Gets rid of the data at the bottom of the Battle Screen.
+   * ----------------------------------------------------------------------*/
+  clearBottomData = clearIcons => {
+    if(clearIcons){
+      this.menuCanvas.ctx.clearRect( 0 * (8 * config.screenSize), 14 * (8 * config.screenSize), 20 * (8 * config.screenSize), 4 * (8 * config.screenSize) );
+    } else{
+      this.menuCanvas.ctx.clearRect( 0 * (8 * config.screenSize), 14 * (8 * config.screenSize), 20 * (8 * config.screenSize), 2 * (8 * config.screenSize) );
+      this.menuCanvas.ctx.clearRect( 0 * (8 * config.screenSize), 16 * (8 * config.screenSize), 14 * (8 * config.screenSize), 2 * (8 * config.screenSize) );
+    }
+  }
+
+  /**------------------------------------------------------------------------
    * PAINT BOTTOM DATA
    * ------------------------------------------------------------------------
    * Draws the info in the bottom section of the Battle Screen.
@@ -134,6 +185,7 @@ class BattleMenu{
    * @param {Dgmn}  dgmn  Dgmn who's data needs to be painted 
    * ----------------------------------------------------------------------*/
   paintBottomData = dgmn => {
+    this.clearBottomData();
     this.dgmnNameTextManager.instantPaint(this.menuCanvas,dgmn.nickname);
     this.dgmnSpeciesTextManager.instantPaint(this.menuCanvas,`${dgmn.name}.MON`);
     this.currDgmnHP.instantPaint(this.menuCanvas, `.hp${dgmn.currHP}`);
@@ -181,7 +233,16 @@ class BattleMenu{
   updateAllStatusBars = () => {
     for(let i = 0; i < this.dgmnStatusList.length; i++){
       this.updateStatusBar(this.dgmnStatusList[i],this.dgmnData[this.dgmnStatusList[i].listIndex].currHP,this.dgmnData[this.dgmnStatusList[i].listIndex].currStats[0], 'hp');
-      this.updateStatusBar(this.dgmnStatusList[i],this.dgmnData[this.dgmnStatusList[i].listIndex].currEN,this.dgmnData[this.dgmnStatusList[i].listIndex].currStats[1], 'en');
+      this.updateStatusBar(this.dgmnStatusList[i],this.dgmnData[this.dgmnStatusList[i].listIndex].currEN,100, 'en');
+    }
+  }
+
+  drawAllComboLabels = () => {
+    let tileMod = 8 * config.screenSize;
+    for(let i = 0; i < this.dgmnStatusList.length; i++){
+      let battleLocationOffset = (this.dgmnStatusList[i].dgmnData.battleLocation * 4) * tileMod;
+      let leftOffset = this.dgmnStatusList[i].dgmnData.isEnemy ? 0 : 16 * tileMod;
+      this.menuCanvas.paintImage(this.fetchImage('comboLabel'), leftOffset, (4 * tileMod) + battleLocationOffset); 
     }
   }
 
@@ -198,6 +259,7 @@ class BattleMenu{
   updateStatusBar = (status, curr, max, bar) => {
     let calcValue = Math.floor( (curr / max) * 18 );
     let barColor = calcValue >= 9 ? 'White' : 'LightGreen';
+        barColor = curr <= 0 ? 'DarkGreen' : barColor;
     status.drawMeter(this.menuCanvas,bar,this.fetchImage(`dgmnBar${barColor}`),calcValue, barColor);
     this.triggerGameScreenRedraw();
   }
@@ -218,6 +280,7 @@ class BattleMenu{
     this.menuCanvas.paintImage(this.fetchImage('miniCursor'), 4 * (8 * config.screenSize),  2 * (8 * config.screenSize));
 
     // Build initial page
+    this.dgmnAttackMenu.currentChoice = 0;
     this.dgmnAttackMenu.loadAttackList(this.dgmnData[this.currentDgmnActor].permAttacks);
     this.dgmnAttackMenu.refreshList(this.menuCanvas,0);
 
@@ -236,10 +299,13 @@ class BattleMenu{
                                    2 * (8 * config.screenSize), 
                                    16 * (8 * config.screenSize), 
                                    12 * (8 * config.screenSize) );
+    // Redraw the Status Sections
     for(let i = 0; i < this.dgmnStatusList.length; i++){
       this.updateStatusBar(this.dgmnStatusList[i],this.dgmnData[this.dgmnStatusList[i].listIndex].currHP,this.dgmnData[this.dgmnStatusList[i].listIndex].currStats[0], 'hp');
-      this.updateStatusBar(this.dgmnStatusList[i],this.dgmnData[this.dgmnStatusList[i].listIndex].currEN,this.dgmnData[this.dgmnStatusList[i].listIndex].currStats[1], 'en');
+      this.updateStatusBar(this.dgmnStatusList[i],this.dgmnData[this.dgmnStatusList[i].listIndex].currEN,100, 'en');
+      this.dgmnStatusList[i].setCombo(this.menuCanvas,this.dgmnStatusList[i].dgmnData.comboLetter,this.fetchImage('fontsWhite'));
     }
+    this.drawAllComboLabels();
     this.triggerGameScreenRedraw();
   }
 
