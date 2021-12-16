@@ -72,7 +72,7 @@ class TextManager {
    * @param {String}      message  Text to be printed
    * @param {Function}    triggerRedraw Callback to redraw the screen
    * ----------------------------------------------------------------------*/
-  slowPaint = (canvas, message, triggerRedraw) => {
+  slowPaint = (canvas, message, triggerRedraw, onDone) => {
     let ctx = canvas.ctx;
 
     let splitWords = message.split(" ");
@@ -113,7 +113,7 @@ class TextManager {
         word++; 
       }
 
-      if(word >= splitWords.length){ clearInterval(paintInterval) } // Out of words, it's totally done
+      if(word >= splitWords.length){ onDone(); clearInterval(paintInterval) } // Out of words, it's totally done
 
     },config.textSpeed * 33);
   }

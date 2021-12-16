@@ -490,7 +490,7 @@ var TextManager = function TextManager(colors, rows, cols, x, y, colorizeCallbac
     }
   });
 
-  _defineProperty(this, "slowPaint", function (canvas, message, triggerRedraw) {
+  _defineProperty(this, "slowPaint", function (canvas, message, triggerRedraw, onDone) {
     var ctx = canvas.ctx;
     var splitWords = message.split(" ");
 
@@ -540,6 +540,7 @@ var TextManager = function TextManager(colors, rows, cols, x, y, colorizeCallbac
       }
 
       if (word >= splitWords.length) {
+        onDone();
         clearInterval(paintInterval);
       } // Out of words, it's totally done
 
@@ -609,9 +610,19 @@ var DgmnBattleStatus = function DgmnBattleStatus(listIndex, dgmnData) {
     var meterOffset = meter === 'hp' ? 0 : 8 * config.screenSize;
     var leftOffset = _this.dgmnData.isEnemy ? 8 * config.screenSize : 17 * 8 * config.screenSize;
     var battleLocationOffset = _this.dgmnData.battleLocation * 32 * config.screenSize;
+    var barColor;
+
+    if (color === 'Red') {
+      barColor = '#F83018';
+    } else if (color === 'Blue') {
+      barColor = '#58A0F8';
+    } else {
+      barColor = '#6CA66C';
+    }
+
     canvas.ctx.clearRect(leftOffset, 16 * config.screenSize + meterOffset + battleLocationOffset, 24 * config.screenSize, 8 * config.screenSize);
     canvas.ctx.drawImage(image, leftOffset, 16 * config.screenSize + meterOffset + battleLocationOffset, 24 * config.screenSize, 8 * config.screenSize);
-    canvas.ctx.fillStyle = color === 'White' ? "#c4cfa1" : "#6ca66c";
+    canvas.ctx.fillStyle = barColor;
     canvas.ctx.fillRect(leftOffset + 4 * config.screenSize, 16 * config.screenSize + meterOffset + battleLocationOffset + 2 * config.screenSize, meterLength * config.screenSize, 3 * config.screenSize);
   });
 
@@ -627,6 +638,20 @@ var DgmnBattleStatus = function DgmnBattleStatus(listIndex, dgmnData) {
     }
   });
 
+  _defineProperty(this, "setWeakened", function (canvas, levelImg) {
+    var tileMod = 8 * config.screenSize;
+    var leftOffset = _this.dgmnData.isEnemy ? 0 * tileMod : 16 * tileMod;
+    var battleLocationOffset = _this.dgmnData.battleLocation * 4 * tileMod;
+    canvas.paintImage(levelImg, leftOffset, 5 * tileMod + battleLocationOffset);
+  });
+
+  _defineProperty(this, "setStatusConditions", function (canvas, conditionImages) {});
+
+  _defineProperty(this, "cleanAll", function (canvas) {
+    // Clean out everything
+    console.log("CLEAN AFTER KO");
+  });
+
   this.listIndex = listIndex;
   this.dgmnData = dgmnData;
   this.currHP = new BattleMeter();
@@ -640,39 +665,111 @@ var attacksDB = {
     type: 'none',
     power: 'F',
     maxCost: 32,
+    stat: 'physical',
     targets: 'single',
-    hits: 2,
+    hits: 1,
     animationFrames: [['bubbles1', 1], ['bubbles2', 4], ['bubbles1', 1]],
-    animationFrameCount: 2
+    animationFrameCount: 2,
+    effect: ['buff', 1, .5, 25]
   },
   babyFlame: {
-    displayName: 'BabyFlame',
+    displayName: 'Baby Flame',
     power: 'E',
-    maxCost: 8,
+    maxCost: 12,
+    stat: 'physical',
     type: 'fire',
     targets: 'single',
     hits: 1,
     species: 'agu',
-    animationFrames: [['babyFlame1', 1], ['babyFlame2', 1], ['babyFlame3', 4], ['babyFlame2', 1], ['babyFlame1', 1]],
-    animationFrameCount: 3
+    animationFrames: [['babyFlame1', 1], ['babyFlame2', 1], ['babyFlame3', 1], ['babyFlame4', 2], ['babyFlame5', 1], ['babyFlame6', 1]],
+    animationFrameCount: 6
   },
   megaFlame: {
     displayName: 'Mega Flame',
     power: 'D',
     maxCost: 8,
+    stat: 'physical',
     type: 'fire',
     targets: 'single',
     hits: 1,
-    animationFrames: [['babyFlame1', 1], ['babyFlame2', 1], ['babyFlame3', 4], ['babyFlame2', 1], ['babyFlame1', 1]],
+    animationFrames: [['babyFlame1', 2], ['babyFlame2', 2], ['babyFlame3', 8], ['babyFlame2', 2], ['babyFlame1', 2]],
     animationFrameCount: 3
+  },
+  picoDarts: {
+    displayName: 'Pico Darts',
+    power: 'F',
+    stat: 'physical',
+    maxCost: 12,
+    type: 'evil',
+    targets: 'single',
+    hits: 1,
+    animationFrames: [['picoDarts1', 1], ['picoDarts2', 1], ['picoDarts3', 1], ['picoDarts4', 1], ['picoDarts5', 1]],
+    animationFrameCount: 5,
+    effect: ['debuff', 1, .5, 25]
   },
   petitFire: {
     displayName: 'Petit Fire',
     power: 'F',
+    stat: 'physical',
     maxCost: 8,
     type: 'fire',
     targets: 'all',
     hits: 1
+  },
+  elecRush: {
+    displayName: 'Elec Rush',
+    power: 'F',
+    stat: 'physical',
+    maxCost: 12,
+    type: 'elec',
+    targets: 'single',
+    hits: 1,
+    animationFrames: [['elecRush1', 2], ['elecRush2', 2], ['elecRush3', 2], ['elecRush4', 2]],
+    animationFrameCount: 4,
+    effect: ['status', 'paralyze', 100]
+  },
+  petitTwister: {
+    displayName: 'Petit Twister',
+    power: 'F',
+    stat: 'special',
+    maxCost: 8,
+    type: 'wind',
+    targets: 'all',
+    hits: 1
+  },
+  darknessGear: {
+    displayName: 'Darkness Gear',
+    power: 'F',
+    maxCost: 12,
+    type: 'metal',
+    stat: 'physical',
+    targets: 'single',
+    hits: 2,
+    animationFrames: [['darknessGear1', 1], ['darknessGear2', 1], ['darknessGear3', 1], ['darknessGear4', 1], ['darknessGear5', 1], ['darknessGear6', 1], ['darknessGear7', 1], ['blankAttack', 8], ['darknessGear1', 1], ['darknessGear2', 1], ['darknessGear3', 1], ['darknessGear4', 1], ['darknessGear5', 1], ['darknessGear6', 1], ['darknessGear7', 1]],
+    animationFrameCount: 7
+  },
+  nutsShoot: {
+    displayName: 'Nuts Shoot',
+    power: 'F',
+    maxCost: 12,
+    stat: 'physical',
+    type: 'plant',
+    targets: 'all',
+    hits: 1,
+    animationFrames: [['nutsShoot1', 1], ['nutsShoot2', 1], ['nutsShoot3', 1], ['nutsShoot4', 1]],
+    animationFrameCount: 4
+  },
+  magicalFire: {
+    displayName: 'Magical Fire',
+    power: 'F',
+    maxCost: 8,
+    type: 'fire',
+    stat: 'special',
+    targets: 'single',
+    // TODO - Multi
+    hits: 1,
+    animationFrames: [['babyFlame1', 1], ['babyFlame2', 1], ['babyFlame3', 4], ['babyFlame2', 1], ['babyFlame1', 1]],
+    animationFrameCount: 3
   }
 };
 
@@ -763,6 +860,65 @@ var DgmnAttackMenu = function DgmnAttackMenu(fetchImageCallback) {
   this.fetchImage = function (imageName) {
     return fetchImageCallback(imageName);
   };
+};
+
+var getComboLetter = function getComboLetter(combo) {
+  var letter = 'F';
+
+  if (combo > 1 && combo < 5) {
+    letter = 'E';
+  } else if (combo > 4 && combo < 9) {
+    letter = 'D';
+  } else if (combo > 8 && combo < 14) {
+    letter = 'C';
+  } else if (combo > 13 && combo < 19) {
+    letter = 'B';
+  } else if (combo > 18 && combo < 24) {
+    letter = 'A';
+  } else if (combo >= 25) {
+    letter = 'S';
+  }
+
+  return letter;
+};
+var getStatNameFromIndex = function getStatNameFromIndex(index) {
+  var stat = '';
+
+  switch (index) {
+    case 0:
+      stat = 'HP';
+      break;
+
+    case 1:
+      stat = 'ATK';
+      break;
+
+    case 2:
+      stat = 'DEF';
+      break;
+
+    case 3:
+      stat = 'INT';
+      break;
+
+    case 4:
+      stat = 'RES';
+      break;
+
+    case 5:
+      stat = 'HIT';
+      break;
+
+    case 6:
+      stat = 'AVO';
+      break;
+
+    case 7:
+      stat = 'SPD';
+      break;
+  }
+
+  return stat;
 };
 
 var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback) {
@@ -916,6 +1072,13 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
   _defineProperty(this, "updateStatusBar", function (status, curr, max, bar) {
     var calcValue = Math.floor(curr / max * 18);
     var barColor = calcValue >= 9 ? 'White' : 'LightGreen';
+
+    if (bar === 'hp') {
+      barColor = 'LightGreen';
+    } else if (bar === 'en') {
+      barColor = 'LightGreen';
+    }
+
     barColor = curr <= 0 ? 'DarkGreen' : barColor;
     status.drawMeter(_this.menuCanvas, bar, _this.fetchImage("dgmnBar".concat(barColor)), calcValue, barColor);
 
@@ -968,15 +1131,125 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
 
     _this.closeDgmnAttackMenu();
 
+    var firstAlive = 0;
+
+    for (var i = 0; i < _this.dgmnData.length; i++) {
+      if (_this.dgmnData[i].isEnemy && !_this.dgmnData[i].isDead) {
+        firstAlive = _this.dgmnData[i].battleLocation;
+        break;
+      }
+    }
+
+    _this.menus.targetSelect.currentIndex = 0;
     var attackData = attacksDB[_this.dgmnAttackMenu.attackList[_this.dgmnAttackMenu.currentChoice].attackName];
 
     if (attackData.targets === 'single') {
-      _this.menuCanvas.paintImage(_this.fetchImage('cursorLeft'), 8 * (8 * config.screenSize), 16 * config.screenSize + 8 * config.screenSize);
+      _this.targetSelectedType = 'single';
+
+      _this.paintTargetSelectCursor('single', firstAlive);
     } else {
-      console.log("MULTI TARGET");
+      _this.targetSelectedType = 'all';
+
+      _this.paintTargetSelectCursor('all');
+    }
+  });
+
+  _defineProperty(this, "targetSelect", function (mod, battleLocations) {
+    if (_this.targetSelectedType !== 'all') {
+      if (!(mod < 0 && _this.menus.targetSelect.currentIndex === 0) && !(mod > 0 && _this.menus.targetSelect.currentIndex === 2) && battleLocations.enemy[_this.menus.targetSelect.currentIndex + mod] && !_this.dgmnKOs[battleLocations.enemy[_this.menus.targetSelect.currentIndex + mod]]) {
+        _this.clearTargetSelectCursor();
+
+        _this.menus.targetSelect.currentIndex += mod;
+
+        _this.paintTargetSelectCursor('single', _this.menus.targetSelect.currentIndex);
+      }
+    }
+  });
+
+  _defineProperty(this, "clearCurrentDgmnCursors", function () {
+    var tileMod = 8 * config.screenSize;
+
+    _this.menuCanvas.ctx.clearRect(10 * tileMod, 2 * tileMod, 2 * tileMod, 12 * tileMod);
+  });
+
+  _defineProperty(this, "clearTargetSelectCursor", function () {
+    var tileMod = 8 * config.screenSize;
+
+    _this.menuCanvas.ctx.clearRect(8 * tileMod, 2 * tileMod, 2 * tileMod, 12 * tileMod);
+  });
+
+  _defineProperty(this, "paintTargetSelectCursor", function (targetCount, index) {
+    var tileMod = 8 * config.screenSize;
+
+    if (targetCount === 'single') {
+      _this.menuCanvas.paintImage(_this.fetchImage('cursorLeft'), 8 * tileMod, (3 + index * 4) * tileMod);
+    } else {
+      for (var i = 0; i < 3; i++) {
+        _this.menuCanvas.paintImage(_this.fetchImage('cursorLeft'), 8 * tileMod, (3 + i * 4) * tileMod);
+      }
     }
 
     _this.triggerGameScreenRedraw();
+  });
+
+  _defineProperty(this, "setAttackBottomInfo", function (attacker, attack, missCrit, onDone) {
+    _this.clearBottomData(true);
+
+    _this.setDgmnPortrait(attacker.name);
+
+    var attackMessage = attacker.isEnemy ? "Enemy ".concat(attacker.name, ".MON used ").concat(attack.displayName, "!") : "".concat(attacker.nickname, " used ").concat(attack.displayName, "!");
+    if (missCrit === 'missed') attackMessage += " ...but missed.";
+    if (missCrit === 'critical') attackMessage += " Critical Hit!";
+
+    _this.bottomTextManager.slowPaint(_this.menuCanvas, attackMessage, _this.triggerGameScreenRedraw, onDone);
+  });
+
+  _defineProperty(this, "setDefendBottomInfo", function (defender, onDone) {
+    _this.clearBottomData(true);
+
+    _this.setDgmnPortrait(defender.name);
+
+    var defendMessage = defender.isEnemy ? "Enemy ".concat(defender.name, ".MON Defends!") : "".concat(defender.nickname, " Defends!");
+
+    _this.bottomTextManager.slowPaint(_this.menuCanvas, defendMessage, _this.triggerGameScreenRedraw, onDone);
+  });
+
+  _defineProperty(this, "setEffectBottomInfo", function (effect, attacker, target, isCapped, onDone) {
+    var effectMessage;
+
+    if (!isCapped) {
+      switch (effect[0]) {
+        case 'buff':
+          var amount = '';
+
+          if (effect[2] === 1) {
+            amount = ' a bit';
+          } else if (effect[2] === 2) {
+            amount = 'a lot';
+          }
+
+          effectMessage = "".concat(getStatNameFromIndex(effect[1]), " went up").concat(amount, "!");
+          break;
+
+        case 'status':
+          console.log("EFFECT = ", effect);
+          effectMessage = "".concat(target, " inflicted with ").concat(effect[1]);
+          break;
+
+        default:
+          effectMessage = 'Something went wrong...';
+          onDone();
+          break;
+      }
+    } else {
+      effectMessage = "Couldn't increase ".concat(getStatNameFromIndex(effect[1]), "...");
+    }
+
+    _this.bottomTextManager.slowPaint(_this.menuCanvas, effectMessage, _this.triggerGameScreenRedraw, onDone);
+  });
+
+  _defineProperty(this, "setMissedBottomInfo", function (onDone) {
+    _this.bottomTextManager.slowPaint(_this.menuCanvas, '', _this.triggerGameScreenRedraw, onDone);
   });
 
   _defineProperty(this, "setCurrentIcon", function (index) {
@@ -1003,6 +1276,8 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
   this.currentState = 'dgmn'; // none | beetle | dgmn | attack | item
 
   this.currentDgmnActor = 0;
+  this.selectedTarget = 0;
+  this.targetSelectedType = 'single';
   this.selectedAttack;
   this.topTextManager = new TextManager([fetchImageCallback('fontsWhite')], 1, 20, 0, 1); // TODO - I'm not worried about the font loading slower than anything else, but just in case, I should change this a little...
 
@@ -1023,6 +1298,7 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
 
     return 0;
   });
+  this.dgmnKOs = {};
   this.dgmnStatusList = [];
   this.menus = {};
   this.menuImages = ['./sprites/Battle/Menu/dgmn-bar-white.png', './sprites/Battle/Menu/dgmn-bar-light-green.png', './sprites/Battle/Menu/attack-select-popup-base.png'];
@@ -1050,15 +1326,15 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
  * ----------------------------------------------------------------------*/
 ;
 
-var genericImages = ['./sprites/Battle/Menu/miniCursor.png', './sprites/Menus/typeLabel.png', './sprites/Menus/costLabel.png', './sprites/Menus/targetLabel.png', './sprites/Menus/powerLabel.png', './sprites/Menus/hitLabel.png', './sprites/Menus/noneTypeIcon.png', './sprites/Menus/fireTypeIcon.png', './sprites/Menus/targetOne.png', './sprites/Menus/targetAll.png', './sprites/Menus/pwrFIcon.png', './sprites/Menus/pwrEIcon.png', './sprites/Menus/pwrDIcon.png', './sprites/Menus/oneHitIcon.png', './sprites/Menus/costMeter100.png', './sprites/Menus/costMeter75.png', './sprites/Menus/costMeter50.png', './sprites/Menus/costMeter25.png', './sprites/Menus/costMeter0.png'];
+var genericImages = ['./sprites/Battle/Menu/miniCursor.png', './sprites/Menus/typeLabel.png', './sprites/Menus/costLabel.png', './sprites/Menus/targetLabel.png', './sprites/Menus/powerLabel.png', './sprites/Menus/hitLabel.png', './sprites/Menus/noneTypeIcon.png', './sprites/Menus/fireTypeIcon.png', './sprites/Menus/windTypeIcon.png', './sprites/Menus/plantTypeIcon.png', './sprites/Menus/elecTypeIcon.png', './sprites/Menus/evilTypeIcon.png', './sprites/Menus/metalTypeIcon.png', './sprites/Menus/targetOne.png', './sprites/Menus/targetAll.png', './sprites/Menus/pwrFIcon.png', './sprites/Menus/pwrEIcon.png', './sprites/Menus/pwrDIcon.png', './sprites/Menus/oneHitIcon.png', './sprites/Menus/costMeter100.png', './sprites/Menus/costMeter75.png', './sprites/Menus/costMeter50.png', './sprites/Menus/costMeter25.png', './sprites/Menus/costMeter0.png', './sprites/Battle/Attacks/blankAttack.png'];
 var fontImages = ['./sprites/Fonts/fontsBlack.png', './sprites/Fonts/fontsWhite.png', './sprites/Fonts/fontsLightGreen.png'];
-var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/dgmnBarDarkGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png', './sprites/Battle/Menu/comboLabel.png', './sprites/Battle/Menu/weak1.png', './sprites/Battle/Menu/weak2.png', './sprites/Battle/Menu/weak3.png'];
+var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarRed.png', './sprites/Battle/Menu/dgmnBarBlue.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/dgmnBarDarkGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png', './sprites/Battle/Menu/comboLabel.png', './sprites/Battle/Menu/weak0.png', './sprites/Battle/Menu/weak1.png', './sprites/Battle/Menu/weak2.png', './sprites/Battle/Menu/weak3.png'];
 
 // Handles all of the actual values for Ranks (F - S)
 var powerRanks = {
-  F: .5,
-  E: .75,
-  D: 1,
+  F: 1,
+  E: 1.125,
+  D: 1.25,
   C: 1.5,
   B: 2,
   A: 4,
@@ -1087,42 +1363,66 @@ var Attack = function Attack(attackName) {
     return preMods;
   });
 
-  _defineProperty(this, "animate", function (target, attacker, triggerRedraw, canvas, fetchImage, callback) {
+  _defineProperty(this, "animate", function (targets, attacker, triggerRedraw, canvas, fetchImage, callback) {
     attacker.battleCanvas.attackAnimation();
-    target.battleCanvas.hurtAnimation();
-    var x = target.isEnemy ? 4 * (8 * config.screenSize) : 12 * (8 * config.screenSize);
-    var y = (2 + target.battleLocation * 4) * (8 * config.screenSize);
     triggerRedraw();
+    var x,
+        y = 0;
+    var target = undefined;
     var animationCounter = 0;
     var animationSection = 0;
+    var currentTarget = 0;
+    var targetCount = _this.targets === 'single' ? 1 : 3;
     canvas.clearCanvas();
     var attackAnimation = setInterval(function () {
-      if (animationCounter === 0) {
-        canvas.clearCanvas();
+      if (currentTarget < targetCount) {
+        target = targets[currentTarget];
 
-        if (animationSection === _this.animationFrames.length) {
-          canvas.clearCanvas();
-          triggerRedraw();
-          clearInterval(attackAnimation);
-          setTimeout(function () {
-            attacker.battleCanvas.isIdle = true;
-            if (!target.isDead) target.battleCanvas.isIdle = true;
-            triggerRedraw();
-          }, 200);
-          setTimeout(function () {
-            callback();
-          }, 1200);
+        if (!target.isDead) {
+          target.battleCanvas.hurtAnimation();
+          x = target.isEnemy ? 4 * (8 * config.screenSize) : 12 * (8 * config.screenSize);
+          y = (2 + target.battleLocation * 4) * (8 * config.screenSize);
+
+          if (animationCounter === 0) {
+            canvas.clearCanvas();
+
+            if (animationSection === _this.animationFrames.length) {
+              currentTarget++;
+              animationCounter = 0;
+              animationSection = 0;
+            } else {
+              canvas.paintImage(fetchImage(_this.animationFrames[animationSection][0]), x, y);
+              triggerRedraw();
+            }
+
+            animationCounter++;
+          } else if (animationCounter !== 0 && animationCounter >= _this.animationFrames[animationSection][1]) {
+            animationSection++;
+            animationCounter = 0;
+          } else {
+            animationCounter++;
+          }
         } else {
-          canvas.paintImage(fetchImage(_this.animationFrames[animationSection][0]), x, y);
-          triggerRedraw();
+          currentTarget++;
+          animationCounter = 0;
+          animationSection = 0;
         }
-
-        animationCounter++;
-      } else if (animationCounter !== 0 && animationCounter >= _this.animationFrames[animationSection][1]) {
-        animationSection++;
-        animationCounter = 0;
       } else {
-        animationCounter++;
+        canvas.clearCanvas();
+        triggerRedraw();
+        clearInterval(attackAnimation);
+        setTimeout(function () {
+          attacker.battleCanvas.isIdle = true;
+
+          for (var i = 0; i < targetCount; i++) {
+            if (!targets[i].isDead) targets[i].battleCanvas.isIdle = true;
+          }
+
+          triggerRedraw();
+        }, 200);
+        setTimeout(function () {
+          callback();
+        }, 2000);
       }
     }, 66);
   });
@@ -1135,6 +1435,8 @@ var Attack = function Attack(attackName) {
   this.power = attacksDB[this.attackName].power;
   this.targets = attacksDB[this.attackName].targets;
   this.hits = attacksDB[this.attackName].hits;
+  this.stat = attacksDB[this.attackName].stat;
+  this.effect = attacksDB[this.attackName].effect || null;
   this.animationFrames = attacksDB[this.attackName].animationFrames;
 }
 /**------------------------------------------------------------------------
@@ -1226,7 +1528,10 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 
   _defineProperty(this, "loadDgmn", function (dgmnList, isEnemy) {
     for (var i = 0; i < dgmnList.length; i++) {
-      var dgmn = dgmnList[i];
+      var dgmn = dgmnList[i]; // Set Locations of Dgmn
+
+      var side = isEnemy ? 'enemy' : 'party';
+      _this.battleLocations[side][dgmn.battleLocation] = dgmn.dgmnId;
       var imageStack = [_this.fetchImage("".concat(dgmn.name.toLowerCase(), "Idle0")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Idle1")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Attack")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Hurt"))];
       dgmn.initBattleCanvas(_this.triggerGameScreenRedraw, imageStack);
       dgmn.battleCanvas.x = isEnemy ? 2 * (16 * config.screenSize) : 6 * (16 * config.screenSize);
@@ -1241,12 +1546,16 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
   });
 
   _defineProperty(this, "generateEnemyAttacks", function () {
-    // TODO - This is manual right now, needs to have a BUNCH of logic and Data here...
-    _this.attackActions[4] = {
-      attacker: _this.enemyDgmnList[0],
-      target: _this.dgmnList[0],
-      attack: new Attack('babyFlame')
-    };
+    for (var i = 0; i < 3; i++) {
+      if (!_this.enemyDgmnList[i].isDead) {
+        _this.attackActions[_this.enemyDgmnList[i].dgmnId] = {
+          attacker: _this.enemyDgmnList[i],
+          targets: [_this.dgmnList[i]],
+          attack: _this.enemyDgmnList[i].permAttacks[0],
+          status: 'todo'
+        };
+      }
+    }
   });
 
   _defineProperty(this, "setupOrder", function () {
@@ -1255,8 +1564,8 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     for (var i = 0; i < order.length; i++) {
       for (var r = 0; r < order.length - 1; r++) {
         var temp = order[r];
-        var currSpeed = order[r].currStats[7];
-        var nextSpeed = order[r + 1].currStats[7];
+        var currSpeed = order[r].currStats[7] * order[r].currBuffs[7];
+        var nextSpeed = order[r + 1].currStats[7] * order[r].currBuffs[7];
 
         if (currSpeed < nextSpeed) {
           order[r] = order[r + 1];
@@ -1272,14 +1581,16 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     var imagesList = [];
 
     for (var prop in attackList) {
-      var attackName = attackList[prop].attack.attackName;
+      if (!attackList[prop].defend) {
+        var attackName = attackList[prop].attack.attackName;
 
-      if (!_this.loadedAttacks.includes(attackName)) {
-        _this.loadedAttacks.push(attackName);
+        if (!_this.loadedAttacks.includes(attackName)) {
+          _this.loadedAttacks.push(attackName);
 
-        for (var r = 0; r < attacksDB[attackName].animationFrameCount; r++) {
-          var url = "./sprites/Battle/Attacks/".concat(attackName).concat(r + 1, ".png");
-          if (!imagesList.includes(url)) imagesList.push(url);
+          for (var r = 0; r < attacksDB[attackName].animationFrameCount; r++) {
+            var url = "./sprites/Battle/Attacks/".concat(attackName).concat(r + 1, ".png");
+            if (!imagesList.includes(url)) imagesList.push(url);
+          }
         }
       }
     }
@@ -1302,21 +1613,81 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
   });
 
   _defineProperty(this, "runAttacks", function () {
+    debugLog('Attacks = ', _this.attackActions);
+
     var turnOrder = _this.setupOrder();
 
     var i = 0;
     var prevI = -1; // Runs every frame and checks for the currently attacking Dgmn to be 'done'
 
     var attackInterval = setInterval(function () {
+      var targets, attacker, attack;
+
       if (i !== prevI) {
         prevI = i;
 
         if (!turnOrder[i].isDead) {
-          _this.attack(_this.attackActions[turnOrder[i].dgmnId]);
-        }
+          if (!_this.attackActions[turnOrder[i].dgmnId].defend) {
+            targets = _this.attackActions[turnOrder[i].dgmnId].targets;
+            attacker = _this.attackActions[turnOrder[i].dgmnId].attacker;
+            attack = _this.attackActions[turnOrder[i].dgmnId].attack;
+            var accuracy = ''; // One target and they're dead, move on. Otherwise...
+
+            if (targets.length === 1 && targets[0].isDead) {
+              i++;
+            } else {
+              // Run through targets
+              for (var _i = 0; _i < targets.length; _i++) {
+                accuracy = _this.calculateAccuracy(attacker.dgmnId, targets[_i].currStats[6] * targets[_i].currBuffs[6], attacker.currStats[5] * attacker.currBuffs[5]);
+
+                if (accuracy !== 'missed') {
+                  var critMod = accuracy === 'critical' ? 2 : 1;
+
+                  _this.attack(targets[_i], attacker, attack, critMod);
+                }
+              } // If the attack didn't miss
+
+
+              if (accuracy !== 'missed') {
+                // Once bottom text is done painting... Animate the attack
+                _this.battleMenu.setAttackBottomInfo(attacker, attack, accuracy, function () {
+                  setTimeout(function () {
+                    attack.animate(targets, attacker, _this.triggerGameScreenRedraw, _this.attackCanvas, _this.fetchImage, function () {
+                      if (!attack.effect) {
+                        // No effect
+                        _this.attackActions[turnOrder[i].dgmnId].status = 'done';
+
+                        _this.finishAttack(targets);
+                      } else {
+                        // With Effect
+                        _this.handleEffect(attack.effect, attacker, targets);
+                      } // END - With Effect
+
+                    });
+                  }, 1000);
+                });
+              } else {
+                _this.battleMenu.setAttackBottomInfo(attacker, attack, accuracy, function () {
+                  setTimeout(function () {
+                    _this.attackActions[turnOrder[i].dgmnId].status = 'done';
+
+                    _this.finishAttack(targets);
+                  }, 1000);
+                });
+              }
+            }
+          } else {
+            // Defend
+            _this.defend(_this.attackActions[turnOrder[i].dgmnId]);
+          }
+        } else if (turnOrder[i].isDead && i !== turnOrder.length) {
+          i++;
+        } // Current Turn is Dead and not last in turn, skip
+
       }
 
-      if (_this.attackActions[turnOrder[i].dgmnId].status === 'done') i++;
+      if (i < turnOrder.length && _this.attackActions[turnOrder[i].dgmnId].status === 'done') i++; // Turn's not over and Curent Turn is done, move on
+      // At the end of the Turn
 
       if (i === turnOrder.length) {
         _this.startNewTurn();
@@ -1329,10 +1700,18 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     }, 33);
   });
 
-  _defineProperty(this, "attack", function (attackAction) {
-    var target = attackAction.target;
-    var attacker = attackAction.attacker;
-    var attack = attackAction.attack;
+  _defineProperty(this, "defend", function (attackAction) {
+    var defender = attackAction.defender;
+    defender.isDefending = true;
+
+    _this.battleMenu.setDefendBottomInfo(defender, function () {
+      setTimeout(function () {
+        attackAction.status = 'done';
+      }, 1000);
+    });
+  });
+
+  _defineProperty(this, "attack", function (target, attacker, attack, missCritMod) {
     debugLog("-- ".concat(attacker.nickname, " uses ").concat(attack.attackName, " on ").concat(target.nickname)); // Reduce EN / Cost
 
     attack.currCost--;
@@ -1345,18 +1724,8 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 
     for (var i = 0; i < attack.hits; i++) {
       // Handle Combo
-      var comboMod = .75;
+      var comboMod = _this.calculateCombo(target, typeMod); // Update Statuses and Messaging
 
-      if (typeMod === 1) {
-        target.currCombo++;
-      } else if (typeMod > 1) {
-        target.currCombo += 2;
-      }
-
-      var comboLetter = _this.getComboLetter(target.currCombo);
-
-      target.comboLetter = comboLetter;
-      comboMod = comboRanks[comboLetter]; // Update Statuses and Messaging
 
       var topMessage = "";
 
@@ -1372,45 +1741,160 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 
       _this.battleMenu.setTopText(topMessage);
 
-      _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(target.dgmnId)].setCombo(_this.battleMenu.menuCanvas, target.comboLetter, _this.fetchImage('fontsWhite')); // Calculate Damage
+      _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(target.dgmnId)].setCombo(_this.battleMenu.menuCanvas, target.comboLetter, _this.fetchImage('fontsWhite'));
 
+      totalDamage += _this.calculateDamage(attacker, target, attack, typeMod, comboMod, missCritMod);
+      debugLog("--- Total Attack Damage = ", totalDamage); // Handle "effects"
 
-      var damage = attack.calculateDamage(target.currStats[3], attacker.currStats[2], attacker.level);
-      var postMods = damage * typeMod * comboMod; // TODO - Add all of the mods
+      if (typeMod > 1) {
+        // Target is Weak, do some work
+        target.weakenedState[0] = true;
+        if (target.weakenedState[1] < 3) target.weakenedState[1]++;
+      }
 
-      var rando = Math.floor(Math.random() * (4 - 1) + 1); // Add in a Random number from 1-3
-
-      var finalDamage = Math.floor(postMods) + rando;
-      debugLog("---- Attack Damage = ", finalDamage);
-      totalDamage += finalDamage; // Handle "effects"
+      if (target.weakenedState[0]) _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(target.dgmnId)].setWeakened(_this.battleMenu.menuCanvas, _this.fetchImage("weak".concat(target.weakenedState[1])));
     }
 
-    target.currHP -= totalDamage; // Handle Bottom information
+    target.currHP -= totalDamage;
+  });
 
-    _this.battleMenu.clearBottomData(true);
+  _defineProperty(this, "finishAttack", function (targets) {
+    _this.attackCanvas.clearCanvas();
 
-    _this.battleMenu.setDgmnPortrait(attacker.name);
-
-    var attackMessage = attacker.isEnemy ? "Enemy ".concat(attacker.name, ".MON used ").concat(attack.displayName, "!") : "".concat(attacker.nickname, " used ").concat(attack.displayName, "!");
-
-    _this.battleMenu.bottomTextManager.slowPaint(_this.battleMenu.menuCanvas, attackMessage, _this.triggerGameScreenRedraw);
-
-    attack.animate(target, attacker, _this.triggerGameScreenRedraw, _this.attackCanvas, _this.fetchImage, function () {
-      _this.attackCanvas.clearCanvas();
-
-      attackAction.status = 'done';
-    });
-    if (target.currHP <= 0) _this.knockOut(target);
+    for (var i = 0; i < targets.length; i++) {
+      if (targets[i].currHP <= 0) _this.knockOut(targets[i]);
+    }
 
     _this.battleMenu.updateAllStatusBars();
+  });
+
+  _defineProperty(this, "handleEffect", function (effect, attacker, targets) {
+    debugLog("---- Running Attack Effect");
+    var isBuffCapped;
+    var shouldRun = '';
+
+    if (effect[0] === 'buff') {
+      shouldRun = _this.buffStat(attacker, attacker, targets[0].nickname, effect[3], effect[1], effect[2]);
+      isBuffCapped = shouldRun === 'capped';
+    } else if (effect[0] === 'debuff') ; else if (effect[0] === 'status') {
+      shouldRun = _this.inflictStatus(targets[0], attacker, targets[0].nickname, effect[2], effect[1]); // TODO - send more than one target
+    }
+
+    if (shouldRun !== 'missed' && shouldRun !== '') {
+      _this.battleMenu.setEffectBottomInfo(effect, attacker, targets[0].nickname, isBuffCapped, function () {
+        setTimeout(function () {
+          _this.attackActions[attacker.dgmnId].status = 'done';
+
+          _this.finishAttack(targets);
+        }, 1000);
+      });
+    } else {
+      _this.attackActions[attacker.dgmnId].status = 'done';
+
+      _this.finishAttack(targets);
+    }
+  });
+
+  _defineProperty(this, "buffStat", function (dgmn, chance, stat, amount) {
+    var buffStatus = ''; // '' | capped | missed
+
+    var shouldRun = Math.floor(Math.random() * (100 - 1) + 1) <= chance;
+
+    if (shouldRun) {
+      // Check Buff Chance
+      if (dgmn.currBuffs[stat] < 6) {
+        dgmn.currBuffs[stat] += amount;
+        debugLog("----- Buffing ".concat(stat, " by ").concat(amount));
+      } else {
+        buffStatus = 'capped';
+      }
+    } else {
+      buffStatus = 'missed';
+    }
+
+    return buffStatus;
+  });
+
+  _defineProperty(this, "inflictStatus", function (dgmn, chance, condition) {
+    var shouldInflict = Math.floor(Math.random() * (100 - 1) + 1) <= chance;
+
+    if (shouldInflict) {
+      if (!dgmn.currConditions[condition]) {
+        debugLog("----- Adding condition - ", condition);
+        dgmn.currConditions[condition] = true;
+      }
+    }
+
+    return shouldInflict;
+  });
+
+  _defineProperty(this, "calculateCombo", function (target, typeMod) {
+    var mod = .75;
+
+    if (typeMod === 1) {
+      target.currCombo++;
+    } else if (typeMod > 1) {
+      target.currCombo += 2;
+    }
+
+    if (target.weakenedState[0]) {
+      target.currCombo++;
+    }
+
+    var comboLetter = getComboLetter(target.currCombo);
+    target.comboLetter = comboLetter;
+    mod = comboRanks[comboLetter];
+    return mod;
+  });
+
+  _defineProperty(this, "calculateAccuracy", function (attackerDgmnId, targetAvo, attackerHit) {
+    var accuracy = '';
+    var missRange = targetAvo / attackerHit;
+    var critRange = attackerHit / targetAvo;
+
+    if (missRange !== 1) {
+      missRange = missRange < 1 ? missRange * .5 : missRange * 2;
+      critRange = critRange < 1 ? critRange * .5 : critRange * 2;
+    }
+
+    missRange *= 10;
+    critRange *= 10;
+    var rand = Math.floor(Math.random() * (1000 - 1) + 1);
+
+    if (rand <= missRange) {
+      console.log("ATTACK MISSED");
+      accuracy = 'missed';
+    } else if (rand >= 1000 - critRange) {
+      console.log("CRITICAL HIT");
+      accuracy = 'critical';
+    }
+
+    return accuracy;
+  });
+
+  _defineProperty(this, "calculateDamage", function (attacker, target, attack, typeMod, comboMod, missCritMod) {
+    var weakenedMod = target.weakenedState[0] ? 1.25 : 1;
+    var defendMod = target.isDefending ? .5 : 1;
+    var stats = attack.stat === 'physical' ? [target.currStats[2] * target.currBuffs[2], attacker.currStats[1] * attacker.currBuffs[1]] : [target.currStats[4] * target.currBuffs[4], attacker.currStats[3] * attacker.currBuffs[3]];
+    var damage = attack.calculateDamage(stats[0], stats[1], attacker.level);
+    var postMods = damage * typeMod * comboMod * weakenedMod * defendMod * missCritMod; // TODO - Add remaining mods
+
+    var rando = Math.floor(Math.random() * (4 - 1) + 1); // Add in a Random number from 1-3
+
+    var finalDamage = Math.floor(postMods) + rando;
+    return finalDamage;
   });
 
   _defineProperty(this, "knockOut", function (target) {
     target.currHP = 0;
     target.currEN = 0;
     target.battleCanvas.isIdle = false;
-    target.battleCanvas.clearCanvas();
-    debugLog("Target DGMN was KO'd");
+    target.battleCanvas.clearCanvas(); // TODO - this needs to be moved
+
+    _this.battleMenu.dgmnKOs[target.dgmnId] = true; // Lets the menus know to ignore this Dgmn
+
+    _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(target.dgmnId)].cleanAll();
+
     target.isDead = true;
 
     _this.checkAllDead(target.isEnemy);
@@ -1439,49 +1923,85 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     }
   });
 
-  _defineProperty(this, "getComboLetter", function (combo) {
-    var letter = 'F';
-
-    if (combo > 1 && combo < 5) {
-      letter = 'E';
-    } else if (combo > 4 && combo < 9) {
-      letter = 'D';
-    } else if (combo > 8 && combo < 14) {
-      letter = 'C';
-    } else if (combo > 13 && combo < 19) {
-      letter = 'B';
-    } else if (combo > 18 && combo < 24) {
-      letter = 'A';
-    } else if (combo >= 25) {
-      letter = 'S';
-    }
-
-    return letter;
-  });
-
   _defineProperty(this, "resetCombos", function (isEnemy) {
     var list = isEnemy ? _this.enemyDgmnList : _this.dgmnList;
 
     for (var i = 0; i < list.length; i++) {
-      var combo = list[i].currCombo - 5;
-      combo = combo < 0 ? 0 : combo;
+      if (!list[i].isDead) {
+        var combo = list[i].currCombo - 3;
+        combo = combo < 0 ? 0 : combo;
+        var comboLetter = getComboLetter(combo);
+        list[i].currCombo = combo;
+        list[i].comboLetter = comboLetter;
 
-      var comboLetter = _this.getComboLetter(combo);
+        _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(_this.battleMenu.menuCanvas, comboLetter, _this.fetchImage('fontsWhite'));
+      } else {
+        list[i].comboLetter = 'F';
 
-      list[i].currCombo = combo;
-      list[i].comboLetter = comboLetter;
+        _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(_this.battleMenu.menuCanvas, 'F', _this.fetchImage('fontsWhite'));
+      }
+    }
+  });
 
-      _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(_this.battleMenu.menuCanvas, comboLetter, _this.fetchImage('fontsWhite'));
+  _defineProperty(this, "resetWeakened", function () {
+    var allDgmn = _this.battleMenu.dgmnStatusList;
+
+    var _iterator2 = _createForOfIteratorHelper(allDgmn),
+        _step2;
+
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var dgmn = _step2.value;
+        var weakenedState = dgmn.dgmnData.weakenedState;
+
+        if (weakenedState[1] > 0) {
+          weakenedState[1]--;
+
+          if (weakenedState[1] === 0) {
+            weakenedState[0] = false;
+          }
+
+          var imageName = "weak".concat(weakenedState[1]);
+          dgmn.setWeakened(_this.battleMenu.menuCanvas, _this.fetchImage(imageName));
+        }
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+  });
+
+  _defineProperty(this, "resetDefend", function () {
+    var allDgmn = _this.battleMenu.dgmnStatusList;
+
+    var _iterator3 = _createForOfIteratorHelper(allDgmn),
+        _step3;
+
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var dgmn = _step3.value;
+        dgmn.isDefending = false;
+      }
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
     }
   });
 
   _defineProperty(this, "startNewTurn", function () {
     _this.turn++;
-    _this.attackActions = {}; // Reset Combos - Ally, then Enemy
+    _this.attackActions = {}; // Reset Weakneed State
+
+    _this.resetWeakened(); // Reset Combos - Ally, then Enemy
+
 
     _this.resetCombos();
 
-    _this.resetCombos(true); // Reset Battle Menu
+    _this.resetCombos(true);
+
+    _this.resetDefend(); // Reset Battle Menu
 
 
     _this.battleMenu.menus.dgmn.currentIndex = 0;
@@ -1516,6 +2036,25 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     //        Clear Items
   });
 
+  _defineProperty(this, "goToNextDgmn", function () {
+    _this.battleMenu.currentState = 'dgmn';
+    _this.battleMenu.currentDgmnActor++;
+
+    _this.battleMenu.setCurrentIcon(0);
+
+    _this.battleMenu.setupDgmn(_this.battleMenu.currentDgmnActor);
+  });
+
+  _defineProperty(this, "beginBattle", function () {
+    _this.battleMenu.currentState = 'battling';
+
+    _this.generateEnemyAttacks();
+
+    debugLog("Running Attacks...");
+
+    _this.loadAttacks();
+  });
+
   _defineProperty(this, "keyTriage", function (key) {
     if (key === 'action') {
       _this.actionKeyHandler();
@@ -1536,6 +2075,24 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     if (_this.battleMenu.currentState === 'dgmn') {
       if (_this.battleMenu.menus.dgmn.currentIndex === 0) {
         _this.battleMenu.launchDgmnAttackMenu();
+      } else if (_this.battleMenu.menus.dgmn.currentIndex === 1) {
+        // Defending
+        _this.battleMenu.clearCurrentDgmnCursors();
+
+        _this.attackActions[_this.dgmnList[_this.battleMenu.currentDgmnActor].dgmnId] = {
+          defend: true,
+          defender: _this.dgmnList[_this.battleMenu.currentDgmnActor],
+          status: 'todo'
+        };
+
+        _this.battleMenu.menuCanvas.ctx.clearRect(8 * (8 * config.screenSize), 2 * (8 * config.screenSize), 2 * (8 * config.screenSize), 12 * (8 * config.screenSize)); // Check whether to move to next Dgmn or begin Battle Phase
+
+
+        if (_this.battleMenu.currentDgmnActor === _this.dgmnList.length - 1) {
+          _this.beginBattle();
+        } else {
+          _this.goToNextDgmn();
+        }
       }
     } else if (_this.battleMenu.currentState === 'attack') {
       var chosenAttack = _this.battleMenu.dgmnAttackMenu.attackList[_this.battleMenu.dgmnAttackMenu.currentChoice];
@@ -1549,24 +2106,18 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 
       var dgmnId = _this.dgmnList[_this.battleMenu.currentDgmnActor].dgmnId; // Add Attack to Attack Actions List
 
+      var attackTargets = _this.battleMenu.selectedAttack.targets === 'single' ? [_this.enemyDgmnList[_this.battleMenu.menus.targetSelect.currentIndex]] : _this.enemyDgmnList;
       _this.attackActions[dgmnId] = {
         attacker: _this.dgmnList[_this.battleMenu.currentDgmnActor],
-        target: _this.enemyDgmnList[_this.battleMenu.menus.targetSelect.currentIndex],
+        targets: attackTargets,
         attack: _this.battleMenu.selectedAttack,
         status: 'todo'
-      };
+      }; // Check whether to move to next Dgmn or begin Battle Phase
 
       if (_this.battleMenu.currentDgmnActor === _this.dgmnList.length - 1) {
-        _this.generateEnemyAttacks();
-
-        debugLog("Running Attacks...");
-
-        _this.loadAttacks();
+        _this.beginBattle();
       } else {
-        _this.battleMenu.currentState = 'dgmn';
-        _this.battleMenu.currentDgmnActor++;
-
-        _this.battleMenu.setupDgmn(_this.battleMenu.currentDgmnActor);
+        _this.goToNextDgmn();
       }
     }
   });
@@ -1576,6 +2127,8 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
       _this.battleMenu.dgmnAttackMenu.selectUp(_this.battleMenu.menuCanvas, _this.battleMenu.dgmnAttackMenu.currentChoice - 1);
 
       _this.triggerGameScreenRedraw();
+    } else if (_this.battleMenu.currentState === 'targetSelect') {
+      _this.battleMenu.targetSelect(-1, _this.battleLocations);
     }
   });
 
@@ -1592,6 +2145,8 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
       _this.battleMenu.dgmnAttackMenu.selectDown(_this.battleMenu.menuCanvas, _this.battleMenu.dgmnAttackMenu.currentChoice + 1);
 
       _this.triggerGameScreenRedraw();
+    } else if (_this.battleMenu.currentState === 'targetSelect') {
+      _this.battleMenu.targetSelect(1, _this.battleLocations);
     }
   });
 
@@ -1616,6 +2171,10 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
   this.enemyDgmnList = enemyDgmnList;
   this.battleResult = 'ongoing';
   this.turn = 0;
+  this.battleLocations = {
+    party: {},
+    enemy: {}
+  };
   this.attackActions = {};
 
   this.triggerGameScreenRedraw = function () {
@@ -1683,7 +2242,7 @@ var dgmnDB = {
     stage: 3,
     "class": 'vaccine',
     crests: [0],
-    stats: [5, 5, 5, 5, 5, 5, 5, 5],
+    stats: [5, 5, 4, 3, 4, 4, 4, 3],
     evolutions: evolutions['agu'],
     types: {
       fire: .5,
@@ -1697,7 +2256,68 @@ var dgmnDB = {
     "class": 'data',
     crests: [0],
     stats: [5, 5, 5, 5, 5, 5, 5, 6],
+    evolutions: evolutions['agu'],
+    types: {
+      water: .75,
+      plant: 1.5
+    }
+  },
+  Piyo: {
+    stage: 3,
+    "class": 'vaccine',
+    crests: [],
+    stats: [5, 5, 5, 5, 5, 5, 5, 6],
     evolutions: evolutions['agu']
+  },
+  Terrier: {
+    stage: 3,
+    "class": 'vaccine',
+    crests: [],
+    stats: [5, 5, 5, 5, 5, 5, 5, 6],
+    evolutions: evolutions['agu'],
+    types: {
+      evil: 1.5,
+      metal: 2
+    } // TEMP : MEtal should not be here
+
+  },
+  Pulse: {
+    stage: 3,
+    "class": 'vaccine',
+    stats: [5, 6, 4, 4, 4, 5, 5, 6],
+    evolutions: evolutions['agu'],
+    types: {
+      earth: 2,
+      water: .5
+    }
+  },
+  Lala: {
+    stage: 3,
+    "class": 'data',
+    stats: [5, 5, 5, 5, 5, 5, 5, 5],
+    evolutions: evolutions['agu'],
+    types: {
+      fire: 2,
+      water: .5
+    }
+  },
+  Haguru: {
+    stage: 3,
+    "class": 'virus',
+    crests: [],
+    stats: [5, 5, 7, 5, 6, 5, 5, 3],
+    evolutions: evolutions['agu'],
+    types: {}
+  },
+  PicoDevi: {
+    stage: 3,
+    "class": 'virus',
+    crests: [],
+    stats: [5, 5, 5, 5, 5, 5, 5, 8],
+    evolutions: evolutions['agu'],
+    types: {
+      holy: 2
+    }
   },
   Grey: {
     stage: 4,
@@ -1795,7 +2415,7 @@ var Dgmn = function Dgmn(id, nickname, name, battleLocation, isEnemy) {
   _defineProperty(this, "buildDgmn", function () {
     for (var i = 0; i < _this.baseStats.length; i++) {
       var finalStat = _this.baseStats[i] * _this.level;
-      finalStat *= i < 2 ? 1.5 : 1;
+      finalStat *= i === 0 ? 1.25 : 1;
       finalStat = Math.floor(finalStat);
 
       _this.currStats.push(finalStat);
@@ -1827,47 +2447,111 @@ var Dgmn = function Dgmn(id, nickname, name, battleLocation, isEnemy) {
   this.currStats = [];
   this.currCombo = 0;
   this.comboLetter = 'F';
-  this.currConditions = [];
-  this.currBuffs = [];
+  this.weakenedState = [false, 0];
+  this.currConditions = {};
+  this.currBuffs = [0, 1, 1, 1, 1, 1, 1, 1];
   this.battleCanvas;
   this.battleLocation = battleLocation || 0;
   this.isEnemy = isEnemy || false;
   this.isDead = false;
+  this.isDefending = false;
 };
 
 var setupMockDgmn = function setupMockDgmn() {
-  var dgmnList = [new Dgmn(0, 'FLAME', 'Agu', 0), new Dgmn(1, 'BLITZ', 'Grey', 1) // new Dgmn(2,'FROST','Gabu',2)
-  ]; // MOCK DGMN
+  var dgmnList = [new Dgmn(0, 'FLARE', 'Agu', 0), // new Dgmn(1,'BLITZ','Grey',1),
+  // new Dgmn(1,'FEATHER','Piyo',1),
+  // new Dgmn(1,'TUFT','Terrier',1),
+  new Dgmn(1, 'SPROUT', 'Lala', 1), // new Dgmn(2,'FROST','Gabu',2)
+  new Dgmn(2, 'GEAR', 'Haguru', 2)]; // MOCK DGMN
 
-  dgmnList[0].level = 12;
+  dgmnList[0].level = 10;
   dgmnList[0].permAttacks = [new Attack('babyFlame'), new Attack('bubbles')];
   dgmnList[0].permAttacks[0].currCost = 3;
   dgmnList[0].permAttacks[1].currCost = 24;
   dgmnList[0].buildDgmn();
-  dgmnList[1].level = 7;
-  dgmnList[1].permAttacks = [new Attack('megaFlame'), new Attack('babyFlame'), new Attack('bubbles')];
-  dgmnList[1].permAttacks[0].currCost = 8;
-  dgmnList[1].permAttacks[1].currCost = 4;
-  dgmnList[1].permAttacks[2].currCost = 30;
-  dgmnList[1].buildDgmn(); // dgmnList[2].level = 4;
+  dgmnList[0].currHP = dgmnList[0].currStats[0]; // GREYMON
+  // dgmnList[1].level = 7;
+  // dgmnList[1].permAttacks = [
+  //   new Attack('megaFlame'),
+  //   new Attack('babyFlame'),
+  //   new Attack('bubbles')
+  // ];
+  // dgmnList[1].permAttacks[0].currCost = 8;
+  // dgmnList[1].permAttacks[1].currCost = 4;
+  // dgmnList[1].permAttacks[2].currCost = 30;
+  // dgmnList[1].buildDgmn();
+  // PIYO
+  // dgmnList[1].level = 7;
+  // dgmnList[1].permAttacks = [
+  //   new Attack('magicalFire'),
+  //   new Attack('bubbles')
+  // ];
+  // dgmnList[1].permAttacks[0].currCost = 8;
+  // dgmnList[1].permAttacks[1].currCost = 30;
+  // dgmnList[1].buildDgmn();
+  // dgmnList[2].level = 4;
   // dgmnList[2].buildDgmn();
+  // dgmnList[2].currHP = dgmnList[2].currStats[0];
   // dgmnList[2].permAttacks = [
   //   new Attack('petitFire'),
   //   new Attack('bubbles')
   // ]
-  // dgmnList[2].permAttacks[0].currCost = 6;
+  // TERRIER
+  // dgmnList[1].level = 7;
+  // dgmnList[1].permAttacks = [
+  //   // new Attack('petitTwister'),
+  //   new Attack('babyFlame'),
+  //   new Attack('bubbles')
+  // ];
+  // dgmnList[1].permAttacks[0].currCost = 8;
+  // dgmnList[1].permAttacks[1].currCost = 30;
+  // dgmnList[1].buildDgmn();
+  // LALA
 
+  dgmnList[1].level = 10;
+  dgmnList[1].permAttacks = [new Attack('nutsShoot'), new Attack('bubbles')];
+  dgmnList[1].permAttacks[0].currCost = 8;
+  dgmnList[1].permAttacks[1].currCost = 30;
+  dgmnList[1].buildDgmn();
+  dgmnList[1].currHP = dgmnList[1].currStats[0]; // GABU
+  // dgmnList[2].level = 4;
+  // dgmnList[2].buildDgmn();
+  // dgmnList[2].currHP = dgmnList[2].currStats[0];
+  // dgmnList[2].permAttacks = [
+  //   new Attack('babyFlame'),
+  //   new Attack('bubbles')
+  // ]
+  // dgmnList[2].permAttacks[0].currCost = 6;
+  // HAGURU
+
+  dgmnList[2].level = 10;
+  dgmnList[2].buildDgmn();
+  dgmnList[2].currHP = dgmnList[2].currStats[0];
+  dgmnList[2].permAttacks = [new Attack('darknessGear'), new Attack('bubbles')];
+  dgmnList[2].permAttacks[0].currCost = 6;
   return dgmnList;
 };
 var setupMockEnemyDgmn = function setupMockEnemyDgmn() {
-  var dgmnList = [new Dgmn(4, 'ENEMY', 'Agu', 0, true)];
-  dgmnList[0].level = 8;
+  var dgmnList = [new Dgmn(4, 'ENEMY', 'Gabu', 0, true), new Dgmn(5, 'ENEMY', 'PicoDevi', 1, true), new Dgmn(6, 'ENEMY', 'Pulse', 2, true)];
+  dgmnList[0].level = 5;
   dgmnList[0].buildDgmn();
+  dgmnList[0].currHP = dgmnList[0].currStats[0];
+  dgmnList[0].permAttacks = [new Attack('babyFlame')];
+  dgmnList[1].level = 5;
+  dgmnList[1].permAttacks = [new Attack('picoDarts')];
+  dgmnList[1].buildDgmn();
+  dgmnList[1].currHP = dgmnList[1].currStats[0];
+  dgmnList[2].level = 5;
+  dgmnList[2].buildDgmn();
+  dgmnList[2].permAttacks = [new Attack('elecRush')];
+  dgmnList[2].currHP = dgmnList[2].currStats[0];
   return dgmnList;
 };
 
 var mockDgmn = setupMockDgmn();
 var mockEnemyDgmn = setupMockEnemyDgmn();
+debugLog("PARTY = ", mockDgmn);
+debugLog("ENEMY = ", mockEnemyDgmn);
 /**------------------------------------------------------------------------
  * GAME
  * ------------------------------------------------------------------------

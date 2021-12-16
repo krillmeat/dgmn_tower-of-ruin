@@ -17,12 +17,16 @@ class DgmnBattleStatus{
     let meterOffset = meter === 'hp' ? 0 : 8 * config.screenSize;
     let leftOffset = this.dgmnData.isEnemy ? 8 * config.screenSize : 17 * 8 * config.screenSize;
     let battleLocationOffset = this.dgmnData.battleLocation * 32 * config.screenSize;
+    let barColor;
+    if(color === 'Red'){  barColor = '#F83018'
+    } else if(color === 'Blue'){ barColor = '#58A0F8'
+    } else {  barColor = '#6CA66C'}
     canvas.ctx.clearRect(leftOffset, (16 * config.screenSize) + meterOffset + battleLocationOffset,
                          24 * config.screenSize,8 * config.screenSize )
     canvas.ctx.drawImage(image,
                          leftOffset, (16 * config.screenSize) + meterOffset + battleLocationOffset,
                          24 * config.screenSize,8 * config.screenSize);
-    canvas.ctx.fillStyle = color === 'White' ? "#c4cfa1" : "#6ca66c";
+    canvas.ctx.fillStyle = barColor;
     canvas.ctx.fillRect(leftOffset + (4 * config.screenSize),(16 * config.screenSize) + meterOffset + battleLocationOffset + (2 * config.screenSize),meterLength * config.screenSize,3 * config.screenSize );
   }
 
@@ -38,6 +42,23 @@ class DgmnBattleStatus{
         64,64,
         leftOffset, (4 * tileMod) + battleLocationOffset , tileMod, tileMod);
     }
+  }
+
+  setWeakened = (canvas, levelImg) => {
+    let tileMod = (8 * config.screenSize);
+    let leftOffset = this.dgmnData.isEnemy ? 0 * tileMod : 16 * tileMod;
+    let battleLocationOffset = ( this.dgmnData.battleLocation * 4 ) * tileMod;
+
+    canvas.paintImage(levelImg, leftOffset, (5 * tileMod) + battleLocationOffset);
+  }
+
+  setStatusConditions = (canvas, conditionImages) => {
+    
+  }
+
+  cleanAll = canvas => {
+    // Clean out everything
+    console.log("CLEAN AFTER KO");
   }
 }
 

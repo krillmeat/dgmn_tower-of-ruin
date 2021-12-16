@@ -1,7 +1,7 @@
 import { debugLog } from "../utils/log-utils";
 import Battle from "./battle";
+import Dungeon from "./dungeon";
 import GameCanvas from "./canvas";
-import Dgmn from "./dgmn";
 
 import config from "../config";
 import { setupMockDgmn, setupMockEnemyDgmn } from "../debug/dgmn.mock";
@@ -9,6 +9,9 @@ import { setupMockDgmn, setupMockEnemyDgmn } from "../debug/dgmn.mock";
 // TODO - There has to be a better way to mock this stuff up...
 const mockDgmn = setupMockDgmn();
 const mockEnemyDgmn = setupMockEnemyDgmn();
+
+debugLog("PARTY = ",mockDgmn);
+debugLog("ENEMY = ",mockEnemyDgmn);
 
 /**------------------------------------------------------------------------
  * GAME
@@ -22,6 +25,7 @@ class Game{
   constructor(loadImageCallback,fetchImageCallback){
     debugLog('Game Created...');
     this.battle;                              // Init Battle (cleared and created by Game Logic)
+    this.dungeon;
 
     this.gameCanvas =                         // Canvas Every in-game Element is drawn on
       new GameCanvas('game-canvas',160,144);  
@@ -109,6 +113,12 @@ class Game{
     debugLog("Starting Battle...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
     this.battle = new Battle(mockDgmn,mockEnemyDgmn,this.onBattleLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
+  }
+
+  buildDungeon = () => {
+    debugLog("Building Dungeon...");
+    // TODO - ALL OF THIS IS TEMP RIGHT NOW
+    this.dungeon = new Dungeon();
   }
 
   /**------------------------------------------------------------------------

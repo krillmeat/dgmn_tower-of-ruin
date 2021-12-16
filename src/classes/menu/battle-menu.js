@@ -2,16 +2,18 @@ import config from "../../config";
 import GameCanvas from "../canvas";
 import TextManager from "../text-manager";
 import DgmnBattleStatus from "./dgmn-battle-status";
-import DgmnPortrait from "./dgmn-portrait";
 import DgmnAttackMenu from "./dgmn-attack-menu";
 import { debugLog } from "../../utils/log-utils";
 import { attacksDB } from "../../data/attacks.db";
+import { getDgmnById, getStatNameFromIndex } from "../../utils/dgmn-utils";
 
 class BattleMenu{
   constructor(dgmnData, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback){ // TODO - I do not want (if I can help it) ANY dgmnData in this file
     this.dgmnData = dgmnData;
     this.currentState = 'dgmn'; // none | beetle | dgmn | attack | item
     this.currentDgmnActor = 0;
+    this.selectedTarget = 0;
+    this.targetSelectedType = 'single';
     this.selectedAttack;
 
     this.topTextManager = new TextManager([fetchImageCallback('fontsWhite')],1,20, 0,1 ); // TODO - I'm not worried about the font loading slower than anything else, but just in case, I should change this a little...
@@ -24,6 +26,8 @@ class BattleMenu{
     this.currDgmnEN = new TextManager([fetchImageCallback('fontsWhite'),fetchImageCallback('fontsLightGreen')],1,6, 4,17, char => {
       if(char === 'en'){ return 1;
       } return 0; });
+
+    this.dgmnKOs = {};
 
     this.dgmnStatusList = [];
 
@@ -259,7 +263,13 @@ class BattleMenu{
   updateStatusBar = (status, curr, max, bar) => {
     let calcValue = Math.floor( (curr / max) * 18 );
     let barColor = calcValue >= 9 ? 'White' : 'LightGreen';
-        barColor = curr <= 0 ? 'DarkGreen' : barColor;
+    
+    if(bar === 'hp'){ barColor = 'LightGreen';
+    } else if(bar === 'en'){
+      barColor = 'LightGreen'; }
+
+    barColor = curr <= 0 ? 'DarkGreen' : barColor;
+
     status.drawMeter(this.menuCanvas,bar,this.fetchImage(`dgmnBar${barColor}`),calcValue, barColor);
     this.triggerGameScreenRedraw();
   }
@@ -318,14 +328,124 @@ class BattleMenu{
     debugLog("-- Selecting target...");
     this.currentState = 'targetSelect';
     this.closeDgmnAttackMenu();
+    let firstAlive = 0;
+    for(let i = 0; i < this.dgmnData.length; i++){
+      if(this.dgmnData[i].isEnemy && !this.dgmnData[i].isDead){
+        firstAlive = this.dgmnData[i].battleLocation;
+        break;
+      }
+    }
+    this.menus.targetSelect.currentIndex = 0;
     let attackData = attacksDB[this.dgmnAttackMenu.attackList[this.dgmnAttackMenu.currentChoice].attackName];
     if(attackData.targets === 'single'){
-      this.menuCanvas.paintImage(this.fetchImage('cursorLeft'),8 * (8 * config.screenSize),(16 * config.screenSize) + (8 * config.screenSize));
+      this.targetSelectedType = 'single';
+      this.paintTargetSelectCursor('single',firstAlive);
     }else{
-      console.log("MULTI TARGET");
+      this.targetSelectedType = 'all';
+      this.paintTargetSelectCursor('all');
     }
+  }
 
+  /**------------------------------------------------------------------------
+   * TARGET SELECT
+   * ------------------------------------------------------------------------
+   * Changes who is selected by user input when selecting target of attack
+   * ------------------------------------------------------------------------
+   * @param {GameCanvas}  canvas  
+   * @param {Number}      mod     The adjustment of index [ 1 | -1 ]
+   * ----------------------------------------------------------------------*/
+  targetSelect =  (mod,battleLocations) => {
+    if(this.targetSelectedType !== 'all'){
+      if( !(mod < 0 && this.menus.targetSelect.currentIndex === 0 ) &&
+          !( mod > 0 && this.menus.targetSelect.currentIndex === 2 ) &&
+          battleLocations.enemy[this.menus.targetSelect.currentIndex + mod] &&
+          !this.dgmnKOs[battleLocations.enemy[this.menus.targetSelect.currentIndex + mod]] ){
+        this.clearTargetSelectCursor();
+        this.menus.targetSelect.currentIndex += mod;
+        this.paintTargetSelectCursor('single', this.menus.targetSelect.currentIndex);
+      }
+    }
+  }
+
+  clearCurrentDgmnCursors = () => {
+    let tileMod = 8 * config.screenSize;
+    this.menuCanvas.ctx.clearRect( 10 * tileMod, 2 * tileMod, 2 * tileMod, 12 * tileMod);
+  }
+
+  /**------------------------------------------------------------------------
+   * CLEAR TARGET SELECT CURSOR
+   * ------------------------------------------------------------------------
+   * Clears all target select cursors from the enemy side of the field
+   * ----------------------------------------------------------------------*/
+  clearTargetSelectCursor = () => {
+    let tileMod = 8 * config.screenSize;
+    this.menuCanvas.ctx.clearRect( 8 * tileMod, 2 * tileMod, 2 * tileMod, 12 * tileMod);
+  }
+
+  /**------------------------------------------------------------------------
+   * PAINT TARGET SELECT CURSOR
+   * ------------------------------------------------------------------------
+   * Draws the cursor on the proper target.
+   * Works for both single and all target attacks
+   * ------------------------------------------------------------------------
+   * @param {String}  targetCount Amount of targets [ single | all ]
+   * @param {Number}  index       Spot to draw the cursor
+   * ----------------------------------------------------------------------*/
+  paintTargetSelectCursor = (targetCount, index) => {
+    let tileMod = 8 * config.screenSize;
+    if(targetCount === 'single'){
+      this.menuCanvas.paintImage(this.fetchImage('cursorLeft'),8 * tileMod, (3 + (index*4) ) * tileMod);
+    } else{
+      for(let i = 0; i < 3; i++){
+        this.menuCanvas.paintImage(this.fetchImage('cursorLeft'),8 * tileMod, (3 + (i*4) ) * tileMod);
+      }
+    }
     this.triggerGameScreenRedraw();
+  }
+
+  setAttackBottomInfo = (attacker, attack, missCrit, onDone) => {
+    this.clearBottomData(true);
+    this.setDgmnPortrait(attacker.name);
+    let attackMessage = attacker.isEnemy ? `Enemy ${attacker.name}.MON used ${attack.displayName}!` : `${attacker.nickname} used ${attack.displayName}!`;
+    if(missCrit === 'missed') attackMessage += " ...but missed.";
+    if(missCrit === 'critical') attackMessage += " Critical Hit!";
+    this.bottomTextManager.slowPaint(this.menuCanvas,attackMessage,this.triggerGameScreenRedraw,onDone);
+  }
+
+  setDefendBottomInfo = (defender,onDone) => {
+    this.clearBottomData(true);
+    this.setDgmnPortrait(defender.name);
+    let defendMessage = defender.isEnemy ? `Enemy ${defender.name}.MON Defends!` : `${defender.nickname} Defends!`;
+    this.bottomTextManager.slowPaint(this.menuCanvas,defendMessage,this.triggerGameScreenRedraw,onDone);
+  }
+
+  setEffectBottomInfo = (effect, attacker, target, isCapped, onDone) => {
+    let effectMessage;
+    if(!isCapped){
+      switch(effect[0]){
+        case 'buff':
+          let amount = '';
+          if(effect[2] === 1){ 
+            amount = ' a bit'
+          } else if(effect[2] === 2){ amount = 'a lot'}
+          effectMessage = `${getStatNameFromIndex(effect[1])} went up${amount}!`;
+          break;
+        case 'status':
+          console.log("EFFECT = ",effect);
+          effectMessage = `${target} inflicted with ${effect[1]}`;
+          break;
+        default:
+          effectMessage = 'Something went wrong...';
+          onDone();
+          break;
+      }
+    } else{ effectMessage = `Couldn't increase ${getStatNameFromIndex(effect[1])}...`}
+    
+    this.bottomTextManager.slowPaint(this.menuCanvas,effectMessage,this.triggerGameScreenRedraw,onDone);
+  }
+
+  setMissedBottomInfo = onDone => {
+    this.bottomTextManager.slowPaint(this.menuCanvas,'',this.triggerGameScreenRedraw,onDone);
   }
 
   /**------------------------------------------------------------------------

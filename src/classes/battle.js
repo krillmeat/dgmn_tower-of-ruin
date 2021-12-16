@@ -8,6 +8,7 @@ import Attack from "./attack";
 import { comboRanks, powerRanks } from "../data/ranks.db";
 import { attacksDB } from "../data/attacks.db";
 import GameCanvas from "./canvas";
+import { getComboLetter } from "../utils/dgmn-utils";
 
 class Battle {
   constructor(dgmnList,enemyDgmnList,loadedCallback,addObjectCallback,gameScreenRedrawCallback, loadImageCallback, fetchImageCallback){
@@ -16,6 +17,10 @@ class Battle {
     this.enemyDgmnList = enemyDgmnList;
     this.battleResult = 'ongoing';
     this.turn = 0;
+    this.battleLocations = {
+      party: {},
+      enemy: {}
+    }
 
     this.attackActions = {};
 
@@ -131,6 +136,10 @@ class Battle {
     for(let i = 0; i < dgmnList.length; i++){
       let dgmn = dgmnList[i];
 
+      // Set Locations of Dgmn
+      let side = isEnemy ? 'enemy' : 'party';
+      this.battleLocations[side][dgmn.battleLocation] = dgmn.dgmnId;
+
       let imageStack = [
         this.fetchImage(`${dgmn.name.toLowerCase()}Idle0`),
         this.fetchImage(`${dgmn.name.toLowerCase()}Idle1`),
@@ -164,12 +173,18 @@ class Battle {
    * Builds the Enemy Attacks and adds them to the Actions
    * ----------------------------------------------------------------------*/
   generateEnemyAttacks = () => {
-    // TODO - This is manual right now, needs to have a BUNCH of logic and Data here...
-    this.attackActions[4] = {
-      attacker: this.enemyDgmnList[0],
-      target: this.dgmnList[0],
-      attack: new Attack('babyFlame')
+
+    for(let i = 0; i < 3; i++){
+      if(!this.enemyDgmnList[i].isDead){
+        this.attackActions[this.enemyDgmnList[i].dgmnId] = {
+          attacker: this.enemyDgmnList[i],
+          targets: [this.dgmnList[i]],
+          attack: this.enemyDgmnList[i].permAttacks[0],
+          status: 'todo'
+        }
+      }
     }
+
   }
 
   /**------------------------------------------------------------------------
@@ -183,8 +198,8 @@ class Battle {
     for(let i = 0; i < order.length; i++){
       for(let r = 0; r < order.length - 1; r++){
         let temp = order[r];
-        let currSpeed = order[r].currStats[7];
-        let nextSpeed = order[r+1].currStats[7];
+        let currSpeed = order[r].currStats[7] * order[r].currBuffs[7];
+        let nextSpeed = order[r+1].currStats[7] * order[r].currBuffs[7];
         if(currSpeed < nextSpeed){
           order[r] = order[r+1];
           order[r+1] = temp;
@@ -195,21 +210,36 @@ class Battle {
     return order;
   }
 
+  /**------------------------------------------------------------------------
+   * BUILD ATTACK IMAGE LIST
+   * ------------------------------------------------------------------------
+   * Before the attacks are run, build a list of all images that need to
+   *   be loaded
+   * ------------------------------------------------------------------------
+   * @param {Object} attackList The attacks happening in the upcoming turn
+   * ----------------------------------------------------------------------*/
   buildAttackImageList = attackList => {
     let imagesList = [];
     for(const prop in attackList){
-      let attackName = attackList[prop].attack.attackName;
-      if(!this.loadedAttacks.includes(attackName)){
-        this.loadedAttacks.push(attackName);
-        for(let r = 0; r < attacksDB[attackName].animationFrameCount; r++){
-          let url = `./sprites/Battle/Attacks/${attackName}${r+1}.png`;
-          if(!imagesList.includes(url)) imagesList.push(url);
+      if(!attackList[prop].defend){
+        let attackName = attackList[prop].attack.attackName;
+        if(!this.loadedAttacks.includes(attackName)){
+          this.loadedAttacks.push(attackName);
+          for(let r = 0; r < attacksDB[attackName].animationFrameCount; r++){
+            let url = `./sprites/Battle/Attacks/${attackName}${r+1}.png`;
+            if(!imagesList.includes(url)) imagesList.push(url);
+          }
         }
       }
     }
     return imagesList;
   }
 
+  /**------------------------------------------------------------------------
+   * LOAD ATTACKS
+   * ------------------------------------------------------------------------
+   * After the list of images is built, load all of the required images
+   * ----------------------------------------------------------------------*/
   loadAttacks = () => {
 
     this.battleMenu.clearBottomData(true);
@@ -228,23 +258,73 @@ class Battle {
    * ------------------------------------------------------------------------
    * Once all of the Attacks have been chosen, and the Enemy Attacks have
    *   been generated, run through the Attacks
+   * TODO - Split this out, it's getting WAY too long
    * ----------------------------------------------------------------------*/
   runAttacks = () => {
+    debugLog('Attacks = ',this.attackActions);
     let turnOrder = this.setupOrder();
     let i = 0;
     let prevI = -1;
 
     // Runs every frame and checks for the currently attacking Dgmn to be 'done'
     let attackInterval = setInterval(()=>{
+      let targets, attacker, attack;
+
       if(i !== prevI){
         prevI = i;
         if(!turnOrder[i].isDead){
-          this.attack(this.attackActions[turnOrder[i].dgmnId]);
-        }
+          if(!this.attackActions[turnOrder[i].dgmnId].defend){
+            targets = this.attackActions[turnOrder[i].dgmnId].targets;
+            attacker = this.attackActions[turnOrder[i].dgmnId].attacker;
+            attack = this.attackActions[turnOrder[i].dgmnId].attack;
+
+            let accuracy = '';
+            
+            // One target and they're dead, move on. Otherwise...
+            if(targets.length === 1 && targets[0].isDead){ i++ } else {
+
+              // Run through targets
+              for(let i = 0; i < targets.length; i++){
+               accuracy = this.calculateAccuracy(attacker.dgmnId, targets[i].currStats[6] * targets[i].currBuffs[6], attacker.currStats[5] * attacker.currBuffs[5]);
+                if(accuracy !== 'missed'){
+                  let critMod = accuracy === 'critical' ? 2 : 1;
+                  this.attack(targets[i], attacker, attack, critMod);
+                } 
+              }
+              
+              // If the attack didn't miss
+              if(accuracy !== 'missed'){
+                // Once bottom text is done painting... Animate the attack
+                this.battleMenu.setAttackBottomInfo(attacker, attack, accuracy, () => {
+                  setTimeout(() => {
+                    attack.animate(targets,attacker,this.triggerGameScreenRedraw,this.attackCanvas,this.fetchImage, () => {
+                    if(!attack.effect){ // No effect
+                      this.attackActions[turnOrder[i].dgmnId].status = 'done';
+                      this.finishAttack(targets);
+                      } else { // With Effect
+                        this.handleEffect(attack.effect, attacker, targets);
+                      } // END - With Effect
+                  })}, 1000);
+                });
+              } else{
+                this.battleMenu.setAttackBottomInfo(attacker, attack, accuracy, () => {
+                  setTimeout(() => {
+                    this.attackActions[turnOrder[i].dgmnId].status = 'done';
+                    this.finishAttack(targets);
+                  }, 1000);
+                })
+              }
+              
+            }
+          }else{ // Defend
+            this.defend(this.attackActions[turnOrder[i].dgmnId]);
+            }
+          } else if((turnOrder[i].isDead && i !== turnOrder.length )) { i++ } // Current Turn is Dead and not last in turn, skip
       }
   
-      if(this.attackActions[turnOrder[i].dgmnId].status === 'done') i++
+      if(i < turnOrder.length && this.attackActions[turnOrder[i].dgmnId].status === 'done') i++ // Turn's not over and Curent Turn is done, move on
 
+      // At the end of the Turn
       if(i === turnOrder.length){
         this.startNewTurn();
         clearInterval(attackInterval);
@@ -257,6 +337,24 @@ class Battle {
   }
 
   /**------------------------------------------------------------------------
+   * DEFEND
+   * ------------------------------------------------------------------------
+   * Sets the Dgmn to Defending
+   * ------------------------------------------------------------------------
+   * @param {Object} attackAction
+   * ----------------------------------------------------------------------*/
+  defend = attackAction => {
+    let defender = attackAction.defender;
+
+    defender.isDefending = true;
+    this.battleMenu.setDefendBottomInfo(defender,()=>{
+      setTimeout(()=>{
+        attackAction.status = 'done';
+      },1000);
+    });
+  }
+
+  /**------------------------------------------------------------------------
    * ATTACK
    * ------------------------------------------------------------------------
    * Have one Dgmn attack another
@@ -264,10 +362,7 @@ class Battle {
    * ------------------------------------------------------------------------
    * @param {Object}  attackAction  The Attack Action Object
    * ----------------------------------------------------------------------*/
-  attack = (attackAction) => {
-    let target = attackAction.target;
-    let attacker = attackAction.attacker;
-    let attack = attackAction.attack;
+  attack = (target, attacker ,attack, missCritMod) => {
     debugLog(`-- ${attacker.nickname} uses ${attack.attackName} on ${target.nickname}`);
 
     // Reduce EN / Cost
@@ -280,19 +375,11 @@ class Battle {
     let typeMod = target.types[attack.type] || 1;
     let totalDamage = 0;
 
-
     // Loop through the Hit Count and do Damage
     for(let i = 0; i < attack.hits; i++){
 
       // Handle Combo
-      let comboMod = .75;
-      if(typeMod === 1){
-        target.currCombo++;
-      } else if(typeMod > 1){
-        target.currCombo += 2; }
-      let comboLetter = this.getComboLetter(target.currCombo);
-      target.comboLetter = comboLetter;
-      comboMod = comboRanks[comboLetter];
+      let comboMod = this.calculateCombo(target, typeMod);
 
       // Update Statuses and Messaging
       let topMessage = ``;
@@ -301,37 +388,166 @@ class Battle {
       this.battleMenu.setTopText(topMessage);
       this.battleMenu.dgmnStatusList[ this.battleMenu.getStatusIndex(target.dgmnId) ].setCombo(this.battleMenu.menuCanvas,target.comboLetter,this.fetchImage('fontsWhite'));
 
-      // Calculate Damage
-      let damage = attack.calculateDamage(target.currStats[3],attacker.currStats[2],attacker.level);
-      let postMods = damage * typeMod * comboMod; // TODO - Add all of the mods
-      let rando = Math.floor( Math.random() * (4 - 1) + 1); // Add in a Random number from 1-3
-      let finalDamage = Math.floor(postMods) + rando ; 
-      debugLog("---- Attack Damage = ",finalDamage);
-
-      totalDamage += finalDamage;
+      totalDamage += this.calculateDamage(attacker,target,attack, typeMod, comboMod, missCritMod);
+      debugLog("--- Total Attack Damage = ",totalDamage);
 
       // Handle "effects"
       if(typeMod > 1){
         // Target is Weak, do some work
+        target.weakenedState[0] = true;
+        if(target.weakenedState[1] < 3) target.weakenedState[1]++;
       }
+
+      if(target.weakenedState[0]) this.battleMenu.dgmnStatusList[ this.battleMenu.getStatusIndex(target.dgmnId) ].setWeakened(this.battleMenu.menuCanvas,this.fetchImage(`weak${target.weakenedState[1]}`))
     }
 
     target.currHP -= totalDamage;
+  }
 
-    // Handle Bottom information
-    this.battleMenu.clearBottomData(true);
-    this.battleMenu.setDgmnPortrait(attacker.name);
-    let attackMessage = attacker.isEnemy ? `Enemy ${attacker.name}.MON used ${attack.displayName}!` : `${attacker.nickname} used ${attack.displayName}!`;
-    this.battleMenu.bottomTextManager.slowPaint(this.battleMenu.menuCanvas,attackMessage,this.triggerGameScreenRedraw);
-
-    attack.animate(target,attacker,this.triggerGameScreenRedraw,this.attackCanvas,this.fetchImage,
-      () => {
-      this.attackCanvas.clearCanvas();
-      attackAction.status = 'done';
-    })
-
-    if(target.currHP <= 0) this.knockOut(target);
+  finishAttack = (targets) => {
+    this.attackCanvas.clearCanvas();
+    for(let i = 0; i < targets.length; i++){
+      if(targets[i].currHP <= 0) this.knockOut(targets[i]);
+    }
     this.battleMenu.updateAllStatusBars();
+  }
+
+  handleEffect = (effect,attacker,targets) => {
+    debugLog("---- Running Attack Effect");
+
+    let isBuffCapped;
+    let shouldRun = '';
+
+    if(effect[0] === 'buff'){
+      shouldRun = this.buffStat(attacker,attacker,targets[0].nickname,effect[3],effect[1],effect[2]);
+      isBuffCapped = shouldRun === 'capped';
+    } else if(effect[0] === 'debuff'){
+      
+    } else if(effect[0] === 'status'){
+      shouldRun = this.inflictStatus(targets[0],attacker,targets[0].nickname,effect[2],effect[1]); // TODO - send more than one target
+    }
+
+    if(shouldRun !== 'missed' && shouldRun !== ''){
+      this.battleMenu.setEffectBottomInfo(effect,attacker,targets[0].nickname,isBuffCapped, () => {
+        setTimeout(() => {
+          this.attackActions[attacker.dgmnId].status = 'done';
+          this.finishAttack(targets);
+        },1000);
+      });
+    } else{
+      this.attackActions[attacker.dgmnId].status = 'done';
+      this.finishAttack(targets);
+    }
+  }
+
+  buffStat = (dgmn, chance, stat, amount) => {
+    let buffStatus = ''; // '' | capped | missed
+    let shouldRun = Math.floor(Math.random() * (100 - 1) + 1) <= chance;
+      if( shouldRun ){ // Check Buff Chance
+        if(dgmn.currBuffs[stat] < 6) {
+          dgmn.currBuffs[stat] += amount;
+          debugLog(`----- Buffing ${stat} by ${amount}`);
+        } else { buffStatus = 'capped' }
+      } else{ buffStatus = 'missed' }
+    return buffStatus;
+  }
+
+  inflictStatus = (dgmn, chance, condition) => {
+    let shouldInflict  = Math.floor(Math.random() * (100 - 1) + 1) <= chance;
+    if(shouldInflict){
+      if(!dgmn.currConditions[condition]){
+        debugLog("----- Adding condition - ",condition);
+        dgmn.currConditions[condition] = true;
+      }
+    }
+    return shouldInflict;
+  }
+
+  /**------------------------------------------------------------------------
+   * CALCULATE COMBO
+   * ------------------------------------------------------------------------
+   * Deals damage to a target
+   * ------------------------------------------------------------------------
+   * @param {Dgmn}    target  Dgmn that is being damaged
+   * @param {Number}  typeMod Modifier for type effectiveness
+   * @return {Number} Combo modifier
+   * ----------------------------------------------------------------------*/
+  calculateCombo = (target, typeMod) => {
+    let mod = .75;
+    if(typeMod === 1){
+      target.currCombo++;
+    } else if(typeMod > 1){
+      target.currCombo += 2; }
+    
+    if(target.weakenedState[0]){
+      target.currCombo++;
+    }
+
+    let comboLetter = getComboLetter(target.currCombo);
+    target.comboLetter = comboLetter;
+    mod = comboRanks[comboLetter];
+
+    return mod;
+  }
+
+  /**------------------------------------------------------------------------
+   * CALCULATE ACCURACY
+   * ------------------------------------------------------------------------
+   * Check the Hit and Avoid stats of the two attackers and determine
+   *   whether the attack will hit or miss.
+   * ------------------------------------------------------------------------
+   * @param {Number}  targetAvo   The Avoid stat of the target
+   * @param {Number}  attackerHit The Hit stat of the attacker
+   * ----------------------------------------------------------------------*/
+  calculateAccuracy = (attackerDgmnId, targetAvo, attackerHit) => {
+
+    let accuracy = '';
+    let missRange = targetAvo / attackerHit;
+    let critRange = attackerHit / targetAvo;
+  
+    if(missRange !== 1){
+      missRange = missRange < 1 ? missRange * .5 : missRange * 2;
+      critRange = critRange < 1 ? critRange * .5 : critRange * 2;
+    }
+
+    missRange *= 10;
+    critRange *= 10;
+
+    let rand = Math.floor( Math.random() * (1000 - 1) + 1);
+
+    if(rand <= missRange){
+      console.log("ATTACK MISSED");
+      accuracy = 'missed';
+    } else if(rand >= (1000 - critRange) ){
+      console.log("CRITICAL HIT");
+      accuracy = 'critical';
+    }
+
+    return accuracy;
+  }
+
+  /**------------------------------------------------------------------------
+   * CALCULATE DAMAGE
+   * ------------------------------------------------------------------------
+   * Deals damage to a target
+   * ------------------------------------------------------------------------
+   * @param {Dgmn}    attacker  Dgmn that is dealing damage
+   * @param {Dgmn}    target    Dgmn that is being damaged
+   * @param {Attack}  attack    Attack being used
+   * @return {Number} Damage total
+   * ----------------------------------------------------------------------*/
+  calculateDamage = (attacker, target, attack,typeMod,comboMod,missCritMod) => {
+    let weakenedMod = target.weakenedState[0] ? 1.25 : 1;
+    let defendMod = target.isDefending ? .5 : 1;
+    let stats = attack.stat === 'physical' ? 
+                  [target.currStats[2] * target.currBuffs[2], attacker.currStats[1] * attacker.currBuffs[1]] : 
+                  [target.currStats[4] * target.currBuffs[4],attacker.currStats[3] * attacker.currBuffs[3]];
+    let damage = attack.calculateDamage(stats[0],stats[1],attacker.level);
+    let postMods = damage * typeMod * comboMod * weakenedMod * defendMod * missCritMod; // TODO - Add remaining mods
+    let rando = Math.floor( Math.random() * (4 - 1) + 1); // Add in a Random number from 1-3
+    let finalDamage = Math.floor(postMods) + rando ; 
+    
+    return finalDamage;
   }
 
   /**------------------------------------------------------------------------
@@ -345,8 +561,9 @@ class Battle {
     target.currHP = 0;
     target.currEN = 0;
     target.battleCanvas.isIdle = false;
-    target.battleCanvas.clearCanvas();
-    debugLog("Target DGMN was KO'd");
+    target.battleCanvas.clearCanvas(); // TODO - this needs to be moved
+    this.battleMenu.dgmnKOs[target.dgmnId] = true; // Lets the menus know to ignore this Dgmn
+    this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(target.dgmnId)].cleanAll();
     target.isDead = true;
     this.checkAllDead(target.isEnemy);
   }
@@ -371,34 +588,51 @@ class Battle {
     }
   }
 
-  getComboLetter = combo =>{
-    let letter = 'F';
-    if(combo > 1 && combo < 5){
-      letter = 'E';
-    } else if(combo > 4 && combo < 9){
-      letter = 'D';
-    } else if(combo > 8 && combo < 14){
-      letter = 'C';
-    } else if(combo > 13 && combo < 19){
-      letter = 'B';
-    } else if(combo > 18 && combo < 24){
-      letter = 'A';
-    } else if(combo >= 25){
-      letter = 'S';
-    }
-
-    return letter;
-  }
-
+  /**------------------------------------------------------------------------
+   * RESET COMBOS
+   * ------------------------------------------------------------------------
+   * Subtracts three from the current combo of all Dgmn
+   * TODO - Status conditioned Dgmn should only lose 1 - 2
+   * ------------------------------------------------------------------------
+   * @param {Boolean} isEnemy If true, check the enemy side
+   * ----------------------------------------------------------------------*/
   resetCombos = isEnemy => {
     let list = isEnemy ? this.enemyDgmnList : this.dgmnList;
     for(let i = 0; i < list.length; i++){
-      let combo = list[i].currCombo - 5;
-          combo = combo < 0 ? 0 : combo;
-      let comboLetter = this.getComboLetter(combo);
-      list[i].currCombo = combo;
-      list[i].comboLetter = comboLetter;
-      this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(this.battleMenu.menuCanvas,comboLetter,this.fetchImage('fontsWhite'))
+      if(!list[i].isDead){
+        let combo = list[i].currCombo - 3;
+        combo = combo < 0 ? 0 : combo;
+        let comboLetter = getComboLetter(combo);
+        list[i].currCombo = combo;
+        list[i].comboLetter = comboLetter;
+        this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(this.battleMenu.menuCanvas,comboLetter,this.fetchImage('fontsWhite'))
+      } else {
+        list[i].comboLetter = 'F';
+        this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(this.battleMenu.menuCanvas,'F',this.fetchImage('fontsWhite'))
+      }
+      
+    }
+  }
+
+  resetWeakened = () => {
+    let allDgmn = this.battleMenu.dgmnStatusList;
+    for(let dgmn of allDgmn){
+      let weakenedState = dgmn.dgmnData.weakenedState;
+      if(weakenedState[1] > 0){
+        weakenedState[1]--;
+        if(weakenedState[1] === 0){ 
+          weakenedState[0] = false; 
+        }
+        let imageName = `weak${weakenedState[1]}`;
+        dgmn.setWeakened(this.battleMenu.menuCanvas,this.fetchImage(imageName));
+      }
+    }
+  }
+
+  resetDefend = () => {
+    let allDgmn = this.battleMenu.dgmnStatusList;
+    for(let dgmn of allDgmn){
+     dgmn.isDefending = false;
     }
   }
 
@@ -411,9 +645,13 @@ class Battle {
     this.turn++;
     this.attackActions = {};
 
+    // Reset Weakneed State
+    this.resetWeakened();
     // Reset Combos - Ally, then Enemy
     this.resetCombos();
     this.resetCombos(true);
+
+    this.resetDefend();
 
     // Reset Battle Menu
     this.battleMenu.menus.dgmn.currentIndex = 0;
@@ -444,6 +682,34 @@ class Battle {
     //        Reset Dgmn to Egg
     //        Put you back in town
     //        Clear Items
+  }
+
+  /**------------------------------------------------------------------------
+   * GO TO NEXT DGMN
+   * ------------------------------------------------------------------------
+   * During your turn, when selecting options, this move onto the next Dgmn
+   *   in your party.
+   * ----------------------------------------------------------------------*/
+  goToNextDgmn = () => {
+      this.battleMenu.currentState = 'dgmn';
+      this.battleMenu.currentDgmnActor++;
+      this.battleMenu.setCurrentIcon(0);
+
+      this.battleMenu.setupDgmn(this.battleMenu.currentDgmnActor);
+  }
+
+  /**------------------------------------------------------------------------
+   * BEGIN BATTLE
+   * ------------------------------------------------------------------------
+   * After all of your Dgmn's selections are made, this triggers the start
+   *   of the battle phase.
+   * ----------------------------------------------------------------------*/
+  beginBattle = () => {
+    this.battleMenu.currentState = 'battling'
+    this.generateEnemyAttacks();
+    
+    debugLog("Running Attacks...");
+    this.loadAttacks();
   }
 
   /**------------------------------------------------------------------------
@@ -483,6 +749,21 @@ class Battle {
     if(this.battleMenu.currentState === 'dgmn'){
       if(this.battleMenu.menus.dgmn.currentIndex === 0){
         this.battleMenu.launchDgmnAttackMenu();
+      } else if(this.battleMenu.menus.dgmn.currentIndex === 1){ // Defending
+        this.battleMenu.clearCurrentDgmnCursors();
+        this.attackActions[this.dgmnList[this.battleMenu.currentDgmnActor].dgmnId] = {
+          defend: true,
+          defender: this.dgmnList[this.battleMenu.currentDgmnActor],
+          status: 'todo'
+        }
+        this.battleMenu.menuCanvas.ctx.clearRect( 8 * (8 * config.screenSize), 2 * (8 * config.screenSize), 2 * (8 * config.screenSize), 12 * (8 * config.screenSize) );
+
+        // Check whether to move to next Dgmn or begin Battle Phase
+        if(this.battleMenu.currentDgmnActor === this.dgmnList.length -1){
+          this.beginBattle();
+        } else {
+         this.goToNextDgmn();
+        }
       }
     } else if(this.battleMenu.currentState === 'attack'){
       let chosenAttack = this.battleMenu.dgmnAttackMenu.attackList[this.battleMenu.dgmnAttackMenu.currentChoice];
@@ -494,23 +775,21 @@ class Battle {
       let dgmnId = this.dgmnList[this.battleMenu.currentDgmnActor].dgmnId;
       
       // Add Attack to Attack Actions List
+      let attackTargets = this.battleMenu.selectedAttack.targets === 'single' ? 
+                            [this.enemyDgmnList[this.battleMenu.menus.targetSelect.currentIndex]] : 
+                            this.enemyDgmnList;
       this.attackActions[dgmnId] = {
         attacker: this.dgmnList[this.battleMenu.currentDgmnActor],
-        target: this.enemyDgmnList[this.battleMenu.menus.targetSelect.currentIndex],
+        targets: attackTargets,
         attack: this.battleMenu.selectedAttack,
         status: 'todo'
       }
-      if(this.battleMenu.currentDgmnActor === this.dgmnList.length -1){
-        
-        this.generateEnemyAttacks();
-        
-        debugLog("Running Attacks...");
-        this.loadAttacks();
-      } else {
-        this.battleMenu.currentState = 'dgmn';
-        this.battleMenu.currentDgmnActor++;
 
-        this.battleMenu.setupDgmn(this.battleMenu.currentDgmnActor);
+      // Check whether to move to next Dgmn or begin Battle Phase
+      if(this.battleMenu.currentDgmnActor === this.dgmnList.length -1){
+        this.beginBattle();
+      } else {
+        this.goToNextDgmn();
       }
     }
   }
@@ -519,6 +798,8 @@ class Battle {
     if(this.battleMenu.currentState === 'attack'){
       this.battleMenu.dgmnAttackMenu.selectUp(this.battleMenu.menuCanvas, this.battleMenu.dgmnAttackMenu.currentChoice - 1);
       this.triggerGameScreenRedraw();
+    } else if(this.battleMenu.currentState === 'targetSelect'){
+      this.battleMenu.targetSelect(-1,this.battleLocations);
     }
   }
 
@@ -533,6 +814,8 @@ class Battle {
     if(this.battleMenu.currentState === 'attack'){
       this.battleMenu.dgmnAttackMenu.selectDown(this.battleMenu.menuCanvas, this.battleMenu.dgmnAttackMenu.currentChoice + 1);
       this.triggerGameScreenRedraw();
+    } else if(this.battleMenu.currentState === 'targetSelect'){
+      this.battleMenu.targetSelect(1,this.battleLocations);
     }
   }
 

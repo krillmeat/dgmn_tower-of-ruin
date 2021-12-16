@@ -13,6 +13,9 @@ class Attack{
     this.power = attacksDB[this.attackName].power;
     this.targets = attacksDB[this.attackName].targets;
     this.hits = attacksDB[this.attackName].hits;
+    this.stat = attacksDB[this.attackName].stat;
+
+    this.effect = attacksDB[this.attackName].effect || null;
 
     this.animationFrames = attacksDB[this.attackName].animationFrames;
   }
@@ -31,8 +34,8 @@ class Attack{
     // FORMULA: ( ( ATK / DEF ) * (LV / 2 ) ) * ( PWR / 2 )
     // The reason you have /2's is because the "weight" of that variable needs to be weaker
     let atkDefDiff = attackerAttack / targetDefense;
-    let preMods = Math.floor( ( ( atkDefDiff * ( attackerLevel / 2 ) ) * powerRanks[this.power] ) / this.hits );
-
+    let preMods = Math.floor( ( atkDefDiff * ( attackerLevel / 2 ) * powerRanks[this.power] ) / this.hits );
+    
     return preMods;
   }
 
@@ -45,47 +48,67 @@ class Attack{
    * @param {Dgmn}      attacker  Attacker, doing the attack
    * @param {Function}  callback  Parent function to run when all done animating
    * ----------------------------------------------------------------------*/
-  animate = (target,attacker,triggerRedraw,canvas,fetchImage,callback) => {
+  animate = (targets,attacker,triggerRedraw,canvas,fetchImage,callback) => {
     attacker.battleCanvas.attackAnimation();
-    target.battleCanvas.hurtAnimation();
-
-    let x = target.isEnemy ? 4 * (8 * config.screenSize ) : 12 * (8 * config.screenSize );
-    let y = ( 2 + ( target.battleLocation * 4 ) ) * (8 * config.screenSize );
 
     triggerRedraw();
 
+    let x, y = 0;
+    let target = undefined;
     let animationCounter = 0;
     let animationSection = 0;
+    let currentTarget = 0;
+    let targetCount = this.targets === 'single' ? 1 : 3;
 
     canvas.clearCanvas();
 
     let attackAnimation = setInterval(()=>{
 
-      if(animationCounter === 0){
-        canvas.clearCanvas();
+      if(currentTarget < targetCount){
+        target = targets[currentTarget];
+        if(!target.isDead){
+            target.battleCanvas.hurtAnimation();
 
-        if(animationSection === this.animationFrames.length){
-          canvas.clearCanvas();
-          triggerRedraw();
-          clearInterval(attackAnimation);
-          setTimeout(()=>{
-            attacker.battleCanvas.isIdle = true;
-            if(!target.isDead) target.battleCanvas.isIdle = true;
-            triggerRedraw();
-          },200);
-          setTimeout(()=>{
-            callback();
-          },1200);
-        } else{
-          canvas.paintImage(fetchImage(this.animationFrames[animationSection][0]),x,y);
-          triggerRedraw();
-        }
-        animationCounter++;
-      } else if(animationCounter !== 0 && animationCounter >= this.animationFrames[animationSection][1]){
-        animationSection++;
-        animationCounter = 0;
+          x = target.isEnemy ? 4 * (8 * config.screenSize ) : 12 * (8 * config.screenSize );
+          y = ( 2 + ( target.battleLocation * 4 ) ) * (8 * config.screenSize );
+
+          if(animationCounter === 0){
+            canvas.clearCanvas();
+
+            if(animationSection === this.animationFrames.length){
+              currentTarget++;
+              animationCounter = 0;
+              animationSection = 0;
+            } else{
+              canvas.paintImage(fetchImage(this.animationFrames[animationSection][0]),x,y);
+              triggerRedraw();
+            }
+            animationCounter++;
+          } else if(animationCounter !== 0 && animationCounter >= this.animationFrames[animationSection][1]){
+            animationSection++;
+            animationCounter = 0;
+          } else{
+            animationCounter++;
+          }
+        } else{ 
+          currentTarget++;
+          animationCounter = 0;
+          animationSection = 0;
+         }
       } else{
-        animationCounter++;
+        canvas.clearCanvas();
+        triggerRedraw();
+        clearInterval(attackAnimation);
+        setTimeout(()=>{
+          attacker.battleCanvas.isIdle = true;
+          for(let i = 0; i < targetCount; i++){
+            if(!targets[i].isDead) targets[i].battleCanvas.isIdle = true;
+          }
+          triggerRedraw();
+        },200);
+        setTimeout(()=>{
+          callback();
+        },2000);
       }
 
     },66);

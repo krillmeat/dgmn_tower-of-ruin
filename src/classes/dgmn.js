@@ -41,14 +41,16 @@ class Dgmn {
 
     this.currCombo = 0;
     this.comboLetter = 'F';
-    this.currConditions = [];
-    this.currBuffs = [];
+    this.weakenedState = [false,0];
+    this.currConditions = {};
+    this.currBuffs = [0,1,1,1,1,1,1,1];
 
     this.battleCanvas;
     this.battleLocation = battleLocation || 0;
     this.isEnemy = isEnemy || false;
 
     this.isDead = false;
+    this.isDefending = false;
   }
 
   loadDgmn = loadData => {
@@ -75,7 +77,7 @@ class Dgmn {
   buildDgmn = () => {
     for(let i = 0; i < this.baseStats.length; i++){
       let finalStat = this.baseStats[i] * this.level;
-          finalStat *= i < 2 ? 1.5 : 1;
+          finalStat *= i === 0 ? 1.25 : 1;
           finalStat = Math.floor(finalStat);
       this.currStats.push(finalStat);
     }
