@@ -1,14 +1,23 @@
 # DIGIMON : TOWER OF RUIN
 
-## CURRENT VERSION : 0.0.0-alpha.5
+## CURRENT VERSION : 0.0.0-alpha.6
 
 ### 0.0.0
 Setting up all of the basic structure for the system, until the game is in any way testable with other users
 
+### v0.0.0-alpha.6
+* Cleaned up the battle system
+* Added basics for the Combo System
+* Added core for Attack animations
+* Added basic Attack Mods (type-effective, combo, weakened)
+* Added multi-hit attacks
+* Added victory and loss functionality
+
 #### v0.0.0-alpha.5
 * Built Battle Menu
-  * Create Status Menus with HP and EN
-  * Create Attack Menus
+  * Created Status Menus with HP and EN
+  * Created Attack Menus
+  * Added stripped-down attack functionality
 * Built Text Sprite Sheet Functionality
 
 #### v0.0.0-alpha.4

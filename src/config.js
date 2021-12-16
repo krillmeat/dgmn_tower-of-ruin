@@ -12,7 +12,8 @@ let config = {
     start: 'Shift',
     select: 'q'
    },
-  screenSize: 2 // How much larger the screen is than the actual
+  screenSize: 2, // How much larger the screen is than the actual
+  textSpeed: 2 // 1 is fastest, 4 is slowest
 }
 
 export default config;

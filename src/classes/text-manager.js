@@ -39,6 +39,15 @@ class TextManager {
     canvas.ctx.fillRect((this.x * 8) * config.screenSize,(this.y * 8) * config.screenSize,this.cols * 7 * config.screenSize,this.rows * 7 * config.screenSize);
   }
 
+  /**------------------------------------------------------------------------
+   * INSTANT PAINT
+   * ------------------------------------------------------------------------
+   * Draws text instantly on the screen.
+   * Often used by menus for data, and not for in-game dialogue.
+   * ------------------------------------------------------------------------
+   * @param {GameCanvas}  canvas   GameCanvas the text should be painted on
+   * @param {String}      message  Text to be printed
+   * ----------------------------------------------------------------------*/
   instantPaint = (canvas, message) => {
     let ctx = canvas.ctx;
     let splitMessage = this.replaceSpecials(message);
@@ -53,18 +62,88 @@ class TextManager {
     }
   }
 
+  /**------------------------------------------------------------------------
+   * SLOW PAINT
+   * ------------------------------------------------------------------------
+   * Draws text one character at a time.
+   * Used mostly for dialogue.
+   * ------------------------------------------------------------------------
+   * @param {GameCanvas}  canvas   GameCanvas the text should be painted on
+   * @param {String}      message  Text to be printed
+   * @param {Function}    triggerRedraw Callback to redraw the screen
+   * ----------------------------------------------------------------------*/
+  slowPaint = (canvas, message, triggerRedraw, onDone) => {
+    let ctx = canvas.ctx;
+
+    let splitWords = message.split(" ");
+    for(let i = 0; i < splitWords.length; i++){
+      splitWords[i] = this.replaceSpecials(splitWords[i]);
+    }
+    this.clearTextBox(canvas);
+    let c = 0; // Paint column
+    let r = 0; // Paint row
+    let word = 0;
+    let char = 0;
+    let paintInterval = setInterval(()=>{
+      
+      this.drawCharacter(ctx,splitWords[word][char],c,r);
+      triggerRedraw();
+
+      char++;
+      c++;
+
+      if(c === this.cols){ c = 0; r++ }
+      if(r === this.rows){ /* TODO - Next frame... */ }
+
+      if(char >= splitWords[word].length){ 
+        if(c !== 0){
+          this.drawCharacter(ctx, 'space', c, r);
+          triggerRedraw();
+          c++;
+        }
+
+        // If next word exists and its length plus the current spot is greater than the space available...
+        //    go to a new row
+        if(word + 1 <= splitWords.length - 1 && splitWords[word+1].length + c > this.cols){
+          r++;
+          c = 0;
+        }
+
+        char = 0; 
+        word++; 
+      }
+
+      if(word >= splitWords.length){ onDone(); clearInterval(paintInterval) } // Out of words, it's totally done
+
+    },config.textSpeed * 33);
+  }
+
   replaceSpecials = message => {
-    // Eventually, I might have to swap this stuff out for a loop method
+    // TODO - This is awful
     let modString = message;
-        modString = modString.replace('.M','^');
-        modString = modString.replace('.hp','%');
-        modString = modString.replace('.en','@');
+        modString = modString.replaceAll('.M','^');
+        modString = modString.replaceAll('.hp','%');
+        modString = modString.replaceAll('.en','@');
     let modArray = modString.split('');
-    if(modArray.indexOf('^') !== -1) modArray[modArray.indexOf('^')] = 'dotM';
-    if(modArray.indexOf('%') !== -1) modArray[modArray.indexOf('%')] = 'hp';
-    if(modArray.indexOf('@') !== -1) modArray[modArray.indexOf('@')] = 'en';
-    if(modArray.indexOf(' ') !== -1) modArray[modArray.indexOf(' ')] = 'space';
+
+    for(let i = 0; i < modArray.length; i++){
+      if(modArray[i] === '^') modArray[i] = 'dotM';
+      if(modArray[i] === '%') modArray[i] = 'hp';
+      if(modArray[i] === '@') modArray[i] = 'en';
+      if(modArray[i] === ' ') modArray[i] = 'space';
+      if(modArray[i] === '!') modArray[i] = 'exclamation';
+      if(modArray[i] === '.') modArray[i] = 'period';
+    }
+
     return modArray;
+  }
+
+  drawCharacter = (ctx,char,c,r) =>{
+    ctx.drawImage(this.colors[0],
+      fontData[char][0] * 64,fontData[char][1] * 64,
+      64,64,
+      ((8 * config.screenSize) * c) + ((this.x * 8) * config.screenSize), ((8 * config.screenSize) * r) + (this.y * 8) * config.screenSize,
+      8 * config.screenSize, 8 * config.screenSize );
   }
 
   progressivePaint = speed => {

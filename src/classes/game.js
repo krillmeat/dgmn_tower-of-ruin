@@ -1,17 +1,17 @@
 import { debugLog } from "../utils/log-utils";
 import Battle from "./battle";
+import Dungeon from "./dungeon";
 import GameCanvas from "./canvas";
-import Dgmn from "./dgmn";
 
 import config from "../config";
+import { setupMockDgmn, setupMockEnemyDgmn } from "../debug/dgmn.mock";
 
 // TODO - There has to be a better way to mock this stuff up...
-const mockDgmn = [
-  new Dgmn(0, 'FLARE', 'Agu',5,0),
-  new Dgmn(1, 'BLITZ', 'Grey',10,1),
-  new Dgmn(2, 'FROST', 'Gabu',5,2),
-];
-const mockEnemyDgmn = [new Dgmn(0,'ENEMY','Agu',5,0,true)];
+const mockDgmn = setupMockDgmn();
+const mockEnemyDgmn = setupMockEnemyDgmn();
+
+debugLog("PARTY = ",mockDgmn);
+debugLog("ENEMY = ",mockEnemyDgmn);
 
 /**------------------------------------------------------------------------
  * GAME
@@ -25,6 +25,7 @@ class Game{
   constructor(loadImageCallback,fetchImageCallback){
     debugLog('Game Created...');
     this.battle;                              // Init Battle (cleared and created by Game Logic)
+    this.dungeon;
 
     this.gameCanvas =                         // Canvas Every in-game Element is drawn on
       new GameCanvas('game-canvas',160,144);  
@@ -67,16 +68,14 @@ class Game{
     if(keyState[config.keyBindings.cancel]){ this.keyManager('cancel')
     } else { this.keyTimers.cancel = 0 }
 
-    if(keyState[config.keyBindings.up]){
-      console.log("UP");
-    }
+    if(keyState[config.keyBindings.up]){ this.keyManager('up')
+    } else { this.keyTimers.up = 0 }
     
     if(keyState[config.keyBindings.right]){ this.keyManager('right')
     } else { this.keyTimers.right = 0 }
     
-    if(keyState[config.keyBindings.down]){
-      console.log("DOWN");
-    }
+    if(keyState[config.keyBindings.down]){ this.keyManager('down')
+    } else { this.keyTimers.down = 0 }
     
     if(keyState[config.keyBindings.left]){ this.keyManager('left')
     } else { this.keyTimers.left = 0 }
@@ -114,6 +113,12 @@ class Game{
     debugLog("Starting Battle...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
     this.battle = new Battle(mockDgmn,mockEnemyDgmn,this.onBattleLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
+  }
+
+  buildDungeon = () => {
+    debugLog("Building Dungeon...");
+    // TODO - ALL OF THIS IS TEMP RIGHT NOW
+    this.dungeon = new Dungeon();
   }
 
   /**------------------------------------------------------------------------

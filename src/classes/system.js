@@ -73,7 +73,7 @@ class System{
   startGameTimer = () => {
     this.gameTimer = setInterval( () => {
       
-      try{
+      // try{
         this.systemCount++;
         this.game.keyHandler(this.keyState);
         this.screenCanvas.paintCanvas(this.game.gameCanvas); // TODO - Should be a full compiler of all other canvases
@@ -83,7 +83,7 @@ class System{
           }
           this.actionQueue.shift();
         }
-      } catch(e){ console.log("GAME ERROR! - ",e.message); clearInterval(this.gameTimer) }
+      // } catch(e){ console.log("GAME ERROR! - ",e.message); clearInterval(this.gameTimer) }
 
     }, 33);
   }
