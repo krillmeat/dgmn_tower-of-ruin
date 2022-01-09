@@ -12,6 +12,10 @@ class DebugMenu {
     this.launchBattle = () => {
       launchBattleCallback();
     }
+
+    this.launchDungeon = () => {
+      // launchDungeonCallback();
+    }
   }
 
   activate = () => {
@@ -19,6 +23,10 @@ class DebugMenu {
     this.elem.querySelector("button.battle-launch").addEventListener('click',() => {
       this.launchBattle();
     });
+
+    this.elem.querySelector("button.dungeon-launch").addEventListener('click',()=>{
+      this.launchDungeon();
+    })
 
     this.elem.querySelector("button.mobile-switch").addEventListener('click',()=>{
       let newValue = document.body.dataset.view === 'mobile' ? 'dotcom' : 'mobile';

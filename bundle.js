@@ -670,7 +670,7 @@ var attacksDB = {
     hits: 1,
     animationFrames: [['bubbles1', 1], ['bubbles2', 4], ['bubbles1', 1]],
     animationFrameCount: 2,
-    effect: ['buff', 1, .5, 25]
+    effect: ['buff', 1, 1, 100]
   },
   babyFlame: {
     displayName: 'Baby Flame',
@@ -1356,7 +1356,7 @@ var Attack = function Attack(attackName) {
   _classCallCheck(this, Attack);
 
   _defineProperty(this, "calculateDamage", function (targetDefense, attackerAttack, attackerLevel) {
-    // FORMULA: ( ( ATK / DEF ) * (LV / 2 ) ) * ( PWR / 2 )
+    // FORMULA: ( ( ATK / DEF ) * (LV / 2 ) ) * PWR
     // The reason you have /2's is because the "weight" of that variable needs to be weaker
     var atkDefDiff = attackerAttack / targetDefense;
     var preMods = Math.floor(atkDefDiff * (attackerLevel / 2) * powerRanks[_this.power] / _this.hits);
@@ -1565,7 +1565,7 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
       for (var r = 0; r < order.length - 1; r++) {
         var temp = order[r];
         var currSpeed = order[r].currStats[7] * order[r].currBuffs[7];
-        var nextSpeed = order[r + 1].currStats[7] * order[r].currBuffs[7];
+        var nextSpeed = order[r + 1].currStats[7] * order[r + 1].currBuffs[7];
 
         if (currSpeed < nextSpeed) {
           order[r] = order[r + 1];
@@ -1774,7 +1774,7 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     var shouldRun = '';
 
     if (effect[0] === 'buff') {
-      shouldRun = _this.buffStat(attacker, attacker, targets[0].nickname, effect[3], effect[1], effect[2]);
+      shouldRun = _this.buffStat(targets[0], effect[3], effect[1], effect[2]);
       isBuffCapped = shouldRun === 'capped';
     } else if (effect[0] === 'debuff') ; else if (effect[0] === 'status') {
       shouldRun = _this.inflictStatus(targets[0], attacker, targets[0].nickname, effect[2], effect[1]); // TODO - send more than one target
@@ -1802,10 +1802,12 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 
     if (shouldRun) {
       // Check Buff Chance
-      if (dgmn.currBuffs[stat] < 6) {
+      if (dgmn.currBuffs[stat] + amount <= 4) {
         dgmn.currBuffs[stat] += amount;
+        buffStatus = 'yes';
         debugLog("----- Buffing ".concat(stat, " by ").concat(amount));
       } else {
+        dgmn.currBuffs[stat] = 4;
         buffStatus = 'capped';
       }
     } else {
@@ -1923,36 +1925,33 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     }
   });
 
-  _defineProperty(this, "resetCombos", function (isEnemy) {
-    var list = isEnemy ? _this.enemyDgmnList : _this.dgmnList;
-
-    for (var i = 0; i < list.length; i++) {
-      if (!list[i].isDead) {
-        var combo = list[i].currCombo - 3;
+  _defineProperty(this, "resetCombos", function (dgmnList) {
+    for (var i = 0; i < dgmnList.length; i++) {
+      if (!dgmnList[i].isDead) {
+        var combo = dgmnList[i].currCombo - 3;
         combo = combo < 0 ? 0 : combo;
         var comboLetter = getComboLetter(combo);
-        list[i].currCombo = combo;
-        list[i].comboLetter = comboLetter;
+        dgmnList[i].currCombo = combo;
+        dgmnList[i].comboLetter = comboLetter;
 
-        _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(_this.battleMenu.menuCanvas, comboLetter, _this.fetchImage('fontsWhite'));
+        _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(dgmnList[i].dgmnId)].setCombo(_this.battleMenu.menuCanvas, comboLetter, _this.fetchImage('fontsWhite'));
       } else {
-        list[i].comboLetter = 'F';
+        dgmnList[i].comboLetter = 'F';
+        dgmnList[i].currCombo = 0;
 
-        _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(_this.battleMenu.menuCanvas, 'F', _this.fetchImage('fontsWhite'));
+        _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(dgmnList[i].dgmnId)].setCombo(_this.battleMenu.menuCanvas, 'F', _this.fetchImage('fontsWhite'));
       }
     }
   });
 
-  _defineProperty(this, "resetWeakened", function () {
-    var allDgmn = _this.battleMenu.dgmnStatusList;
-
-    var _iterator2 = _createForOfIteratorHelper(allDgmn),
+  _defineProperty(this, "resetWeakened", function (dgmnList) {
+    var _iterator2 = _createForOfIteratorHelper(dgmnList),
         _step2;
 
     try {
       for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
         var dgmn = _step2.value;
-        var weakenedState = dgmn.dgmnData.weakenedState;
+        var weakenedState = dgmn.weakenedState;
 
         if (weakenedState[1] > 0) {
           weakenedState[1]--;
@@ -1962,7 +1961,10 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
           }
 
           var imageName = "weak".concat(weakenedState[1]);
-          dgmn.setWeakened(_this.battleMenu.menuCanvas, _this.fetchImage(imageName));
+
+          var statusIndex = _this.battleMenu.getStatusIndex(dgmn.dgmnId);
+
+          _this.battleMenu.dgmnStatusList[statusIndex].setWeakened(_this.battleMenu.menuCanvas, _this.fetchImage(imageName));
         }
       }
     } catch (err) {
@@ -1972,10 +1974,8 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     }
   });
 
-  _defineProperty(this, "resetDefend", function () {
-    var allDgmn = _this.battleMenu.dgmnStatusList;
-
-    var _iterator3 = _createForOfIteratorHelper(allDgmn),
+  _defineProperty(this, "resetDefend", function (dgmnList) {
+    var _iterator3 = _createForOfIteratorHelper(dgmnList),
         _step3;
 
     try {
@@ -1992,16 +1992,13 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 
   _defineProperty(this, "startNewTurn", function () {
     _this.turn++;
-    _this.attackActions = {}; // Reset Weakneed State
+    _this.attackActions = {}; // Reset Weakneed State, Combos, and Defend
 
-    _this.resetWeakened(); // Reset Combos - Ally, then Enemy
+    _this.resetWeakened(_this.dgmnList.concat(_this.enemyDgmnList));
 
+    _this.resetCombos(_this.dgmnList.concat(_this.enemyDgmnList));
 
-    _this.resetCombos();
-
-    _this.resetCombos(true);
-
-    _this.resetDefend(); // Reset Battle Menu
+    _this.resetDefend(_this.dgmnList.concat(_this.enemyDgmnList)); // Reset Battle Menu
 
 
     _this.battleMenu.menus.dgmn.currentIndex = 0;
@@ -2209,6 +2206,96 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
  * ------------------------------------------------------------------------
  * Loads all data and then preps the menus.
  * Relies on all Battle Images being loaded
+ * ----------------------------------------------------------------------*/
+;
+
+var dungeonFloorsDB = {
+  twoByTwo: [[[1, 5], [3, 0]]]
+};
+var dungeonRoomsDB = [[[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 2, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]];
+
+/**------------------------------------------------------------------------
+ * CALCULATE DUNGEON DIMENSIONS
+ * ------------------------------------------------------------------------
+ * Figures out the proper Room Dimensions for a Dungeon floor
+ * ------------------------------------------------------------------------
+ * @param {Number}  floor Current Floor Number for the Dungeon
+ * ----------------------------------------------------------------------*/
+
+var calculateDungeonDimensions = function calculateDungeonDimensions(floor) {
+  var dimensions = "";
+
+  switch (true) {
+    case floor < 5 && floor > 0:
+      dimensions = "twoByTwo";
+      break;
+
+    case floor >= 5 && floor < 10:
+      dimensions = "twoByThree";
+      break;
+
+    case floor >= 10 && floor < 16:
+      dimensions = "threeByThree";
+      break;
+
+    default:
+      debugLog('ERROR - Floor is incorrect value!');
+      dimensions = "twoByTwo";
+      break;
+  }
+
+  return dimensions;
+};
+
+var Room = function Room(roomId) {
+  _classCallCheck(this, Room);
+
+  _defineProperty(this, "generateStart", function (roomMatrix) {});
+
+  _defineProperty(this, "generateEnd", function (roomMatrix) {});
+
+  this.roomId = roomId;
+  this.roomMatrix = dungeonRoomsDB[roomId];
+};
+
+var Dungeon = function Dungeon(isNewDungeon) {
+  var _this = this;
+
+  _classCallCheck(this, Dungeon);
+
+  _defineProperty(this, "buildFloor", function (floorDimensions) {
+    var buildMatrix = []; // Randomly Select a Floor
+
+    var floorOptions = dungeonFloorsDB[floorDimensions];
+    var selectedFloor = Math.floor(Math.random() * (floorOptions.length - 0));
+    buildMatrix = floorOptions[selectedFloor]; // Run through the floor matrix and replace each single Number with Room Object
+
+    for (var r = 0; r < buildMatrix.length; r++) {
+      for (var c = 0; c < buildMatrix[r].length; c++) {
+        _this.buildRoom(buildMatrix[r][c]);
+      }
+    }
+
+    return buildMatrix;
+  });
+
+  _defineProperty(this, "buildRoom", function (roomId) {
+    var room = new Room(roomId);
+    room.generateStart(room.roomMatrix);
+    return room;
+  });
+
+  this.floor = isNewDungeon ? 1 : 0; // TODO - Right now, set to zero when not a new dungeon, but otherwise, needs to pull from save data
+
+  this.roomMatrix = this.buildFloor(calculateDungeonDimensions(this.floor));
+}
+/**------------------------------------------------------------------------
+ * BULD FLOOR
+ * ------------------------------------------------------------------------
+ * Gets everything ready for a new Floor
+ * ------------------------------------------------------------------------
+ * @param {String} floorDimensions Dimensions of the floor | "twoByTwo"
+ * @return Dungeon Floor Matrix
  * ----------------------------------------------------------------------*/
 ;
 
@@ -2629,6 +2716,12 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
     _this.battle = new Battle(mockDgmn, mockEnemyDgmn, _this.onBattleLoad, _this.addToObjectList, _this.drawGameScreen, _this.loadImages, _this.fetchImage);
   });
 
+  _defineProperty(this, "buildDungeon", function () {
+    debugLog("Building Dungeon..."); // TODO - ALL OF THIS IS TEMP RIGHT NOW
+
+    _this.dungeon = new Dungeon();
+  });
+
   _defineProperty(this, "onBattleLoad", function () {
     console.log("Battle Loaded...");
 
@@ -2661,6 +2754,7 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
   debugLog('Game Created...');
   this.battle; // Init Battle (cleared and created by Game Logic)
 
+  this.dungeon;
   this.gameCanvas = // Canvas Every in-game Element is drawn on
   new GameCanvas('game-canvas', 160, 144);
   this.keyState = {}; // Sent in from System, holds true/false value for all Keys Pressed
@@ -2746,6 +2840,10 @@ var DebugMenu = function DebugMenu(launchBattleCallback) {
       _this.launchBattle();
     });
 
+    _this.elem.querySelector("button.dungeon-launch").addEventListener('click', function () {
+      _this.launchDungeon();
+    });
+
     _this.elem.querySelector("button.mobile-switch").addEventListener('click', function () {
       var newValue = document.body.dataset.view === 'mobile' ? 'dotcom' : 'mobile';
       document.body.dataset.view = newValue;
@@ -2770,6 +2868,9 @@ var DebugMenu = function DebugMenu(launchBattleCallback) {
 
   this.launchBattle = function () {
     launchBattleCallback();
+  };
+
+  this.launchDungeon = function () {// launchDungeonCallback();
   };
 };
 

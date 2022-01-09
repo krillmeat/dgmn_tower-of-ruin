@@ -1,5 +1,8 @@
 import Dungeon from "../../src/classes/dungeon";
 import Room from "../../src/classes/room";
+import { calculateDungeonDimensions } from "../../src/utils/dungeon-utils";
+
+import * as logs from "../../src/utils/log-utils";
 
 describe("Dungeon",()=>{
   describe("Building",()=>{
@@ -21,6 +24,30 @@ describe("Dungeon",()=>{
       let mockRoom = mockDungeon.buildRoom(0);
 
       expect(mockRoom instanceof Room).toBe(true);
+    })
+  });
+
+  describe("Utilities",()=>{
+    test('Dungeon floor dimensions should be 2x2 when floor is 1',()=>{
+      expect(calculateDungeonDimensions(1)).toBe("twoByTwo");
+    });
+
+    test('Dungeon floor dimensions should be 2x3 when floor is 6',()=>{
+      expect(calculateDungeonDimensions(6)).toBe("twoByThree");
+    });
+
+    test('Dungeon floor dimensions should be 3x3 when floor is 14',()=>{
+      expect(calculateDungeonDimensions(14)).toBe("threeByThree");
+    });
+
+    test('Dungeon floor dimensions should default to 2x2 when floor is of impossible value',()=>{
+      expect(calculateDungeonDimensions(-1)).toBe("twoByTwo");
+    });
+
+    test('Should log error when floor is of impossible value',()=>{
+      let spy = jest.spyOn(logs,'debugLog');
+      calculateDungeonDimensions(-1);
+      expect(spy).toHaveBeenCalled();
     })
   })
 })

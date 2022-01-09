@@ -199,7 +199,7 @@ class Battle {
       for(let r = 0; r < order.length - 1; r++){
         let temp = order[r];
         let currSpeed = order[r].currStats[7] * order[r].currBuffs[7];
-        let nextSpeed = order[r+1].currStats[7] * order[r].currBuffs[7];
+        let nextSpeed = order[r+1].currStats[7] * order[r+1].currBuffs[7];
         if(currSpeed < nextSpeed){
           order[r] = order[r+1];
           order[r+1] = temp;
@@ -419,7 +419,7 @@ class Battle {
     let shouldRun = '';
 
     if(effect[0] === 'buff'){
-      shouldRun = this.buffStat(attacker,attacker,targets[0].nickname,effect[3],effect[1],effect[2]);
+      shouldRun = this.buffStat(targets[0],effect[3],effect[1],effect[2]);
       isBuffCapped = shouldRun === 'capped';
     } else if(effect[0] === 'debuff'){
       
@@ -440,14 +440,26 @@ class Battle {
     }
   }
 
+  /**------------------------------------------------------------------------
+   * BUFF STAT
+   * ------------------------------------------------------------------------
+   * Increase the Buff of a Stat
+   * ------------------------------------------------------------------------
+   * @param {Dgmn}    dgmn    The Dgmn getting buffed
+   * @param {Number}  chance  % chance of the buff happening
+   * @param {Number}  stat    Index Number of the Stat to Buff
+   * @param {Number}  amount  Number of stages to Buff the Stat
+   * @returns Whether or not the buff happened or didn't | '', missed, capped
+   * ----------------------------------------------------------------------*/
   buffStat = (dgmn, chance, stat, amount) => {
     let buffStatus = ''; // '' | capped | missed
     let shouldRun = Math.floor(Math.random() * (100 - 1) + 1) <= chance;
       if( shouldRun ){ // Check Buff Chance
-        if(dgmn.currBuffs[stat] < 6) {
+        if(dgmn.currBuffs[stat] + amount <= 4) {
           dgmn.currBuffs[stat] += amount;
+          buffStatus = 'yes';
           debugLog(`----- Buffing ${stat} by ${amount}`);
-        } else { buffStatus = 'capped' }
+        } else { dgmn.currBuffs[stat] = 4; buffStatus = 'capped' }
       } else{ buffStatus = 'missed' }
     return buffStatus;
   }
@@ -591,47 +603,60 @@ class Battle {
   /**------------------------------------------------------------------------
    * RESET COMBOS
    * ------------------------------------------------------------------------
-   * Subtracts three from the current combo of all Dgmn
-   * TODO - Status conditioned Dgmn should only lose 1 - 2
+   * Subtracts three from the current combo of a list of Dgmn
+   * TODO - Weakened State should offset combo loss
    * ------------------------------------------------------------------------
-   * @param {Boolean} isEnemy If true, check the enemy side
+   * @param {Array} dgmnList  List of Dgmn to be updated
    * ----------------------------------------------------------------------*/
-  resetCombos = isEnemy => {
-    let list = isEnemy ? this.enemyDgmnList : this.dgmnList;
-    for(let i = 0; i < list.length; i++){
-      if(!list[i].isDead){
-        let combo = list[i].currCombo - 3;
+  resetCombos = dgmnList => {
+    for(let i = 0; i < dgmnList.length; i++){
+      if(!dgmnList[i].isDead){
+        let combo = dgmnList[i].currCombo - 3;
         combo = combo < 0 ? 0 : combo;
         let comboLetter = getComboLetter(combo);
-        list[i].currCombo = combo;
-        list[i].comboLetter = comboLetter;
-        this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(this.battleMenu.menuCanvas,comboLetter,this.fetchImage('fontsWhite'))
+        dgmnList[i].currCombo = combo;
+        dgmnList[i].comboLetter = comboLetter;
+        this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(dgmnList[i].dgmnId)].setCombo(this.battleMenu.menuCanvas,comboLetter,this.fetchImage('fontsWhite'))
       } else {
-        list[i].comboLetter = 'F';
-        this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(list[i].dgmnId)].setCombo(this.battleMenu.menuCanvas,'F',this.fetchImage('fontsWhite'))
+        dgmnList[i].comboLetter = 'F';
+        dgmnList[i].currCombo = 0;
+        this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(dgmnList[i].dgmnId)].setCombo(this.battleMenu.menuCanvas,'F',this.fetchImage('fontsWhite'))
       }
       
     }
   }
 
-  resetWeakened = () => {
-    let allDgmn = this.battleMenu.dgmnStatusList;
-    for(let dgmn of allDgmn){
-      let weakenedState = dgmn.dgmnData.weakenedState;
+  /**------------------------------------------------------------------------
+   * RESET WEAKENED
+   * ------------------------------------------------------------------------
+   * Goes through a list of Dgmn and Updates their Weakened Status
+   * ------------------------------------------------------------------------
+   * @param {Array} dgmnList  List of Dgmn to be updated
+   * ----------------------------------------------------------------------*/
+  resetWeakened = dgmnList => {
+    for(let dgmn of dgmnList){
+      let weakenedState = dgmn.weakenedState;
       if(weakenedState[1] > 0){
         weakenedState[1]--;
         if(weakenedState[1] === 0){ 
           weakenedState[0] = false; 
         }
         let imageName = `weak${weakenedState[1]}`;
-        dgmn.setWeakened(this.battleMenu.menuCanvas,this.fetchImage(imageName));
+        let statusIndex = this.battleMenu.getStatusIndex(dgmn.dgmnId);
+        this.battleMenu.dgmnStatusList[statusIndex].setWeakened(this.battleMenu.menuCanvas,this.fetchImage(imageName));
       }
     }
   }
-
-  resetDefend = () => {
-    let allDgmn = this.battleMenu.dgmnStatusList;
-    for(let dgmn of allDgmn){
+ 
+  /**------------------------------------------------------------------------
+   * RESET DEFEND
+   * ------------------------------------------------------------------------
+   * Resets a list of Dgmn's Defense status
+   * ------------------------------------------------------------------------
+   * @param {Array} dgmnList  List of Dgmn to be updated
+   * ----------------------------------------------------------------------*/
+  resetDefend = dgmnList => {
+    for(let dgmn of dgmnList){
      dgmn.isDefending = false;
     }
   }
@@ -645,13 +670,10 @@ class Battle {
     this.turn++;
     this.attackActions = {};
 
-    // Reset Weakneed State
-    this.resetWeakened();
-    // Reset Combos - Ally, then Enemy
-    this.resetCombos();
-    this.resetCombos(true);
-
-    this.resetDefend();
+    // Reset Weakneed State, Combos, and Defend
+    this.resetWeakened(this.dgmnList.concat(this.enemyDgmnList));
+    this.resetCombos(this.dgmnList.concat(this.enemyDgmnList));
+    this.resetDefend(this.dgmnList.concat(this.enemyDgmnList));
 
     // Reset Battle Menu
     this.battleMenu.menus.dgmn.currentIndex = 0;

@@ -5,13 +5,19 @@
 ### 0.0.0
 Setting up all of the basic structure for the system, until the game is in any way testable with other users
 
+### v0.0.0-alpha.7
+* Added structure for Dungeon generation
+* Built basic movement
+* Built basic Collision
+* Build basic DigiBeetle
+
 ### v0.0.0-alpha.6
 * Cleaned up the battle system
 * Added basics for the Combo System
 * Added core for Attack animations
 * Added basic Attack Mods (type-effective, combo, weakened)
 * Added multi-hit attacks
-* Added victory and loss functionality
+* Added victory and loss checks
 
 #### v0.0.0-alpha.5
 * Built Battle Menu

@@ -7,6 +7,8 @@ import { debugLog } from "../../utils/log-utils";
 import { attacksDB } from "../../data/attacks.db";
 import { getDgmnById, getStatNameFromIndex } from "../../utils/dgmn-utils";
 
+// TODO - I need to remove access to dgmnData here and send in what it needs
+
 class BattleMenu{
   constructor(dgmnData, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback){ // TODO - I do not want (if I can help it) ANY dgmnData in this file
     this.dgmnData = dgmnData;
