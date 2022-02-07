@@ -4,11 +4,38 @@ import 'jest-canvas-mock';
 import Attack from "../../src/classes/attack";
 import DgmnBattleStatus from "../../src/classes/menu/dgmn-battle-status";
 
-import BattleMenu from "../../src/classes/menu/battle-menu";
-
 const fakeDgmn = new Dgmn(0,'FLARE','Agu',0);
 const fakeEnemyDgmn = new Dgmn(1,'BOMBER','Gabu',4,true);
 const emptyFunc = () => {}
+const mockDgmnBattleStatusList = [new DgmnBattleStatus(0,fakeDgmn)]
+
+// MOCKS
+import BattleMenu from "../../src/classes/menu/battle-menu";
+const mockResetBattleMenuForNewTurn = jest.fn(); 
+const mockSetEffectBottomInfo = jest.fn(); 
+const mockGetStatusIndex = jest.fn().mockReturnValue(0);
+const mockSetDgmnWeakenedState = jest.fn();
+const mockSetDgmnComboState = jest.fn();
+const mockSetDgmnKOState = jest.fn();
+jest.mock('../../src/classes/menu/battle-menu',()=>{
+  return jest.fn().mockImplementation(()=>{
+    return {resetBattleMenuForNewTurn: mockResetBattleMenuForNewTurn,
+            setEffectBottomInfo: mockSetEffectBottomInfo,
+            getStatusIndex: mockGetStatusIndex,
+            setDgmnWeakenedState: mockSetDgmnWeakenedState,
+            setDgmnComboState: mockSetDgmnComboState,
+            setDgmnKOState: mockSetDgmnKOState}
+  })
+})
+
+const mockPaintImage = jest.fn();
+jest.mock('../../src/classes/background-canvas',()=>{
+  return jest.fn().mockImplementation(()=>{
+    return{
+      paintImage: mockPaintImage
+    }
+  })
+})
 
 describe('Battle System',() => {
 
@@ -31,6 +58,13 @@ describe('Battle System',() => {
       
       expect(spy).toHaveBeenCalled();
     });
+
+    test('Setting up Battle Background should add the object',()=>{
+      let mockBattle = new Battle([fakeDgmn],[fakeEnemyDgmn],emptyFunc,emptyFunc,emptyFunc,emptyFunc,emptyFunc);
+      let spy = jest.spyOn(mockBattle,'addObject');
+      mockBattle.setupBattleBackground(()=>{});
+      expect(spy).toHaveBeenCalled();
+    })
   });
 
 
@@ -67,6 +101,67 @@ describe('Battle System',() => {
     });
   });
 
+  describe('Accuracy Checks',()=>{
+    let mockBattle;
+    beforeEach(()=>{
+      mockBattle = new Battle([fakeDgmn],[fakeEnemyDgmn],emptyFunc,emptyFunc,emptyFunc,emptyFunc,emptyFunc);
+    });
+    afterEach(()=>{
+      jest.spyOn(global.Math, 'random').mockRestore();
+    })
+
+    describe('If HIT and AVO are the same value',()=>{
+      // If HIT/AVO = 1, Miss and crit both become 10:1000 (1:100)
+      let mockHIT = 10;
+      let mockAVO = 10;
+      test('A random value of 11 will be a hit', () => {
+        jest.spyOn(global.Math, 'random').mockReturnValue(0.011);
+        let mockAccuracy = mockBattle.calculateAccuracy(null,mockAVO,mockHIT);
+        expect(mockAccuracy).toEqual('hit');
+      })
+
+      test('A random value of 10 will be a miss', () => {
+        jest.spyOn(global.Math, 'random').mockReturnValue(0.010);
+        let mockAccuracy = mockBattle.calculateAccuracy(null,mockAVO,mockHIT);
+        expect(mockAccuracy).toEqual('missed');
+      })
+
+      test('A random value of 990 will be a crit', () => {
+        jest.spyOn(global.Math, 'random').mockReturnValue(0.99);
+        let mockAccuracy = mockBattle.calculateAccuracy(null,mockAVO,mockHIT);
+        expect(mockAccuracy).toEqual('critical');
+      })
+    })
+
+    describe('If HIT is 2x higher than AVO',()=>{
+      // If HIT/AVO = 2, Crit becomes 40:1000 (1:25) and Miss becomes 2.5:1000 (1:400) 
+      let mockHIT = 20;
+      let mockAVO = 10;
+      test('A random value of 3 will be a hit', () => {
+        jest.spyOn(global.Math, 'random').mockReturnValue(0.003);
+        let mockAccuracy = mockBattle.calculateAccuracy(null,mockAVO,mockHIT);
+        expect(mockAccuracy).toEqual('hit');
+      })
+
+      test('A random value of 2 will be a miss', () => {
+        jest.spyOn(global.Math, 'random').mockReturnValue(0.002);
+        let mockAccuracy = mockBattle.calculateAccuracy(null,mockAVO,mockHIT);
+        expect(mockAccuracy).toEqual('missed');
+      })
+
+      test('A random value of 959 will be a hit', () => {
+        jest.spyOn(global.Math, 'random').mockReturnValue(0.959);
+        let mockAccuracy = mockBattle.calculateAccuracy(null,mockAVO,mockHIT);
+        expect(mockAccuracy).toEqual('hit');
+      })
+
+      test('A random value of 960 will be a crit', () => {
+        jest.spyOn(global.Math, 'random').mockReturnValue(0.960);
+        let mockAccuracy = mockBattle.calculateAccuracy(null,mockAVO,mockHIT);
+        expect(mockAccuracy).toEqual('critical');
+      })
+    })
+  })
 
   describe('Dealing Damage',()=>{
     let mockBattle;
@@ -128,17 +223,6 @@ describe('Battle System',() => {
 
     describe('Buff/Debuff',()=>{
 
-      let mockInflictStatus = jest.fn();
-      let mockSetEffectBottomInfo = jest.fn();
-      jest.mock( "../../src/classes/menu/battle-menu", () => {
-        return jest.fn().mockImplementation(() => {
-          return {
-            inflictStatus: mockInflictStatus,
-            setEffectBottomInfo: mockSetEffectBottomInfo
-          };
-        });
-      });
-
       afterEach(()=>{
         fakeDgmn.currBuffs = [0,1,1,1,1,1,1,1];
         fakeEnemyDgmn.currBuffs = [0,1,1,1,1,1,1,1];
@@ -154,16 +238,24 @@ describe('Battle System',() => {
         expect(spyBuff).toHaveBeenCalled();
       });
 
-      test('Buffing stat will write to the Bottom Text Bar',()=>{
-        let mockBattle = new Battle([fakeDgmn],[fakeEnemyDgmn],emptyFunc,emptyFunc,emptyFunc,emptyFunc,emptyFunc);
-        
-        let spyBuff = jest.spyOn(mockBattle,'buffStat').mockReturnValue('');
-        let spyFinish = jest.spyOn(mockBattle,'finishAttack').mockImplementation(()=>{});
+      // I think this test is getting too rough to manage properly
+      // test('Buffing stat will write to the Bottom Text Bar',()=>{
+      //   let mockBattle = new Battle([fakeDgmn],[fakeEnemyDgmn],emptyFunc,emptyFunc,emptyFunc,emptyFunc,emptyFunc);
 
-        mockBattle.attackActions = { 0: { status: 'todo' } }
-        mockBattle.handleEffect(['buff'],fakeDgmn,[fakeDgmn]);
-        expect(mockSetEffectBottomInfo).toHaveBeenCalled();
-      })
+      //   const mockSetEffectBottomInfo = jest.fn();
+      //   jest.mock('../../src/classes/menu/battle-menu',()=>{
+      //     return jest.fn().mockImplementation(()=>{
+      //       return {setEffectBottomInfo: mockSetEffectBottomInfo}
+      //     })
+      //   })
+        
+      //   let spyBuff = jest.spyOn(mockBattle,'buffStat').mockReturnValue('yes');
+      //   let spyFinish = jest.spyOn(mockBattle,'finishAttack').mockImplementation(()=>{});
+
+      //   mockBattle.attackActions = { 0: { status: 'todo' } }
+      //   mockBattle.handleEffect(['buff'],fakeDgmn,[fakeDgmn]);
+      //   expect(mockSetEffectBottomInfo).toHaveBeenCalled();
+      // })
 
       // TODO - NOT SURE WHY I PUT THIS HERE...
       // test('Handle Effect will call Inflict Status if buff succeeds',()=>{
@@ -242,6 +334,26 @@ describe('Battle System',() => {
       expect(newCombo - prevCombo).toBe(3);
     });
   });
+
+  describe('End of Turn',()=>{
+    let mockBattle;
+    beforeEach(()=>{
+      mockBattle = new Battle([fakeDgmn],[fakeEnemyDgmn],emptyFunc,emptyFunc,emptyFunc,emptyFunc,emptyFunc);
+    });
+    afterEach(()=>{
+      jest.clearAllMocks();
+    })
+    test('Starting a new turn will run all of the reset functions',()=>{
+      console.log()
+      let spyResetWeakened = jest.spyOn(mockBattle,'resetWeakened').mockImplementation(()=>{});
+      let spyResetCombos = jest.spyOn(mockBattle,'resetCombos').mockImplementation(()=>{});
+      let spyResetDefend = jest.spyOn(mockBattle,'resetDefend').mockImplementation(()=>{});
+      mockBattle.startNewTurn();
+      expect(spyResetWeakened).toHaveBeenCalled();
+      expect(spyResetCombos).toHaveBeenCalled();
+      expect(spyResetDefend).toHaveBeenCalled();
+    })
+  })
 
   describe("End of Battle",()=>{
     describe("Resetting Weakened",()=>{

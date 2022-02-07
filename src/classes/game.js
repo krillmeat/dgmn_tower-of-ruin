@@ -68,17 +68,17 @@ class Game{
     if(keyState[config.keyBindings.cancel]){ this.keyManager('cancel')
     } else { this.keyTimers.cancel = 0 }
 
-    if(keyState[config.keyBindings.up]){ this.keyManager('up')
-    } else { this.keyTimers.up = 0 }
+    if(keyState[config.keyBindings.up]){ this.keyManager('up','down')
+    } else { this.keyTimers.up = 0; this.keyManager('up','up') }
     
-    if(keyState[config.keyBindings.right]){ this.keyManager('right')
-    } else { this.keyTimers.right = 0 }
+    if(keyState[config.keyBindings.right]){ this.keyManager('right','down')
+    } else { this.keyTimers.right = 0; this.keyManager('right','up') }
     
-    if(keyState[config.keyBindings.down]){ this.keyManager('down')
-    } else { this.keyTimers.down = 0 }
+    if(keyState[config.keyBindings.down]){ this.keyManager('down','down')
+    } else { this.keyTimers.down = 0; this.keyManager('down','up') }
     
-    if(keyState[config.keyBindings.left]){ this.keyManager('left')
-    } else { this.keyTimers.left = 0 }
+    if(keyState[config.keyBindings.left]){ this.keyManager('left','down')
+    } else { this.keyTimers.left = 0; this.keyManager('left','up') }
   }
 
   /**------------------------------------------------------------------------
@@ -87,18 +87,25 @@ class Game{
    * Takes the action from a key and takes the proper action, depending on
    *   current Game state
    * ------------------------------------------------------------------------
-   * @param {String} key  Not the event listener Key, but the System Action Key
+   * @param {String} key    Not the event listener Key, but the System Action Key
+   * @param {String} upDown Picking up or putting down - up|down
    * ----------------------------------------------------------------------*/
-  keyManager = key => {
+  keyManager = (key, upDown) => {
     this.keyTimers[key]++;
     // DGMN MENU
-    if(this.battle.battleActive){
+    if(this.battle?.battleActive){
         if(this.keyTimers[key] === 2){ // Prevent instant tap from taking action
           this.battle.keyTriage(key);
         }
         if((key === 'right' || key === 'left' || key === 'down' || key === 'up') && this.keyTimers[key] > 15){ // Only directions can be held to take action
           this.keyTimers[key] = 0;
         }
+    }
+
+    if(this.dungeon?.dungeonState === 'free'){
+      // TODO - Logic that checks things like "held down" or "tapped" go here
+      this.dungeon.keyTriage(key,upDown);
+      
     }
   }
 
@@ -118,7 +125,7 @@ class Game{
   buildDungeon = () => {
     debugLog("Building Dungeon...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
-    this.dungeon = new Dungeon();
+    this.dungeon = new Dungeon(true,this.onDungeonLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
   }
 
   /**------------------------------------------------------------------------
@@ -133,6 +140,17 @@ class Game{
   }
 
   /**------------------------------------------------------------------------
+   * ON DUNGEON LOAD
+   * ------------------------------------------------------------------------
+   * Sent into the Dungeon as a Callback.
+   * Runs whenever the Dungeon returns that it has been fully loaded
+   * ----------------------------------------------------------------------*/
+  onDungeonLoad = () => {
+    console.log("Dungeon Loaded...");
+    this.drawGameScreen();
+  }
+
+  /**------------------------------------------------------------------------
    * ADD TO OBJECT LIST
    * ------------------------------------------------------------------------
    * Sent into parts of the Game as a Callback.
@@ -141,7 +159,9 @@ class Game{
    * @param {Object} newObject  New item to add to the list
    * ----------------------------------------------------------------------*/
   addToObjectList = newObject => {
-    this.objectList.push(newObject);
+    if(this.objectList.indexOf(newObject) === -1){
+      this.objectList.push(newObject);
+    }
   }
 
   /**------------------------------------------------------------------------

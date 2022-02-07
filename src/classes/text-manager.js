@@ -119,22 +119,24 @@ class TextManager {
   }
 
   replaceSpecials = message => {
-    // TODO - This is awful
-    let modString = message;
-        modString = modString.replaceAll('.M','^');
-        modString = modString.replaceAll('.hp','%');
-        modString = modString.replaceAll('.en','@');
-    let modArray = modString.split('');
+    let modArray;
+    if(message){
+      // TODO - This is awful
+      let modString = message;
+      modString = modString.replace(/.M/g,'^');
+      modString = modString.replace(/.hp/g,'%');
+      modString = modString.replace(/.en/g,'@');
+      modArray = modString.split('');
 
-    for(let i = 0; i < modArray.length; i++){
+      for(let i = 0; i < modArray.length; i++){
       if(modArray[i] === '^') modArray[i] = 'dotM';
       if(modArray[i] === '%') modArray[i] = 'hp';
       if(modArray[i] === '@') modArray[i] = 'en';
       if(modArray[i] === ' ') modArray[i] = 'space';
       if(modArray[i] === '!') modArray[i] = 'exclamation';
       if(modArray[i] === '.') modArray[i] = 'period';
+      }
     }
-
     return modArray;
   }
 

@@ -1,17 +1,25 @@
 import { dungeonRoomsDB } from "../data/dungeon.db";
 
 class Room{
-  constructor(roomId){
+  constructor(roomId, position){
     this.roomId = roomId;
-    this.roomMatrix = dungeonRoomsDB[roomId];
+    this.position = position;
+    this.tileMatrix = dungeonRoomsDB[roomId];
   }
 
-  generateStart = roomMatrix => {
+  findTilesByNumber = (roomMatrix,tileNumber) => {
+    let allTiles = [];
+    for(let r = 0; r < roomMatrix.length; r++){
+      for(let c = 0; c < roomMatrix[r].length; c++){
+        if(roomMatrix[r][c] === tileNumber) allTiles.push([r,c])
+      }
+    }
 
+    return allTiles;
   }
 
-  generateEnd = roomMatrix => {
-
+  changeTile = (position, value) => {
+    this.tileMatrix[position[0]][position[1]] = value;
   }
 }
 

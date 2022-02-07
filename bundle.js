@@ -293,6 +293,12 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdle
     }
   });
 
+  _defineProperty(this, "blackFill", function () {
+    _this.ctx.fillStyle = "#00131A";
+
+    _this.ctx.fillRect(0, 0, _this.elem.width, _this.elem.height);
+  });
+
   _defineProperty(this, "clearCanvas", function () {
     _this.ctx.clearRect(0, 0, _this.elem.width, _this.elem.height);
   });
@@ -326,8 +332,8 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdle
   });
 
   this.canvasClass = canvasClass;
-  this.x = _x || 0;
-  this.y = _y || 0;
+  this.x = _x * config.screenSize || 0;
+  this.y = _y * config.screenSize || 0;
   this.width = width * config.screenSize;
   this.height = height * config.screenSize;
   this.elem = this.buildCanvas();
@@ -548,20 +554,24 @@ var TextManager = function TextManager(colors, rows, cols, x, y, colorizeCallbac
   });
 
   _defineProperty(this, "replaceSpecials", function (message) {
-    // TODO - This is awful
-    var modString = message;
-    modString = modString.replaceAll('.M', '^');
-    modString = modString.replaceAll('.hp', '%');
-    modString = modString.replaceAll('.en', '@');
-    var modArray = modString.split('');
+    var modArray;
 
-    for (var i = 0; i < modArray.length; i++) {
-      if (modArray[i] === '^') modArray[i] = 'dotM';
-      if (modArray[i] === '%') modArray[i] = 'hp';
-      if (modArray[i] === '@') modArray[i] = 'en';
-      if (modArray[i] === ' ') modArray[i] = 'space';
-      if (modArray[i] === '!') modArray[i] = 'exclamation';
-      if (modArray[i] === '.') modArray[i] = 'period';
+    if (message) {
+      // TODO - This is awful
+      var modString = message;
+      modString = modString.replace(/.M/g, '^');
+      modString = modString.replace(/.hp/g, '%');
+      modString = modString.replace(/.en/g, '@');
+      modArray = modString.split('');
+
+      for (var i = 0; i < modArray.length; i++) {
+        if (modArray[i] === '^') modArray[i] = 'dotM';
+        if (modArray[i] === '%') modArray[i] = 'hp';
+        if (modArray[i] === '@') modArray[i] = 'en';
+        if (modArray[i] === ' ') modArray[i] = 'space';
+        if (modArray[i] === '!') modArray[i] = 'exclamation';
+        if (modArray[i] === '.') modArray[i] = 'period';
+      }
     }
 
     return modArray;
@@ -945,7 +955,8 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
   });
 
   _defineProperty(this, "setTopText", function (message) {
-    _this.topTextManager.instantPaint(_this.menuCanvas, message);
+    // TODO - Clear Top Text
+    if (message) _this.topTextManager.instantPaint(_this.menuCanvas, message);
   });
 
   _defineProperty(this, "buildBattleMenus", function () {
@@ -1271,6 +1282,34 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
     _this.triggerGameScreenRedraw();
   });
 
+  _defineProperty(this, "resetBattleMenuForNewTurn", function (indexZeroDgmn) {
+    _this.menus.dgmn.currentIndex = 0;
+    _this.currentState = 'dgmn';
+    _this.currentDgmnActor = 0;
+
+    _this.setTopText(_this.menus.dgmn.icons[0].label);
+
+    _this.menuCanvas.paintImage(_this.fetchImage('cursor'), 80 * config.screenSize, (2 + 4 * 0) * (8 * config.screenSize) + 8 * config.screenSize);
+
+    _this.paintBottomData(indexZeroDgmn);
+
+    _this.paintInitialIcons('dgmn');
+  });
+
+  _defineProperty(this, "setDgmnWeakenedState", function (statusIndex, imageName) {
+    dgmnStatus.setWeakened(_this.dgmnStatusList[statusIndex], _this.fetchImage(imageName));
+  });
+
+  _defineProperty(this, "setDgmnComboState", function (comboLetter, dgmnId) {
+    _this.dgmnStatusList[_this.getStatusIndex(dgmnId)].setCombo(_this.menuCanvas, comboLetter, _this.fetchImage('fontsWhite'));
+  });
+
+  _defineProperty(this, "setDgmnKOState", function (dgmnId) {
+    _this.dgmnKOs[dgmnId] = true; // Lets the menus know to ignore this Dgmn
+
+    _this.dgmnStatusList[_this.getStatusIndex(dgmnId)].cleanAll();
+  });
+
   // TODO - I do not want (if I can help it) ANY dgmnData in this file
   this.dgmnData = dgmnData;
   this.currentState = 'dgmn'; // none | beetle | dgmn | attack | item
@@ -1329,6 +1368,7 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
 var genericImages = ['./sprites/Battle/Menu/miniCursor.png', './sprites/Menus/typeLabel.png', './sprites/Menus/costLabel.png', './sprites/Menus/targetLabel.png', './sprites/Menus/powerLabel.png', './sprites/Menus/hitLabel.png', './sprites/Menus/noneTypeIcon.png', './sprites/Menus/fireTypeIcon.png', './sprites/Menus/windTypeIcon.png', './sprites/Menus/plantTypeIcon.png', './sprites/Menus/elecTypeIcon.png', './sprites/Menus/evilTypeIcon.png', './sprites/Menus/metalTypeIcon.png', './sprites/Menus/targetOne.png', './sprites/Menus/targetAll.png', './sprites/Menus/pwrFIcon.png', './sprites/Menus/pwrEIcon.png', './sprites/Menus/pwrDIcon.png', './sprites/Menus/oneHitIcon.png', './sprites/Menus/costMeter100.png', './sprites/Menus/costMeter75.png', './sprites/Menus/costMeter50.png', './sprites/Menus/costMeter25.png', './sprites/Menus/costMeter0.png', './sprites/Battle/Attacks/blankAttack.png'];
 var fontImages = ['./sprites/Fonts/fontsBlack.png', './sprites/Fonts/fontsWhite.png', './sprites/Fonts/fontsLightGreen.png'];
 var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarRed.png', './sprites/Battle/Menu/dgmnBarBlue.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/dgmnBarDarkGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png', './sprites/Battle/Menu/comboLabel.png', './sprites/Battle/Menu/weak0.png', './sprites/Battle/Menu/weak1.png', './sprites/Battle/Menu/weak2.png', './sprites/Battle/Menu/weak3.png'];
+var dungeonImages = ['./sprites/Dungeon/DigiBeetle/digiBeetleDown0.png', './sprites/Dungeon/DigiBeetle/digiBeetleDown1.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp0.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp1.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight0.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight1.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft0.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft1.png', './sprites/Dungeon/startTile.png', './sprites/Dungeon/endTile.png'];
 
 // Handles all of the actual values for Ranks (F - S)
 var powerRanks = {
@@ -1457,31 +1497,33 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
   _classCallCheck(this, Battle);
 
   _defineProperty(this, "loadBattle", function () {
-    debugLog("-- Loading Battle");
+    debugLog("-- Loading Battle"); // Loads images, and then calls the function that loads data
 
-    _this.loadBattleImages(function () {
-      // Load Player Dgmn
-      _this.loadDgmn(_this.dgmnList, false);
+    _this.loadBattleImages(_this.onBattleImagesLoaded);
+  });
 
-      _this.addDgmnToObjectList(_this.dgmnList, false); // Load Enemy Dgmn
+  _defineProperty(this, "onBattleImagesLoaded", function () {
+    // Load Player Dgmn
+    _this.loadDgmn(_this.dgmnList, false);
 
-
-      _this.loadDgmn(_this.enemyDgmnList, true);
-
-      _this.addDgmnToObjectList(_this.enemyDgmnList, true); // Setup Initial Battle Menu
+    _this.addDgmnToObjectList(_this.dgmnList, false); // Load Enemy Dgmn
 
 
-      _this.addObject(_this.battleMenu.menuCanvas);
+    _this.loadDgmn(_this.enemyDgmnList, true);
 
-      _this.battleMenu.buildBattleMenus();
-
-      _this.battleMenu.fullMenuPaint(); // Load Attack Canvas
+    _this.addDgmnToObjectList(_this.enemyDgmnList, true); // Setup Initial Battle Menu
 
 
-      _this.addObject(_this.attackCanvas);
+    _this.addObject(_this.battleMenu.menuCanvas);
 
-      _this.onLoaded();
-    });
+    _this.battleMenu.buildBattleMenus();
+
+    _this.battleMenu.fullMenuPaint(); // Load Attack Canvas
+
+
+    _this.addObject(_this.attackCanvas);
+
+    _this.onLoaded();
   });
 
   _defineProperty(this, "loadBattleImages", function (loadedCallback) {
@@ -1510,14 +1552,18 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     var allImages = battleImages.concat(dgmnImages); // Battle Images + Dgmn Images
 
     _this.loadImages(allImages, function () {
-      _this.battleBackground.imageStack = [_this.fetchImage('battleBackground')];
-
-      _this.battleBackground.paintImage(_this.battleBackground.imageStack[0]);
-
-      _this.addObject(_this.battleBackground);
-
-      loadedCallback();
+      _this.setupBattleBackground(loadedCallback);
     });
+  });
+
+  _defineProperty(this, "setupBattleBackground", function (loadedCallback) {
+    _this.battleBackground.imageStack = [_this.fetchImage('battleBackground')];
+
+    _this.battleBackground.paintImage(_this.battleBackground.imageStack[0]);
+
+    _this.addObject(_this.battleBackground);
+
+    loadedCallback();
   });
 
   _defineProperty(this, "addDgmnToObjectList", function (dgmnList) {
@@ -1850,7 +1896,7 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
   });
 
   _defineProperty(this, "calculateAccuracy", function (attackerDgmnId, targetAvo, attackerHit) {
-    var accuracy = '';
+    var accuracy = 'hit';
     var missRange = targetAvo / attackerHit;
     var critRange = attackerHit / targetAvo;
 
@@ -1893,9 +1939,7 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     target.battleCanvas.isIdle = false;
     target.battleCanvas.clearCanvas(); // TODO - this needs to be moved
 
-    _this.battleMenu.dgmnKOs[target.dgmnId] = true; // Lets the menus know to ignore this Dgmn
-
-    _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(target.dgmnId)].cleanAll();
+    _this.battleMenu.setDgmnKOState(target.dgmnId);
 
     target.isDead = true;
 
@@ -1934,12 +1978,12 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
         dgmnList[i].currCombo = combo;
         dgmnList[i].comboLetter = comboLetter;
 
-        _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(dgmnList[i].dgmnId)].setCombo(_this.battleMenu.menuCanvas, comboLetter, _this.fetchImage('fontsWhite'));
+        _this.battleMenu.setDgmnComboState(comboLetter, dgmnList[i].dgmnId);
       } else {
         dgmnList[i].comboLetter = 'F';
         dgmnList[i].currCombo = 0;
 
-        _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(dgmnList[i].dgmnId)].setCombo(_this.battleMenu.menuCanvas, 'F', _this.fetchImage('fontsWhite'));
+        _this.battleMenu.setDgmnComboState('F', dgmnList[i].dgmnId);
       }
     }
   });
@@ -1962,9 +2006,10 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 
           var imageName = "weak".concat(weakenedState[1]);
 
-          var statusIndex = _this.battleMenu.getStatusIndex(dgmn.dgmnId);
+          var statusIndex = _this.battleMenu.getStatusIndex(dgmn.dgmnId); // this.battleMenu.dgmnStatusList[statusIndex].setWeakened(this.battleMenu.menuCanvas,this.fetchImage(imageName));
 
-          _this.battleMenu.dgmnStatusList[statusIndex].setWeakened(_this.battleMenu.menuCanvas, _this.fetchImage(imageName));
+
+          _this.battleMenu.setDgmnWeakenedState(statusIndex, imageName);
         }
       }
     } catch (err) {
@@ -2001,17 +2046,7 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     _this.resetDefend(_this.dgmnList.concat(_this.enemyDgmnList)); // Reset Battle Menu
 
 
-    _this.battleMenu.menus.dgmn.currentIndex = 0;
-    _this.battleMenu.currentState = 'dgmn';
-    _this.battleMenu.currentDgmnActor = 0;
-
-    _this.battleMenu.setTopText(_this.battleMenu.menus.dgmn.icons[0].label);
-
-    _this.battleMenu.menuCanvas.paintImage(_this.fetchImage('cursor'), 80 * config.screenSize, (2 + 4 * 0) * (8 * config.screenSize) + 8 * config.screenSize);
-
-    _this.battleMenu.paintBottomData(_this.dgmnList[0]);
-
-    _this.battleMenu.paintInitialIcons('dgmn');
+    _this.battleMenu.resetBattleMenuForNewTurn(_this.dgmnList[0]);
   });
 
   _defineProperty(this, "battleWin", function () {
@@ -2210,9 +2245,19 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
 ;
 
 var dungeonFloorsDB = {
-  twoByTwo: [[[1, 5], [3, 0]]]
+  twoByTwo: [[[5, 6], [7, 8]]]
 };
-var dungeonRoomsDB = [[[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 2, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]];
+var dungeonRoomsDB = [[[0, 0, 0, 0, 0, 0, 0, 0], // 0
+[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 1
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 2, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 3, 1, 1, 2, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 2
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], // 3
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 4
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 5
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 2, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 2, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 6
+[0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], // 7
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 3, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 2, 2, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], // 8
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 2, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // ??
+[0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0]]];
 
 /**------------------------------------------------------------------------
  * CALCULATE DUNGEON DIMENSIONS
@@ -2247,18 +2292,113 @@ var calculateDungeonDimensions = function calculateDungeonDimensions(floor) {
   return dimensions;
 };
 
-var Room = function Room(roomId) {
+var Room = function Room(roomId, _position) {
+  var _this = this;
+
   _classCallCheck(this, Room);
 
-  _defineProperty(this, "generateStart", function (roomMatrix) {});
+  _defineProperty(this, "findTilesByNumber", function (roomMatrix, tileNumber) {
+    var allTiles = [];
 
-  _defineProperty(this, "generateEnd", function (roomMatrix) {});
+    for (var r = 0; r < roomMatrix.length; r++) {
+      for (var c = 0; c < roomMatrix[r].length; c++) {
+        if (roomMatrix[r][c] === tileNumber) allTiles.push([r, c]);
+      }
+    }
+
+    return allTiles;
+  });
+
+  _defineProperty(this, "changeTile", function (position, value) {
+    _this.tileMatrix[position[0]][position[1]] = value;
+  });
 
   this.roomId = roomId;
-  this.roomMatrix = dungeonRoomsDB[roomId];
+  this.position = _position;
+  this.tileMatrix = dungeonRoomsDB[roomId];
 };
 
-var Dungeon = function Dungeon(isNewDungeon) {
+var DigiBeetleCanvas = /*#__PURE__*/function (_GameCanvas) {
+  _inherits(DigiBeetleCanvas, _GameCanvas);
+
+  var _super = _createSuper(DigiBeetleCanvas);
+
+  function DigiBeetleCanvas(currentDirectionCallback) {
+    var _this;
+
+    _classCallCheck(this, DigiBeetleCanvas);
+
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    _this = _super.call.apply(_super, [this].concat(args));
+
+    _defineProperty(_assertThisInitialized(_this), "animateBeetle", function () {
+      var frame = 0;
+      _this.animateTimer = setInterval(function () {
+        _this.animationCounter++;
+
+        if (_this.animationCounter % 8 === 0 || _this.getDirection() !== _this.prevDirection) {
+          _this.prevDirection = _this.getDirection();
+          _this.animationCounter = 0;
+
+          if (frame === 0) {
+            frame = 1;
+          } else {
+            frame = 0;
+          }
+
+          _this.clearCanvas();
+
+          _this.paintImage(_this.frames[_this.getDirection()][frame]);
+
+          _this.triggerGameScreenRedraw();
+        }
+      }, 66);
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "stopAnimatingBeetle", function () {
+      clearInterval(_this.animateTimer);
+    });
+
+    _this.direction = 'down';
+    _this.frames = {
+      down: [],
+      up: [],
+      left: [],
+      right: []
+    };
+    _this.animateSpeed = 2000;
+    _this.animationCounter = 0;
+    _this.animateTimer;
+    _this.prevDirection = 'down';
+
+    _this.getDirection = function () {
+      return currentDirectionCallback();
+    };
+
+    return _this;
+  }
+
+  return DigiBeetleCanvas;
+}(GameCanvas);
+
+var DigiBeetle = function DigiBeetle(directionCallback, gameScreenRedrawCallback) {
+  _classCallCheck(this, DigiBeetle);
+
+  this.triggerGameScreenRedraw = function () {
+    gameScreenRedrawCallback();
+  };
+
+  this.sendCurrentDirection = function () {
+    return directionCallback();
+  };
+
+  this.digiBeetleCanvas = new DigiBeetleCanvas(this.sendCurrentDirection, 'digibeetle-canvas', 16, 16, 64, 64, false, this.triggerGameScreenRedraw);
+};
+
+var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback) {
   var _this = this;
 
   _classCallCheck(this, Dungeon);
@@ -2268,26 +2408,529 @@ var Dungeon = function Dungeon(isNewDungeon) {
 
     var floorOptions = dungeonFloorsDB[floorDimensions];
     var selectedFloor = Math.floor(Math.random() * (floorOptions.length - 0));
-    buildMatrix = floorOptions[selectedFloor]; // Run through the floor matrix and replace each single Number with Room Object
+    var roomNumberMatrix = floorOptions[selectedFloor]; // Run through the floor matrix and replace each single Number with Room Object
 
-    for (var r = 0; r < buildMatrix.length; r++) {
-      for (var c = 0; c < buildMatrix[r].length; c++) {
-        _this.buildRoom(buildMatrix[r][c]);
+    for (var r = 0; r < roomNumberMatrix.length; r++) {
+      var matrixRow = [];
+
+      for (var c = 0; c < roomNumberMatrix[r].length; c++) {
+        matrixRow.push(_this.buildRoom(roomNumberMatrix[r][c], [r, c]));
       }
+
+      buildMatrix.push(matrixRow);
     }
 
     return buildMatrix;
   });
 
-  _defineProperty(this, "buildRoom", function (roomId) {
-    var room = new Room(roomId);
-    room.generateStart(room.roomMatrix);
+  _defineProperty(this, "populateFloor", function (roomMatrix) {
+    debugLog("FULL DUNGEON = ", _this.roomMatrix); // Start
+
+    _this.start = _this.generateStart(roomMatrix);
+    var startRoom = roomMatrix[_this.start.room[0]][_this.start.room[1]];
+    startRoom.changeTile([_this.start.tile[0], _this.start.tile[1]], 101); // End
+
+    _this.end = _this.generateEnd(roomMatrix);
+    var endRoom = roomMatrix[_this.end.room[0]][_this.end.room[1]];
+    endRoom.changeTile([_this.end.tile[0], _this.end.tile[1]], 102); // Enemies
+    // Traps
+    // Treasure
+    // "Events" (Heal, Toilet, etc.)
+
+    _this.currentTile = _this.start;
+  });
+
+  _defineProperty(this, "loadDungeonImages", function (roomMatrix) {
+    var rooms = [];
+    var allImages = [];
+
+    for (var r = 0; r < roomMatrix.length; r++) {
+      for (var c = 0; c < roomMatrix[r].length; c++) {
+        if (rooms.indexOf(roomMatrix[r][c].roomId) === -1) {
+          rooms.push(roomMatrix[r][c].roomId);
+        }
+      }
+    }
+
+    for (var img = 0; img < dungeonImages.length; img++) {
+      allImages.push(dungeonImages[img]);
+    }
+
+    for (var i = 0; i < rooms.length; i++) {
+      allImages.push("./sprites/Dungeon/Rooms/room".concat(rooms[i], ".png"));
+    }
+
+    _this.loadImages(allImages, function () {
+      _this.drawDungeon();
+
+      _this.drawDigiBeetle();
+
+      _this.onDungeonImagesLoaded();
+    });
+  });
+
+  _defineProperty(this, "onDungeonImagesLoaded", function () {
+    _this.addObject(_this.dungeonCanvas);
+
+    _this.addObject(_this.digiBeetle.digiBeetleCanvas);
+
+    _this.onLoaded();
+  });
+
+  _defineProperty(this, "drawDungeon", function () {
+    for (var r = 0; r < _this.roomMatrix.length; r++) {
+      for (var c = 0; c < _this.roomMatrix[r].length; c++) {
+        var roomName = "room".concat(_this.roomMatrix[r][c].roomId);
+        var roomX = c * 16 * (8 * config.screenSize);
+        var roomY = r * 16 * (8 * config.screenSize);
+
+        _this.floorCanvas.paintImage(_this.fetchImage(roomName), roomX, roomY);
+      }
+    } // this.drawTile(this.fetchImage('startTile'),this.start.room,this.start.tile);
+
+
+    _this.drawTile(_this.fetchImage('endTile'), _this.end.room, _this.end.tile); // Set the Start
+
+
+    var roomXOffset = _this.start.room[1] * 16 * 8;
+    var roomYOffset = _this.start.room[0] * 16 * 8;
+    var tileXOffset = _this.start.tile[1] * 16;
+    var tileYOffset = _this.start.tile[0] * 16;
+    _this.mapX = 64 - (roomXOffset + tileXOffset);
+    _this.mapY = 64 - (roomYOffset + tileYOffset);
+    _this.floorCanvas.x = _this.mapX * config.screenSize;
+    _this.floorCanvas.y = _this.mapY * config.screenSize;
+
+    _this.dungeonCanvas.blackFill();
+
+    _this.dungeonCanvas.paintCanvas(_this.floorCanvas);
+
+    _this.triggerGameScreenRedraw();
+  });
+
+  _defineProperty(this, "drawTile", function (image, room, tile) {
+    var roomXOffset = room[1] * 16 * 8;
+    var roomYOffset = room[0] * 16 * 8;
+    var tileXOffset = tile[1] * 16;
+    var tileYOffset = tile[0] * 16;
+
+    _this.floorCanvas.paintImage(image, (roomXOffset + tileXOffset) * config.screenSize, (roomYOffset + tileYOffset) * config.screenSize);
+  });
+
+  _defineProperty(this, "drawDigiBeetle", function () {
+    _this.digiBeetle.digiBeetleCanvas.frames.down = [_this.fetchImage('digiBeetleDown0'), _this.fetchImage('digiBeetleDown1')];
+    _this.digiBeetle.digiBeetleCanvas.frames.up = [_this.fetchImage('digiBeetleUp0'), _this.fetchImage('digiBeetleUp1')];
+    _this.digiBeetle.digiBeetleCanvas.frames.right = [_this.fetchImage('digiBeetleRight0'), _this.fetchImage('digiBeetleRight1')];
+    _this.digiBeetle.digiBeetleCanvas.frames.left = [_this.fetchImage('digiBeetleLeft0'), _this.fetchImage('digiBeetleLeft1')];
+
+    _this.digiBeetle.digiBeetleCanvas.animateBeetle('down');
+  });
+
+  _defineProperty(this, "buildRoom", function (roomId, position) {
+    var room = new Room(roomId, position);
     return room;
+  });
+
+  _defineProperty(this, "generateStart", function (roomMatrix) {
+    var data = {
+      room: [0, 0],
+      tile: [0, 0]
+    };
+
+    var potentialSpots = _this.findAllTilesByNumber(roomMatrix, 2); // TODO - This is bad, start is not only 2
+
+
+    var randomChoice = Math.floor(Math.random() * potentialSpots.length);
+    data.room = potentialSpots[randomChoice].roomPosition;
+    data.tile = potentialSpots[randomChoice].tilePosition;
+    return data;
+  });
+
+  _defineProperty(this, "generateEnd", function (roomMatrix) {
+    var data = {
+      room: [0, 0],
+      tile: [0, 0]
+    };
+
+    var potentialSpots = _this.findAllTilesByNumber(roomMatrix, 3); // TODO - This is bad, start is not only 2
+
+
+    var randomChoice = Math.floor(Math.random() * potentialSpots.length);
+    data.room = potentialSpots[randomChoice].roomPosition;
+    data.tile = potentialSpots[randomChoice].tilePosition;
+    return data;
+  });
+
+  _defineProperty(this, "findAllTilesByNumber", function (roomMatrix, tileNumber) {
+    var allTiles = [];
+
+    for (var r = 0; r < roomMatrix.length; r++) {
+      for (var c = 0; c < roomMatrix[r].length; c++) {
+        var add = roomMatrix[r][c].findTilesByNumber(roomMatrix[r][c].tileMatrix, tileNumber);
+
+        for (var i = 0; i < add.length; i++) {
+          if (add[i].length > 0) {
+            allTiles.push({
+              roomPosition: [r, c],
+              tilePosition: add[i]
+            });
+          }
+        }
+      }
+    }
+
+    return allTiles;
+  });
+
+  _defineProperty(this, "redrawDungeon", function () {
+    _this.dungeonCanvas.blackFill();
+
+    _this.dungeonCanvas.paintCanvas(_this.floorCanvas);
+
+    _this.triggerGameScreenRedraw();
+  });
+
+  _defineProperty(this, "sendCurrentDirection", function () {
+    return _this.facing;
+  });
+
+  _defineProperty(this, "moveUp", function (upDown) {
+    _this.facing = 'up';
+    _this.moving = 'up';
+    _this.mapY++;
+    _this.floorCanvas.y = _this.mapY * config.screenSize;
+
+    if (_this.mapY % 16 === 0) {
+      // Tile Cycle
+      _this.currentTile.tile[0]--;
+
+      if (_this.moveRoomCheck('up')) {
+        _this.currentTile.room[0]--;
+        _this.currentTile.tile[0] = 7;
+      }
+
+      _this.collisionCheck();
+
+      if (_this.checkEnd()) {
+        _this.goUpFloor();
+
+        return;
+      }
+
+      if (upDown === 'up') {
+        // If the key is lifted up, stop the movement
+        _this.moving = 'none';
+      }
+    }
+
+    _this.redrawDungeon();
+  });
+
+  _defineProperty(this, "moveRight", function (upDown) {
+    _this.facing = 'right';
+    _this.moving = 'right';
+    _this.mapX--;
+    _this.floorCanvas.x = _this.mapX * config.screenSize;
+
+    if (_this.mapX % 16 === 0) {
+      // Tile Cycle
+      _this.currentTile.tile[1]++;
+
+      if (_this.moveRoomCheck('right')) {
+        _this.currentTile.room[1]++;
+        _this.currentTile.tile[1] = 0;
+      }
+
+      _this.collisionCheck();
+
+      if (_this.checkEnd()) {
+        _this.goUpFloor();
+
+        return;
+      }
+
+      if (upDown === 'up') {
+        // If the key is lifted up, stop the movement
+        _this.moving = 'none';
+      }
+    }
+
+    _this.redrawDungeon();
+  });
+
+  _defineProperty(this, "moveDown", function (upDown) {
+    _this.facing = 'down';
+    _this.moving = 'down';
+    _this.mapY--;
+    _this.floorCanvas.y = _this.mapY * config.screenSize;
+
+    if (_this.mapY % 16 === 0) {
+      // Tile Cycle
+      _this.currentTile.tile[0]++;
+
+      if (_this.moveRoomCheck('down')) {
+        _this.currentTile.room[0]++;
+        _this.currentTile.tile[0] = 0;
+      }
+
+      _this.collisionCheck();
+
+      if (_this.checkEnd()) {
+        _this.goUpFloor();
+
+        return;
+      }
+
+      if (upDown === 'up') {
+        // If the key is lifted up, stop the movement
+        _this.moving = 'none';
+      }
+    }
+
+    _this.redrawDungeon();
+  });
+
+  _defineProperty(this, "moveLeft", function (upDown) {
+    _this.facing = 'left';
+    _this.moving = 'left';
+    _this.mapX++;
+    _this.floorCanvas.x = _this.mapX * config.screenSize;
+
+    if (_this.mapX % 16 === 0) {
+      // Tile Cycle
+      _this.currentTile.tile[1]--;
+
+      if (_this.moveRoomCheck('left')) {
+        _this.currentTile.room[1]--;
+        _this.currentTile.tile[1] = 7;
+      }
+
+      _this.collisionCheck();
+
+      if (_this.checkEnd()) {
+        _this.goUpFloor();
+
+        return;
+      }
+
+      if (upDown === 'up') {
+        // If the key is lifted up, stop the movement
+        _this.moving = 'none';
+      }
+    }
+
+    _this.redrawDungeon();
+  });
+
+  _defineProperty(this, "collisionCheck", function () {
+    var room = _this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]];
+    var tile = _this.currentTile.tile; // TODO - Needed else ifs : checking room above if at the top
+
+    if (tile[0] !== 0 && room.tileMatrix[tile[0] - 1][tile[1]] === 0) {
+      _this.collision.up = true;
+    } else if (tile[0] === 0 && _this.currentTile.room[0] === 0) {
+      _this.collision.up = true;
+    } else {
+      // TODO - There needs to be lots more else if
+      _this.collision.up = false;
+    }
+
+    if (tile[1] !== 7 && room.tileMatrix[tile[0]][tile[1] + 1] === 0) {
+      _this.collision.right = true;
+    } else if (tile[1] === 7 && _this.currentTile.room[1] >= _this.roomMatrix[_this.currentTile.room[0]].length) {
+      _this.collision.right = true;
+    } else {
+      _this.collision.right = false;
+    }
+
+    if (tile[0] !== 7 && room.tileMatrix[tile[0] + 1][tile[1]] === 0) {
+      _this.collision.down = true;
+    } else if (tile[0] === 7 && _this.currentTile.room[0] >= _this.roomMatrix.length) {
+      _this.collision.down = true;
+    } else {
+      _this.collision.down = false;
+    }
+
+    if (tile[1] !== 0 && room.tileMatrix[tile[0]][tile[1] - 1] === 0) {
+      _this.collision.left = true;
+    } else if (tile[1] === 0 && _this.currentTile.room[1] === 0) {
+      _this.collision.left = true;
+    } else {
+      _this.collision.left = false;
+    }
+  });
+
+  _defineProperty(this, "moveRoomCheck", function (dir) {
+    if (dir === 'up') {
+      if (_this.currentTile.tile[0] === -1 && _this.currentTile.room[0] > 0) {
+        return true;
+      }
+    } else if (dir === 'right') {
+      if (_this.currentTile.tile[1] === 8 && _this.currentTile.room[1] < _this.roomMatrix[_this.currentTile.room[1]].length) {
+        return true;
+      }
+    } else if (dir === 'down') {
+      if (_this.currentTile.tile[0] === 8 && _this.currentTile.room[0] < _this.roomMatrix.length) {
+        return true;
+      }
+    } else if (dir === 'left') {
+      if (_this.currentTile.tile[1] === -1 && _this.currentTile.room[1] > 0) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+
+  _defineProperty(this, "checkEnd", function () {
+    var currentTileValue = _this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]];
+
+    if (currentTileValue === 102) {
+      return true;
+    }
+
+    return false;
+  });
+
+  _defineProperty(this, "goUpFloor", function () {
+    _this.moving = 'none';
+    console.log("LOGIC FOR GOING UP A FLOOR");
+  });
+
+  _defineProperty(this, "keyTriage", function (key, upDown) {
+    if (key === 'action') {
+      _this.actionKeyHandler();
+    } else if (key === 'cancel') {
+      _this.cancelKeyHandler();
+    } else if (key === 'up') {
+      _this.upKeyHandler(upDown);
+    } else if (key === 'right') {
+      _this.rightKeyHandler(upDown);
+    } else if (key === 'down') {
+      _this.downKeyHandler(upDown);
+    } else if (key === 'left') {
+      _this.leftKeyHandler(upDown);
+    }
+  });
+
+  _defineProperty(this, "actionKeyHandler", function () {});
+
+  _defineProperty(this, "cancelKeyHandler", function () {
+    console.log("CURRENT TILE = ", _this.currentTile);
+  });
+
+  _defineProperty(this, "upKeyHandler", function (upDown) {
+    if (_this.dungeonState === 'free') {
+      if (_this.moving !== 'down' && _this.moving !== 'right' && _this.moving !== 'left') {
+        if (!_this.collision.up && (upDown === 'down' || upDown === 'up' && _this.moving === 'up')) {
+          _this.moveUp(upDown);
+        } else if (_this.collision.up && _this.moving === 'up') {
+          _this.moving = 'none';
+        } else if (_this.collision.up && upDown === 'down') {
+          _this.facing = 'up';
+        }
+      }
+    } // TODO - not just Dungeon free roam
+
+  });
+
+  _defineProperty(this, "rightKeyHandler", function (upDown) {
+    if (_this.dungeonState === 'free') {
+      if (_this.moving !== 'down' && _this.moving !== 'up' && _this.moving !== 'left') {
+        if (!_this.collision.right && (upDown === 'down' || upDown === 'up' && _this.moving === 'right')) {
+          _this.moveRight(upDown);
+        } else if (_this.collision.right && _this.moving === 'right') {
+          _this.moving = 'none';
+        } else if (_this.collision.right && upDown === 'down') {
+          _this.facing = 'right';
+        }
+      }
+    } // TODO - not just Dungeon free roam
+
+  });
+
+  _defineProperty(this, "downKeyHandler", function (upDown) {
+    if (_this.dungeonState === 'free') {
+      if (_this.moving !== 'up' && _this.moving !== 'right' && _this.moving !== 'left') {
+        if (!_this.collision.down && (upDown === 'down' || upDown === 'up' && _this.moving === 'down')) {
+          _this.moveDown(upDown);
+        } else if (_this.collision.down && _this.moving === 'down') {
+          _this.moving = 'none';
+        } else if (_this.collision.down && upDown === 'down') {
+          _this.facing = 'down';
+        }
+      }
+    } // TODO - not just Dungeon free roam
+
+  });
+
+  _defineProperty(this, "leftKeyHandler", function (upDown) {
+    if (_this.dungeonState === 'free') {
+      if (_this.moving !== 'down' && _this.moving !== 'up' && _this.moving !== 'right') {
+        if (!_this.collision.left && (upDown === 'down' || upDown === 'up' && _this.moving === 'left')) {
+          _this.moveLeft(upDown);
+        } else if (_this.collision.left && _this.moving === 'left') {
+          _this.moving = 'none';
+        } else if (_this.collision.left && upDown === 'down') {
+          _this.facing = 'left';
+        }
+      }
+    } // TODO - not just Dungeon free roam
+
   });
 
   this.floor = isNewDungeon ? 1 : 0; // TODO - Right now, set to zero when not a new dungeon, but otherwise, needs to pull from save data
 
   this.roomMatrix = this.buildFloor(calculateDungeonDimensions(this.floor));
+
+  this.triggerGameScreenRedraw = function () {
+    gameScreenRedrawCallback();
+  };
+
+  this.digiBeetle = new DigiBeetle(this.sendCurrentDirection, this.triggerGameScreenRedraw);
+  this.dungeonCanvas = new GameCanvas('dungeon-canvas', 160, 144);
+  this.floorCanvas = new GameCanvas('floor-canvas', this.roomMatrix.length * 128, this.roomMatrix[0].length * 128);
+  this.start = {
+    room: [0, 0],
+    tile: [0, 0]
+  };
+  this.end = {
+    room: [0, 0],
+    tile: [0, 0]
+  };
+  this.dungeonState = 'free';
+  this.moveTimer;
+  this.currentTile;
+  this.mapX = 0;
+  this.mapY = 0;
+  this.facing = 'down';
+  this.moving = 'none'; // up | right | down | left
+
+  this.collision = {
+    up: false,
+    right: false,
+    down: false,
+    left: false
+  };
+
+  this.addObject = function (newObject) {
+    addObjectCallback(newObject);
+  };
+
+  this.loadImages = function (imageList, callback) {
+    loadImageCallback(imageList, callback);
+  };
+
+  this.onLoaded = function () {
+    loadedCallback();
+  };
+
+  this.fetchImage = function (image) {
+    return fetchImageCallback(image);
+  };
+
+  this.populateFloor(this.roomMatrix);
+  this.loadDungeonImages(this.roomMatrix);
 }
 /**------------------------------------------------------------------------
  * BULD FLOOR
@@ -2670,34 +3313,44 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
     }
 
     if (keyState[config.keyBindings.up]) {
-      _this.keyManager('up');
+      _this.keyManager('up', 'down');
     } else {
       _this.keyTimers.up = 0;
+
+      _this.keyManager('up', 'up');
     }
 
     if (keyState[config.keyBindings.right]) {
-      _this.keyManager('right');
+      _this.keyManager('right', 'down');
     } else {
       _this.keyTimers.right = 0;
+
+      _this.keyManager('right', 'up');
     }
 
     if (keyState[config.keyBindings.down]) {
-      _this.keyManager('down');
+      _this.keyManager('down', 'down');
     } else {
       _this.keyTimers.down = 0;
+
+      _this.keyManager('down', 'up');
     }
 
     if (keyState[config.keyBindings.left]) {
-      _this.keyManager('left');
+      _this.keyManager('left', 'down');
     } else {
       _this.keyTimers.left = 0;
+
+      _this.keyManager('left', 'up');
     }
   });
 
-  _defineProperty(this, "keyManager", function (key) {
+  _defineProperty(this, "keyManager", function (key, upDown) {
+    var _this$battle, _this$dungeon;
+
     _this.keyTimers[key]++; // DGMN MENU
 
-    if (_this.battle.battleActive) {
+    if ((_this$battle = _this.battle) !== null && _this$battle !== void 0 && _this$battle.battleActive) {
       if (_this.keyTimers[key] === 2) {
         // Prevent instant tap from taking action
         _this.battle.keyTriage(key);
@@ -2707,6 +3360,11 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
         // Only directions can be held to take action
         _this.keyTimers[key] = 0;
       }
+    }
+
+    if (((_this$dungeon = _this.dungeon) === null || _this$dungeon === void 0 ? void 0 : _this$dungeon.dungeonState) === 'free') {
+      // TODO - Logic that checks things like "held down" or "tapped" go here
+      _this.dungeon.keyTriage(key, upDown);
     }
   });
 
@@ -2719,7 +3377,7 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
   _defineProperty(this, "buildDungeon", function () {
     debugLog("Building Dungeon..."); // TODO - ALL OF THIS IS TEMP RIGHT NOW
 
-    _this.dungeon = new Dungeon();
+    _this.dungeon = new Dungeon(true, _this.onDungeonLoad, _this.addToObjectList, _this.drawGameScreen, _this.loadImages, _this.fetchImage);
   });
 
   _defineProperty(this, "onBattleLoad", function () {
@@ -2728,8 +3386,16 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
     _this.drawGameScreen();
   });
 
+  _defineProperty(this, "onDungeonLoad", function () {
+    console.log("Dungeon Loaded...");
+
+    _this.drawGameScreen();
+  });
+
   _defineProperty(this, "addToObjectList", function (newObject) {
-    _this.objectList.push(newObject);
+    if (_this.objectList.indexOf(newObject) === -1) {
+      _this.objectList.push(newObject);
+    }
   });
 
   _defineProperty(this, "drawGameScreen", function () {
@@ -2828,7 +3494,7 @@ var Controller = function Controller(setKeyState) {
   this.connectEventListener();
 };
 
-var DebugMenu = function DebugMenu(launchBattleCallback) {
+var DebugMenu = function DebugMenu(launchBattleCallback, buildDungeonCallback) {
   var _this = this;
 
   _classCallCheck(this, DebugMenu);
@@ -2870,7 +3536,8 @@ var DebugMenu = function DebugMenu(launchBattleCallback) {
     launchBattleCallback();
   };
 
-  this.launchDungeon = function () {// launchDungeonCallback();
+  this.launchDungeon = function () {
+    buildDungeonCallback();
   };
 };
 
@@ -2929,7 +3596,7 @@ var System = function System() {
     _this.pluginController();
 
     if (inDebug()) {
-      _this.debugMenu = new DebugMenu(_this.game.startBattle);
+      _this.debugMenu = new DebugMenu(_this.game.startBattle, _this.game.buildDungeon);
     } // Load Base Images - Run game once that is all done
 
 

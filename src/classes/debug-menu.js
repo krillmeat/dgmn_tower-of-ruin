@@ -1,7 +1,7 @@
 import { debugLog } from '../utils/log-utils';
 
 class DebugMenu {
-  constructor(launchBattleCallback){
+  constructor(launchBattleCallback,buildDungeonCallback){
     debugLog('Booting Debug Menu...');
 
     this.elem = document.getElementById("debug-menu");
@@ -14,7 +14,7 @@ class DebugMenu {
     }
 
     this.launchDungeon = () => {
-      // launchDungeonCallback();
+      buildDungeonCallback();
     }
   }
 

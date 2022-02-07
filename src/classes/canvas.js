@@ -4,8 +4,8 @@ import {debugLog} from '../utils/log-utils';
 class GameCanvas{
   constructor(canvasClass, width, height, x, y, hasIdleAnimation, gameScreenRedrawCallback){
     this.canvasClass = canvasClass;
-    this.x = x || 0;
-    this.y = y || 0;
+    this.x = x * config.screenSize || 0;
+    this.y = y * config.screenSize || 0;
     this.width = width * config.screenSize;
     this.height = height * config.screenSize;
     this.elem = this.buildCanvas();
@@ -81,6 +81,16 @@ class GameCanvas{
   }
 
   /**------------------------------------------------------------------------
+   * BLACK FILL
+   * ------------------------------------------------------------------------
+   * Draws a black rectangle over the Canvas
+   * ----------------------------------------------------------------------*/
+  blackFill = () => {
+    this.ctx.fillStyle = "#00131A";
+    this.ctx.fillRect(0,0,this.elem.width,this.elem.height);
+  }
+
+  /**------------------------------------------------------------------------
    * CLEAR CANVAS
    * ------------------------------------------------------------------------
    * Clears the Canvas and returns it to a blank slate
@@ -111,7 +121,7 @@ class GameCanvas{
    * ------------------------------------------------------------------------
    * @param {Canvas} canvas The canvas to be painted
    * ----------------------------------------------------------------------*/
-  paintCanvas = canvas => {
+  paintCanvas = (canvas) => {
     this.ctx.drawImage(canvas.elem,canvas.x,canvas.y,canvas.width,canvas.height);
   }
 

@@ -50,26 +50,33 @@ class Battle {
   loadBattle = () => {
     debugLog("-- Loading Battle");
 
-    this.loadBattleImages(() => {
+    // Loads images, and then calls the function that loads data
+    this.loadBattleImages(this.onBattleImagesLoaded);
+  }
 
-      // Load Player Dgmn
-      this.loadDgmn(this.dgmnList,false);
-      this.addDgmnToObjectList(this.dgmnList,false);
+  /**------------------------------------------------------------------------
+   * ON BATTLE IMAGES LOADED
+   * ------------------------------------------------------------------------
+   * Split out from the original so it can be tested
+   * ----------------------------------------------------------------------*/
+  onBattleImagesLoaded = () => {
+    // Load Player Dgmn
+    this.loadDgmn(this.dgmnList,false);
+    this.addDgmnToObjectList(this.dgmnList,false);
 
-      // Load Enemy Dgmn
-      this.loadDgmn(this.enemyDgmnList,true);
-      this.addDgmnToObjectList(this.enemyDgmnList,true);
+    // Load Enemy Dgmn
+    this.loadDgmn(this.enemyDgmnList,true);
+    this.addDgmnToObjectList(this.enemyDgmnList,true);
 
-      // Setup Initial Battle Menu
-      this.addObject(this.battleMenu.menuCanvas);
-      this.battleMenu.buildBattleMenus();
-      this.battleMenu.fullMenuPaint();
+    // Setup Initial Battle Menu
+    this.addObject(this.battleMenu.menuCanvas);
+    this.battleMenu.buildBattleMenus();
+    this.battleMenu.fullMenuPaint();
 
-      // Load Attack Canvas
-      this.addObject(this.attackCanvas);
-      
-      this.onLoaded();
-    });
+    // Load Attack Canvas
+    this.addObject(this.attackCanvas);
+
+    this.onLoaded();
   }
 
   /**------------------------------------------------------------------------
@@ -102,13 +109,21 @@ class Battle {
 
     let allImages = battleImages.concat(dgmnImages); // Battle Images + Dgmn Images
 
-    this.loadImages(allImages, () => {
-      this.battleBackground.imageStack = [this.fetchImage('battleBackground')];
-      this.battleBackground.paintImage(this.battleBackground.imageStack[0]);
-      this.addObject(this.battleBackground);
+    this.loadImages(allImages, ()=>{this.setupBattleBackground(loadedCallback)});
+  }
 
-      loadedCallback();
-    });
+  /**------------------------------------------------------------------------
+   * SETUP BATTLE BACKGROUND
+   * ------------------------------------------------------------------------
+   * This code runs after the Images are loaded in loadBattleImages
+   * It references the callback from that function to wrap up all image loading
+   * ----------------------------------------------------------------------*/
+  setupBattleBackground = loadedCallback => {
+    this.battleBackground.imageStack = [this.fetchImage('battleBackground')];
+    this.battleBackground.paintImage(this.battleBackground.imageStack[0]);
+    this.addObject(this.battleBackground);
+
+    loadedCallback();
   }
 
   /**------------------------------------------------------------------------
@@ -412,6 +427,16 @@ class Battle {
     this.battleMenu.updateAllStatusBars();
   }
 
+
+  /**------------------------------------------------------------------------
+   * HANDLE EFFECT
+   * ------------------------------------------------------------------------
+   * When an Attack has an effect, this method handles that process
+   * ------------------------------------------------------------------------
+   * @param {String}  effect    The effect label | buff, debuff, etc.
+   * @param {Dgmn}    attacker  Dgmn doing the attack
+   * @param {Array}   targets   List of Dgmn targets of the effect
+   * ----------------------------------------------------------------------*/
   handleEffect = (effect,attacker,targets) => {
     debugLog("---- Running Attack Effect");
 
@@ -507,13 +532,14 @@ class Battle {
    * ------------------------------------------------------------------------
    * Check the Hit and Avoid stats of the two attackers and determine
    *   whether the attack will hit or miss.
+   * TODO - Not sure why attackerDgmnId is needed...
    * ------------------------------------------------------------------------
    * @param {Number}  targetAvo   The Avoid stat of the target
    * @param {Number}  attackerHit The Hit stat of the attacker
    * ----------------------------------------------------------------------*/
   calculateAccuracy = (attackerDgmnId, targetAvo, attackerHit) => {
 
-    let accuracy = '';
+    let accuracy = 'hit';
     let missRange = targetAvo / attackerHit;
     let critRange = attackerHit / targetAvo;
   
@@ -574,8 +600,7 @@ class Battle {
     target.currEN = 0;
     target.battleCanvas.isIdle = false;
     target.battleCanvas.clearCanvas(); // TODO - this needs to be moved
-    this.battleMenu.dgmnKOs[target.dgmnId] = true; // Lets the menus know to ignore this Dgmn
-    this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(target.dgmnId)].cleanAll();
+    this.battleMenu.setDgmnKOState(target.dgmnId);
     target.isDead = true;
     this.checkAllDead(target.isEnemy);
   }
@@ -616,11 +641,11 @@ class Battle {
         let comboLetter = getComboLetter(combo);
         dgmnList[i].currCombo = combo;
         dgmnList[i].comboLetter = comboLetter;
-        this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(dgmnList[i].dgmnId)].setCombo(this.battleMenu.menuCanvas,comboLetter,this.fetchImage('fontsWhite'))
+        this.battleMenu.setDgmnComboState(comboLetter,dgmnList[i].dgmnId)
       } else {
         dgmnList[i].comboLetter = 'F';
         dgmnList[i].currCombo = 0;
-        this.battleMenu.dgmnStatusList[this.battleMenu.getStatusIndex(dgmnList[i].dgmnId)].setCombo(this.battleMenu.menuCanvas,'F',this.fetchImage('fontsWhite'))
+        this.battleMenu.setDgmnComboState('F',dgmnList[i].dgmnId)
       }
       
     }
@@ -643,7 +668,8 @@ class Battle {
         }
         let imageName = `weak${weakenedState[1]}`;
         let statusIndex = this.battleMenu.getStatusIndex(dgmn.dgmnId);
-        this.battleMenu.dgmnStatusList[statusIndex].setWeakened(this.battleMenu.menuCanvas,this.fetchImage(imageName));
+        // this.battleMenu.dgmnStatusList[statusIndex].setWeakened(this.battleMenu.menuCanvas,this.fetchImage(imageName));
+        this.battleMenu.setDgmnWeakenedState(statusIndex,imageName)
       }
     }
   }
@@ -676,13 +702,7 @@ class Battle {
     this.resetDefend(this.dgmnList.concat(this.enemyDgmnList));
 
     // Reset Battle Menu
-    this.battleMenu.menus.dgmn.currentIndex = 0;
-    this.battleMenu.currentState = 'dgmn';
-    this.battleMenu.currentDgmnActor = 0;
-    this.battleMenu.setTopText( this.battleMenu.menus.dgmn.icons[0].label );
-    this.battleMenu.menuCanvas.paintImage(this.fetchImage('cursor'),80 * config.screenSize,( ( 2 + (4 * (0) ) ) * (8 * config.screenSize) ) + (8 * config.screenSize));
-    this.battleMenu.paintBottomData( this.dgmnList[0] );
-    this.battleMenu.paintInitialIcons('dgmn');
+    this.battleMenu.resetBattleMenuForNewTurn(this.dgmnList[0])
   }
 
   battleWin = () => {

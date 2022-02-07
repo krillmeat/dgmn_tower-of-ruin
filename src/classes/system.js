@@ -46,7 +46,7 @@ class System{
     debugLog("Starting System...");
     this.pluginController();
     if(inDebug()){
-      this.debugMenu = new DebugMenu(this.game.startBattle);
+      this.debugMenu = new DebugMenu(this.game.startBattle,this.game.buildDungeon);
     }
 
     // Load Base Images - Run game once that is all done
