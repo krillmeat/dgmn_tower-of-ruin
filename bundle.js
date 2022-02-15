@@ -248,6 +248,29 @@ var debugLog = function debugLog(message, object) {
   if (inDebug()) object ? console.log("%c".concat(message), 'color:#A6E22E', object) : console.log("%c".concat(message), 'color:#A6E22E');
 };
 
+/**------------------------------------------------------------------------
+ * DIGI BEETLE ACTION HANDLER
+ * ------------------------------------------------------------------------
+ * Maintains Callbacks (actions) for the DigiBeetle
+ * ------
+ * Action Handlers create an interface for lower-level Objects to act on
+ * higher-level Objects
+ * ------
+ * Still trying to figure this out, because it's confusing to me, but the IDEA
+ * is that you pass this Object into children, and they can send stuff back to the parent
+ * ------
+ * Pass in Parent Object methods to Constructor
+ * ------
+ * I'm thinking there should be no methods. Just callbacks in the constructors
+ * ----------------------------------------------------------------------*/
+var DigiBeetleAH = function DigiBeetleAH(addItemToToolBoxCB) {
+  _classCallCheck(this, DigiBeetleAH);
+
+  this.addItemToToolBox = function (item) {
+    addItemToToolBoxCB(item);
+  };
+};
+
 var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdleAnimation, gameScreenRedrawCallback) {
   var _this = this;
 
@@ -359,6 +382,153 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdle
  * @param {Number} speed  How fast the animation will check to change
  * ----------------------------------------------------------------------*/
 ;
+
+var DigiBeetleCanvas = /*#__PURE__*/function (_GameCanvas) {
+  _inherits(DigiBeetleCanvas, _GameCanvas);
+
+  var _super = _createSuper(DigiBeetleCanvas);
+
+  function DigiBeetleCanvas(currentDirectionCallback) {
+    var _this;
+
+    _classCallCheck(this, DigiBeetleCanvas);
+
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    _this = _super.call.apply(_super, [this].concat(args));
+
+    _defineProperty(_assertThisInitialized(_this), "animateBeetle", function () {
+      var frame = 0;
+      _this.animateTimer = setInterval(function () {
+        _this.animationCounter++;
+
+        if (_this.animationCounter % 8 === 0 || _this.getDirection() !== _this.prevDirection) {
+          _this.prevDirection = _this.getDirection();
+          _this.animationCounter = 0;
+
+          if (frame === 0) {
+            frame = 1;
+          } else {
+            frame = 0;
+          }
+
+          _this.clearCanvas();
+
+          _this.paintImage(_this.frames[_this.getDirection()][frame]);
+
+          _this.triggerGameScreenRedraw();
+        }
+      }, 66);
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "stopAnimatingBeetle", function () {
+      clearInterval(_this.animateTimer);
+    });
+
+    _this.direction = 'down';
+    _this.frames = {
+      down: [],
+      up: [],
+      left: [],
+      right: []
+    };
+    _this.animateSpeed = 2000;
+    _this.animationCounter = 0;
+    _this.animateTimer;
+    _this.prevDirection = 'down';
+
+    _this.getDirection = function () {
+      return currentDirectionCallback();
+    };
+
+    return _this;
+  }
+
+  return DigiBeetleCanvas;
+}(GameCanvas);
+
+var genericImages = ['./sprites/Battle/Menu/miniCursor.png', './sprites/Menus/typeLabel.png', './sprites/Menus/costLabel.png', './sprites/Menus/targetLabel.png', './sprites/Menus/powerLabel.png', './sprites/Menus/hitLabel.png', './sprites/Menus/noneTypeIcon.png', './sprites/Menus/fireTypeIcon.png', './sprites/Menus/windTypeIcon.png', './sprites/Menus/plantTypeIcon.png', './sprites/Menus/elecTypeIcon.png', './sprites/Menus/evilTypeIcon.png', './sprites/Menus/metalTypeIcon.png', './sprites/Menus/targetOne.png', './sprites/Menus/targetAll.png', './sprites/Menus/pwrFIcon.png', './sprites/Menus/pwrEIcon.png', './sprites/Menus/pwrDIcon.png', './sprites/Menus/oneHitIcon.png', './sprites/Menus/costMeter100.png', './sprites/Menus/costMeter75.png', './sprites/Menus/costMeter50.png', './sprites/Menus/costMeter25.png', './sprites/Menus/costMeter0.png', './sprites/Battle/Attacks/blankAttack.png'];
+var fontImages = ['./sprites/Fonts/fontsBlack.png', './sprites/Fonts/fontsWhite.png', './sprites/Fonts/fontsLightGreen.png'];
+var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarRed.png', './sprites/Battle/Menu/dgmnBarBlue.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/dgmnBarDarkGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png', './sprites/Battle/Menu/comboLabel.png', './sprites/Battle/Menu/weak0.png', './sprites/Battle/Menu/weak1.png', './sprites/Battle/Menu/weak2.png', './sprites/Battle/Menu/weak3.png'];
+var dungeonImages = ['./sprites/Dungeon/startTile.png', './sprites/Dungeon/endTile.png'];
+var digiBeetleImages = ['./sprites/Dungeon/DigiBeetle/digiBeetleDown0.png', './sprites/Dungeon/DigiBeetle/digiBeetleDown1.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp0.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp1.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight0.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight1.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft0.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft1.png'];
+
+var DigiBeetle = function DigiBeetle(dungeonAH) {
+  var _this = this;
+
+  _classCallCheck(this, DigiBeetle);
+
+  _defineProperty(this, "init", function () {
+    _this.initCanvas();
+
+    _this.loadDigiBeetleImages();
+  });
+
+  _defineProperty(this, "initSystemAH", function (actionHandler) {
+    _this.systemAH = actionHandler;
+  });
+
+  _defineProperty(this, "initGameAH", function (actionHandler) {
+    _this.gameAH = actionHandler;
+  });
+
+  _defineProperty(this, "initDungeonAH", function (actionHandler) {
+    _this.dungeonAH = actionHandler;
+  });
+
+  _defineProperty(this, "initCanvas", function () {
+    _this.digiBeetleCanvas = new DigiBeetleCanvas(_this.dungeonAH.getCurrentDirection, 'digibeetle-canvas', 16, 16, 64, 64, false, _this.gameAH.refreshScreen);
+  });
+
+  _defineProperty(this, "addItemToToolBox", function (item) {
+    _this.toolBox.push(item);
+  });
+
+  _defineProperty(this, "loadDigiBeetleImages", function () {
+    var allImages = [];
+
+    for (var img = 0; img < digiBeetleImages.length; img++) {
+      allImages.push(digiBeetleImages[img]);
+    }
+
+    _this.systemAH.loadImages(allImages, function () {
+      _this.drawDigiBeetle();
+
+      _this.onDigiBeetleImagesLoaded();
+    });
+  });
+
+  _defineProperty(this, "onDigiBeetleImagesLoaded", function () {
+    _this.gameAH.addCanvasObject(_this.digiBeetleCanvas);
+
+    _this.onLoaded();
+  });
+
+  _defineProperty(this, "drawDigiBeetle", function () {
+    _this.digiBeetleCanvas.frames.down = [_this.systemAH.fetchImage('digiBeetleDown0'), _this.systemAH.fetchImage('digiBeetleDown1')];
+    _this.digiBeetleCanvas.frames.up = [_this.systemAH.fetchImage('digiBeetleUp0'), _this.systemAH.fetchImage('digiBeetleUp1')];
+    _this.digiBeetleCanvas.frames.right = [_this.systemAH.fetchImage('digiBeetleRight0'), _this.systemAH.fetchImage('digiBeetleRight1')];
+    _this.digiBeetleCanvas.frames.left = [_this.systemAH.fetchImage('digiBeetleLeft0'), _this.systemAH.fetchImage('digiBeetleLeft1')];
+
+    _this.digiBeetleCanvas.animateBeetle('down');
+  });
+
+  _defineProperty(this, "onLoaded", function () {
+    console.log("THINGS GOT LOADED");
+  });
+
+  this.digiBeetleAH = new DigiBeetleAH(this.addItemToToolBox);
+  this.dungeonAH;
+  this.gameAH;
+  this.systemAH;
+  this.digiBeetleCanvas;
+  this.toolBox = {
+    version: 'dodo',
+    items: []
+  };
+};
 
 var BackgroundCanvas = /*#__PURE__*/function (_GameCanvas) {
   _inherits(BackgroundCanvas, _GameCanvas);
@@ -1365,11 +1535,6 @@ var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadIma
  * ----------------------------------------------------------------------*/
 ;
 
-var genericImages = ['./sprites/Battle/Menu/miniCursor.png', './sprites/Menus/typeLabel.png', './sprites/Menus/costLabel.png', './sprites/Menus/targetLabel.png', './sprites/Menus/powerLabel.png', './sprites/Menus/hitLabel.png', './sprites/Menus/noneTypeIcon.png', './sprites/Menus/fireTypeIcon.png', './sprites/Menus/windTypeIcon.png', './sprites/Menus/plantTypeIcon.png', './sprites/Menus/elecTypeIcon.png', './sprites/Menus/evilTypeIcon.png', './sprites/Menus/metalTypeIcon.png', './sprites/Menus/targetOne.png', './sprites/Menus/targetAll.png', './sprites/Menus/pwrFIcon.png', './sprites/Menus/pwrEIcon.png', './sprites/Menus/pwrDIcon.png', './sprites/Menus/oneHitIcon.png', './sprites/Menus/costMeter100.png', './sprites/Menus/costMeter75.png', './sprites/Menus/costMeter50.png', './sprites/Menus/costMeter25.png', './sprites/Menus/costMeter0.png', './sprites/Battle/Attacks/blankAttack.png'];
-var fontImages = ['./sprites/Fonts/fontsBlack.png', './sprites/Fonts/fontsWhite.png', './sprites/Fonts/fontsLightGreen.png'];
-var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarRed.png', './sprites/Battle/Menu/dgmnBarBlue.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/dgmnBarDarkGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png', './sprites/Battle/Menu/comboLabel.png', './sprites/Battle/Menu/weak0.png', './sprites/Battle/Menu/weak1.png', './sprites/Battle/Menu/weak2.png', './sprites/Battle/Menu/weak3.png'];
-var dungeonImages = ['./sprites/Dungeon/DigiBeetle/digiBeetleDown0.png', './sprites/Dungeon/DigiBeetle/digiBeetleDown1.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp0.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp1.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight0.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight1.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft0.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft1.png', './sprites/Dungeon/startTile.png', './sprites/Dungeon/endTile.png'];
-
 // Handles all of the actual values for Ranks (F - S)
 var powerRanks = {
   F: 1,
@@ -2255,41 +2420,79 @@ var dungeonRoomsDB = [[[0, 0, 0, 0, 0, 0, 0, 0], // 0
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 5
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 2, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 2, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 6
 [0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], // 7
-[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 3, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 2, 2, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], // 8
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 3, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 5, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 2, 2, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], // 8
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 2, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // ??
 [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0]]];
+/*
+
+ 0: null
+ 1: walkable
+ 2: start
+ 3: end
+ 4: start,end
+ 5: treasure
+ 6: enemy
+ 7: treasure, enemy
+ 8: treasure, enemy, start
+ 9: treasure, enemy, start, end
+10:
+
+101: start
+102: end
+103: treasure
+
+*/
 
 /**------------------------------------------------------------------------
- * CALCULATE DUNGEON DIMENSIONS
+ * MAP UTILITY
  * ------------------------------------------------------------------------
- * Figures out the proper Room Dimensions for a Dungeon floor
- * ------------------------------------------------------------------------
- * @param {Number}  floor Current Floor Number for the Dungeon
+ * Handles the utilities of the Map, which includes Dungeon, Room, and Floors
+ * ------
+ * A Utility is an action that always returns a value
+ * It should never need to access more than a couple of params from the parent
+ * This Class should handle the DB, and no other Class should import the DB directly
  * ----------------------------------------------------------------------*/
 
-var calculateDungeonDimensions = function calculateDungeonDimensions(floor) {
-  var dimensions = "";
+var MapUtility = function MapUtility() {
+  /* Utilities Have No Constructors */
 
-  switch (true) {
-    case floor < 5 && floor > 0:
-      dimensions = "twoByTwo";
-      break;
+  _classCallCheck(this, MapUtility);
 
-    case floor >= 5 && floor < 10:
-      dimensions = "twoByThree";
-      break;
+  _defineProperty(this, "calculateDungeonDimensions", function (floor) {
+    var dimensions = "";
 
-    case floor >= 10 && floor < 16:
-      dimensions = "threeByThree";
-      break;
+    switch (true) {
+      case floor < 5 && floor > 0:
+        dimensions = "twoByTwo";
+        break;
 
-    default:
-      debugLog('ERROR - Floor is incorrect value!');
-      dimensions = "twoByTwo";
-      break;
-  }
+      case floor >= 5 && floor < 10:
+        dimensions = "twoByThree";
+        break;
 
-  return dimensions;
+      case floor >= 10 && floor < 16:
+        dimensions = "threeByThree";
+        break;
+
+      default:
+        debugLog('ERROR - Floor is incorrect value!');
+        dimensions = "twoByTwo";
+        break;
+    }
+
+    return dimensions;
+  });
+
+  _defineProperty(this, "getFloorLayout", function (dimensions) {
+    var floorOptions = dungeonFloorsDB[dimensions];
+    var selectedFloor = Math.floor(Math.random() * (floorOptions.length - 0));
+    var roomNumberMatrix = floorOptions[selectedFloor];
+    return roomNumberMatrix;
+  });
+
+  _defineProperty(this, "getTileLayout", function (roomId) {
+    return dungeonRoomsDB[roomId];
+  });
 };
 
 var Room = function Room(roomId, _position) {
@@ -2297,16 +2500,22 @@ var Room = function Room(roomId, _position) {
 
   _classCallCheck(this, Room);
 
-  _defineProperty(this, "findTilesByNumber", function (roomMatrix, tileNumber) {
+  _defineProperty(this, "findAllTilesInRoom", function (tileValues) {
     var allTiles = [];
 
-    for (var r = 0; r < roomMatrix.length; r++) {
-      for (var c = 0; c < roomMatrix[r].length; c++) {
-        if (roomMatrix[r][c] === tileNumber) allTiles.push([r, c]);
+    for (var r = 0; r < _this.tileMatrix.length; r++) {
+      for (var c = 0; c < _this.tileMatrix[r].length; c++) {
+        for (var v = 0; v < tileValues.length; v++) {
+          if (_this.tileMatrix[r][c] === tileValues[v]) allTiles.push([r, c]);
+        }
       }
     }
 
     return allTiles;
+  });
+
+  _defineProperty(this, "setupTiles", function () {
+    _this.tileMatrix = _this.mapUtility.getTileLayout(_this.roomId);
   });
 
   _defineProperty(this, "changeTile", function (position, value) {
@@ -2315,129 +2524,326 @@ var Room = function Room(roomId, _position) {
 
   this.roomId = roomId;
   this.position = _position;
-  this.tileMatrix = dungeonRoomsDB[roomId];
+  this.tileMatrix = [];
+  this.mapUtility = new MapUtility();
 };
 
-var DigiBeetleCanvas = /*#__PURE__*/function (_GameCanvas) {
-  _inherits(DigiBeetleCanvas, _GameCanvas);
-
-  var _super = _createSuper(DigiBeetleCanvas);
-
-  function DigiBeetleCanvas(currentDirectionCallback) {
-    var _this;
-
-    _classCallCheck(this, DigiBeetleCanvas);
-
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-
-    _this = _super.call.apply(_super, [this].concat(args));
-
-    _defineProperty(_assertThisInitialized(_this), "animateBeetle", function () {
-      var frame = 0;
-      _this.animateTimer = setInterval(function () {
-        _this.animationCounter++;
-
-        if (_this.animationCounter % 8 === 0 || _this.getDirection() !== _this.prevDirection) {
-          _this.prevDirection = _this.getDirection();
-          _this.animationCounter = 0;
-
-          if (frame === 0) {
-            frame = 1;
-          } else {
-            frame = 0;
-          }
-
-          _this.clearCanvas();
-
-          _this.paintImage(_this.frames[_this.getDirection()][frame]);
-
-          _this.triggerGameScreenRedraw();
-        }
-      }, 66);
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "stopAnimatingBeetle", function () {
-      clearInterval(_this.animateTimer);
-    });
-
-    _this.direction = 'down';
-    _this.frames = {
-      down: [],
-      up: [],
-      left: [],
-      right: []
-    };
-    _this.animateSpeed = 2000;
-    _this.animationCounter = 0;
-    _this.animateTimer;
-    _this.prevDirection = 'down';
-
-    _this.getDirection = function () {
-      return currentDirectionCallback();
-    };
-
-    return _this;
-  }
-
-  return DigiBeetleCanvas;
-}(GameCanvas);
-
-var DigiBeetle = function DigiBeetle(directionCallback, gameScreenRedrawCallback) {
-  _classCallCheck(this, DigiBeetle);
-
-  this.triggerGameScreenRedraw = function () {
-    gameScreenRedrawCallback();
-  };
-
-  this.sendCurrentDirection = function () {
-    return directionCallback();
-  };
-
-  this.digiBeetleCanvas = new DigiBeetleCanvas(this.sendCurrentDirection, 'digibeetle-canvas', 16, 16, 64, 64, false, this.triggerGameScreenRedraw);
-};
-
-var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback) {
+var Floor = function Floor(_floorNumber) {
   var _this = this;
 
-  _classCallCheck(this, Dungeon);
+  _classCallCheck(this, Floor);
 
-  _defineProperty(this, "buildFloor", function (floorDimensions) {
-    var buildMatrix = []; // Randomly Select a Floor
+  _defineProperty(this, "generateFloor", function () {
+    _this.roomMatrix = _this.buildRoomMatrix();
+    _this.start = _this.generateStart();
+    _this.end = _this.generateEnd();
+  });
 
-    var floorOptions = dungeonFloorsDB[floorDimensions];
-    var selectedFloor = Math.floor(Math.random() * (floorOptions.length - 0));
-    var roomNumberMatrix = floorOptions[selectedFloor]; // Run through the floor matrix and replace each single Number with Room Object
+  _defineProperty(this, "buildRoomMatrix", function (floorNumber) {
+    var buildMatrix = [];
 
-    for (var r = 0; r < roomNumberMatrix.length; r++) {
-      var matrixRow = [];
+    var floorDimensions = _this.mapUtility.calculateDungeonDimensions(floorNumber);
 
-      for (var c = 0; c < roomNumberMatrix[r].length; c++) {
-        matrixRow.push(_this.buildRoom(roomNumberMatrix[r][c], [r, c]));
+    var roomNumbers = _this.mapUtility.getFloorLayout(floorDimensions);
+
+    for (var r = 0; r < roomNumbers.length; r++) {
+      var row = [];
+
+      for (var c = 0; c < roomNumbers[r].length; c++) {
+        var newRoom = new Room(roomNumbers[r][c], [r, c]);
+        newRoom.setupTiles();
+        row.push(newRoom);
       }
 
-      buildMatrix.push(matrixRow);
+      buildMatrix.push(row);
     }
 
     return buildMatrix;
   });
 
-  _defineProperty(this, "populateFloor", function (roomMatrix) {
-    debugLog("FULL DUNGEON = ", _this.roomMatrix); // Start
+  _defineProperty(this, "generateStart", function () {
+    var start = {
+      room: [],
+      tile: []
+    };
 
-    _this.start = _this.generateStart(roomMatrix);
-    var startRoom = roomMatrix[_this.start.room[0]][_this.start.room[1]];
-    startRoom.changeTile([_this.start.tile[0], _this.start.tile[1]], 101); // End
+    var possibleTiles = _this.findAllTilesOnFloor([2]); // TODO - More than this
 
-    _this.end = _this.generateEnd(roomMatrix);
-    var endRoom = roomMatrix[_this.end.room[0]][_this.end.room[1]];
-    endRoom.changeTile([_this.end.tile[0], _this.end.tile[1]], 102); // Enemies
-    // Traps
-    // Treasure
-    // "Events" (Heal, Toilet, etc.)
 
-    _this.currentTile = _this.start;
+    var randomChoice = Math.floor(Math.random() * possibleTiles.length);
+    start.room = possibleTiles[randomChoice].room;
+    start.tile = possibleTiles[randomChoice].tile;
+
+    _this.roomMatrix[start.room[0]][start.room[1]].changeTile([start.tile[0], start.tile[1]], 101);
+
+    return start;
+  });
+
+  _defineProperty(this, "generateEnd", function () {
+    var end = {
+      room: [],
+      tile: []
+    };
+
+    var possibleTiles = _this.findAllTilesOnFloor([3]); // TODO - More than this
+
+
+    var randomChoice = Math.floor(Math.random() * possibleTiles.length);
+    end.room = possibleTiles[randomChoice].room;
+    end.tile = possibleTiles[randomChoice].tile;
+
+    _this.roomMatrix[end.room[0]][end.room[1]].changeTile([end.tile[0], end.tile[1]], 102);
+
+    return end;
+  });
+
+  _defineProperty(this, "findAllTilesOnFloor", function (tileValues) {
+    var allTiles = [];
+
+    for (var r = 0; r < _this.roomMatrix.length; r++) {
+      for (var c = 0; c < _this.roomMatrix[r].length; c++) {
+        var tilesInRoom = _this.roomMatrix[r][c].findAllTilesInRoom(tileValues);
+
+        for (var t = 0; t < tilesInRoom.length; t++) {
+          allTiles.push({
+            room: [r, c],
+            tile: tilesInRoom[t]
+          });
+        }
+      }
+    }
+
+    return allTiles;
+  });
+
+  this.number = _floorNumber || 1; // ACTION HANDLERS
+
+  this.systemAH;
+  this.dungeonAH; // UTILITIES
+
+  this.mapUtility = new MapUtility(); // this.floorCanvas = new GameCanvas('floor-canvas',this.roomMatrix.length*128,this.roomMatrix[0].length*128);
+
+  this.roomMatrix = []; // Matrix of all of the Room Objects
+
+  this.start = {
+    room: [],
+    tile: []
+  }; // Location of the Start of the Floor
+
+  this.end = {
+    room: [],
+    tile: []
+  }; // Location of the End of the Floor
+}
+/**------------------------------------------------------------------------
+ * GENERATE FLOOR
+ * ------------------------------------------------------------------------
+ * Creates the Floor.
+ *   Includes Building the Room Matrix
+ *   Populates Events (Start, End, etc.)
+ * ----------------------------------------------------------------------*/
+;
+
+var rarityChartDB = ['common', 'uncommon', 'rare', 'extraRare'];
+
+/**------------------------------------------------------------------------
+ * TREASURE UTILITY
+ * ------------------------------------------------------------------------
+ * Handles the utilities of Treasure in a Dungeon
+ * ------
+ * A Utility is an action that always returns a value
+ * It should never need to access more than a couple of params from the parent
+ * This Class should handle the DB, and no other Class should import the DB directly
+ * ----------------------------------------------------------------------*/
+
+var TreasureUtility = function TreasureUtility() {
+  /* Utilities Have No Constructors */
+
+  var _this = this;
+
+  _classCallCheck(this, TreasureUtility);
+
+  _defineProperty(this, "getRarity", function (floorNumber) {
+    var isRarityBoosted = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var rarity = 'common';
+
+    if (floorNumber > 5) {
+      // All floors 5 and below are common items always
+      if (floorNumber > 50) {
+        // TODO - Floor Rarity should go higher
+        var rando = Math.floor(Math.random() * 100); // Range = 20% C | 40% U | 25% R | 15% ER  
+
+        if (rando >= 85) {
+          rarity = 'extraRare';
+        } else if (rando >= 60) {
+          rarity = 'rare';
+        } else if (rando >= 20) {
+          rarity = 'uncommon';
+        }
+      } else if (floorNumber > 40) {
+        var _rando = Math.floor(Math.random() * 100); // Range = 40% C | 30% U | 20% R | 10% ER
+
+
+        if (_rando >= 90) {
+          rarity = 'extraRare';
+        } else if (_rando >= 70) {
+          rarity = 'rare';
+        } else if (_rando >= 40) {
+          rarity = 'uncommon';
+        }
+      } else if (floorNumber > 30) {
+        var _rando2 = Math.floor(Math.random() * 100); // Range = 60% C | 25% U | 10% R | 5% ER
+
+
+        if (_rando2 >= 95) {
+          rarity = 'extraRare';
+        } else if (_rando2 >= 85) {
+          rarity = 'rare';
+        } else if (_rando2 >= 60) {
+          rarity = 'uncommon';
+        }
+      } else if (floorNumber > 20) {
+        var _rando3 = Math.floor(Math.random() * 100); // Range = 70% C | 20% U | 10% R
+
+
+        if (_rando3 >= 90) {
+          rarity = 'rare';
+        } else if (_rando3 >= 70) {
+          rarity = 'uncommon';
+        }
+      } else if (floorNumber > 10) {
+        var _rando4 = Math.floor(Math.random() * 100); // Range = 80% C | 15% U | 5% R
+
+
+        if (_rando4 >= 95) {
+          rarity = 'rare';
+        } else if (_rando4 >= 80) {
+          rarity = 'uncommon';
+        }
+      } else {
+        // Floors 6-10
+        if (Math.floor(Math.random() * 10) === 9) {
+          rarity = 'uncommon';
+        } // Range = 90% Common | 10% Uncommon
+
+      }
+    }
+
+    rarity = isRarityBoosted ? _this.boostRarity(rarity) : rarity;
+    return rarity;
+  });
+
+  _defineProperty(this, "boostRarity", function (rarity) {
+    if (Math.floor(Math.random() * 2) === 1 && rarity !== 'extraRare') {
+      return rarityChartDB[rarityChartDB.indexOf(rarity) + 1];
+    }
+
+    return rarity;
+  });
+
+  _defineProperty(this, "getItemType", function () {
+    var modifier = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'none';
+    var itemType = 'none';
+    var rando = Math.floor(Math.random() * 100);
+
+    if (modifier !== 'none' && Math.floor(Math.random() * 10) > 6) {
+      return modifier;
+    }
+
+    if (rando >= 90) {
+      itemType = 'booster';
+    } else if (rando >= 45) {
+      itemType = 'beetle';
+    } else if (rando < 45) {
+      itemType = 'meat';
+    }
+
+    return itemType;
+  });
+
+  _defineProperty(this, "getBoosterItemType", function (rarity) {
+    var fpList = ['DR', 'NS', 'WG', 'DS', 'JT', 'ME', 'VB', 'NA', 'XP'];
+    var boosterType = 'Booster';
+    var size = '';
+
+    if (rarity === 'common') {
+      size = 'xs';
+    } else if (rarity === 'uncommon') {
+      size = 's';
+    } else if (rarity === 'rare') {
+      size = 'm';
+    } else if (rarity === 'extraRare') {
+      size = 'l';
+    }
+
+    var rando = Math.floor(Math.random() * fpList.length);
+    boosterType = size + boosterType + fpList[rando];
+    return boosterType;
+  });
+}
+/**------------------------------------------------------------------------
+* GET RARITY
+* ------------------------------------------------------------------------
+* Determines the rarity of an Item
+* ------------------------------------------------------------------------
+* @param {Number}   floorNumber     The current Floor Number
+* @param {Boolean}  isRarityBoosted Dungeon mod to make items rarer
+* @returns {String} Rarity of the item [common|uncommon|rare|extraRare]
+* ----------------------------------------------------------------------*/
+;
+
+/**------------------------------------------------------------------------
+ * DUNGEON ACTION HANDLER
+ * ------------------------------------------------------------------------
+ * Maintains Callbacks (actions) for the Dungeon
+ * ------
+ * Action Handlers create an interface for lower-level Objects to act on
+ * higher-level Objects
+ * ------
+ * Still trying to figure this out, because it's confusing to me, but the IDEA
+ * is that you pass this Object into children, and they can send stuff back to the parent
+ * ------
+ * Pass in Parent Object methods to Constructor
+ * ------
+ * I'm thinking there should be no methods. Just callbacks in the constructors
+ * ----------------------------------------------------------------------*/
+var DungeonAH = function DungeonAH(getCurrentDirectionCB) {
+  _classCallCheck(this, DungeonAH);
+
+  this.getCurrentDirection = function () {
+    return getCurrentDirectionCB();
+  };
+};
+
+var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
+  var _this = this;
+
+  _classCallCheck(this, Dungeon);
+
+  _defineProperty(this, "init", function () {
+    _this.buildFloor();
+  });
+
+  _defineProperty(this, "initDigiBeetleAH", function (actionHandler) {
+    _this.digiBeetleAH = actionHandler;
+  });
+
+  _defineProperty(this, "initGameAH", function (actionHandler) {
+    _this.gameAH = actionHandler;
+  });
+
+  _defineProperty(this, "initSystemAH", function (actionHandler) {
+    _this.systemAH = actionHandler;
+  });
+
+  _defineProperty(this, "buildFloor", function () {
+    _this.floor = new Floor(1); // TODO - This 1 should be sent in
+
+    _this.floor.generateFloor();
+
+    _this.currentTile = _this.floor.start;
+
+    _this.loadDungeonImages(_this.floor.roomMatrix);
   });
 
   _defineProperty(this, "loadDungeonImages", function (roomMatrix) {
@@ -2460,19 +2866,14 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
       allImages.push("./sprites/Dungeon/Rooms/room".concat(rooms[i], ".png"));
     }
 
-    _this.loadImages(allImages, function () {
-      _this.drawDungeon();
-
-      _this.drawDigiBeetle();
-
-      _this.onDungeonImagesLoaded();
+    _this.systemAH.loadImages(allImages, function () {// this.onDungeonImagesLoaded();
     });
   });
 
   _defineProperty(this, "onDungeonImagesLoaded", function () {
-    _this.addObject(_this.dungeonCanvas);
+    _this.gameAH.addCanvasObject(_this.dungeonCanvas); // this.addObject(this.dungeonCanvas);
+    // this.addObject(this.digiBeetle.digiBeetleCanvas); TODO - Figure out where to do this
 
-    _this.addObject(_this.digiBeetle.digiBeetleCanvas);
 
     _this.onLoaded();
   });
@@ -2484,12 +2885,12 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
         var roomX = c * 16 * (8 * config.screenSize);
         var roomY = r * 16 * (8 * config.screenSize);
 
-        _this.floorCanvas.paintImage(_this.fetchImage(roomName), roomX, roomY);
+        _this.floorCanvas.paintImage(_this.systemAH.fetchImage(roomName), roomX, roomY);
       }
     } // this.drawTile(this.fetchImage('startTile'),this.start.room,this.start.tile);
 
 
-    _this.drawTile(_this.fetchImage('endTile'), _this.end.room, _this.end.tile); // Set the Start
+    _this.drawTile(_this.systemAH.fetchImage('endTile'), _this.end.room, _this.end.tile); // Set the Start
 
 
     var roomXOffset = _this.start.room[1] * 16 * 8;
@@ -2503,9 +2904,10 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
 
     _this.dungeonCanvas.blackFill();
 
-    _this.dungeonCanvas.paintCanvas(_this.floorCanvas);
+    _this.dungeonCanvas.paintCanvas(_this.floorCanvas); // this.triggerGameScreenRedraw();
 
-    _this.triggerGameScreenRedraw();
+
+    _this.gameAH.refreshScreen();
   });
 
   _defineProperty(this, "drawTile", function (image, room, tile) {
@@ -2517,69 +2919,43 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
     _this.floorCanvas.paintImage(image, (roomXOffset + tileXOffset) * config.screenSize, (roomYOffset + tileYOffset) * config.screenSize);
   });
 
-  _defineProperty(this, "drawDigiBeetle", function () {
-    _this.digiBeetle.digiBeetleCanvas.frames.down = [_this.fetchImage('digiBeetleDown0'), _this.fetchImage('digiBeetleDown1')];
-    _this.digiBeetle.digiBeetleCanvas.frames.up = [_this.fetchImage('digiBeetleUp0'), _this.fetchImage('digiBeetleUp1')];
-    _this.digiBeetle.digiBeetleCanvas.frames.right = [_this.fetchImage('digiBeetleRight0'), _this.fetchImage('digiBeetleRight1')];
-    _this.digiBeetle.digiBeetleCanvas.frames.left = [_this.fetchImage('digiBeetleLeft0'), _this.fetchImage('digiBeetleLeft1')];
-
-    _this.digiBeetle.digiBeetleCanvas.animateBeetle('down');
-  });
-
   _defineProperty(this, "buildRoom", function (roomId, position) {
     var room = new Room(roomId, position);
     return room;
   });
 
-  _defineProperty(this, "generateStart", function (roomMatrix) {
-    var data = {
-      room: [0, 0],
-      tile: [0, 0]
-    };
+  _defineProperty(this, "generateEvents", function () {
+    var tempEventOrder = ['treasure', 'enemy']; // TODO - This should be generated by the game, not decided in code
 
-    var potentialSpots = _this.findAllTilesByNumber(roomMatrix, 2); // TODO - This is bad, start is not only 2
+    for (var e = 0; e < tempEventOrder.length; e++) {
+      var spots = _this.findAllTilesByNumber(_this.roomMatrix, [5]);
 
-
-    var randomChoice = Math.floor(Math.random() * potentialSpots.length);
-    data.room = potentialSpots[randomChoice].roomPosition;
-    data.tile = potentialSpots[randomChoice].tilePosition;
-    return data;
-  });
-
-  _defineProperty(this, "generateEnd", function (roomMatrix) {
-    var data = {
-      room: [0, 0],
-      tile: [0, 0]
-    };
-
-    var potentialSpots = _this.findAllTilesByNumber(roomMatrix, 3); // TODO - This is bad, start is not only 2
-
-
-    var randomChoice = Math.floor(Math.random() * potentialSpots.length);
-    data.room = potentialSpots[randomChoice].roomPosition;
-    data.tile = potentialSpots[randomChoice].tilePosition;
-    return data;
-  });
-
-  _defineProperty(this, "findAllTilesByNumber", function (roomMatrix, tileNumber) {
-    var allTiles = [];
-
-    for (var r = 0; r < roomMatrix.length; r++) {
-      for (var c = 0; c < roomMatrix[r].length; c++) {
-        var add = roomMatrix[r][c].findTilesByNumber(roomMatrix[r][c].tileMatrix, tileNumber);
-
-        for (var i = 0; i < add.length; i++) {
-          if (add[i].length > 0) {
-            allTiles.push({
-              roomPosition: [r, c],
-              tilePosition: add[i]
-            });
-          }
+      for (var i = 0; i < spots.length; i++) {
+        if (tempEventOrder[e] === 'treasure') {
+          _this.generateTreasure(spots[i]);
         }
       }
     }
+  });
 
-    return allTiles;
+  _defineProperty(this, "generateTreasure", function (tileCoord) {
+    var room = tileCoord.room;
+    var tile = tileCoord.tile;
+    var tempTreasureRate = 80; // TODO - this should be generated by the game
+
+    if (Math.floor(Math.random() * 100) <= tempTreasureRate) {
+      // Generate Treasure
+      console.log("GENERATE TREASURE AT ", tileCoord);
+      _this.roomMatrix[room[0]][room[1]].tileMatrix[tile[0]][tile[1]] = parseFloat("103.".concat(_this.treasureList.length)); // this.treasureList.push('generatedTreasure') //TODO - Actually pick out a treasure
+
+      var rarity = _this.treasureUtility.getRarity(_this.floorNumber);
+
+      var itemType = _this.treasureUtility.getItemType();
+
+      if (itemType === 'booster') {
+        _this.treasureUtility.getBoosterItemType(rarity);
+      }
+    }
   });
 
   _defineProperty(this, "redrawDungeon", function () {
@@ -2587,7 +2963,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
 
     _this.dungeonCanvas.paintCanvas(_this.floorCanvas);
 
-    _this.triggerGameScreenRedraw();
+    _this.gameAH.refreshScreen();
   });
 
   _defineProperty(this, "sendCurrentDirection", function () {
@@ -2611,10 +2987,14 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
 
       _this.collisionCheck();
 
-      if (_this.checkEnd()) {
+      var eventCheck = _this.checkEvent(_this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]]);
+
+      if (eventCheck === 'end') {
         _this.goUpFloor();
 
         return;
+      } else if (eventCheck === 'treasure') {
+        console.log("TREASURE, BABY!");
       }
 
       if (upDown === 'up') {
@@ -2643,10 +3023,14 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
 
       _this.collisionCheck();
 
-      if (_this.checkEnd()) {
+      var eventCheck = _this.checkEvent(_this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]]);
+
+      if (eventCheck === 'end') {
         _this.goUpFloor();
 
         return;
+      } else if (eventCheck === 'treasure') {
+        console.log("TREASURE, BABY!");
       }
 
       if (upDown === 'up') {
@@ -2675,10 +3059,14 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
 
       _this.collisionCheck();
 
-      if (_this.checkEnd()) {
+      var eventCheck = _this.checkEvent(_this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]]);
+
+      if (eventCheck === 'end') {
         _this.goUpFloor();
 
         return;
+      } else if (eventCheck === 'treasure') {
+        console.log("TREASURE, BABY!");
       }
 
       if (upDown === 'up') {
@@ -2707,10 +3095,14 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
 
       _this.collisionCheck();
 
-      if (_this.checkEnd()) {
+      var eventCheck = _this.checkEvent(_this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]]);
+
+      if (eventCheck === 'end') {
         _this.goUpFloor();
 
         return;
+      } else if (eventCheck === 'treasure') {
+        console.log("TREASURE, BABY!");
       }
 
       if (upDown === 'up') {
@@ -2782,6 +3174,18 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
     return false;
   });
 
+  _defineProperty(this, "checkEvent", function (tileValue) {
+    var eventTrigger = '';
+
+    if (tileValue === 102) {
+      eventTrigger = 'end';
+    } else if (Math.floor(tileValue) === 103) {
+      eventTrigger = 'treasure';
+    }
+
+    return eventTrigger;
+  });
+
   _defineProperty(this, "checkEnd", function () {
     var currentTileValue = _this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]];
 
@@ -2817,6 +3221,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
 
   _defineProperty(this, "cancelKeyHandler", function () {
     console.log("CURRENT TILE = ", _this.currentTile);
+    console.log("ROOM MATRIX = ", _this.roomMatrix);
   });
 
   _defineProperty(this, "upKeyHandler", function (upDown) {
@@ -2879,17 +3284,20 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
 
   });
 
-  this.floor = isNewDungeon ? 1 : 0; // TODO - Right now, set to zero when not a new dungeon, but otherwise, needs to pull from save data
+  this.dungeonAH = new DungeonAH(this.sendCurrentDirection);
+  this.digiBeetleAH;
+  this.gameAH;
+  this.systemAH; // this.battleAH;
 
-  this.roomMatrix = this.buildFloor(calculateDungeonDimensions(this.floor));
+  this.floor;
+  this.floorNumber = isNewDungeon ? 1 : 0; // TODO - Right now, set to zero when not a new dungeon, but otherwise, needs to pull from save data
 
-  this.triggerGameScreenRedraw = function () {
-    gameScreenRedrawCallback();
-  };
+  this.roomMatrix = []; // TODO - Remove and let Floor handle it
+  // CANVASES
 
-  this.digiBeetle = new DigiBeetle(this.sendCurrentDirection, this.triggerGameScreenRedraw);
-  this.dungeonCanvas = new GameCanvas('dungeon-canvas', 160, 144);
-  this.floorCanvas = new GameCanvas('floor-canvas', this.roomMatrix.length * 128, this.roomMatrix[0].length * 128);
+  this.dungeonCanvas = new GameCanvas('dungeon-canvas', 160, 144); // UTILITIES
+
+  this.treasureUtility = new TreasureUtility();
   this.start = {
     room: [0, 0],
     tile: [0, 0]
@@ -2912,33 +3320,16 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback, addObjectCallback, 
     down: false,
     left: false
   };
-
-  this.addObject = function (newObject) {
-    addObjectCallback(newObject);
-  };
-
-  this.loadImages = function (imageList, callback) {
-    loadImageCallback(imageList, callback);
-  };
+  this.treasureList = ["null"];
 
   this.onLoaded = function () {
     loadedCallback();
   };
-
-  this.fetchImage = function (image) {
-    return fetchImageCallback(image);
-  };
-
-  this.populateFloor(this.roomMatrix);
-  this.loadDungeonImages(this.roomMatrix);
 }
 /**------------------------------------------------------------------------
- * BULD FLOOR
+ * INITIALIZE
  * ------------------------------------------------------------------------
- * Gets everything ready for a new Floor
- * ------------------------------------------------------------------------
- * @param {String} floorDimensions Dimensions of the floor | "twoByTwo"
- * @return Dungeon Floor Matrix
+ * Kicks things off
  * ----------------------------------------------------------------------*/
 ;
 
@@ -3278,6 +3669,33 @@ var setupMockEnemyDgmn = function setupMockEnemyDgmn() {
   return dgmnList;
 };
 
+/**------------------------------------------------------------------------
+ * GAME ACTION HANDLER
+ * ------------------------------------------------------------------------
+ * Maintains Callbacks (actions) for the Game
+ * ------
+ * Action Handlers create an interface for lower-level Objects to act on
+ * higher-level Objects
+ * ------
+ * Still trying to figure this out, because it's confusing to me, but the IDEA
+ * is that you pass this Object into children, and they can send stuff back to the parent
+ * ------
+ * Pass in Parent Object methods to Constructor
+ * ------
+ * I'm thinking there should be no methods. Just callbacks in the constructors
+ * ----------------------------------------------------------------------*/
+var GameAH = function GameAH(addToObjectListCB, drawGameScreenCB) {
+  _classCallCheck(this, GameAH);
+
+  this.addCanvasObject = function (canvas) {
+    addToObjectListCB(canvas);
+  };
+
+  this.refreshScreen = function () {
+    drawGameScreenCB();
+  };
+};
+
 var mockDgmn = setupMockDgmn();
 var mockEnemyDgmn = setupMockEnemyDgmn();
 debugLog("PARTY = ", mockDgmn);
@@ -3295,6 +3713,10 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
   var _this = this;
 
   _classCallCheck(this, Game);
+
+  _defineProperty(this, "initSystemAH", function (actionHandler) {
+    _this.systemAH = actionHandler;
+  });
 
   _defineProperty(this, "bootGame", function () {// TODO - Once the game is more fleshed-out, run through this, rather than debuggers
   });
@@ -3376,8 +3798,28 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
 
   _defineProperty(this, "buildDungeon", function () {
     debugLog("Building Dungeon..."); // TODO - ALL OF THIS IS TEMP RIGHT NOW
+    // CREATE EVERYTHING
+    // this.dungeon = new Dungeon(true,this.onDungeonLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
 
-    _this.dungeon = new Dungeon(true, _this.onDungeonLoad, _this.addToObjectList, _this.drawGameScreen, _this.loadImages, _this.fetchImage);
+    _this.dungeon = new Dungeon(true, _this.onDungeonLoad);
+    _this.digiBeetle = new DigiBeetle(); // CONNECT EVERYTHING
+
+    _this.digiBeetle.initDungeonAH(_this.dungeon.dungeonAH);
+
+    _this.digiBeetle.initGameAH(_this.gameAH);
+
+    _this.digiBeetle.initSystemAH(_this.systemAH);
+
+    _this.dungeon.initDigiBeetleAH(_this.digiBeetle.digiBeetleAH);
+
+    _this.dungeon.initGameAH(_this.gameAH);
+
+    _this.dungeon.initSystemAH(_this.systemAH); // START EVERYTHING
+
+
+    _this.dungeon.init();
+
+    _this.digiBeetle.init();
   });
 
   _defineProperty(this, "onBattleLoad", function () {
@@ -3418,6 +3860,8 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
   });
 
   debugLog('Game Created...');
+  this.gameAH = new GameAH(this.addToObjectList, this.drawGameScreen);
+  this.systemAH;
   this.battle; // Init Battle (cleared and created by Game Logic)
 
   this.dungeon;
@@ -3437,22 +3881,9 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
     select: 0
   };
   this.objectList = []; // All of the Images to be drawn on the Game Canvas
-
-  this.loadImages = function (imageList, callback) {
-    loadImageCallback(imageList, callback);
-  };
-
-  this.fetchImage = function (imageName) {
-    return fetchImageCallback(imageName);
-  };
-}
-/**------------------------------------------------------------------------
- * BOOT GAME
- * ------------------------------------------------------------------------
- * Start the Game
- * Runs all functionality that would boot a game up (load screen, company, etc.)
- * ----------------------------------------------------------------------*/
-;
+  // this.loadImages = (imageList,callback) => { loadImageCallback(imageList,callback) }
+  // this.fetchImage = imageName => { return fetchImageCallback(imageName) }
+};
 
 /**------------------------------------------------------------------------
  * CONTROLLER CLASS
@@ -3580,6 +4011,33 @@ var ImageHandler = function ImageHandler() {
 };
 
 /**------------------------------------------------------------------------
+ * SYSTEM ACTION HANDLER
+ * ------------------------------------------------------------------------
+ * Maintains Callbacks (actions) for the System
+ * ------
+ * Action Handlers create an interface for lower-level Objects to act on
+ * higher-level Objects
+ * ------
+ * Still trying to figure this out, because it's confusing to me, but the IDEA
+ * is that you pass this Object into children, and they can send stuff back to the parent
+ * ------
+ * Pass in Parent Object methods to Constructor
+ * ------
+ * I'm thinking there should be no methods. Just callbacks in the constructors
+ * ----------------------------------------------------------------------*/
+var SystemAH = function SystemAH(loadImagesCB, fetchImageCB) {
+  _classCallCheck(this, SystemAH);
+
+  this.loadImages = function (images, callback) {
+    loadImagesCB(images, callback);
+  };
+
+  this.fetchImage = function (image) {
+    return fetchImageCB(image);
+  };
+};
+
+/**------------------------------------------------------------------------
  * SYSTEM CLASS
  * ------------------------------------------------------------------------
  * A Virtual System, which handles things like Memory, Display, and Input
@@ -3651,7 +4109,16 @@ var System = function System() {
     _this.controllers.push(new Controller(_this.setKeyState.bind(_this)));
   });
 
+  _defineProperty(this, "loadImage", function (images, callback) {
+    _this.imageHandler.addToQueue(images, callback);
+  });
+
+  _defineProperty(this, "fetchImage", function (imageName) {
+    return _this.imageHandler.fetchImage(imageName);
+  });
+
   debugLog("Loading System...");
+  this.systemAH = new SystemAH(this.loadImage, this.fetchImage);
   this.controllers = [];
   this.keyState = {};
   this.systemScreen = document.getElementById('game-screen');
@@ -3663,9 +4130,8 @@ var System = function System() {
   this.systemCount = 0;
   this.actionQueue = [];
   this.screenCanvas = new GameCanvas('screen-canvas', 160, 144);
-  this.game = new Game(this.imageHandler.addToQueue.bind(this), function (imageName) {
-    return _this.imageHandler.fetchImage(imageName);
-  });
+  this.game = new Game(this.systemAH);
+  this.game.initSystemAH(this.systemAH);
   this.subCanvases = [this.backgroundCanvas]; // TODO - this should be loaded
 }
 /**------------------------------------------------------------------------

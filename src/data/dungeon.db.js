@@ -73,7 +73,7 @@ export const dungeonRoomsDB = [
    [0,1,1,1,1,1,1,0],
    [0,1,1,3,1,1,1,0],
    [0,1,1,1,1,1,1,0],
-   [0,1,1,1,1,1,1,1],
+   [0,1,1,1,1,5,1,1],
    [0,1,1,1,1,1,1,0],
    [0,1,1,2,2,1,1,0],
    [0,0,0,0,0,0,0,0]],
@@ -101,5 +101,26 @@ export const dungeonTilesDB = [
   { collision: 0, effect: [] }, // Null
   { collision: 1, effect: []} , // Walkable, no event
   { collision: 2, effect: ["start"]},
-  { collision: 2, effect: ["end"]}
+  { collision: 2, effect: ["end"]},
+  // { collision: }
 ]
+
+/*
+
+ 0: null
+ 1: walkable
+ 2: start
+ 3: end
+ 4: start,end
+ 5: treasure
+ 6: enemy
+ 7: treasure, enemy
+ 8: treasure, enemy, start
+ 9: treasure, enemy, start, end
+10:
+
+101: start
+102: end
+103: treasure
+
+*/

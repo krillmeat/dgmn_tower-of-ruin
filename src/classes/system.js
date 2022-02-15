@@ -9,6 +9,7 @@ import Controller from "./controller";
 import DebugMenu from "./debug-menu";
 import ImageHandler from "./image-handler";
 import { fontImages, genericImages } from "../data/images.db";
+import SystemAH from "./action-handlers/system.ah";
 
 /**------------------------------------------------------------------------
  * SYSTEM CLASS
@@ -18,6 +19,9 @@ import { fontImages, genericImages } from "../data/images.db";
 class System{
   constructor(){
     debugLog("Loading System...");
+
+    this.systemAH = new SystemAH(this.loadImage,this.fetchImage)
+
     this.controllers = [];
     this.keyState = {};
 
@@ -33,7 +37,8 @@ class System{
     this.actionQueue = [];
 
     this.screenCanvas = new GameCanvas('screen-canvas',160,144);
-    this.game = new Game(this.imageHandler.addToQueue.bind(this), imageName => { return this.imageHandler.fetchImage(imageName) });
+    this.game = new Game(this.systemAH);
+    this.game.initSystemAH(this.systemAH);
     this.subCanvases = [this.backgroundCanvas]; // TODO - this should be loaded
   }
 
@@ -115,6 +120,15 @@ class System{
    * ----------------------------------------------------------------------*/
   pluginController = () => {
     this.controllers.push(new Controller(this.setKeyState.bind(this)));
+  }
+
+  // this.imageHandler.addToQueue.bind(this), imageName => { return this.imageHandler.fetchImage(imageName) }
+  loadImage = (images,callback) => {
+    this.imageHandler.addToQueue(images,callback);
+  }
+
+  fetchImage = imageName => {
+    return this.imageHandler.fetchImage(imageName);
   }
 }
 

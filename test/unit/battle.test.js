@@ -37,7 +37,7 @@ jest.mock('../../src/classes/background-canvas',()=>{
   })
 })
 
-describe('Battle System',() => {
+describe.skip('Battle System',() => {
 
 
   describe('Loading Data', ()=>{

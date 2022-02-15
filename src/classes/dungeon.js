@@ -2,32 +2,35 @@ import { dungeonFloorsDB } from "../data/dungeon.db";
 import { calculateDungeonDimensions } from "../utils/dungeon-utils";
 import GameCanvas from "./canvas";
 import { debugLog } from "../utils/log-utils";
+import Floor from "./dungeon/floor";
 import Room from "./room";
 import config from "../config";
 import { dungeonImages } from "../data/images.db";
-import DigiBeetle from "./digibeetle";
+import TreasureUtility from "./utility/treasure.util";
+
+import DungeonAH from "./action-handlers/dungeon.ah";
 
 class Dungeon{
-  constructor(isNewDungeon,loadedCallback,addObjectCallback,gameScreenRedrawCallback, loadImageCallback, fetchImageCallback){
-    this.floor = isNewDungeon ? 1 : 0; // TODO - Right now, set to zero when not a new dungeon, but otherwise, needs to pull from save data
-    this.roomMatrix = this.buildFloor(calculateDungeonDimensions(this.floor));
+  constructor(isNewDungeon,loadedCallback){
+    
+    this.dungeonAH = new DungeonAH(this.sendCurrentDirection);
+    this.digiBeetleAH;
+    this.gameAH;
+    this.systemAH;
+    // this.battleAH;
+    
+    this.floor;
+    this.floorNumber = isNewDungeon ? 1 : 0; // TODO - Right now, set to zero when not a new dungeon, but otherwise, needs to pull from save data
+    this.roomMatrix = []; // TODO - Remove and let Floor handle it
 
-    this.triggerGameScreenRedraw = () => { gameScreenRedrawCallback() }
-
-    this.digiBeetle = new DigiBeetle(this.sendCurrentDirection, this.triggerGameScreenRedraw);
-
+    // CANVASES
     this.dungeonCanvas = new GameCanvas('dungeon-canvas',160,144);
-    this.floorCanvas = new GameCanvas('floor-canvas',this.roomMatrix.length*128,this.roomMatrix[0].length*128);
 
-    this.start = {
-      room: [0,0],
-      tile: [0,0]
-    }
+    // UTILITIES
+    this.treasureUtility = new TreasureUtility();
 
-    this.end = {
-      room: [0,0],
-      tile: [0,0]
-    }
+    this.start = { room: [0,0], tile: [0,0] }
+    this.end = { room: [0,0], tile: [0,0] }
 
     this.dungeonState = 'free';
 
@@ -44,68 +47,69 @@ class Dungeon{
       left: false
     };
 
-    this.addObject = newObject => { addObjectCallback(newObject) }
+    this.treasureList = ["null"];
 
-    this.loadImages = (imageList,callback) => { loadImageCallback(imageList,callback) }
     this.onLoaded = () => {loadedCallback()}
-    this.fetchImage = image => {return fetchImageCallback(image)}
-
-    this.populateFloor(this.roomMatrix);
-    this.loadDungeonImages(this.roomMatrix);
   }
 
   /**------------------------------------------------------------------------
-   * BULD FLOOR
+   * INITIALIZE
    * ------------------------------------------------------------------------
-   * Gets everything ready for a new Floor
-   * ------------------------------------------------------------------------
-   * @param {String} floorDimensions Dimensions of the floor | "twoByTwo"
-   * @return Dungeon Floor Matrix
+   * Kicks things off
    * ----------------------------------------------------------------------*/
-  buildFloor = (floorDimensions) => {
-    let buildMatrix = [];
-
-    // Randomly Select a Floor
-    let floorOptions = dungeonFloorsDB[floorDimensions];
-    let selectedFloor = Math.floor(Math.random() * (floorOptions.length - 0));
-
-    let roomNumberMatrix = floorOptions[selectedFloor];
-
-    // Run through the floor matrix and replace each single Number with Room Object
-    for(let r = 0; r < roomNumberMatrix.length; r++){
-      let matrixRow = [];
-      for(let c = 0; c < roomNumberMatrix[r].length; c++){
-        matrixRow.push(this.buildRoom(roomNumberMatrix[r][c],[r,c]));
-      }
-      buildMatrix.push(matrixRow);
-    }
-
-    return buildMatrix;
+  init = () => {
+    this.buildFloor();
   }
 
-  populateFloor = roomMatrix => {
-    debugLog("FULL DUNGEON = ",this.roomMatrix);
-    // Start
-    this.start = this.generateStart(roomMatrix);
-    let startRoom = roomMatrix[this.start.room[0]][this.start.room[1]];
-        startRoom.changeTile([this.start.tile[0],this.start.tile[1]],101);
+  /**------------------------------------------------------------------------
+   * ACTION HANDLER INITIALIZERS
+   * ------------------------------------------------------------------------
+   * The Initializers for the different Action Handlers for other Classes
+   * ----------------------------------------------------------------------*/
+  initDigiBeetleAH = actionHandler => { this.digiBeetleAH = actionHandler; }
+  initGameAH = actionHandler => { this.gameAH = actionHandler; }
+  initSystemAH = actionHandler =>{ this.systemAH = actionHandler; }
 
-    // End
-    this.end = this.generateEnd(roomMatrix);
-    let endRoom = roomMatrix[this.end.room[0]][this.end.room[1]];
-        endRoom.changeTile([this.end.tile[0],this.end.tile[1]],102);
+  /**------------------------------------------------------------------------
+   * BUILD FLOOR
+   * ------------------------------------------------------------------------
+   * Sets up the Floor Object
+   * ----------------------------------------------------------------------*/
+  buildFloor = () => {
+    this.floor = new Floor(1); // TODO - This 1 should be sent in
+    this.floor.generateFloor();
+    this.currentTile = this.floor.start;
 
-    // Enemies
-
-    // Traps
-
-    // Treasure
-
-    // "Events" (Heal, Toilet, etc.)
-
-    this.currentTile = this.start;
+    this.loadDungeonImages(this.floor.roomMatrix);
   }
 
+  // populateFloor = roomMatrix => {
+  //   debugLog("FULL DUNGEON = ",this.roomMatrix);
+  //   // Start
+  //   this.start = this.generateStart(roomMatrix);
+  //   let startRoom = roomMatrix[this.start.room[0]][this.start.room[1]];
+  //       startRoom.changeTile([this.start.tile[0],this.start.tile[1]],101);
+
+  //   // End
+  //   this.end = this.generateEnd(roomMatrix);
+  //   let endRoom = roomMatrix[this.end.room[0]][this.end.room[1]];
+  //       endRoom.changeTile([this.end.tile[0],this.end.tile[1]],102);
+
+  //   // Enemies, Traps, Treasure
+  //   this.generateEvents();
+
+  //   // "Events" (Heal, Toilet, etc.)
+
+  //   this.currentTile = this.start;
+  // }
+
+  /**------------------------------------------------------------------------
+   * LOAD DUNGEON IMAGES
+   * ------------------------------------------------------------------------
+   * Goes through and loads the essential images and related Room Images
+   * ------------------------------------------------------------------------
+   * @param {Matrix} roomMatrix Dungeon's Room Matrix
+   * ----------------------------------------------------------------------*/
   loadDungeonImages = roomMatrix => {
     let rooms = [];
     let allImages = [];
@@ -125,16 +129,15 @@ class Dungeon{
       allImages.push(`./sprites/Dungeon/Rooms/room${rooms[i]}.png`);
     }
 
-    this.loadImages(allImages, ()=>{
-      this.drawDungeon();
-      this.drawDigiBeetle();
-      this.onDungeonImagesLoaded();
+    this.systemAH.loadImages(allImages, ()=>{
+      // this.onDungeonImagesLoaded();
     });
   }
 
   onDungeonImagesLoaded = () => {
-    this.addObject(this.dungeonCanvas);
-    this.addObject(this.digiBeetle.digiBeetleCanvas);
+    this.gameAH.addCanvasObject(this.dungeonCanvas);
+    // this.addObject(this.dungeonCanvas);
+    // this.addObject(this.digiBeetle.digiBeetleCanvas); TODO - Figure out where to do this
     this.onLoaded();
   }
 
@@ -149,12 +152,12 @@ class Dungeon{
         let roomName = `room${this.roomMatrix[r][c].roomId}`;
         let roomX = c * 16 * (8 * config.screenSize);
         let roomY = r * 16 * (8 * config.screenSize);
-        this.floorCanvas.paintImage(this.fetchImage(roomName),roomX,roomY);
+        this.floorCanvas.paintImage(this.systemAH.fetchImage(roomName),roomX,roomY);
       }
     }
 
     // this.drawTile(this.fetchImage('startTile'),this.start.room,this.start.tile);
-    this.drawTile(this.fetchImage('endTile'),this.end.room,this.end.tile);
+    this.drawTile(this.systemAH.fetchImage('endTile'),this.end.room,this.end.tile);
 
     // Set the Start
     let roomXOffset = this.start.room[1] * 16 * 8;
@@ -173,23 +176,21 @@ class Dungeon{
 
     this.dungeonCanvas.blackFill();
     this.dungeonCanvas.paintCanvas(this.floorCanvas);
-    this.triggerGameScreenRedraw();
+    // this.triggerGameScreenRedraw();
+    this.gameAH.refreshScreen();
   }
 
+  /**------------------------------------------------------------------------
+   * DRAW TILE
+   * ------------------------------------------------------------------------
+   * Paints an image on 1 specific tile
+   * ----------------------------------------------------------------------*/
   drawTile = (image, room,tile) => {
     let roomXOffset = room[1] * 16 * 8;
     let roomYOffset = room[0] * 16 * 8;
     let tileXOffset = tile[1] * 16;
     let tileYOffset = tile[0] * 16;
     this.floorCanvas.paintImage(image,(roomXOffset+tileXOffset)*config.screenSize,(roomYOffset+tileYOffset)*config.screenSize);
-  }
-
-  drawDigiBeetle = () => {
-    this.digiBeetle.digiBeetleCanvas.frames.down = [this.fetchImage('digiBeetleDown0'),this.fetchImage('digiBeetleDown1')];
-    this.digiBeetle.digiBeetleCanvas.frames.up = [this.fetchImage('digiBeetleUp0'),this.fetchImage('digiBeetleUp1')];
-    this.digiBeetle.digiBeetleCanvas.frames.right = [this.fetchImage('digiBeetleRight0'),this.fetchImage('digiBeetleRight1')];
-    this.digiBeetle.digiBeetleCanvas.frames.left = [this.fetchImage('digiBeetleLeft0'),this.fetchImage('digiBeetleLeft1')];
-    this.digiBeetle.digiBeetleCanvas.animateBeetle('down');
   }
 
   /**------------------------------------------------------------------------
@@ -206,59 +207,41 @@ class Dungeon{
     return room;
   }
 
-  generateStart = roomMatrix => {
-    let data = {
-      room: [0,0],
-      tile: [0,0]
-    }
+  generateEvents = () => {
+    let tempEventOrder = ['treasure','enemy']; // TODO - This should be generated by the game, not decided in code
 
-    let potentialSpots = this.findAllTilesByNumber(roomMatrix, 2); // TODO - This is bad, start is not only 2
-    let randomChoice = Math.floor(Math.random() * potentialSpots.length);
-
-    data.room = potentialSpots[randomChoice].roomPosition;
-    data.tile = potentialSpots[randomChoice].tilePosition;
-
-    return data;
-  }
-
-  generateEnd = roomMatrix => {
-    let data = {
-      room: [0,0],
-      tile: [0,0]
-    }
-
-    let potentialSpots = this.findAllTilesByNumber(roomMatrix, 3); // TODO - This is bad, start is not only 2
-    let randomChoice = Math.floor(Math.random() * potentialSpots.length);
-
-    data.room = potentialSpots[randomChoice].roomPosition;
-    data.tile = potentialSpots[randomChoice].tilePosition;
-
-    return data;
-  }
-
-  findAllTilesByNumber = (roomMatrix, tileNumber) => {
-    let allTiles = [];
-
-    for(let r = 0; r < roomMatrix.length; r++){
-      for(let c = 0; c < roomMatrix[r].length; c++){
-        let add = roomMatrix[r][c].findTilesByNumber(roomMatrix[r][c].tileMatrix,tileNumber);
-        for(let i = 0; i < add.length; i++){
-          if(add[i].length > 0){ 
-            allTiles.push({
-              roomPosition: [r,c], 
-              tilePosition: add[i] })
-          }
+    for(let e = 0; e < tempEventOrder.length; e++){
+      let spots = this.findAllTilesByNumber(this.roomMatrix, [5]);
+      for(let i = 0; i < spots.length; i++){
+        if(tempEventOrder[e] === 'treasure'){
+          this.generateTreasure(spots[i]);
         }
       }
     }
+  }
 
-    return allTiles;
+  generateTreasure = tileCoord => {
+    let room = tileCoord.room;
+    let tile = tileCoord.tile;
+    let tempTreasureRate = 80; // TODO - this should be generated by the game
+
+    if(Math.floor(Math.random() * 100) <= tempTreasureRate){ // Generate Treasure
+      console.log("GENERATE TREASURE AT ",tileCoord);
+      this.roomMatrix[room[0]][room[1]].tileMatrix[tile[0]][tile[1]] = parseFloat(`103.${this.treasureList.length}`);
+      // this.treasureList.push('generatedTreasure') //TODO - Actually pick out a treasure
+      let rarity = this.treasureUtility.getRarity(this.floorNumber);
+      let itemType = this.treasureUtility.getItemType();
+      let item = '';
+      if(itemType === 'booster'){
+        item = this.treasureUtility.getBoosterItemType(rarity);
+      }
+    }
   }
 
   redrawDungeon = () => {
     this.dungeonCanvas.blackFill();
-    this.dungeonCanvas.paintCanvas(this.floorCanvas)
-    this.triggerGameScreenRedraw();
+    this.dungeonCanvas.paintCanvas(this.floorCanvas);
+    this.gameAH.refreshScreen();
   }
 
   sendCurrentDirection = () => {
@@ -292,8 +275,11 @@ class Dungeon{
         this.currentTile.tile[0] = 7;
       }
       this.collisionCheck();
-      if(this.checkEnd()){ 
-        this.goUpFloor(); return }
+     
+      let eventCheck = this.checkEvent(this.roomMatrix[this.currentTile.room[0]][this.currentTile.room[1]].tileMatrix[this.currentTile.tile[0]][this.currentTile.tile[1]]);
+      if(eventCheck === 'end'){ this.goUpFloor(); return
+      } else if(eventCheck === 'treasure'){ console.log("TREASURE, BABY!") }
+
       if(upDown === 'up'){ // If the key is lifted up, stop the movement
         this.moving = 'none';
       }
@@ -315,8 +301,11 @@ class Dungeon{
         this.currentTile.tile[1] = 0;
       }
       this.collisionCheck();
-      if(this.checkEnd()){ 
-        this.goUpFloor(); return }
+      
+      let eventCheck = this.checkEvent(this.roomMatrix[this.currentTile.room[0]][this.currentTile.room[1]].tileMatrix[this.currentTile.tile[0]][this.currentTile.tile[1]]);
+      if(eventCheck === 'end'){ this.goUpFloor(); return
+      } else if(eventCheck === 'treasure'){ console.log("TREASURE, BABY!") }
+
       if(upDown === 'up'){ // If the key is lifted up, stop the movement
         this.moving = 'none';
       }
@@ -338,8 +327,11 @@ class Dungeon{
         this.currentTile.tile[0] = 0;
       }
       this.collisionCheck();
-      if(this.checkEnd()){ 
-        this.goUpFloor(); return }
+      
+      let eventCheck = this.checkEvent(this.roomMatrix[this.currentTile.room[0]][this.currentTile.room[1]].tileMatrix[this.currentTile.tile[0]][this.currentTile.tile[1]]);
+      if(eventCheck === 'end'){ this.goUpFloor(); return
+      } else if(eventCheck === 'treasure'){ console.log("TREASURE, BABY!") }
+
       if(upDown === 'up'){ // If the key is lifted up, stop the movement
         this.moving = 'none';
       }
@@ -361,8 +353,11 @@ class Dungeon{
         this.currentTile.tile[1] = 7;
       }
       this.collisionCheck();
-      if(this.checkEnd()){ 
-        this.goUpFloor(); return }
+      
+      let eventCheck = this.checkEvent(this.roomMatrix[this.currentTile.room[0]][this.currentTile.room[1]].tileMatrix[this.currentTile.tile[0]][this.currentTile.tile[1]]);
+      if(eventCheck === 'end'){ this.goUpFloor(); return
+      } else if(eventCheck === 'treasure'){ console.log("TREASURE, BABY!") }
+
       if(upDown === 'up'){ // If the key is lifted up, stop the movement
         this.moving = 'none';
       }
@@ -433,6 +428,15 @@ class Dungeon{
     return false;
   }
 
+  checkEvent = tileValue => {
+    let eventTrigger = '';
+
+    if(tileValue === 102){ eventTrigger = 'end';
+    } else if (Math.floor(tileValue) === 103){ eventTrigger = 'treasure'; }
+
+    return eventTrigger;
+  }
+
   checkEnd = () => {
     let currentTileValue = this.roomMatrix[this.currentTile.room[0]][this.currentTile.room[1]].tileMatrix[this.currentTile.tile[0]][this.currentTile.tile[1]];
     if(currentTileValue === 102){
@@ -487,6 +491,7 @@ class Dungeon{
 
     cancelKeyHandler = () => {
       console.log("CURRENT TILE = ",this.currentTile);
+      console.log("ROOM MATRIX = ",this.roomMatrix);
     }
 
     upKeyHandler = upDown => {

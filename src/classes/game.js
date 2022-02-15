@@ -1,10 +1,12 @@
 import { debugLog } from "../utils/log-utils";
+import DigiBeetle from "./digibeetle";
 import Battle from "./battle";
 import Dungeon from "./dungeon";
 import GameCanvas from "./canvas";
 
 import config from "../config";
 import { setupMockDgmn, setupMockEnemyDgmn } from "../debug/dgmn.mock";
+import GameAH from "./action-handlers/game.ah";
 
 // TODO - There has to be a better way to mock this stuff up...
 const mockDgmn = setupMockDgmn();
@@ -24,6 +26,10 @@ debugLog("ENEMY = ",mockEnemyDgmn);
 class Game{
   constructor(loadImageCallback,fetchImageCallback){
     debugLog('Game Created...');
+
+    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen);
+    this.systemAH;
+
     this.battle;                              // Init Battle (cleared and created by Game Logic)
     this.dungeon;
 
@@ -39,9 +45,11 @@ class Game{
 
     this.objectList = [];                    // All of the Images to be drawn on the Game Canvas
 
-    this.loadImages = (imageList,callback) => { loadImageCallback(imageList,callback) }
-    this.fetchImage = imageName => { return fetchImageCallback(imageName) }
+    // this.loadImages = (imageList,callback) => { loadImageCallback(imageList,callback) }
+    // this.fetchImage = imageName => { return fetchImageCallback(imageName) }
   }
+
+  initSystemAH = actionHandler => { this.systemAH = actionHandler }
 
   /**------------------------------------------------------------------------
    * BOOT GAME
@@ -125,7 +133,23 @@ class Game{
   buildDungeon = () => {
     debugLog("Building Dungeon...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
-    this.dungeon = new Dungeon(true,this.onDungeonLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
+
+    // CREATE EVERYTHING
+    // this.dungeon = new Dungeon(true,this.onDungeonLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
+    this.dungeon = new Dungeon(true,this.onDungeonLoad);
+    this.digiBeetle = new DigiBeetle();
+
+    // CONNECT EVERYTHING
+    this.digiBeetle.initDungeonAH(this.dungeon.dungeonAH);
+    this.digiBeetle.initGameAH(this.gameAH);
+    this.digiBeetle.initSystemAH(this.systemAH);
+    this.dungeon.initDigiBeetleAH(this.digiBeetle.digiBeetleAH);
+    this.dungeon.initGameAH(this.gameAH);
+    this.dungeon.initSystemAH(this.systemAH);
+
+    // START EVERYTHING
+    this.dungeon.init();
+    this.digiBeetle.init();
   }
 
   /**------------------------------------------------------------------------
