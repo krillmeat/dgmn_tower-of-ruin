@@ -63,7 +63,7 @@ class DigiBeetle{
   }
 
   onLoaded = () => {
-    console.log("THINGS GOT LOADED");
+    
   }
 }
 

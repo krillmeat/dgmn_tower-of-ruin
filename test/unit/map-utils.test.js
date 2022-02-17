@@ -1,33 +1,25 @@
 import MapUtility from '../../src/classes/utility/map.util';
+import config from '../../src/config';
 
 describe("Map Utilities",()=>{
   let mockMapUtility = new MapUtility();
 
-  // MOVING THIS TO RESPECTIVE CLASSES
-  // describe("Finding Tiles",()=>{
-  //   test('List of all tiles in a Room will be empty if there are no matches',()=>{
-  //     let mockRoom = [[0,0],[0,0]];
-  //     let mockTileList = mockMapUtility.getAllTilesInRoom(mockRoom,[1]);
-  //     expect(mockTileList.length).toEqual(0);
-  //   })
-  //   test('List of all tiles in a Room will be 1 if there is 1 match',()=>{
-  //     let mockRoom = [[0,0],[1,0]];
-  //     let mockTileList = mockMapUtility.getAllTilesInRoom(mockRoom,[1]);
-  //     expect(mockTileList.length).toEqual(1);
-  //   })
-  //   test('List of all tiles in a Room will be 3 if there are 3 matches',()=>{
-  //     let mockRoom = [[1,1],[1,0]];
-  //     let mockTileList = mockMapUtility.getAllTilesInRoom(mockRoom,[1]);
-  //     expect(mockTileList.length).toEqual(3);
-  //   })
-  //   test('Sending in multiple potential values will get all of those tiles',()=>{
-  //     let mockRoom = [[1,1],[2,0]];
-  //     let mockTileList = mockMapUtility.getAllTilesInRoom(mockRoom,[1,2]);
-  //     expect(mockTileList.length).toEqual(3);
-  //   })
-
-  //   test('List of all of the tiles on a Floor will be empty if there are no matches', ()=>{
-  //     // let mockRoomMatrix
-  //   })
-  // })
+  describe('Offset Calculation',()=>{
+    test('A room offset should be 128 times the number of rooms',()=>{
+      let offset = mockMapUtility.getRoomOffset(2);
+      let expected = 128 * 2 * config.screenSize;
+      expect(offset).toEqual(expected);
+    });
+    test('A tile offset shuld be 16 times the number of tiles',()=>{
+      let offset = mockMapUtility.getTileOffset(4);
+      let expected = 16 * 4 * config.screenSize;
+      expect(offset).toEqual(expected);
+    })
+    test('A total offset should handle the calculation correctly',()=>{
+      let offset = mockMapUtility.getTotalOffset(1,4);
+      let expected = (16 * 4 * config.screenSize) + (128 * 1 * config.screenSize);
+      expect(offset).toEqual(expected);
+    })
+  })
+  
 })

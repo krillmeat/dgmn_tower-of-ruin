@@ -112,7 +112,7 @@ class Game{
 
     if(this.dungeon?.dungeonState === 'free'){
       // TODO - Logic that checks things like "held down" or "tapped" go here
-      this.dungeon.keyTriage(key,upDown);
+      this.dungeon.dungeonIO.keyTriage(key,upDown);
       
     }
   }

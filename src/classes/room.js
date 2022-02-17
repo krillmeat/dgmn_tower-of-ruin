@@ -9,6 +9,14 @@ class Room{
     this.mapUtility = new MapUtility();
   }
 
+  /**------------------------------------------------------------------------
+   * FIND ALL TILES IN ROOM
+   * ------------------------------------------------------------------------
+   * Searches the Room for tiles of certain values
+   * ------------------------------------------------------------------------
+   * @param {Array} tileValues  Array of Number values to search for
+   * @returns Array of all tile coordinates
+   * ----------------------------------------------------------------------*/
   findAllTilesInRoom = tileValues => {
     let allTiles = [];
     for(let r = 0; r < this.tileMatrix.length; r++){
@@ -22,10 +30,23 @@ class Room{
     return allTiles;
   }
 
+  /**------------------------------------------------------------------------
+   * SETUP TILES
+   * ------------------------------------------------------------------------
+   * Builds the Tile Matrix for the Room
+   * ----------------------------------------------------------------------*/
   setupTiles = () => {
     this.tileMatrix = this.mapUtility.getTileLayout(this.roomId);
   }
 
+  /**------------------------------------------------------------------------
+   * CHANGE TILE
+   * ------------------------------------------------------------------------
+   * Swaps the Tile Value of a specific Tile with a new Value
+   * ------------------------------------------------------------------------
+   * @param {Array}   position  r and c coordinates of Tile
+   * @param {Number}  value     newValue for Tile
+   * ----------------------------------------------------------------------*/
   changeTile = (position, value) => {
     this.tileMatrix[position[0]][position[1]] = value;
   }

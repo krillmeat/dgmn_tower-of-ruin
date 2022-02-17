@@ -1,3 +1,4 @@
+import config from '../../config';
 import {dungeonFloorsDB,dungeonRoomsDB} from '../../data/dungeon.db';
 import {debugLog} from '../../utils/log-utils';
 
@@ -45,6 +46,32 @@ class MapUtility{
 
   getTileLayout = roomId => {
     return dungeonRoomsDB[roomId];
+  }
+
+  getTotalOffset = (roomCount, tileCount) => {
+    return this.getRoomOffset(roomCount) + this.getTileOffset(tileCount);
+  }
+
+  getRoomOffset = roomCount => {
+    return roomCount * 128 * config.screenSize;
+  }
+
+  getTileOffset = tileCount => {
+    return tileCount * 16 * config.screenSize;
+  }
+
+  /**------------------------------------------------------------------------
+   * IS ON EXACT TILE
+   * ------------------------------------------------------------------------
+   * When moving, returns true if you are exactly on a tile
+   *   All checks happen when this occurs
+   * ------------------------------------------------------------------------
+   * @param {String}  dir     Direction of movement [up | right | down | left]
+   * @return True if exactly on a Tile
+   * ----------------------------------------------------------------------*/
+   isOnExactTile = (dir,canvasX,canvasY) => {
+    let coord = (dir === 'down' || dir === 'up') ? canvasY : canvasX;
+    return coord % (16 * config.screenSize) === 0 || coord === 0;
   }
 }
 

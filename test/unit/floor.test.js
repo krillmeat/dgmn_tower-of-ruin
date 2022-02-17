@@ -1,5 +1,11 @@
+import 'jest-canvas-mock';
+
 import Floor from '../../src/classes/dungeon/floor';
 import Room from '../../src/classes/room';
+
+import config from '../../src/config';
+
+jest.mock('../../src/classes/action-handlers/game.ah',()=>{})
 
 describe('Dungeon Floor',()=>{
 
@@ -9,6 +15,7 @@ describe('Dungeon Floor',()=>{
     });
     test('roomMatrix after Generating Floor will not be []',()=>{
       let mockFloor = new Floor();
+          mockFloor.gameAH = { addCanvasObject: () => {} }
       jest.spyOn(mockFloor,'generateStart').mockImplementation(()=>{});
       jest.spyOn(mockFloor,'generateEnd').mockImplementation(()=>{});
       expect(mockFloor.roomMatrix.length).toEqual(0);
@@ -91,5 +98,33 @@ describe('Dungeon Floor',()=>{
       expect(mockTileList[0].tile).toEqual([1,1]);
     })
 
+  })
+
+  describe('Canvas Manipulation',()=>{
+    let mockRoomOne, mockRoomTwo;
+    beforeEach(()=>{
+      mockRoomOne = new Room(0,[0,0]);
+      mockRoomTwo = new Room(0, [0,1]);
+    })
+    test('Can set Canvas to correct starting point',()=>{
+      let mockFloor = new Floor(1);
+          mockFloor.gameAH = { addCanvasObject: () => {} }
+          // mockRoomOne.tileMatrix = [[0,0],[0,0]];
+          // mockRoomTwo.tileMatrix = [[0,1],[0,0]];
+          mockFloor.start = {room: [1,0], tile: [0,1]}
+          mockFloor.roomMatrix = [[mockRoomOne],[mockRoomTwo]];
+          mockFloor.initCanvas();
+
+      expect(mockFloor.floorCanvas.x).toEqual(0);
+      expect(mockFloor.floorCanvas.y).toEqual(0);
+
+      mockFloor.setFloorToStart();
+
+      // Start X = 0 + 16
+      let mockX = 16 * config.screenSize;
+      let mockY = 128 * config.screenSize;
+      expect(mockFloor.floorCanvas.x).toEqual(mockX);
+      expect(mockFlow.floorCanvas.y).toEqual(mockY);
+    })
   })
 })

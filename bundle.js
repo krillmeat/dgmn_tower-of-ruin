@@ -2418,10 +2418,10 @@ var dungeonRoomsDB = [[[0, 0, 0, 0, 0, 0, 0, 0], // 0
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], // 3
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 4
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 5
-[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 2, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 2, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 6
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // 6
 [0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], // 7
-[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 3, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 5, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 2, 2, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], // 8
-[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 2, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // ??
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 3, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 5, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 2, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0], // 8
+[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0], // ??
 [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0]]];
 /*
 
@@ -2455,6 +2455,8 @@ var dungeonRoomsDB = [[[0, 0, 0, 0, 0, 0, 0, 0], // 0
 
 var MapUtility = function MapUtility() {
   /* Utilities Have No Constructors */
+
+  var _this = this;
 
   _classCallCheck(this, MapUtility);
 
@@ -2493,6 +2495,23 @@ var MapUtility = function MapUtility() {
   _defineProperty(this, "getTileLayout", function (roomId) {
     return dungeonRoomsDB[roomId];
   });
+
+  _defineProperty(this, "getTotalOffset", function (roomCount, tileCount) {
+    return _this.getRoomOffset(roomCount) + _this.getTileOffset(tileCount);
+  });
+
+  _defineProperty(this, "getRoomOffset", function (roomCount) {
+    return roomCount * 128 * config.screenSize;
+  });
+
+  _defineProperty(this, "getTileOffset", function (tileCount) {
+    return tileCount * 16 * config.screenSize;
+  });
+
+  _defineProperty(this, "isOnExactTile", function (dir, canvasX, canvasY) {
+    var coord = dir === 'down' || dir === 'up' ? canvasY : canvasX;
+    return coord % (16 * config.screenSize) === 0 || coord === 0;
+  });
 };
 
 var Room = function Room(roomId, _position) {
@@ -2526,17 +2545,106 @@ var Room = function Room(roomId, _position) {
   this.position = _position;
   this.tileMatrix = [];
   this.mapUtility = new MapUtility();
-};
+}
+/**------------------------------------------------------------------------
+ * FIND ALL TILES IN ROOM
+ * ------------------------------------------------------------------------
+ * Searches the Room for tiles of certain values
+ * ------------------------------------------------------------------------
+ * @param {Array} tileValues  Array of Number values to search for
+ * @returns Array of all tile coordinates
+ * ----------------------------------------------------------------------*/
+;
+
+var FloorCanvas = /*#__PURE__*/function (_GameCanvas) {
+  _inherits(FloorCanvas, _GameCanvas);
+
+  var _super = _createSuper(FloorCanvas);
+
+  function FloorCanvas() {
+    var _this;
+
+    _classCallCheck(this, FloorCanvas);
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = _super.call.apply(_super, [this].concat(args));
+
+    _defineProperty(_assertThisInitialized(_this), "drawRoom", function (image, position) {
+      var roomX = position[1] * 16 * 8;
+      var roomY = position[0] * 16 * 8;
+
+      _this.paintImage(image, roomX * config.screenSize, roomY * config.screenSize);
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "drawTile", function (image, room, tile) {
+      var roomXOffset = room[1] * 16 * 8;
+      var roomYOffset = room[0] * 16 * 8;
+      var tileXOffset = tile[1] * 16;
+      var tileYOffset = tile[0] * 16;
+
+      _this.paintImage(image, (roomXOffset + tileXOffset) * config.screenSize, (roomYOffset + tileYOffset) * config.screenSize);
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "redraw", function () {
+      _this.blackFill();
+
+      _this.paintCanvas(_assertThisInitialized(_this));
+    });
+
+    return _this;
+  }
+  /**------------------------------------------------------------------------
+   * DRAW ROOM
+   * ------------------------------------------------------------------------
+   * Paints a Room
+   * ------------------------------------------------------------------------
+   * @param {Image} image     What to draw
+   * @param {Array} position  Where to draw [0,0]
+   * ----------------------------------------------------------------------*/
+
+
+  return FloorCanvas;
+}(GameCanvas);
 
 var Floor = function Floor(_floorNumber) {
   var _this = this;
 
   _classCallCheck(this, Floor);
 
+  _defineProperty(this, "initAH", function (systemAH, gameAH, dungeonAH) {
+    _this.initSystemAH(systemAH);
+
+    _this.initGameAH(gameAH);
+
+    _this.initDungeonAH(dungeonAH);
+  });
+
+  _defineProperty(this, "initSystemAH", function (actionHandler) {
+    _this.systemAH = actionHandler;
+  });
+
+  _defineProperty(this, "initGameAH", function (actionHandler) {
+    _this.gameAH = actionHandler;
+  });
+
+  _defineProperty(this, "initDungeonAH", function (actionHandler) {
+    _this.dungeonAH = actionHandler;
+  });
+
+  _defineProperty(this, "initCanvas", function () {
+    _this.floorCanvas = new FloorCanvas('floor-canvas', _this.roomMatrix.length * 128, _this.roomMatrix[0].length * 128); // this.gameAH.addCanvasObject(this.floorCanvas);
+  });
+
   _defineProperty(this, "generateFloor", function () {
-    _this.roomMatrix = _this.buildRoomMatrix();
+    _this.roomMatrix = _this.buildRoomMatrix(_this.number);
     _this.start = _this.generateStart();
     _this.end = _this.generateEnd();
+    _this.currentTile = _this.start;
+
+    _this.initCanvas();
   });
 
   _defineProperty(this, "buildRoomMatrix", function (floorNumber) {
@@ -2567,8 +2675,7 @@ var Floor = function Floor(_floorNumber) {
       tile: []
     };
 
-    var possibleTiles = _this.findAllTilesOnFloor([2]); // TODO - More than this
-
+    var possibleTiles = _this.findAllTilesOnFloor([2, 4, 8, 9]);
 
     var randomChoice = Math.floor(Math.random() * possibleTiles.length);
     start.room = possibleTiles[randomChoice].room;
@@ -2616,13 +2723,176 @@ var Floor = function Floor(_floorNumber) {
     return allTiles;
   });
 
+  _defineProperty(this, "moveInDirection", function (dir) {
+    var delta = dir === 'down' || dir === 'right' ? -1 : 1;
+    var moveX = dir === 'down' || dir === 'up' ? null : _this.floorCanvas.x + delta * config.screenSize;
+    var moveY = dir === 'right' || dir === 'left' ? null : _this.floorCanvas.y + delta * config.screenSize;
+
+    _this.moveFloorCanvas(moveX, moveY);
+  });
+
+  _defineProperty(this, "move", function (dir, upDown) {
+    _this.dungeonAH.setCurrentDirection(dir);
+
+    _this.dungeonAH.setMoving(dir);
+
+    _this.moveInDirection(dir);
+
+    if (_this.mapUtility.isOnExactTile(dir, _this.floorCanvas.x, _this.floorCanvas.y)) {
+      if (dir === 'up') {
+        _this.currentTile.tile[0]--;
+      } else if (dir === 'right') {
+        _this.currentTile.tile[1]++;
+      } else if (dir === 'down') {
+        _this.currentTile.tile[0]++;
+      } else if (dir === 'left') {
+        _this.currentTile.tile[1]--;
+      }
+
+      if (_this.shouldMoveRoom(dir)) {
+        _this.moveIntoRoom(dir);
+      }
+
+      _this.checkCollision();
+
+      if (_this.checkCurrentTile()) {
+        return;
+      }
+
+      if (upDown === 'up') {
+        _this.dungeonAH.setMoving('none');
+      }
+    }
+  });
+
+  _defineProperty(this, "checkCurrentTile", function () {
+
+    return false;
+  });
+
+  _defineProperty(this, "checkCollision", function () {
+    var room = _this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]];
+    var tile = _this.currentTile.tile;
+
+    if (tile[0] !== 0 && room.tileMatrix[tile[0] - 1][tile[1]] === 0) {
+      _this.dungeonAH.setCollision('up', true);
+    } else if (tile[0] === 0 && _this.currentTile.room[0] >= _this.roomMatrix.length) {
+      _this.dungeonAH.setCollision('up', true);
+    } else {
+      _this.dungeonAH.setCollision('up', false);
+    }
+
+    if (tile[1] !== 7 && room.tileMatrix[tile[0]][tile[1] + 1] === 0) {
+      _this.dungeonAH.setCollision('right', true);
+    } else if (tile[1] === 7 && _this.currentTile.room[1] >= _this.roomMatrix[_this.currentTile.room[0]].length) {
+      _this.dungeonAH.setCollision('right', true);
+    } else {
+      _this.dungeonAH.setCollision('right', false);
+    }
+
+    if (tile[0] !== 7 && room.tileMatrix[tile[0] + 1][tile[1]] === 0) {
+      _this.dungeonAH.setCollision('down', true);
+    } else if (tile[0] === 7 && _this.currentTile.room[0] >= _this.roomMatrix.length) {
+      _this.dungeonAH.setCollision('down', true);
+    } else {
+      _this.dungeonAH.setCollision('down', false);
+    }
+
+    if (tile[1] !== 0 && room.tileMatrix[tile[0]][tile[1] - 1] === 0) {
+      _this.dungeonAH.setCollision('left', true);
+    } else if (tile[1] === 0 && _this.currentTile.room[1] === 0) {
+      _this.dungeonAH.setCollision('left', true);
+    } else {
+      _this.dungeonAH.setCollision('left', false);
+    }
+  });
+
+  _defineProperty(this, "shouldMoveRoom", function (dir) {
+    if (dir === 'up') {
+      if (_this.currentTile.tile[0] === -1 && _this.currentTile.room[0] > 0) {
+        return true;
+      }
+    } else if (dir === 'right') {
+      if (_this.currentTile.tile[1] === 8 && _this.currentTile.room[1] < _this.roomMatrix[_this.currentTile.room[1]].length) {
+        return true;
+      }
+    } else if (dir === 'down') {
+      if (_this.currentTile.tile[0] === 8 && _this.currentTile.room[0] < _this.roomMatrix.length) {
+        return true;
+      }
+    } else if (dir === 'left') {
+      if (_this.currentTile.tile[1] === -1 && _this.currentTile.room[1] > 0) {
+        console.log("MOVE LEFT ROOM");
+        return true;
+      }
+    }
+
+    return false;
+  });
+
+  _defineProperty(this, "moveIntoRoom", function (dir) {
+    if (dir === 'up') {
+      _this.currentTile.room[0]--;
+      _this.currentTile.tile[0] = 7;
+    } else if (dir === 'right') {
+      _this.currentTile.room[1]++;
+      _this.currentTile.tile[1] = 0;
+    } else if (dir === 'down') {
+      _this.currentTile.room[0]++;
+      _this.currentTile.tile[0] = 0;
+    } else if (dir === 'left') {
+      _this.currentTile.room[1]--;
+      _this.currentTile.tile[1] = 7;
+    }
+  });
+
+  _defineProperty(this, "drawFloor", function () {
+    _this.drawFloorBase(); // this.drawTile(this.systemAH.fetchImage('endTile'),this.end.room,this.end.tile);
+
+
+    _this.dungeonAH.paintFloorCanvas(_this.floorCanvas);
+
+    _this.gameAH.refreshScreen();
+  });
+
+  _defineProperty(this, "redrawFloor", function () {
+    _this.dungeonAH.paintFloorCanvas(_this.floorCanvas);
+  });
+
+  _defineProperty(this, "drawFloorBase", function () {
+    for (var r = 0; r < _this.roomMatrix.length; r++) {
+      for (var c = 0; c < _this.roomMatrix[r].length; c++) {
+        var room = _this.roomMatrix[r][c];
+
+        _this.floorCanvas.drawRoom(_this.systemAH.fetchImage("room".concat(room.roomId)), [room.position[0], room.position[1]]);
+      }
+    }
+  });
+
+  _defineProperty(this, "setFloorToStart", function () {
+    var xOffset = 64 * config.screenSize - _this.mapUtility.getTotalOffset(_this.start.room[1], _this.start.tile[1]);
+
+    var yOffset = 64 * config.screenSize - _this.mapUtility.getTotalOffset(_this.start.room[0], _this.start.tile[0]);
+
+    _this.moveFloorCanvas(xOffset, yOffset);
+
+    _this.redrawFloor();
+  });
+
+  _defineProperty(this, "moveFloorCanvas", function (newX, newY) {
+    _this.floorCanvas.x = newX !== null ? newX : _this.floorCanvas.x;
+    _this.floorCanvas.y = newY !== null ? newY : _this.floorCanvas.y;
+
+    _this.redrawFloor();
+  });
+
   this.number = _floorNumber || 1; // ACTION HANDLERS
 
   this.systemAH;
   this.dungeonAH; // UTILITIES
 
-  this.mapUtility = new MapUtility(); // this.floorCanvas = new GameCanvas('floor-canvas',this.roomMatrix.length*128,this.roomMatrix[0].length*128);
-
+  this.mapUtility = new MapUtility();
+  this.floorCanvas;
   this.roomMatrix = []; // Matrix of all of the Room Objects
 
   this.start = {
@@ -2634,163 +2904,44 @@ var Floor = function Floor(_floorNumber) {
     room: [],
     tile: []
   }; // Location of the End of the Floor
+
+  this.currentTile = {
+    room: [],
+    tile: []
+  }; // Current Location of the DigiBeetle
 }
 /**------------------------------------------------------------------------
- * GENERATE FLOOR
+ * ACTION HANDLER INITIALIZERS
  * ------------------------------------------------------------------------
- * Creates the Floor.
- *   Includes Building the Room Matrix
- *   Populates Events (Start, End, etc.)
+ * The Initializers for the different Action Handlers for other Classes
  * ----------------------------------------------------------------------*/
 ;
-
-var rarityChartDB = ['common', 'uncommon', 'rare', 'extraRare'];
-
-/**------------------------------------------------------------------------
- * TREASURE UTILITY
- * ------------------------------------------------------------------------
- * Handles the utilities of Treasure in a Dungeon
- * ------
- * A Utility is an action that always returns a value
- * It should never need to access more than a couple of params from the parent
- * This Class should handle the DB, and no other Class should import the DB directly
- * ----------------------------------------------------------------------*/
-
-var TreasureUtility = function TreasureUtility() {
-  /* Utilities Have No Constructors */
-
-  var _this = this;
-
-  _classCallCheck(this, TreasureUtility);
-
-  _defineProperty(this, "getRarity", function (floorNumber) {
-    var isRarityBoosted = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    var rarity = 'common';
-
-    if (floorNumber > 5) {
-      // All floors 5 and below are common items always
-      if (floorNumber > 50) {
-        // TODO - Floor Rarity should go higher
-        var rando = Math.floor(Math.random() * 100); // Range = 20% C | 40% U | 25% R | 15% ER  
-
-        if (rando >= 85) {
-          rarity = 'extraRare';
-        } else if (rando >= 60) {
-          rarity = 'rare';
-        } else if (rando >= 20) {
-          rarity = 'uncommon';
-        }
-      } else if (floorNumber > 40) {
-        var _rando = Math.floor(Math.random() * 100); // Range = 40% C | 30% U | 20% R | 10% ER
-
-
-        if (_rando >= 90) {
-          rarity = 'extraRare';
-        } else if (_rando >= 70) {
-          rarity = 'rare';
-        } else if (_rando >= 40) {
-          rarity = 'uncommon';
-        }
-      } else if (floorNumber > 30) {
-        var _rando2 = Math.floor(Math.random() * 100); // Range = 60% C | 25% U | 10% R | 5% ER
-
-
-        if (_rando2 >= 95) {
-          rarity = 'extraRare';
-        } else if (_rando2 >= 85) {
-          rarity = 'rare';
-        } else if (_rando2 >= 60) {
-          rarity = 'uncommon';
-        }
-      } else if (floorNumber > 20) {
-        var _rando3 = Math.floor(Math.random() * 100); // Range = 70% C | 20% U | 10% R
-
-
-        if (_rando3 >= 90) {
-          rarity = 'rare';
-        } else if (_rando3 >= 70) {
-          rarity = 'uncommon';
-        }
-      } else if (floorNumber > 10) {
-        var _rando4 = Math.floor(Math.random() * 100); // Range = 80% C | 15% U | 5% R
-
-
-        if (_rando4 >= 95) {
-          rarity = 'rare';
-        } else if (_rando4 >= 80) {
-          rarity = 'uncommon';
-        }
-      } else {
-        // Floors 6-10
-        if (Math.floor(Math.random() * 10) === 9) {
-          rarity = 'uncommon';
-        } // Range = 90% Common | 10% Uncommon
-
-      }
-    }
-
-    rarity = isRarityBoosted ? _this.boostRarity(rarity) : rarity;
-    return rarity;
-  });
-
-  _defineProperty(this, "boostRarity", function (rarity) {
-    if (Math.floor(Math.random() * 2) === 1 && rarity !== 'extraRare') {
-      return rarityChartDB[rarityChartDB.indexOf(rarity) + 1];
-    }
-
-    return rarity;
-  });
-
-  _defineProperty(this, "getItemType", function () {
-    var modifier = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'none';
-    var itemType = 'none';
-    var rando = Math.floor(Math.random() * 100);
-
-    if (modifier !== 'none' && Math.floor(Math.random() * 10) > 6) {
-      return modifier;
-    }
-
-    if (rando >= 90) {
-      itemType = 'booster';
-    } else if (rando >= 45) {
-      itemType = 'beetle';
-    } else if (rando < 45) {
-      itemType = 'meat';
-    }
-
-    return itemType;
-  });
-
-  _defineProperty(this, "getBoosterItemType", function (rarity) {
-    var fpList = ['DR', 'NS', 'WG', 'DS', 'JT', 'ME', 'VB', 'NA', 'XP'];
-    var boosterType = 'Booster';
-    var size = '';
-
-    if (rarity === 'common') {
-      size = 'xs';
-    } else if (rarity === 'uncommon') {
-      size = 's';
-    } else if (rarity === 'rare') {
-      size = 'm';
-    } else if (rarity === 'extraRare') {
-      size = 'l';
-    }
-
-    var rando = Math.floor(Math.random() * fpList.length);
-    boosterType = size + boosterType + fpList[rando];
-    return boosterType;
-  });
-}
-/**------------------------------------------------------------------------
-* GET RARITY
-* ------------------------------------------------------------------------
-* Determines the rarity of an Item
-* ------------------------------------------------------------------------
-* @param {Number}   floorNumber     The current Floor Number
-* @param {Boolean}  isRarityBoosted Dungeon mod to make items rarer
-* @returns {String} Rarity of the item [common|uncommon|rare|extraRare]
-* ----------------------------------------------------------------------*/
-;
+//   let tempEventOrder = ['treasure','enemy']; // TODO - This should be generated by the game, not decided in code
+//   for(let e = 0; e < tempEventOrder.length; e++){
+//     let spots = this.findAllTilesByNumber(this.roomMatrix, [5]);
+//     for(let i = 0; i < spots.length; i++){
+//       if(tempEventOrder[e] === 'treasure'){
+//         this.generateTreasure(spots[i]);
+//       }
+//     }
+//   }
+// }
+// generateTreasure = tileCoord => {
+//   let room = tileCoord.room;
+//   let tile = tileCoord.tile;
+//   let tempTreasureRate = 80; // TODO - this should be generated by the game
+//   if(Math.floor(Math.random() * 100) <= tempTreasureRate){ // Generate Treasure
+//     console.log("GENERATE TREASURE AT ",tileCoord);
+//     this.roomMatrix[room[0]][room[1]].tileMatrix[tile[0]][tile[1]] = parseFloat(`103.${this.treasureList.length}`);
+//     // this.treasureList.push('generatedTreasure') //TODO - Actually pick out a treasure
+//     let rarity = this.treasureUtility.getRarity(this.floorNumber);
+//     let itemType = this.treasureUtility.getItemType();
+//     let item = '';
+//     if(itemType === 'booster'){
+//       item = this.treasureUtility.getBoosterItemType(rarity);
+//     }
+//   }
+// }
 
 /**------------------------------------------------------------------------
  * DUNGEON ACTION HANDLER
@@ -2807,13 +2958,228 @@ var TreasureUtility = function TreasureUtility() {
  * ------
  * I'm thinking there should be no methods. Just callbacks in the constructors
  * ----------------------------------------------------------------------*/
-var DungeonAH = function DungeonAH(getCurrentDirectionCB) {
+var DungeonAH = function DungeonAH(getCurrentDirectionCB, setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB, setCollisionCB, moveFloorCB) {
   _classCallCheck(this, DungeonAH);
 
   this.getCurrentDirection = function () {
     return getCurrentDirectionCB();
   };
+
+  this.setCurrentDirection = function (newValue) {
+    setCurrentDirectionCB(newValue);
+  };
+
+  this.paintFloorCanvas = function (canvas) {
+    paintFloorCanvasCB(canvas);
+  };
+
+  this.getDungeonState = function () {
+    return getDungeonStateCB();
+  };
+
+  this.getMoving = function () {
+    return getMovingCB();
+  };
+
+  this.setMoving = function (newValue) {
+    setMovingCB(newValue);
+  };
+
+  this.getCollision = function () {
+    return getCollisionCB();
+  };
+
+  this.setCollision = function (dir, newValue) {
+    setCollisionCB(dir, newValue);
+  };
+
+  this.moveFloor = function (dir, upDown) {
+    moveFloorCB(dir, upDown);
+  };
 };
+
+var IO = function IO() {
+  var _this = this;
+
+  _classCallCheck(this, IO);
+
+  _defineProperty(this, "keyTriage", function (key, upDown) {
+    if (key === 'action') {
+      _this.actionKeyHandler();
+    } else if (key === 'cancel') {
+      _this.cancelKeyHandler();
+    } else if (key === 'up') {
+      _this.upKeyHandler(upDown);
+    } else if (key === 'right') {
+      _this.rightKeyHandler(upDown);
+    } else if (key === 'down') {
+      _this.downKeyHandler(upDown);
+    } else if (key === 'left') {
+      _this.leftKeyHandler(upDown);
+    }
+  });
+
+  _defineProperty(this, "actionKeyHandler", function (upDown) {});
+
+  _defineProperty(this, "cancelKeyHandler", function (upDown) {});
+
+  _defineProperty(this, "upKeyHandler", function (upDown) {});
+
+  _defineProperty(this, "rightKeyHandler", function (upDown) {});
+
+  _defineProperty(this, "downKeyHandler", function (upDown) {});
+
+  _defineProperty(this, "leftKeyHandler", function (upDown) {});
+};
+
+var DungeonIO = /*#__PURE__*/function (_IO) {
+  _inherits(DungeonIO, _IO);
+
+  var _super = _createSuper(DungeonIO);
+
+  function DungeonIO(dungeonAH) {
+    var _this;
+
+    _classCallCheck(this, DungeonIO);
+
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    _this = _super.call.apply(_super, [this].concat(args));
+
+    _defineProperty(_assertThisInitialized(_this), "cancelKeyHandler", function (upDown) {
+      console.log("DOWN");
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "upKeyHandler", function (upDown) {
+      if (_this.dungeonAH.getDungeonState() === 'free') {
+        _this.movingInDirection('up', upDown);
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "rightKeyHandler", function (upDown) {
+      if (_this.dungeonAH.getDungeonState() === 'free') {
+        _this.movingInDirection('right', upDown);
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "downKeyHandler", function (upDown) {
+      if (_this.dungeonAH.getDungeonState() === 'free') {
+        _this.movingInDirection('down', upDown);
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "leftKeyHandler", function (upDown) {
+      if (_this.dungeonAH.getDungeonState() === 'free') {
+        _this.movingInDirection('left', upDown);
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "isNotAlreadyMoving", function (dir, moving) {
+      if (dir === 'up') {
+        return moving !== 'right' && moving !== 'down' && moving !== 'left';
+      } else if (dir === 'right') {
+        return moving !== 'up' && moving !== 'down' && moving !== 'left';
+      } else if (dir === 'down') {
+        return moving !== 'up' && moving !== 'right' && moving !== 'left';
+      } else if (dir === 'left') {
+        return moving !== 'up' && moving !== 'right' && moving !== 'down';
+      }
+
+      return false; // TODO - Not sure this is the right way to do this, but I think it's fine
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "movingInDirection", function (dir, upDown) {
+      var moving = _this.dungeonAH.getMoving();
+
+      var collision = _this.dungeonAH.getCollision();
+
+      if (_this.isNotAlreadyMoving(dir, moving)) {
+        if (!collision[dir] && (upDown === 'down' || upDown === 'up' && moving === dir)) {
+          _this.dungeonAH.moveFloor(dir, upDown);
+        } else if (collision[dir] && moving === dir) {
+          _this.dungeonAH.setMoving('none');
+        } else if (collision[dir] && upDown === 'down') {
+          _this.dungeonAH.setCurrentDirection(dir);
+        }
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "movingUp", function (upDown) {
+      var moving = _this.dungeonAH.getMoving();
+
+      var collision = _this.dungeonAH.getCollision();
+
+      if (moving !== 'right' && moving !== 'down' && moving !== 'left') {
+        // Make sure not already moving in another direction
+        if (!collision.up && (upDown === 'down' || upDown === 'up' && moving === 'up')) {
+          _this.dungeonAH.moveFloor('up', upDown);
+        } else if (collision.up && moving === 'up') {
+          _this.dungeonAH.setMoving('none');
+        } else if (collision.up && upDown === 'down') {
+          _this.dungeonAH.setCurrentDirection('up');
+        }
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "movingRight", function (upDown) {
+      var moving = _this.dungeonAH.getMoving();
+
+      var collision = _this.dungeonAH.getCollision();
+
+      if (moving !== 'up' && moving !== 'down' && moving !== 'left') {
+        // Make sure not already moving in another direction
+        if (!collision.right && (upDown === 'down' || upDown === 'up' && moving === 'right')) {
+          _this.dungeonAH.moveFloor('right', upDown);
+        } else if (collision.right && moving === 'right') {
+          _this.dungeonAH.setMoving('none');
+        } else if (collision.right && upDown === 'down') {
+          _this.dungeonAH.setCurrentDirection('right');
+        }
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "movingDown", function (upDown) {
+      var moving = _this.dungeonAH.getMoving();
+
+      var collision = _this.dungeonAH.getCollision();
+
+      if (moving !== 'up' && moving !== 'right' && moving !== 'left') {
+        // Make sure not already moving in another direction
+        if (!collision.down && (upDown === 'down' || upDown === 'up' && moving === 'down')) {
+          _this.dungeonAH.moveFloor('down', upDown);
+        } else if (collision.down && moving === 'down') {
+          _this.dungeonAH.setMoving('none');
+        } else if (collision.down && upDown === 'down') {
+          _this.dungeonAH.setCurrentDirection('down');
+        }
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "movingLeft", function (upDown) {
+      var moving = _this.dungeonAH.getMoving();
+
+      var collision = _this.dungeonAH.getCollision();
+
+      if (moving !== 'up' && moving !== 'right' && moving !== 'down') {
+        // Make sure not already moving in another direction
+        if (!collision.left && (upDown === 'down' || upDown === 'up' && moving === 'left')) {
+          _this.dungeonAH.moveFloor('left', upDown);
+        } else if (collision.left && moving === 'left') {
+          _this.dungeonAH.setMoving('none');
+        } else if (collision.left && upDown === 'down') {
+          _this.dungeonAH.setCurrentDirection('left');
+        }
+      }
+    });
+
+    _this.dungeonAH = dungeonAH;
+    return _this;
+  }
+
+  return DungeonIO;
+}(IO);
 
 var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   var _this = this;
@@ -2837,363 +3203,61 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   });
 
   _defineProperty(this, "buildFloor", function () {
-    _this.floor = new Floor(1); // TODO - This 1 should be sent in
+    debugLog('Building Floor...');
+    _this.floor = new Floor(_this.floorNumber);
+
+    _this.floor.initAH(_this.systemAH, _this.gameAH, _this.dungeonAH);
 
     _this.floor.generateFloor();
-
-    _this.currentTile = _this.floor.start;
 
     _this.loadDungeonImages(_this.floor.roomMatrix);
   });
 
   _defineProperty(this, "loadDungeonImages", function (roomMatrix) {
     var rooms = [];
-    var allImages = [];
+    var allImages = []; // Add all Room Images to the Load List
 
     for (var r = 0; r < roomMatrix.length; r++) {
       for (var c = 0; c < roomMatrix[r].length; c++) {
         if (rooms.indexOf(roomMatrix[r][c].roomId) === -1) {
-          rooms.push(roomMatrix[r][c].roomId);
+          allImages.push("./sprites/Dungeon/Rooms/room".concat(roomMatrix[r][c].roomId, ".png"));
         }
       }
-    }
+    } // Adds all Base Dungeon Images to the Load List
+
 
     for (var img = 0; img < dungeonImages.length; img++) {
       allImages.push(dungeonImages[img]);
     }
 
-    for (var i = 0; i < rooms.length; i++) {
-      allImages.push("./sprites/Dungeon/Rooms/room".concat(rooms[i], ".png"));
-    }
-
-    _this.systemAH.loadImages(allImages, function () {// this.onDungeonImagesLoaded();
+    _this.systemAH.loadImages(allImages, function () {
+      _this.onDungeonImagesLoaded();
     });
   });
 
   _defineProperty(this, "onDungeonImagesLoaded", function () {
-    _this.gameAH.addCanvasObject(_this.dungeonCanvas); // this.addObject(this.dungeonCanvas);
-    // this.addObject(this.digiBeetle.digiBeetleCanvas); TODO - Figure out where to do this
+    _this.gameAH.addCanvasObject(_this.dungeonCanvas);
 
+    _this.floor.drawFloor();
+
+    _this.floor.checkCollision(); // Otherwise, if you start on an edge, you'll ignore it
+
+
+    _this.floor.setFloorToStart();
 
     _this.onLoaded();
   });
 
-  _defineProperty(this, "drawDungeon", function () {
-    for (var r = 0; r < _this.roomMatrix.length; r++) {
-      for (var c = 0; c < _this.roomMatrix[r].length; c++) {
-        var roomName = "room".concat(_this.roomMatrix[r][c].roomId);
-        var roomX = c * 16 * (8 * config.screenSize);
-        var roomY = r * 16 * (8 * config.screenSize);
-
-        _this.floorCanvas.paintImage(_this.systemAH.fetchImage(roomName), roomX, roomY);
-      }
-    } // this.drawTile(this.fetchImage('startTile'),this.start.room,this.start.tile);
-
-
-    _this.drawTile(_this.systemAH.fetchImage('endTile'), _this.end.room, _this.end.tile); // Set the Start
-
-
-    var roomXOffset = _this.start.room[1] * 16 * 8;
-    var roomYOffset = _this.start.room[0] * 16 * 8;
-    var tileXOffset = _this.start.tile[1] * 16;
-    var tileYOffset = _this.start.tile[0] * 16;
-    _this.mapX = 64 - (roomXOffset + tileXOffset);
-    _this.mapY = 64 - (roomYOffset + tileYOffset);
-    _this.floorCanvas.x = _this.mapX * config.screenSize;
-    _this.floorCanvas.y = _this.mapY * config.screenSize;
-
+  _defineProperty(this, "paintFloorCanvas", function (canvas) {
     _this.dungeonCanvas.blackFill();
 
-    _this.dungeonCanvas.paintCanvas(_this.floorCanvas); // this.triggerGameScreenRedraw();
-
+    _this.dungeonCanvas.paintCanvas(canvas);
 
     _this.gameAH.refreshScreen();
   });
 
-  _defineProperty(this, "drawTile", function (image, room, tile) {
-    var roomXOffset = room[1] * 16 * 8;
-    var roomYOffset = room[0] * 16 * 8;
-    var tileXOffset = tile[1] * 16;
-    var tileYOffset = tile[0] * 16;
-
-    _this.floorCanvas.paintImage(image, (roomXOffset + tileXOffset) * config.screenSize, (roomYOffset + tileYOffset) * config.screenSize);
-  });
-
-  _defineProperty(this, "buildRoom", function (roomId, position) {
-    var room = new Room(roomId, position);
-    return room;
-  });
-
-  _defineProperty(this, "generateEvents", function () {
-    var tempEventOrder = ['treasure', 'enemy']; // TODO - This should be generated by the game, not decided in code
-
-    for (var e = 0; e < tempEventOrder.length; e++) {
-      var spots = _this.findAllTilesByNumber(_this.roomMatrix, [5]);
-
-      for (var i = 0; i < spots.length; i++) {
-        if (tempEventOrder[e] === 'treasure') {
-          _this.generateTreasure(spots[i]);
-        }
-      }
-    }
-  });
-
-  _defineProperty(this, "generateTreasure", function (tileCoord) {
-    var room = tileCoord.room;
-    var tile = tileCoord.tile;
-    var tempTreasureRate = 80; // TODO - this should be generated by the game
-
-    if (Math.floor(Math.random() * 100) <= tempTreasureRate) {
-      // Generate Treasure
-      console.log("GENERATE TREASURE AT ", tileCoord);
-      _this.roomMatrix[room[0]][room[1]].tileMatrix[tile[0]][tile[1]] = parseFloat("103.".concat(_this.treasureList.length)); // this.treasureList.push('generatedTreasure') //TODO - Actually pick out a treasure
-
-      var rarity = _this.treasureUtility.getRarity(_this.floorNumber);
-
-      var itemType = _this.treasureUtility.getItemType();
-
-      if (itemType === 'booster') {
-        _this.treasureUtility.getBoosterItemType(rarity);
-      }
-    }
-  });
-
-  _defineProperty(this, "redrawDungeon", function () {
-    _this.dungeonCanvas.blackFill();
-
-    _this.dungeonCanvas.paintCanvas(_this.floorCanvas);
-
-    _this.gameAH.refreshScreen();
-  });
-
-  _defineProperty(this, "sendCurrentDirection", function () {
-    return _this.facing;
-  });
-
-  _defineProperty(this, "moveUp", function (upDown) {
-    _this.facing = 'up';
-    _this.moving = 'up';
-    _this.mapY++;
-    _this.floorCanvas.y = _this.mapY * config.screenSize;
-
-    if (_this.mapY % 16 === 0) {
-      // Tile Cycle
-      _this.currentTile.tile[0]--;
-
-      if (_this.moveRoomCheck('up')) {
-        _this.currentTile.room[0]--;
-        _this.currentTile.tile[0] = 7;
-      }
-
-      _this.collisionCheck();
-
-      var eventCheck = _this.checkEvent(_this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]]);
-
-      if (eventCheck === 'end') {
-        _this.goUpFloor();
-
-        return;
-      } else if (eventCheck === 'treasure') {
-        console.log("TREASURE, BABY!");
-      }
-
-      if (upDown === 'up') {
-        // If the key is lifted up, stop the movement
-        _this.moving = 'none';
-      }
-    }
-
-    _this.redrawDungeon();
-  });
-
-  _defineProperty(this, "moveRight", function (upDown) {
-    _this.facing = 'right';
-    _this.moving = 'right';
-    _this.mapX--;
-    _this.floorCanvas.x = _this.mapX * config.screenSize;
-
-    if (_this.mapX % 16 === 0) {
-      // Tile Cycle
-      _this.currentTile.tile[1]++;
-
-      if (_this.moveRoomCheck('right')) {
-        _this.currentTile.room[1]++;
-        _this.currentTile.tile[1] = 0;
-      }
-
-      _this.collisionCheck();
-
-      var eventCheck = _this.checkEvent(_this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]]);
-
-      if (eventCheck === 'end') {
-        _this.goUpFloor();
-
-        return;
-      } else if (eventCheck === 'treasure') {
-        console.log("TREASURE, BABY!");
-      }
-
-      if (upDown === 'up') {
-        // If the key is lifted up, stop the movement
-        _this.moving = 'none';
-      }
-    }
-
-    _this.redrawDungeon();
-  });
-
-  _defineProperty(this, "moveDown", function (upDown) {
-    _this.facing = 'down';
-    _this.moving = 'down';
-    _this.mapY--;
-    _this.floorCanvas.y = _this.mapY * config.screenSize;
-
-    if (_this.mapY % 16 === 0) {
-      // Tile Cycle
-      _this.currentTile.tile[0]++;
-
-      if (_this.moveRoomCheck('down')) {
-        _this.currentTile.room[0]++;
-        _this.currentTile.tile[0] = 0;
-      }
-
-      _this.collisionCheck();
-
-      var eventCheck = _this.checkEvent(_this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]]);
-
-      if (eventCheck === 'end') {
-        _this.goUpFloor();
-
-        return;
-      } else if (eventCheck === 'treasure') {
-        console.log("TREASURE, BABY!");
-      }
-
-      if (upDown === 'up') {
-        // If the key is lifted up, stop the movement
-        _this.moving = 'none';
-      }
-    }
-
-    _this.redrawDungeon();
-  });
-
-  _defineProperty(this, "moveLeft", function (upDown) {
-    _this.facing = 'left';
-    _this.moving = 'left';
-    _this.mapX++;
-    _this.floorCanvas.x = _this.mapX * config.screenSize;
-
-    if (_this.mapX % 16 === 0) {
-      // Tile Cycle
-      _this.currentTile.tile[1]--;
-
-      if (_this.moveRoomCheck('left')) {
-        _this.currentTile.room[1]--;
-        _this.currentTile.tile[1] = 7;
-      }
-
-      _this.collisionCheck();
-
-      var eventCheck = _this.checkEvent(_this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]]);
-
-      if (eventCheck === 'end') {
-        _this.goUpFloor();
-
-        return;
-      } else if (eventCheck === 'treasure') {
-        console.log("TREASURE, BABY!");
-      }
-
-      if (upDown === 'up') {
-        // If the key is lifted up, stop the movement
-        _this.moving = 'none';
-      }
-    }
-
-    _this.redrawDungeon();
-  });
-
-  _defineProperty(this, "collisionCheck", function () {
-    var room = _this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]];
-    var tile = _this.currentTile.tile; // TODO - Needed else ifs : checking room above if at the top
-
-    if (tile[0] !== 0 && room.tileMatrix[tile[0] - 1][tile[1]] === 0) {
-      _this.collision.up = true;
-    } else if (tile[0] === 0 && _this.currentTile.room[0] === 0) {
-      _this.collision.up = true;
-    } else {
-      // TODO - There needs to be lots more else if
-      _this.collision.up = false;
-    }
-
-    if (tile[1] !== 7 && room.tileMatrix[tile[0]][tile[1] + 1] === 0) {
-      _this.collision.right = true;
-    } else if (tile[1] === 7 && _this.currentTile.room[1] >= _this.roomMatrix[_this.currentTile.room[0]].length) {
-      _this.collision.right = true;
-    } else {
-      _this.collision.right = false;
-    }
-
-    if (tile[0] !== 7 && room.tileMatrix[tile[0] + 1][tile[1]] === 0) {
-      _this.collision.down = true;
-    } else if (tile[0] === 7 && _this.currentTile.room[0] >= _this.roomMatrix.length) {
-      _this.collision.down = true;
-    } else {
-      _this.collision.down = false;
-    }
-
-    if (tile[1] !== 0 && room.tileMatrix[tile[0]][tile[1] - 1] === 0) {
-      _this.collision.left = true;
-    } else if (tile[1] === 0 && _this.currentTile.room[1] === 0) {
-      _this.collision.left = true;
-    } else {
-      _this.collision.left = false;
-    }
-  });
-
-  _defineProperty(this, "moveRoomCheck", function (dir) {
-    if (dir === 'up') {
-      if (_this.currentTile.tile[0] === -1 && _this.currentTile.room[0] > 0) {
-        return true;
-      }
-    } else if (dir === 'right') {
-      if (_this.currentTile.tile[1] === 8 && _this.currentTile.room[1] < _this.roomMatrix[_this.currentTile.room[1]].length) {
-        return true;
-      }
-    } else if (dir === 'down') {
-      if (_this.currentTile.tile[0] === 8 && _this.currentTile.room[0] < _this.roomMatrix.length) {
-        return true;
-      }
-    } else if (dir === 'left') {
-      if (_this.currentTile.tile[1] === -1 && _this.currentTile.room[1] > 0) {
-        return true;
-      }
-    }
-
-    return false;
-  });
-
-  _defineProperty(this, "checkEvent", function (tileValue) {
-    var eventTrigger = '';
-
-    if (tileValue === 102) {
-      eventTrigger = 'end';
-    } else if (Math.floor(tileValue) === 103) {
-      eventTrigger = 'treasure';
-    }
-
-    return eventTrigger;
-  });
-
-  _defineProperty(this, "checkEnd", function () {
-    var currentTileValue = _this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]].tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]];
-
-    if (currentTileValue === 102) {
-      return true;
-    }
-
-    return false;
+  _defineProperty(this, "moveFloor", function (dir, upDown) {
+    _this.floor.move(dir, upDown);
   });
 
   _defineProperty(this, "goUpFloor", function () {
@@ -3201,126 +3265,61 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     console.log("LOGIC FOR GOING UP A FLOOR");
   });
 
-  _defineProperty(this, "keyTriage", function (key, upDown) {
-    if (key === 'action') {
-      _this.actionKeyHandler();
-    } else if (key === 'cancel') {
-      _this.cancelKeyHandler();
-    } else if (key === 'up') {
-      _this.upKeyHandler(upDown);
-    } else if (key === 'right') {
-      _this.rightKeyHandler(upDown);
-    } else if (key === 'down') {
-      _this.downKeyHandler(upDown);
-    } else if (key === 'left') {
-      _this.leftKeyHandler(upDown);
-    }
+  _defineProperty(this, "getCurrentDirection", function () {
+    return _this.facing;
   });
 
-  _defineProperty(this, "actionKeyHandler", function () {});
-
-  _defineProperty(this, "cancelKeyHandler", function () {
-    console.log("CURRENT TILE = ", _this.currentTile);
-    console.log("ROOM MATRIX = ", _this.roomMatrix);
+  _defineProperty(this, "setCurrentDirection", function (newValue) {
+    _this.facing = newValue;
   });
 
-  _defineProperty(this, "upKeyHandler", function (upDown) {
-    if (_this.dungeonState === 'free') {
-      if (_this.moving !== 'down' && _this.moving !== 'right' && _this.moving !== 'left') {
-        if (!_this.collision.up && (upDown === 'down' || upDown === 'up' && _this.moving === 'up')) {
-          _this.moveUp(upDown);
-        } else if (_this.collision.up && _this.moving === 'up') {
-          _this.moving = 'none';
-        } else if (_this.collision.up && upDown === 'down') {
-          _this.facing = 'up';
-        }
-      }
-    } // TODO - not just Dungeon free roam
-
+  _defineProperty(this, "getDungeonState", function () {
+    return _this.dungeonState;
   });
 
-  _defineProperty(this, "rightKeyHandler", function (upDown) {
-    if (_this.dungeonState === 'free') {
-      if (_this.moving !== 'down' && _this.moving !== 'up' && _this.moving !== 'left') {
-        if (!_this.collision.right && (upDown === 'down' || upDown === 'up' && _this.moving === 'right')) {
-          _this.moveRight(upDown);
-        } else if (_this.collision.right && _this.moving === 'right') {
-          _this.moving = 'none';
-        } else if (_this.collision.right && upDown === 'down') {
-          _this.facing = 'right';
-        }
-      }
-    } // TODO - not just Dungeon free roam
-
+  _defineProperty(this, "getMoving", function () {
+    return _this.moving;
   });
 
-  _defineProperty(this, "downKeyHandler", function (upDown) {
-    if (_this.dungeonState === 'free') {
-      if (_this.moving !== 'up' && _this.moving !== 'right' && _this.moving !== 'left') {
-        if (!_this.collision.down && (upDown === 'down' || upDown === 'up' && _this.moving === 'down')) {
-          _this.moveDown(upDown);
-        } else if (_this.collision.down && _this.moving === 'down') {
-          _this.moving = 'none';
-        } else if (_this.collision.down && upDown === 'down') {
-          _this.facing = 'down';
-        }
-      }
-    } // TODO - not just Dungeon free roam
-
+  _defineProperty(this, "setMoving", function (newValue) {
+    _this.moving = newValue;
   });
 
-  _defineProperty(this, "leftKeyHandler", function (upDown) {
-    if (_this.dungeonState === 'free') {
-      if (_this.moving !== 'down' && _this.moving !== 'up' && _this.moving !== 'right') {
-        if (!_this.collision.left && (upDown === 'down' || upDown === 'up' && _this.moving === 'left')) {
-          _this.moveLeft(upDown);
-        } else if (_this.collision.left && _this.moving === 'left') {
-          _this.moving = 'none';
-        } else if (_this.collision.left && upDown === 'down') {
-          _this.facing = 'left';
-        }
-      }
-    } // TODO - not just Dungeon free roam
-
+  _defineProperty(this, "getCollision", function () {
+    return _this.collision;
   });
 
-  this.dungeonAH = new DungeonAH(this.sendCurrentDirection);
+  _defineProperty(this, "setCollision", function (dir, value) {
+    _this.collision[dir] = value;
+  });
+
+  // ACTION HANDLERS
   this.digiBeetleAH;
   this.gameAH;
   this.systemAH; // this.battleAH;
 
-  this.floor;
+  this.dungeonAH = new DungeonAH(this.getCurrentDirection, this.setCurrentDirection, this.paintFloorCanvas, this.getDungeonState, this.getMoving, this.setMoving, this.getCollision, this.setCollision, this.moveFloor);
+  this.dungeonCanvas = new GameCanvas('dungeon-canvas', 160, 144); // Holds the Floor Canvas and is what gets painted to the screen
+
+  this.dungeonIO = new DungeonIO(this.dungeonAH); // Key Manager
+
+  this.floor; // Object for Floor
+
   this.floorNumber = isNewDungeon ? 1 : 0; // TODO - Right now, set to zero when not a new dungeon, but otherwise, needs to pull from save data
 
-  this.roomMatrix = []; // TODO - Remove and let Floor handle it
-  // CANVASES
+  this.dungeonState = 'free'; // Current State of Dungeon [free|menu|textbox]
 
-  this.dungeonCanvas = new GameCanvas('dungeon-canvas', 160, 144); // UTILITIES
+  this.facing = 'down'; // Currently Facing Direction [up | right | down | left]
 
-  this.treasureUtility = new TreasureUtility();
-  this.start = {
-    room: [0, 0],
-    tile: [0, 0]
-  };
-  this.end = {
-    room: [0, 0],
-    tile: [0, 0]
-  };
-  this.dungeonState = 'free';
-  this.moveTimer;
-  this.currentTile;
-  this.mapX = 0;
-  this.mapY = 0;
-  this.facing = 'down';
-  this.moving = 'none'; // up | right | down | left
+  this.moving = 'none'; // Currently Moving Direction [up | right | down | left]
 
   this.collision = {
+    // Lets the game know which direction has collision
     up: false,
     right: false,
     down: false,
     left: false
   };
-  this.treasureList = ["null"];
 
   this.onLoaded = function () {
     loadedCallback();
@@ -3786,7 +3785,7 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
 
     if (((_this$dungeon = _this.dungeon) === null || _this$dungeon === void 0 ? void 0 : _this$dungeon.dungeonState) === 'free') {
       // TODO - Logic that checks things like "held down" or "tapped" go here
-      _this.dungeon.keyTriage(key, upDown);
+      _this.dungeon.dungeonIO.keyTriage(key, upDown);
     }
   });
 
