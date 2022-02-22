@@ -73,6 +73,20 @@ class MapUtility{
     let coord = (dir === 'down' || dir === 'up') ? canvasY : canvasX;
     return coord % (16 * config.screenSize) === 0 || coord === 0;
   }
+
+  /**------------------------------------------------------------------------
+   * IS OPEN TILE
+   * ------------------------------------------------------------------------
+   * Checks tile to see if it's possible to overwrite it with an event
+   *  Used mostly by the enemy range / trap range selectors
+   * ------------------------------------------------------------------------
+   * @param {Number}  tileValue Value of the tile 
+   * @return True if matches an overwrite-able tile
+   * ----------------------------------------------------------------------*/
+  isOpenTile = tileValue => {
+    let possibleValues = [1]
+    return (possibleValues.indexOf(tileValue) !== -1)
+  }
 }
 
 export default MapUtility;

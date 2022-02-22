@@ -7,6 +7,8 @@ import config from '../../src/config';
 
 jest.mock('../../src/classes/action-handlers/game.ah',()=>{})
 
+const emptyFn = () => {}
+
 describe('Dungeon Floor',()=>{
 
   describe('Generating Floor',()=>{
@@ -63,6 +65,106 @@ describe('Dungeon Floor',()=>{
         expect(mockFloor.generateEnd()).toEqual({room: [0,1], tile: [1,0]});
       })
     })
+    describe('Main Events',()=>{
+      let mockFloor;
+      beforeEach(()=>{
+        mockFloor = new Floor();
+      })
+      afterEach(()=>{
+        jest.spyOn(global.Math, 'random').mockRestore();
+      })
+      describe('Enemy',()=>{
+        beforeEach(() => {
+          jest.spyOn(mockFloor,'createEncounterRange').mockImplementation(emptyFn);
+          mockFloor.roomMatrix = [[new Room(0,[0,0]),new Room(0,[0,1])]]
+          mockFloor.roomMatrix[0][0].tileMatrix = [[0,0],[0,0]];
+          mockFloor.roomMatrix[0][1].tileMatrix = [[0,0],[6,0]];
+        })
+
+        test('When enemy event is picked, should call generateEnemies',()=>{
+          let spyGenerateEnemies = jest.spyOn(mockFloor,'generateEnemies');
+          mockFloor.generateEvents(["enemy"]);
+          expect(spyGenerateEnemies).toHaveBeenCalled();
+        })
+
+        test('Each enemy spot has a 15% chance to have an enemy if nothing is modified',()=>{
+          jest.spyOn(global.Math, 'random').mockReturnValue(0.14);
+          let spyAddEncounter = jest.spyOn(mockFloor,'addEncounter');
+          mockFloor.generateEnemies();
+          expect(spyAddEncounter).toHaveBeenCalled();
+        })
+
+        test('Each enemy spot has a 85% chance to NOT have an enemy if nothing is modified',()=>{
+          jest.spyOn(global.Math, 'random').mockReturnValue(0.16);
+          let spyAddEncounter = jest.spyOn(mockFloor,'addEncounter');
+          mockFloor.generateEnemies();
+          expect(spyAddEncounter).not.toHaveBeenCalled();
+        })
+
+        test('Each enemy spot has a 30% chance to have an enemy if enemy mod is on the floor',()=>{
+          jest.spyOn(global.Math, 'random').mockReturnValue(0.29);
+          let spyAddEncounter = jest.spyOn(mockFloor,'addEncounter');
+          mockFloor.floorEventMod = 'enemy';
+          mockFloor.generateEnemies();
+          expect(spyAddEncounter).toHaveBeenCalled();
+        })
+
+        test('After adding enemy to a tile, the Tile Matrix will reflect the update',()=>{
+          expect(mockFloor.roomMatrix[0][1].tileMatrix[1][0]).toEqual(6);
+          let mockTile = {room:[0,1],tile:[1,0]}
+          mockFloor.addEncounter(mockTile,1);
+          expect(mockFloor.roomMatrix[0][1].tileMatrix[1][0]).toEqual(105.01);
+        })
+
+        test('Adding an enemy to a tile will increase the encounter list',()=>{
+          expect(mockFloor.encounters.length).toEqual(1);
+          let mockTile = {room:[0,1],tile:[1,0]}
+          mockFloor.addEncounter(mockTile,1);
+          expect(mockFloor.encounters.length).toEqual(2);
+        })
+
+        describe('Encounter Range',()=>{
+          let mockTile;
+          beforeEach(()=>{
+            jest.spyOn(mockFloor,'createEncounterRange').mockRestore();
+            mockTile = {room:[0,1],tile:[3,3]};
+            mockFloor.roomMatrix[0][1].tileMatrix = [[0,0,0,0,0,0,0],[0,1,1,1,1,1,0],[0,1,1,1,1,1,0],[0,1,1,1,1,1,0],[0,1,1,1,1,1,0],[0,1,1,1,1,1,0],[0,0,0,0,0,0,0]] // 7x7
+          });
+
+          test('Center encounter with range of 1 will produce the correct range',()=>{
+            mockFloor.roomMatrix[0][1].tileMatrix[3][3] = 105.01;
+            
+            let expectedMatrix = [[0,0,0,0,0,0,0],[0,1,1,1,1,1,0],[0,1,1,106.01,1,1,0],[0,1,106.01,105.01,106.01,1,0],[0,1,1,106.01,1,1,0],[0,1,1,1,1,1,0],[0,0,0,0,0,0,0]]
+            mockFloor.createEncounterRange(mockTile,1);
+            expect(mockFloor.roomMatrix[0][1].tileMatrix).toEqual(expectedMatrix);
+          })
+
+          test('Center encounter with range of 2 will produce the correct range',()=>{
+            mockFloor.roomMatrix[0][1].tileMatrix[3][3] = 105.01;
+            
+            let expectedMatrix = [[0,0,0,0,0,0,0],[0,1,1,106.01,1,1,0],[0,1,106.01,106.01,106.01,1,0],[0,106.01,106.01,105.01,106.01,106.01,0],[0,1,106.01,106.01,106.01,1,0],[0,1,1,106.01,1,1,0],[0,0,0,0,0,0,0]]
+            mockFloor.createEncounterRange(mockTile,1,2);
+            expect(mockFloor.roomMatrix[0][1].tileMatrix).toEqual(expectedMatrix);
+          })
+
+          test('Center encounter with range of 3 will produce the correct range',()=>{
+            mockFloor.roomMatrix[0][1].tileMatrix[3][3] = 105.01;
+            
+            let expectedMatrix = [[0,0,0,0,0,0,0],[0,1,106.01,106.01,106.01,1,0],[0,106.01,106.01,106.01,106.01,106.01,0],[0,106.01,106.01,105.01,106.01,106.01,0],[0,106.01,106.01,106.01,106.01,106.01,0],[0,1,106.01,106.01,106.01,1,0],[0,0,0,0,0,0,0]]
+            mockFloor.createEncounterRange(mockTile,1,3);
+            expect(mockFloor.roomMatrix[0][1].tileMatrix).toEqual(expectedMatrix);
+          })
+
+          test('Off center encounter with range of 2 will produce the correct range',()=>{
+            mockFloor.roomMatrix[0][1].tileMatrix[1][1] = 105.01;
+
+            let expectedMatrix = [[0,0,0,0,0,0,0],[0,105.01,106.01,106.01,1,1,0],[0,106.01,106.01,1,1,1,0],[0,106.01,1,1,1,1,0],[0,1,1,1,1,1,0],[0,1,1,1,1,1,0],[0,0,0,0,0,0,0]];
+            mockFloor.createEncounterRange({room:[0,1],tile:[1,1]},1,2);
+            expect(mockFloor.roomMatrix[0][1].tileMatrix).toEqual(expectedMatrix);
+          })
+        })
+      })
+    })
   })
 
   describe('Finding Tiles',()=>{
@@ -108,7 +210,8 @@ describe('Dungeon Floor',()=>{
     })
     test('Can set Canvas to correct starting point',()=>{
       let mockFloor = new Floor(1);
-          mockFloor.gameAH = { addCanvasObject: () => {} }
+          mockFloor.gameAH = { addCanvasObject: emptyFn }
+          mockFloor.dungeonAH = { paintFloorCanvas: emptyFn }
           // mockRoomOne.tileMatrix = [[0,0],[0,0]];
           // mockRoomTwo.tileMatrix = [[0,1],[0,0]];
           mockFloor.start = {room: [1,0], tile: [0,1]}
@@ -120,11 +223,10 @@ describe('Dungeon Floor',()=>{
 
       mockFloor.setFloorToStart();
 
-      // Start X = 0 + 16
-      let mockX = 16 * config.screenSize;
-      let mockY = 128 * config.screenSize;
+      let mockX = 48 * config.screenSize;   // 64 - ( (0 x 128) + (1 * 16) ) = 48
+      let mockY = -64 * config.screenSize;  // 64 - ( (1 x 128) + (0 * 16) ) = -64
       expect(mockFloor.floorCanvas.x).toEqual(mockX);
-      expect(mockFlow.floorCanvas.y).toEqual(mockY);
+      expect(mockFloor.floorCanvas.y).toEqual(mockY);
     })
   })
 })

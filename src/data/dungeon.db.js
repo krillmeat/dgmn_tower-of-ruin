@@ -52,12 +52,12 @@ export const dungeonRoomsDB = [
    [0,0,0,1,0,0,0,0]],
 
   [[0,0,0,0,0,0,0,0], // 5
+   [0,16,1,1,4,1,5,0],
    [0,1,1,1,1,1,1,0],
-   [0,1,1,1,1,1,1,0],
-   [0,1,1,1,1,1,3,0],
-   [0,1,1,1,1,1,1,1],
-   [0,1,1,1,1,1,1,0],
-   [0,1,1,1,1,1,1,0],
+   [0,1,1,1,1,6,1,0],
+   [0,5,1,1,1,1,10,1],
+   [0,1,1,7,1,1,1,0],
+   [0,1,8,1,1,2,1,0],
    [0,0,0,1,0,0,0,0]],
 
   [[0,0,0,0,0,0,0,0], // 6
@@ -97,16 +97,17 @@ export const dungeonRoomsDB = [
    [0,0,0,0,0,1,0,0]]
 ]
 
-export const dungeonTilesDB = [
-  { collision: 0, effect: [] }, // Null
-  { collision: 1, effect: []} , // Walkable, no event
-  { collision: 2, effect: ["start"]},
-  { collision: 2, effect: ["end"]},
-  // { collision: }
-]
+
+// TODO - Might not use
+// export const dungeonTilesDB = [
+//   { collision: 0, effect: [] }, // Null
+//   { collision: 1, effect: []} , // Walkable, no event
+//   { collision: 2, effect: ["start"]},
+//   { collision: 2, effect: ["end"]},
+//   // { collision: }
+// ]
 
 /*
-
  0: null
  1: walkable
  2: start
@@ -114,13 +115,25 @@ export const dungeonTilesDB = [
  4: start,end
  5: treasure
  6: enemy
- 7: treasure, enemy
- 8: treasure, enemy, start
- 9: treasure, enemy, start, end
-10:
+ 7: trap
+ 8: treasure, enemy
+ 9: treasure, trap
+10: trap, enemy
+11: treasure, trap, enemy
+12: treasure, enemy, start
+13: treasure, enemy, start, end
+14: treasure, trap, enemy, start
+15: treasure, trap, enemy, start, end
+16: treasure, start, end
 
+100: STORY TRIGGER - TODO: use the quest marker at the start of each floor to determine if I should put this somewhere
 101: start
 102: end
 103: treasure
-
+104: trap
+105: enemy
+106: enemyRange
+107: event X
+108: event Y
+109: event Z
 */

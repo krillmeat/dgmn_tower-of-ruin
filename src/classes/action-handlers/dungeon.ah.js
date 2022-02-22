@@ -14,7 +14,7 @@
  * I'm thinking there should be no methods. Just callbacks in the constructors
  * ----------------------------------------------------------------------*/
  class DungeonAH{
-    constructor(getCurrentDirectionCB,setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB,setCollisionCB, moveFloorCB){
+    constructor(getCurrentDirectionCB,setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB,setCollisionCB, moveFloorCB, goUpFloorCB, startBattleCB){
         this.getCurrentDirection = () => { return getCurrentDirectionCB() }
         this.setCurrentDirection = newValue => { setCurrentDirectionCB(newValue) }
         this.paintFloorCanvas = canvas => { paintFloorCanvasCB(canvas) }
@@ -24,6 +24,8 @@
         this.getCollision = () => { return getCollisionCB() }
         this.setCollision = (dir,newValue) => { setCollisionCB(dir,newValue) }
         this.moveFloor = (dir,upDown) => { moveFloorCB(dir,upDown) }
+        this.goUpFloor = () => { goUpFloorCB() }
+        this.startBattle = () => { startBattleCB() }
     }
 }
 

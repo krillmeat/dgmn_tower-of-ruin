@@ -18,14 +18,15 @@ class Dungeon{
       this.getDungeonState,
       this.getMoving,this.setMoving,
       this.getCollision,this.setCollision,
-      this.moveFloor);
+      this.moveFloor, this.goUpFloor,
+      this.startBattle);
 
     this.dungeonCanvas = new GameCanvas('dungeon-canvas',160,144);  // Holds the Floor Canvas and is what gets painted to the screen
     this.dungeonIO = new DungeonIO(this.dungeonAH);                 // Key Manager
 
     this.floor;                               // Object for Floor
     this.floorNumber = isNewDungeon ? 1 : 0;  // TODO - Right now, set to zero when not a new dungeon, but otherwise, needs to pull from save data
-    this.dungeonState = 'free';               // Current State of Dungeon [free|menu|textbox]
+    this.dungeonState = 'free';               // Current State of Dungeon [free|menu|textbox|ascending]
     this.facing = 'down';                     // Currently Facing Direction [up | right | down | left]
     this.moving = 'none';                     // Currently Moving Direction [up | right | down | left]
     this.collision = {                        // Lets the game know which direction has collision
@@ -146,8 +147,20 @@ class Dungeon{
    * TODO - Unfinished
    * ----------------------------------------------------------------------*/
   goUpFloor = () => {
+    debugLog("Ascending Floor...");
     this.moving = 'none';
-    console.log("LOGIC FOR GOING UP A FLOOR");
+    this.dungeonState = 'ascending';
+  }
+
+  /**------------------------------------------------------------------------
+   * START BATTLE                                               [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * Sets up a Battle
+   * ----------------------------------------------------------------------*/
+  startBattle = () => {
+    debugLog("Starting Battle...");
+    this.moving = 'none';
+    this.dungeonState = 'battle';
   }
 
   /**------------------------------------------------------------------------

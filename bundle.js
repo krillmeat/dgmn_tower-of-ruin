@@ -360,7 +360,7 @@ var DigiBeetleCanvas = function (_GameCanvas) {
 var genericImages = ['./sprites/Battle/Menu/miniCursor.png', './sprites/Menus/typeLabel.png', './sprites/Menus/costLabel.png', './sprites/Menus/targetLabel.png', './sprites/Menus/powerLabel.png', './sprites/Menus/hitLabel.png', './sprites/Menus/noneTypeIcon.png', './sprites/Menus/fireTypeIcon.png', './sprites/Menus/windTypeIcon.png', './sprites/Menus/plantTypeIcon.png', './sprites/Menus/elecTypeIcon.png', './sprites/Menus/evilTypeIcon.png', './sprites/Menus/metalTypeIcon.png', './sprites/Menus/targetOne.png', './sprites/Menus/targetAll.png', './sprites/Menus/pwrFIcon.png', './sprites/Menus/pwrEIcon.png', './sprites/Menus/pwrDIcon.png', './sprites/Menus/oneHitIcon.png', './sprites/Menus/costMeter100.png', './sprites/Menus/costMeter75.png', './sprites/Menus/costMeter50.png', './sprites/Menus/costMeter25.png', './sprites/Menus/costMeter0.png', './sprites/Battle/Attacks/blankAttack.png'];
 var fontImages = ['./sprites/Fonts/fontsBlack.png', './sprites/Fonts/fontsWhite.png', './sprites/Fonts/fontsLightGreen.png'];
 var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarRed.png', './sprites/Battle/Menu/dgmnBarBlue.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/dgmnBarDarkGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png', './sprites/Battle/Menu/comboLabel.png', './sprites/Battle/Menu/weak0.png', './sprites/Battle/Menu/weak1.png', './sprites/Battle/Menu/weak2.png', './sprites/Battle/Menu/weak3.png'];
-var dungeonImages = ['./sprites/Dungeon/startTile.png', './sprites/Dungeon/endTile.png'];
+var dungeonImages = ['./sprites/Dungeon/startTile.png', './sprites/Dungeon/endTile.png', './sprites/Dungeon/enemyTile.png'];
 var digiBeetleImages = ['./sprites/Dungeon/DigiBeetle/digiBeetleDown0.png', './sprites/Dungeon/DigiBeetle/digiBeetleDown1.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp0.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp1.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight0.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight1.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft0.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft1.png'];
 
 var DigiBeetle = function DigiBeetle(dungeonAH) {
@@ -1856,7 +1856,7 @@ var dungeonRoomsDB = [[[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
-[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
+[0, 16, 1, 1, 4, 1, 5, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 6, 1, 0], [0, 5, 1, 1, 1, 1, 10, 1], [0, 1, 1, 7, 1, 1, 1, 0], [0, 1, 8, 1, 1, 2, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 3, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 5, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 2, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
@@ -1905,6 +1905,10 @@ var MapUtility = function MapUtility() {
   _defineProperty(this, "isOnExactTile", function (dir, canvasX, canvasY) {
     var coord = dir === 'down' || dir === 'up' ? canvasY : canvasX;
     return coord % (16 * config.screenSize) === 0 || coord === 0;
+  });
+  _defineProperty(this, "isOpenTile", function (tileValue) {
+    var possibleValues = [1];
+    return possibleValues.indexOf(tileValue) !== -1;
   });
 };
 
@@ -1990,6 +1994,7 @@ var Floor = function Floor(_floorNumber) {
     _this.roomMatrix = _this.buildRoomMatrix(_this.number);
     _this.start = _this.generateStart();
     _this.end = _this.generateEnd();
+    _this.generateEvents();
     _this.currentTile = _this.start;
     _this.initCanvas();
   });
@@ -2013,7 +2018,7 @@ var Floor = function Floor(_floorNumber) {
       room: [],
       tile: []
     };
-    var possibleTiles = _this.findAllTilesOnFloor([2, 4, 8, 9]);
+    var possibleTiles = _this.findAllTilesOnFloor([2, 4, 12, 13, 14, 15, 16]);
     var randomChoice = Math.floor(Math.random() * possibleTiles.length);
     start.room = possibleTiles[randomChoice].room;
     start.tile = possibleTiles[randomChoice].tile;
@@ -2025,12 +2030,60 @@ var Floor = function Floor(_floorNumber) {
       room: [],
       tile: []
     };
-    var possibleTiles = _this.findAllTilesOnFloor([3]);
+    var possibleTiles = _this.findAllTilesOnFloor([3, 4, 13, 15, 16]);
     var randomChoice = Math.floor(Math.random() * possibleTiles.length);
     end.room = possibleTiles[randomChoice].room;
     end.tile = possibleTiles[randomChoice].tile;
     _this.roomMatrix[end.room[0]][end.room[1]].changeTile([end.tile[0], end.tile[1]], 102);
     return end;
+  });
+  _defineProperty(this, "generateEvents", function () {
+    var eventOrder = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : ["enemy", "trap", "treasure"];
+    for (var i = 0; i < eventOrder.length; i++) {
+      if (eventOrder[i] === 'enemy') {
+        _this.generateEnemies();
+      } else if (eventOrder[i] === 'trap') ; else if (eventOrder[i] === 'treasure') ;
+    }
+  });
+  _defineProperty(this, "generateEnemies", function () {
+    var potentialSpots = _this.findAllTilesOnFloor([6, 8, 10, 11, 12, 14, 15]);
+    var enemyChance = _this.floorEventMod === 'enemy' ? 30 : 60;
+    var encounterId = 1;
+    for (var i = 0; i < potentialSpots.length; i++) {
+      var rando = Math.floor(Math.random() * 100);
+      if (rando <= enemyChance) {
+        _this.addEncounter(potentialSpots[i], encounterId);
+        encounterId++;
+      }
+    }
+  });
+  _defineProperty(this, "addEncounter", function (tile, encounterId) {
+    var tileNumber = 105 + encounterId / 100;
+    _this.roomMatrix[tile.room[0]][tile.room[1]].changeTile([tile.tile[0], tile.tile[1]], tileNumber);
+    _this.encounters.push({
+      id: encounterId
+    });
+    _this.createEncounterRange(tile, encounterId);
+  });
+  _defineProperty(this, "createEncounterRange", function (encounterTile, encounterId) {
+    var encounterRange = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+    var tileNumber = 106 + encounterId / 100;
+    var range = encounterRange;
+    var tile = encounterTile.tile;
+    var rMin = tile[0] - range < 0 ? 0 - tile[0] : -range;
+    var rMax = range + 1;
+    var cMin = tile[1] - range < 0 ? 0 - tile[1] : -range;
+    var cMax = range + 1;
+    for (var r = rMin; r < rMax; r++) {
+      for (var c = cMin; c < cMax; c++) {
+        var delta = Math.abs(r) + Math.abs(c);
+        if (delta <= range && delta !== 0) {
+          if (_this.mapUtility.isOpenTile(_this.roomMatrix[encounterTile.room[0]][encounterTile.room[1]].tileMatrix[tile[0] + r][tile[1] + c])) {
+            _this.roomMatrix[encounterTile.room[0]][encounterTile.room[1]].changeTile([tile[0] + r, tile[1] + c], tileNumber);
+          }
+        }
+      }
+    }
   });
   _defineProperty(this, "findAllTilesOnFloor", function (tileValues) {
     var allTiles = [];
@@ -2072,6 +2125,7 @@ var Floor = function Floor(_floorNumber) {
       }
       _this.checkCollision();
       if (_this.checkCurrentTile()) {
+        _this.dungeonAH.setMoving('none');
         return;
       }
       if (upDown === 'up') {
@@ -2080,6 +2134,15 @@ var Floor = function Floor(_floorNumber) {
     }
   });
   _defineProperty(this, "checkCurrentTile", function () {
+    var room = _this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]];
+    var tile = room.tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]];
+    if (tile === 102) {
+      _this.dungeonAH.goUpFloor();
+      return true;
+    } else if (Math.floor(tile) === 105 || Math.floor(tile) === 106) {
+      console.log("ENCOUNTER!");
+      return true;
+    }
     return false;
   });
   _defineProperty(this, "checkCollision", function () {
@@ -2152,6 +2215,7 @@ var Floor = function Floor(_floorNumber) {
   });
   _defineProperty(this, "drawFloor", function () {
     _this.drawFloorBase();
+    _this.floorCanvas.drawTile(_this.systemAH.fetchImage('endTile'), _this.end.room, _this.end.tile);
     _this.dungeonAH.paintFloorCanvas(_this.floorCanvas);
     _this.gameAH.refreshScreen();
   });
@@ -2183,6 +2247,7 @@ var Floor = function Floor(_floorNumber) {
   this.mapUtility = new MapUtility();
   this.floorCanvas;
   this.roomMatrix = [];
+  this.floorEventMod = 'none';
   this.start = {
     room: [],
     tile: []
@@ -2191,6 +2256,7 @@ var Floor = function Floor(_floorNumber) {
     room: [],
     tile: []
   };
+  this.encounters = [null];
   this.currentTile = {
     room: [],
     tile: []
@@ -2198,7 +2264,7 @@ var Floor = function Floor(_floorNumber) {
 }
 ;
 
-var DungeonAH = function DungeonAH(getCurrentDirectionCB, setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB, setCollisionCB, moveFloorCB) {
+var DungeonAH = function DungeonAH(getCurrentDirectionCB, setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB, setCollisionCB, moveFloorCB, goUpFloorCB) {
   _classCallCheck(this, DungeonAH);
   this.getCurrentDirection = function () {
     return getCurrentDirectionCB();
@@ -2226,6 +2292,9 @@ var DungeonAH = function DungeonAH(getCurrentDirectionCB, setCurrentDirectionCB,
   };
   this.moveFloor = function (dir, upDown) {
     moveFloorCB(dir, upDown);
+  };
+  this.goUpFloor = function () {
+    goUpFloorCB();
   };
 };
 
@@ -2375,7 +2444,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   });
   _defineProperty(this, "goUpFloor", function () {
     _this.moving = 'none';
-    console.log("LOGIC FOR GOING UP A FLOOR");
+    _this.dungeonState = 'ascending';
   });
   _defineProperty(this, "getCurrentDirection", function () {
     return _this.facing;
@@ -2401,7 +2470,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   this.digiBeetleAH;
   this.gameAH;
   this.systemAH;
-  this.dungeonAH = new DungeonAH(this.getCurrentDirection, this.setCurrentDirection, this.paintFloorCanvas, this.getDungeonState, this.getMoving, this.setMoving, this.getCollision, this.setCollision, this.moveFloor);
+  this.dungeonAH = new DungeonAH(this.getCurrentDirection, this.setCurrentDirection, this.paintFloorCanvas, this.getDungeonState, this.getMoving, this.setMoving, this.getCollision, this.setCollision, this.moveFloor, this.goUpFloor);
   this.dungeonCanvas = new GameCanvas('dungeon-canvas', 160, 144);
   this.dungeonIO = new DungeonIO(this.dungeonAH);
   this.floor;

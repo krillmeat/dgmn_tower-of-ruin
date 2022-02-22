@@ -17,8 +17,10 @@ class Floor{
     this.floorCanvas;
 
     this.roomMatrix = [];               // Matrix of all of the Room Objects
+    this.floorEventMod = 'none';        // Changes the likelyhood of Events on a Floor
     this.start = {room: [], tile: []}   // Location of the Start of the Floor
     this.end = {room: [], tile: []}     // Location of the End of the Floor
+    this.encounters = [null];
 
     this.currentTile = {room: [], tile: []} // Current Location of the DigiBeetle
   }
@@ -43,8 +45,7 @@ class Floor{
    * Sets up the Floor Canvas
    * ----------------------------------------------------------------------*/
     initCanvas = () => { 
-      this.floorCanvas = new FloorCanvas('floor-canvas',this.roomMatrix.length*128,this.roomMatrix[0].length*128);  
-      // this.gameAH.addCanvasObject(this.floorCanvas);
+      this.floorCanvas = new FloorCanvas('floor-canvas',this.roomMatrix.length*128,this.roomMatrix[0].length*128);
     }
 
   /**------------------------------------------------------------------------
@@ -58,6 +59,8 @@ class Floor{
       this.roomMatrix = this.buildRoomMatrix(this.number);
       this.start = this.generateStart();
       this.end = this.generateEnd();
+
+      this.generateEvents();
 
       this.currentTile = this.start;
       this.initCanvas();
@@ -100,7 +103,7 @@ class Floor{
     generateStart = () => {
       let start = {room: [], tile: []}
       
-      let possibleTiles = this.findAllTilesOnFloor([2,4,8,9]);
+      let possibleTiles = this.findAllTilesOnFloor([2,4,12,13,14,15,16]);
       let randomChoice = Math.floor(Math.random() * possibleTiles.length);
 
       start.room = possibleTiles[randomChoice].room;
@@ -111,7 +114,7 @@ class Floor{
       return start;
     }
 
-    /**------------------------------------------------------------------------
+  /**------------------------------------------------------------------------
    * GENERATE END
    * ------------------------------------------------------------------------
    * Picks a tile to be the End and change the Tile on the Matrix
@@ -122,7 +125,7 @@ class Floor{
      generateEnd = () => {
       let end = {room: [], tile: []}
       
-      let possibleTiles = this.findAllTilesOnFloor([3]); // TODO - More than this
+      let possibleTiles = this.findAllTilesOnFloor([3,4,13,15,16]); // TODO - More than this
       let randomChoice = Math.floor(Math.random() * possibleTiles.length);
 
       end.room = possibleTiles[randomChoice].room;
@@ -131,6 +134,84 @@ class Floor{
       this.roomMatrix[end.room[0]][end.room[1]].changeTile([end.tile[0],end.tile[1]],102);
 
       return end;
+    }
+
+  /**------------------------------------------------------------------------
+   * GENERATE EVENTS
+   * ------------------------------------------------------------------------
+   * Goes through the rooms and determines if a tile should become an event
+   * ------------------------------------------------------------------------
+   * @param {Arrray} eventOrder Determines which is most likely to happen
+   * ----------------------------------------------------------------------*/
+  generateEvents = (eventOrder = ["enemy","trap","treasure"]) => {
+    for(let i = 0; i < eventOrder.length; i++){
+      if(eventOrder[i] === 'enemy'){ this.generateEnemies()
+      } else if(eventOrder[i] === 'trap'){ //this.generateTraps()
+      } else if(eventOrder[i] === 'treasure'){ /*this.generateTreasure()*/ }
+    }
+  }
+
+  /**------------------------------------------------------------------------
+   * GENERATE ENEMIES
+   * ------------------------------------------------------------------------
+   * Goes through the rooms and determines what should be an enemy tile.
+   *  Potential Tiles = 6,8,10,11,12,14,15
+   * ----------------------------------------------------------------------*/
+    generateEnemies = () => {
+      let potentialSpots = this.findAllTilesOnFloor([6,8,10,11,12,14,15]);
+      let enemyChance = this.floorEventMod === 'enemy' ? 30 : 60; // TODO - There's a chance that a Floor Mod will make enemies more likely
+      let encounterId = 1;
+      for(let i = 0; i < potentialSpots.length; i++){
+        let rando = Math.floor( Math.random() * 100 );
+        if(rando <= enemyChance){ 
+          this.addEncounter(potentialSpots[i],encounterId)
+          encounterId++;
+        }
+      }
+    }
+
+  /**------------------------------------------------------------------------
+   * ADD ENEMY
+   * ------------------------------------------------------------------------
+   * Changes a tile to have an Enemy Encounter.
+   * Then, it builds the range Matrix around it
+   * ----------------------------------------------------------------------*/
+    addEncounter = (tile,encounterId) => {
+      let tileNumber = 105 + (encounterId/100);
+      this.roomMatrix[tile.room[0]][tile.room[1]].changeTile([tile.tile[0],tile.tile[1]],tileNumber);
+      this.encounters.push({id:encounterId})
+      this.createEncounterRange(tile,encounterId);
+    }
+
+  /**------------------------------------------------------------------------
+   * CREATE ENCOUNTER RANGE
+   * ------------------------------------------------------------------------
+   * An encounter is not just the square the enemy is in, it is often the entire
+   * area around it
+   * ------------------------------------------------------------------------
+   * @param {Object}  encounterTile   Object with data on exact tile {room: [0,0], tile:[0,0]}
+   * @param {Number}  encounterId     Number of the encounter (more encounters, higher number)
+   * @param {Number}  encounterRange  How far out the encounter reaches from the center
+   * ----------------------------------------------------------------------*/
+    createEncounterRange = (encounterTile,encounterId,encounterRange=1) => {
+      let tileNumber = 106 + (encounterId/100);
+      let range = encounterRange; // TODO - make this a calculation based on floor/mods/blah blah
+      let tile = encounterTile.tile;
+      let rMin = tile[0] - range < 0 ? 0 - tile[0] : -range;
+      let rMax = range+1;
+      let cMin = tile[1] - range < 0 ? 0 - tile[1] : -range;
+      let cMax = range+1;
+
+      for(let r = rMin; r < rMax; r++){
+        for(let c = cMin; c < cMax; c++){
+          let delta = Math.abs(r) + Math.abs(c);
+          if(delta <= range && delta !== 0){
+            if(this.mapUtility.isOpenTile(this.roomMatrix[encounterTile.room[0]][encounterTile.room[1]].tileMatrix[tile[0]+r][tile[1]+c])){
+              this.roomMatrix[encounterTile.room[0]][encounterTile.room[1]].changeTile([tile[0]+r,tile[1]+c],tileNumber);
+            }
+          }
+        }
+      }
     }
 
   /**------------------------------------------------------------------------
@@ -185,7 +266,7 @@ class Floor{
         } else if(dir === 'left'){ this.currentTile.tile[1]-- }
         if(this.shouldMoveRoom(dir)){ this.moveIntoRoom(dir); }
         this.checkCollision();
-        if(this.checkCurrentTile()){ return }; // Stop Running if Tile Stops the movement
+        if(this.checkCurrentTile()){ this.dungeonAH.setMoving('none'); return }; // Stop Running if Tile Stops the movement
         if(upDown === 'up'){
           this.dungeonAH.setMoving('none');
         }
@@ -200,7 +281,13 @@ class Floor{
    * @returns True if event found that stops movement
    * ----------------------------------------------------------------------*/
   checkCurrentTile = () => {
-    if(1 === 2){
+    let room = this.roomMatrix[this.currentTile.room[0]][this.currentTile.room[1]];
+    let tile = room.tileMatrix[this.currentTile.tile[0]][this.currentTile.tile[1]];
+    if(tile === 102){
+      this.dungeonAH.goUpFloor();
+      return true;
+    } else if(Math.floor(tile) === 105 || Math.floor(tile) === 106){
+      this.dungeonAH.startBattle();
       return true;
     }
     return false;
@@ -304,7 +391,8 @@ class Floor{
    * ----------------------------------------------------------------------*/
     drawFloor = () => {
       this.drawFloorBase();
-      // this.drawTile(this.systemAH.fetchImage('endTile'),this.end.room,this.end.tile);
+      this.floorCanvas.drawTile(this.systemAH.fetchImage('endTile'),this.end.room,this.end.tile);
+      // TODO - Eventually, draw the event tiles that you can see
       this.dungeonAH.paintFloorCanvas(this.floorCanvas);
       this.gameAH.refreshScreen();
     }
