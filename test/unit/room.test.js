@@ -1,4 +1,4 @@
-import Room from '../../src/classes/room';
+import Room from '../../src/classes/dungeon/room';
 
 describe('Dungeon Room',()=>{
   describe('Finding Tiles',()=>{

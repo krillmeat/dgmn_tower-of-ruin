@@ -1,4 +1,4 @@
-import MapUtility from '../../src/classes/utility/map.util';
+import MapUtility from '../../src/classes/dungeon/utility/map.util';
 import config from '../../src/config';
 
 describe("Map Utilities",()=>{

@@ -1,6 +1,6 @@
-import config from "../config";
-import { attacksDB } from "../data/attacks.db";
-import { powerRanks } from "../data/ranks.db";
+import config from "../../config";
+import { attacksDB } from "../../data/attacks.db";
+import { powerRanks } from "../../data/ranks.db";
 
 class Attack{
   constructor(attackName){

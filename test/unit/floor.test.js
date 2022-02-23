@@ -1,7 +1,8 @@
 import 'jest-canvas-mock';
+import FloorCanvas from '../../src/classes/dungeon/canvas/floor-canvas';
 
 import Floor from '../../src/classes/dungeon/floor';
-import Room from '../../src/classes/room';
+import Room from '../../src/classes/dungeon/room';
 
 import config from '../../src/config';
 
@@ -202,18 +203,190 @@ describe('Dungeon Floor',()=>{
 
   })
 
+  describe('Moving',()=>{
+    let mockFloor;
+    let spyMoveInDirection, spyCheckCollision, spyCheckCurrentTile;
+    beforeEach(()=>{
+      mockFloor = new Floor(1);
+      mockFloor.floorCanvas = {x:0,y:0}
+      mockFloor.dungeonAH = { setCurrentDirection: emptyFn, setMoving: emptyFn }
+      spyMoveInDirection = jest.spyOn(mockFloor,'moveInDirection').mockImplementation(emptyFn);
+    })
+    afterEach(()=>{
+      jest.clearAllMocks();
+    })
+
+    test('If checkCurrentTile tells you to stop, should set moving to "none"',()=>{
+      mockFloor.dungeonAH.setMoving = jest.fn();
+      spyCheckCollision = jest.spyOn(mockFloor,'checkCollision').mockImplementation(emptyFn);
+      spyCheckCurrentTile = jest.spyOn(mockFloor,'checkCurrentTile').mockReturnValue(true);
+      mockFloor.move('up','down');
+      let spySetMoving = jest.spyOn(mockFloor.dungeonAH,'setMoving');
+      expect(spySetMoving).toHaveBeenCalledWith('none');
+    })
+
+    test('If key is up, it will set moving to "none"',()=>{
+      mockFloor.dungeonAH.setMoving = jest.fn();
+      spyCheckCollision = jest.spyOn(mockFloor,'checkCollision').mockImplementation(emptyFn);
+      spyCheckCurrentTile = jest.spyOn(mockFloor,'checkCurrentTile').mockImplementation(emptyFn);
+      mockFloor.move('up','up');
+      let spySetMoving = jest.spyOn(mockFloor.dungeonAH,'setMoving');
+      expect(spySetMoving).toHaveBeenCalledWith('none');
+    })
+
+    describe('Checking Tile',()=>{
+      beforeEach(()=>{
+        mockFloor.roomMatrix = [[new Room(0,[0,0]),new Room(0,[0,1])]];
+        mockFloor.roomMatrix[0][0].tileMatrix = [[0,0],[0,102],[0,103],[0,105.01],[0,106.01]];
+      })
+      test('If current tile is a 102, should call the Go Up Floor Callback',()=>{
+        mockFloor.dungeonAH.goUpFloor = jest.fn();
+        mockFloor.currentTile = {room: [0,0], tile: [1,1]};
+        let spyGoUpFloor = jest.spyOn(mockFloor.dungeonAH,'goUpFloor');
+        mockFloor.checkCurrentTile();
+        expect(spyGoUpFloor).toHaveBeenCalled();
+      })
+      test('If current tile is a 105, should initiate a Battle',()=>{
+        mockFloor.dungeonAH.startBattle = jest.fn();
+        mockFloor.currentTile = {room: [0,0], tile: [3,1]};
+        let spyStartBattle = jest.spyOn(mockFloor.dungeonAH,'startBattle');
+        mockFloor.checkCurrentTile();
+        expect(spyStartBattle).toHaveBeenCalled();
+      })
+      test('If current tile is not an event, should return false',()=>{
+        mockFloor.currentTile = {room: [0,0], tile: [0,1]};
+        expect(mockFloor.checkCurrentTile()).toBeFalsy();
+      })
+
+      describe('Moving Rooms',()=>{
+        beforeEach(()=>{
+          // mockFloor.dungeonAH.getCollision = dir => { return mockCollision[dir] }
+          // mockFloor.dungeonAH.setCollision = (dir,value) => { mockCollision[dir] = value }
+          // mockFloor.roomMatrix = [[new Room(0,[0,0])]];
+          // mockFloor.roomMatrix[0][0].tileMatrix = [[0,0,0,0,0],[0,1,1,1,0],[0,1,1,1,0],[0,1,1,1,0],[0,0,0,0,0]];
+        })
+        test('Move room up',()=>{
+          mockFloor.roomMatrix = [[new Room(0,[0,0])],[new Room(0,[1,0])]];
+          mockFloor.roomMatrix[0][0] = [];
+          mockFloor.roomMatrix[1][0] = [];
+          expect(mockFloor.shouldMoveRoom('up')).toBeTruthy();
+        });
+      })
+
+      describe('Check Collision',()=>{
+        let mockCollision = {
+          up: false, right: false, down: false, left: false
+        }
+        beforeEach(()=>{
+          mockFloor.dungeonAH.getCollision = dir => { return mockCollision[dir] }
+          mockFloor.dungeonAH.setCollision = (dir,value) => { mockCollision[dir] = value }
+          mockFloor.roomMatrix = [[new Room(0,[0,0])]];
+          mockFloor.roomMatrix[0][0].tileMatrix = [[0,0,0,0,0],[0,1,1,1,0],[0,1,1,1,0],[0,1,1,1,0],[0,0,0,0,0]];
+        })
+        test('When a spot has no collision tiles around it, all collision will be set to false',()=>{
+          mockFloor.currentTile = {room: [0,0], tile: [2,2]};
+          mockFloor.checkCollision();
+          expect(mockCollision.up).toBeFalsy();
+          expect(mockCollision.right).toBeFalsy();
+          expect(mockCollision.down).toBeFalsy();
+          expect(mockCollision.left).toBeFalsy();
+        })
+        test('When a spot has 1 collision tile above it, only up collision will be set to true',()=>{
+          mockFloor.currentTile = {room: [0,0], tile: [1,2]};
+          mockFloor.checkCollision();
+          expect(mockCollision.up).toBeTruthy();
+          expect(mockCollision.right).toBeFalsy();
+          expect(mockCollision.down).toBeFalsy();
+          expect(mockCollision.left).toBeFalsy();
+        })
+        test('When a spot has 1 collision tile to the right of it, only right collision will be set to true',()=>{
+          mockFloor.currentTile = {room: [0,0], tile: [2,3]};
+          mockFloor.checkCollision();
+          expect(mockCollision.up).toBeFalsy();
+          expect(mockCollision.right).toBeTruthy();
+          expect(mockCollision.down).toBeFalsy();
+          expect(mockCollision.left).toBeFalsy();
+        })
+        test('When a spot has 1 collision tile below it, only down collision will be set to true',()=>{
+          mockFloor.currentTile = {room: [0,0], tile: [3,2]};
+          mockFloor.checkCollision();
+          expect(mockCollision.up).toBeFalsy();
+          expect(mockCollision.right).toBeFalsy();
+          expect(mockCollision.down).toBeTruthy();
+          expect(mockCollision.left).toBeFalsy();
+        })
+        test('When a spot has 1 collision tile to the left of it, only left collision will be set to true',()=>{
+          mockFloor.currentTile = {room: [0,0], tile: [2,1]};
+          mockFloor.checkCollision();
+          expect(mockCollision.up).toBeFalsy();
+          expect(mockCollision.right).toBeFalsy();
+          expect(mockCollision.down).toBeFalsy();
+          expect(mockCollision.left).toBeTruthy();
+        })
+        test('When you are all the way up, up collision will be set to true',()=>{
+          mockFloor.currentTile = {room: [0,0], tile: [0,2]};
+          mockFloor.checkCollision();
+          expect(mockCollision.up).toBeTruthy();
+        })
+        test('When you are all the way to the right, right collision will be set to true',()=>{
+          mockFloor.roomMatrix[0][0].tileMatrix = [[0,0,0,0,0],[0,1,1,1,0],[0,1,1,1,1,1,1,0],[0,1,1,1,0],[0,0,0,0,0]];
+          mockFloor.currentTile = {room: [0,0], tile: [2,7]};
+          mockFloor.checkCollision();
+          expect(mockCollision.right).toBeTruthy();
+        })
+        test('When you are all the way down, down collision will be set to true',()=>{
+          mockFloor.roomMatrix[0][0].tileMatrix = [[0,0,0,0,0],[0,1,1,1,0],[0,1,1,1,0],[0,1,1,1,0],[0,1,1,1,0],[0,1,1,1,0],[0,1,1,1,0],[0,1,1,1,0]];
+          mockFloor.currentTile = {room: [0,0], tile: [7,2]};
+          mockFloor.checkCollision();
+          expect(mockCollision.down).toBeTruthy();
+        })
+        test('When you are all the way to the left, left collision will be set to true',()=>{
+          mockFloor.currentTile = {room: [0,0], tile: [2,0]};
+          mockFloor.checkCollision();
+          expect(mockCollision.left).toBeTruthy();
+        })
+      })
+    })
+
+    describe('Moving the map',()=>{
+      beforeEach(()=>{
+        spyCheckCollision = jest.spyOn(mockFloor,'checkCollision').mockImplementation(emptyFn);
+        spyCheckCurrentTile = jest.spyOn(mockFloor,'checkCurrentTile').mockImplementation(emptyFn);
+      });
+      test('Moving up will call the map mover in the correct direction',()=>{
+        mockFloor.roomMatrix = [[new Room(0,[0,0]),new Room(0,[0,1])]]
+        mockFloor.move('up','down');
+        expect(spyMoveInDirection).toHaveBeenCalledWith('up');
+      })
+      test('Moving right will call the map mover in the correct direction',()=>{
+        mockFloor.roomMatrix = [[new Room(0,[0,0]),new Room(0,[0,1])]]
+        mockFloor.move('right','down');
+        expect(spyMoveInDirection).toHaveBeenCalledWith('right');
+      })
+      test('Moving down will call the map mover in the correct direction',()=>{
+        mockFloor.roomMatrix = [[new Room(0,[0,0]),new Room(0,[0,1])]]
+        mockFloor.move('down','down');
+        expect(spyMoveInDirection).toHaveBeenCalledWith('down');
+      })
+      test('Moving left will call the map mover in the correct direction',()=>{
+        mockFloor.roomMatrix = [[new Room(0,[0,0]),new Room(0,[0,1])]]
+        mockFloor.move('left','down');
+        expect(spyMoveInDirection).toHaveBeenCalledWith('left');
+      })
+    })
+  })
+
   describe('Canvas Manipulation',()=>{
     let mockRoomOne, mockRoomTwo;
     beforeEach(()=>{
       mockRoomOne = new Room(0,[0,0]);
       mockRoomTwo = new Room(0, [0,1]);
     })
+
     test('Can set Canvas to correct starting point',()=>{
       let mockFloor = new Floor(1);
           mockFloor.gameAH = { addCanvasObject: emptyFn }
           mockFloor.dungeonAH = { paintFloorCanvas: emptyFn }
-          // mockRoomOne.tileMatrix = [[0,0],[0,0]];
-          // mockRoomTwo.tileMatrix = [[0,1],[0,0]];
           mockFloor.start = {room: [1,0], tile: [0,1]}
           mockFloor.roomMatrix = [[mockRoomOne],[mockRoomTwo]];
           mockFloor.initCanvas();
@@ -227,6 +400,62 @@ describe('Dungeon Floor',()=>{
       let mockY = -64 * config.screenSize;  // 64 - ( (1 x 128) + (0 * 16) ) = -64
       expect(mockFloor.floorCanvas.x).toEqual(mockX);
       expect(mockFloor.floorCanvas.y).toEqual(mockY);
+    })
+
+    test('Moving up will move the map to the new location',()=>{
+      let mockFloor = new Floor(1);
+          mockFloor.dungeonAH = { paintFloorCanvas: emptyFn }
+          mockFloor.floorCanvas = new FloorCanvas();
+          
+          expect(mockFloor.floorCanvas.x).toEqual(0);
+          expect(mockFloor.floorCanvas.y).toEqual(0);
+
+          mockFloor.moveInDirection('up');
+
+          expect(mockFloor.floorCanvas.x).toEqual(0);
+          expect(mockFloor.floorCanvas.y).toEqual(1*config.screenSize);
+    })
+
+    test('Moving right will move the map to the new location',()=>{
+      let mockFloor = new Floor(1);
+          mockFloor.dungeonAH = { paintFloorCanvas: emptyFn }
+          mockFloor.floorCanvas = new FloorCanvas();
+          
+          expect(mockFloor.floorCanvas.x).toEqual(0);
+          expect(mockFloor.floorCanvas.y).toEqual(0);
+
+          mockFloor.moveInDirection('right');
+
+          expect(mockFloor.floorCanvas.x).toEqual(-1*config.screenSize);
+          expect(mockFloor.floorCanvas.y).toEqual(0);
+    })
+
+    test('Moving down will move the map to the new location',()=>{
+      let mockFloor = new Floor(1);
+          mockFloor.dungeonAH = { paintFloorCanvas: emptyFn }
+          mockFloor.floorCanvas = new FloorCanvas();
+          
+          expect(mockFloor.floorCanvas.x).toEqual(0);
+          expect(mockFloor.floorCanvas.y).toEqual(0);
+
+          mockFloor.moveInDirection('down');
+
+          expect(mockFloor.floorCanvas.x).toEqual(0);
+          expect(mockFloor.floorCanvas.y).toEqual(-1*config.screenSize);
+    })
+
+    test('Moving left will move the map to the new location',()=>{
+      let mockFloor = new Floor(1);
+          mockFloor.dungeonAH = { paintFloorCanvas: emptyFn }
+          mockFloor.floorCanvas = new FloorCanvas();
+          
+          expect(mockFloor.floorCanvas.x).toEqual(0);
+          expect(mockFloor.floorCanvas.y).toEqual(0);
+
+          mockFloor.moveInDirection('left');
+
+          expect(mockFloor.floorCanvas.x).toEqual(1*config.screenSize);
+          expect(mockFloor.floorCanvas.y).toEqual(0);
     })
   })
 })

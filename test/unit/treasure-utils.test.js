@@ -1,4 +1,4 @@
-import TreasureUtility from '../../src/classes/utility/treasure-utility';
+import TreasureUtility from '../../src/classes/dungeon/utility/treasure.util';
 
 /**------------------------------------------------------------------------
  * TEST NOTES

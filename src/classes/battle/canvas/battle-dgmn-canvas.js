@@ -1,4 +1,4 @@
-import GameCanvas from "./canvas";
+import GameCanvas from "../../canvas";
 
 class BattleDgmnCanvas extends GameCanvas{
   constructor(dgmnName,...args){

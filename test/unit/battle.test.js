@@ -1,7 +1,7 @@
-import Battle from "../../src/classes/battle";
+import Battle from "../../src/classes/battle/battle";
 import Dgmn from "../../src/classes/dgmn";
 import 'jest-canvas-mock';
-import Attack from "../../src/classes/attack";
+import Attack from "../../src/classes/battle/attack";
 import DgmnBattleStatus from "../../src/classes/menu/dgmn-battle-status";
 
 const fakeDgmn = new Dgmn(0,'FLARE','Agu',0);

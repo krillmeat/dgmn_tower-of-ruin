@@ -1,11 +1,11 @@
-import { debugLog } from "../utils/log-utils";
+import { debugLog } from "../../utils/log-utils";
 
-import GameCanvas from "./canvas";
-import Floor from "./dungeon/floor";
-import { dungeonImages } from "../data/images.db";
+import GameCanvas from "../canvas";
+import Floor from "./floor";
+import { dungeonImages } from "../../data/images.db";
 
-import DungeonAH from "./action-handlers/dungeon.ah";
-import DungeonIO from "./input-output/dungeon.io";
+import DungeonAH from "../action-handlers/dungeon.ah";
+import DungeonIO from "../input-output/dungeon.io";
 
 class Dungeon{
   constructor(isNewDungeon,loadedCallback){

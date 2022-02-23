@@ -1,5 +1,5 @@
 import { dgmnDB } from "../data/dgmn.db";
-import BattleDgmnCanvas from "./battle-dgmn-canvas";
+import BattleDgmnCanvas from "./battle/canvas/battle-dgmn-canvas";
 
 /**
  * DIGIMON

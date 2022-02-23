@@ -1,7 +1,7 @@
 import { debugLog } from "../utils/log-utils";
 import DigiBeetle from "./digibeetle";
-import Battle from "./battle";
-import Dungeon from "./dungeon";
+import Battle from "./battle/battle";
+import Dungeon from "./dungeon/dungeon";
 import GameCanvas from "./canvas";
 
 import config from "../config";

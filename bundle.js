@@ -2047,7 +2047,7 @@ var Floor = function Floor(_floorNumber) {
   });
   _defineProperty(this, "generateEnemies", function () {
     var potentialSpots = _this.findAllTilesOnFloor([6, 8, 10, 11, 12, 14, 15]);
-    var enemyChance = _this.floorEventMod === 'enemy' ? 30 : 60;
+    var enemyChance = _this.floorEventMod === 'enemy' ? 30 : 15;
     var encounterId = 1;
     for (var i = 0; i < potentialSpots.length; i++) {
       var rando = Math.floor(Math.random() * 100);
@@ -2100,12 +2100,6 @@ var Floor = function Floor(_floorNumber) {
     }
     return allTiles;
   });
-  _defineProperty(this, "moveInDirection", function (dir) {
-    var delta = dir === 'down' || dir === 'right' ? -1 : 1;
-    var moveX = dir === 'down' || dir === 'up' ? null : _this.floorCanvas.x + delta * config.screenSize;
-    var moveY = dir === 'right' || dir === 'left' ? null : _this.floorCanvas.y + delta * config.screenSize;
-    _this.moveFloorCanvas(moveX, moveY);
-  });
   _defineProperty(this, "move", function (dir, upDown) {
     _this.dungeonAH.setCurrentDirection(dir);
     _this.dungeonAH.setMoving(dir);
@@ -2133,6 +2127,12 @@ var Floor = function Floor(_floorNumber) {
       }
     }
   });
+  _defineProperty(this, "moveInDirection", function (dir) {
+    var delta = dir === 'down' || dir === 'right' ? -1 : 1;
+    var moveX = dir === 'down' || dir === 'up' ? null : _this.floorCanvas.x + delta * config.screenSize;
+    var moveY = dir === 'right' || dir === 'left' ? null : _this.floorCanvas.y + delta * config.screenSize;
+    _this.moveFloorCanvas(moveX, moveY);
+  });
   _defineProperty(this, "checkCurrentTile", function () {
     var room = _this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]];
     var tile = room.tileMatrix[_this.currentTile.tile[0]][_this.currentTile.tile[1]];
@@ -2140,7 +2140,7 @@ var Floor = function Floor(_floorNumber) {
       _this.dungeonAH.goUpFloor();
       return true;
     } else if (Math.floor(tile) === 105 || Math.floor(tile) === 106) {
-      console.log("ENCOUNTER!");
+      _this.dungeonAH.startBattle();
       return true;
     }
     return false;
@@ -2264,7 +2264,7 @@ var Floor = function Floor(_floorNumber) {
 }
 ;
 
-var DungeonAH = function DungeonAH(getCurrentDirectionCB, setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB, setCollisionCB, moveFloorCB, goUpFloorCB) {
+var DungeonAH = function DungeonAH(getCurrentDirectionCB, setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB, setCollisionCB, moveFloorCB, goUpFloorCB, startBattleCB) {
   _classCallCheck(this, DungeonAH);
   this.getCurrentDirection = function () {
     return getCurrentDirectionCB();
@@ -2295,6 +2295,9 @@ var DungeonAH = function DungeonAH(getCurrentDirectionCB, setCurrentDirectionCB,
   };
   this.goUpFloor = function () {
     goUpFloorCB();
+  };
+  this.startBattle = function () {
+    startBattleCB();
   };
 };
 
@@ -2443,8 +2446,14 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     _this.floor.move(dir, upDown);
   });
   _defineProperty(this, "goUpFloor", function () {
+    debugLog("Ascending Floor...");
     _this.moving = 'none';
     _this.dungeonState = 'ascending';
+  });
+  _defineProperty(this, "startBattle", function () {
+    debugLog("Starting Battle...");
+    _this.moving = 'none';
+    _this.dungeonState = 'battle';
   });
   _defineProperty(this, "getCurrentDirection", function () {
     return _this.facing;
@@ -2470,7 +2479,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   this.digiBeetleAH;
   this.gameAH;
   this.systemAH;
-  this.dungeonAH = new DungeonAH(this.getCurrentDirection, this.setCurrentDirection, this.paintFloorCanvas, this.getDungeonState, this.getMoving, this.setMoving, this.getCollision, this.setCollision, this.moveFloor, this.goUpFloor);
+  this.dungeonAH = new DungeonAH(this.getCurrentDirection, this.setCurrentDirection, this.paintFloorCanvas, this.getDungeonState, this.getMoving, this.setMoving, this.getCollision, this.setCollision, this.moveFloor, this.goUpFloor, this.startBattle);
   this.dungeonCanvas = new GameCanvas('dungeon-canvas', 160, 144);
   this.dungeonIO = new DungeonIO(this.dungeonAH);
   this.floor;

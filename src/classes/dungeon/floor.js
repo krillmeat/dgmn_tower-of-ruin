@@ -1,6 +1,6 @@
-import Room from '../room';
-import MapUtility from '../utility/map.util';
-import FloorCanvas from '../canvas/floor-canvas';
+import Room from './room';
+import MapUtility from './utility/map.util';
+import FloorCanvas from './canvas/floor-canvas';
 import config from '../../config';
 
 class Floor{
@@ -159,7 +159,7 @@ class Floor{
    * ----------------------------------------------------------------------*/
     generateEnemies = () => {
       let potentialSpots = this.findAllTilesOnFloor([6,8,10,11,12,14,15]);
-      let enemyChance = this.floorEventMod === 'enemy' ? 30 : 60; // TODO - There's a chance that a Floor Mod will make enemies more likely
+      let enemyChance = this.floorEventMod === 'enemy' ? 30 : 15; // TODO - There's a chance that a Floor Mod will make enemies more likely
       let encounterId = 1;
       for(let i = 0; i < potentialSpots.length; i++){
         let rando = Math.floor( Math.random() * 100 );
@@ -239,13 +239,6 @@ class Floor{
       return allTiles;
     }
 
-    moveInDirection = dir => {
-      let delta = (dir === 'down' || dir === 'right') ? -1 : 1;
-      let moveX = (dir === 'down' || dir === 'up') ? null : this.floorCanvas.x + (delta * config.screenSize);
-      let moveY = (dir === 'right' || dir === 'left') ? null : this.floorCanvas.y + (delta * config.screenSize);
-      this.moveFloorCanvas(moveX,moveY);
-    }
-
   /**------------------------------------------------------------------------
    * MOVE
    * ------------------------------------------------------------------------
@@ -272,6 +265,20 @@ class Floor{
         }
       }
     }
+
+      /**------------------------------------------------------------------------
+       * MOVE IN DIRECTION
+       * ------------------------------------------------------------------------
+       * Handles the movement calculation for a specific direction
+       * ------------------------------------------------------------------------
+       * @param {String}  dir     Direction of movement [up | right | down | left]
+       * ----------------------------------------------------------------------*/
+        moveInDirection = dir => {
+        let delta = (dir === 'down' || dir === 'right') ? -1 : 1;
+        let moveX = (dir === 'down' || dir === 'up') ? null : this.floorCanvas.x + (delta * config.screenSize);
+        let moveY = (dir === 'right' || dir === 'left') ? null : this.floorCanvas.y + (delta * config.screenSize);
+        this.moveFloorCanvas(moveX,moveY);
+      }
 
   /**------------------------------------------------------------------------
    * CHECK CURRENT TILE
@@ -305,19 +312,19 @@ class Floor{
       
       if(tile[0] !== 0 && room.tileMatrix[tile[0]-1][tile[1]] === 0){
         this.dungeonAH.setCollision('up',true);
-      } else if(tile[0] === 0 && this.currentTile.room[0] >= this.roomMatrix.length){
+      } else if(tile[0] === 0 && this.currentTile.room[0] === 0){
         this.dungeonAH.setCollision('up',true);
       } else { this.dungeonAH.setCollision('up',false); }
       
       if(tile[1] !== 7 && room.tileMatrix[tile[0]][tile[1]+1] === 0){
         this.dungeonAH.setCollision('right',true);
-      } else if(tile[1] === 7 && this.currentTile.room[1] >= this.roomMatrix[this.currentTile.room[0]].length){
+      } else if(tile[1] === 7 && this.currentTile.room[1] >= this.roomMatrix[this.currentTile.room[0]].length-1){
         this.dungeonAH.setCollision('right',true);
       } else { this.dungeonAH.setCollision('right',false); }
 
       if(tile[0] !== 7 && room.tileMatrix[tile[0]+1][tile[1]] === 0){
         this.dungeonAH.setCollision('down',true);
-      } else if(tile[0] === 7 && this.currentTile.room[0] >= this.roomMatrix.length){
+      } else if(tile[0] === 7 && this.currentTile.room[0] >= this.roomMatrix.length-1){
         this.dungeonAH.setCollision('down',true);
       } else { this.dungeonAH.setCollision('down',false); }
 
@@ -332,6 +339,8 @@ class Floor{
    * SHOULD MOVE ROOM
    * ------------------------------------------------------------------------
    * Checks the position and sees if you should move from one room to another
+   *  TODO - Need to check that the tile in the room above allows it, I "might"
+   *         have rooms that dead end at the top (probaby not though)
    * ------------------------------------------------------------------------
    * @param {String}  dir Direction you are moving in
    * @returns True if you should move

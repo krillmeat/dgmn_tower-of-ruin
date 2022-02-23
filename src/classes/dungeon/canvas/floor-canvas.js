@@ -1,5 +1,5 @@
-import GameCanvas from "../canvas";
-import config from '../../config';
+import GameCanvas from "../../canvas";
+import config from '../../../config';
 
 class FloorCanvas extends GameCanvas{
   constructor(...args){

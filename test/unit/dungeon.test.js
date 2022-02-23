@@ -1,7 +1,7 @@
 import 'jest-canvas-mock';
 
-import Dungeon from "../../src/classes/dungeon";
-import Room from "../../src/classes/room";
+import Dungeon from "../../src/classes/dungeon/dungeon";
+import Room from "../../src/classes/dungeon/room";
 import DungeonIO from "../../src/classes/input-output/dungeon.io"
 
 jest.mock('../../src/classes/dungeon/floor',()=>{

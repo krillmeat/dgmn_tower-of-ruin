@@ -1,4 +1,4 @@
-import Attack from "../classes/attack";
+import Attack from "../classes/battle/attack";
 import Dgmn from "../classes/dgmn";
 
 export const setupMockDgmn = () => {

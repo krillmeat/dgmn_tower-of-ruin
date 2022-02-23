@@ -1,14 +1,14 @@
-import { debugLog } from "../utils/log-utils";
+import { debugLog } from "../../utils/log-utils";
 
-import BackgroundCanvas from "./background-canvas";
-import config from "../config";
-import BattleMenu from "./menu/battle-menu";
-import { battleImages } from "../data/images.db";
+import BackgroundCanvas from "../background-canvas";
+import config from "../../config";
+import BattleMenu from "../menu/battle-menu";
+import { battleImages } from "../../data/images.db";
 import Attack from "./attack";
-import { comboRanks, powerRanks } from "../data/ranks.db";
-import { attacksDB } from "../data/attacks.db";
-import GameCanvas from "./canvas";
-import { getComboLetter } from "../utils/dgmn-utils";
+import { comboRanks, powerRanks } from "../../data/ranks.db";
+import { attacksDB } from "../../data/attacks.db";
+import GameCanvas from "../canvas";
+import { getComboLetter } from "../../utils/dgmn-utils";
 
 class Battle {
   constructor(dgmnList,enemyDgmnList,loadedCallback,addObjectCallback,gameScreenRedrawCallback, loadImageCallback, fetchImageCallback){
