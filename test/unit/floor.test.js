@@ -259,18 +259,32 @@ describe('Dungeon Floor',()=>{
       })
 
       describe('Moving Rooms',()=>{
-        beforeEach(()=>{
-          // mockFloor.dungeonAH.getCollision = dir => { return mockCollision[dir] }
-          // mockFloor.dungeonAH.setCollision = (dir,value) => { mockCollision[dir] = value }
-          // mockFloor.roomMatrix = [[new Room(0,[0,0])]];
-          // mockFloor.roomMatrix[0][0].tileMatrix = [[0,0,0,0,0],[0,1,1,1,0],[0,1,1,1,0],[0,1,1,1,0],[0,0,0,0,0]];
-        })
-        test('Move room up',()=>{
-          mockFloor.roomMatrix = [[new Room(0,[0,0])],[new Room(0,[1,0])]];
-          mockFloor.roomMatrix[0][0] = [];
-          mockFloor.roomMatrix[1][0] = [];
+        // TODO - If I ever update the shouldMoveRoom function to be more advanced, will need to update this
+        test('Move room up if in the correct spot',()=>{
+          mockFloor.currentTile = {room:[1,0], tile:[-1,1]}
           expect(mockFloor.shouldMoveRoom('up')).toBeTruthy();
         });
+        test('Move room right if in the correct spot',()=>{
+          mockFloor.roomMatrix = [[new Room(0,[0,0]),new Room(0,[0,1])]];
+          mockFloor.currentTile = {room:[0,0], tile:[0,8]}
+          expect(mockFloor.shouldMoveRoom('right')).toBeTruthy();
+        });
+        test('Move room down if in the correct spot',()=>{
+          mockFloor.roomMatrix = [[new Room(0,[0,0])],[new Room(0,[0,1])]];
+          mockFloor.currentTile = {room:[0,0], tile:[8,1]}
+          expect(mockFloor.shouldMoveRoom('down')).toBeTruthy();
+        });
+        test('Move room left if in the correct spot',()=>{
+          mockFloor.currentTile = {room:[0,1], tile:[1,-1]}
+          expect(mockFloor.shouldMoveRoom('left')).toBeTruthy();
+        });
+
+        test('Moving into the room above will update the current room and tile correctly',()=>{
+          mockFloor.currentTile = {room:[1,0], tile:[0,0]}
+          mockFloor.moveIntoRoom('up');
+          expect(mockFloor.currentTile.room).toEqual([0,0]);
+          expect(mockFloor.currentTile.tile).toEqual([7,0]);
+        })
       })
 
       describe('Check Collision',()=>{
