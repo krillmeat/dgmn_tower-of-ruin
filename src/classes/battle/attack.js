@@ -1,6 +1,6 @@
-import config from "../config";
-import { attacksDB } from "../data/attacks.db";
-import { powerRanks } from "../data/ranks.db";
+import config from "../../config";
+import { attacksDB } from "../../data/attacks.db";
+import { powerRanks } from "../../data/ranks.db";
 
 class Attack{
   constructor(attackName){
@@ -31,7 +31,7 @@ class Attack{
    * @param {Number} attackerLevel  Level of the Dgmn attacking
    * ----------------------------------------------------------------------*/
   calculateDamage = (targetDefense, attackerAttack, attackerLevel) => {
-    // FORMULA: ( ( ATK / DEF ) * (LV / 2 ) ) * ( PWR / 2 )
+    // FORMULA: ( ( ATK / DEF ) * (LV / 2 ) ) * PWR
     // The reason you have /2's is because the "weight" of that variable needs to be weaker
     let atkDefDiff = attackerAttack / targetDefense;
     let preMods = Math.floor( ( atkDefDiff * ( attackerLevel / 2 ) * powerRanks[this.power] ) / this.hits );

@@ -1,10 +1,12 @@
 import { debugLog } from "../utils/log-utils";
-import Battle from "./battle";
-import Dungeon from "./dungeon";
+import DigiBeetle from "./digibeetle";
+import Battle from "./battle/battle";
+import Dungeon from "./dungeon/dungeon";
 import GameCanvas from "./canvas";
 
 import config from "../config";
 import { setupMockDgmn, setupMockEnemyDgmn } from "../debug/dgmn.mock";
+import GameAH from "./action-handlers/game.ah";
 
 // TODO - There has to be a better way to mock this stuff up...
 const mockDgmn = setupMockDgmn();
@@ -24,6 +26,10 @@ debugLog("ENEMY = ",mockEnemyDgmn);
 class Game{
   constructor(loadImageCallback,fetchImageCallback){
     debugLog('Game Created...');
+
+    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle);
+    this.systemAH;
+
     this.battle;                              // Init Battle (cleared and created by Game Logic)
     this.dungeon;
 
@@ -39,9 +45,11 @@ class Game{
 
     this.objectList = [];                    // All of the Images to be drawn on the Game Canvas
 
-    this.loadImages = (imageList,callback) => { loadImageCallback(imageList,callback) }
-    this.fetchImage = imageName => { return fetchImageCallback(imageName) }
+    // this.loadImages = (imageList,callback) => { loadImageCallback(imageList,callback) }
+    // this.fetchImage = imageName => { return fetchImageCallback(imageName) }
   }
+
+  initSystemAH = actionHandler => { this.systemAH = actionHandler }
 
   /**------------------------------------------------------------------------
    * BOOT GAME
@@ -68,17 +76,17 @@ class Game{
     if(keyState[config.keyBindings.cancel]){ this.keyManager('cancel')
     } else { this.keyTimers.cancel = 0 }
 
-    if(keyState[config.keyBindings.up]){ this.keyManager('up')
-    } else { this.keyTimers.up = 0 }
+    if(keyState[config.keyBindings.up]){ this.keyManager('up','down')
+    } else { this.keyTimers.up = 0; this.keyManager('up','up') }
     
-    if(keyState[config.keyBindings.right]){ this.keyManager('right')
-    } else { this.keyTimers.right = 0 }
+    if(keyState[config.keyBindings.right]){ this.keyManager('right','down')
+    } else { this.keyTimers.right = 0; this.keyManager('right','up') }
     
-    if(keyState[config.keyBindings.down]){ this.keyManager('down')
-    } else { this.keyTimers.down = 0 }
+    if(keyState[config.keyBindings.down]){ this.keyManager('down','down')
+    } else { this.keyTimers.down = 0; this.keyManager('down','up') }
     
-    if(keyState[config.keyBindings.left]){ this.keyManager('left')
-    } else { this.keyTimers.left = 0 }
+    if(keyState[config.keyBindings.left]){ this.keyManager('left','down')
+    } else { this.keyTimers.left = 0; this.keyManager('left','up') }
   }
 
   /**------------------------------------------------------------------------
@@ -87,18 +95,25 @@ class Game{
    * Takes the action from a key and takes the proper action, depending on
    *   current Game state
    * ------------------------------------------------------------------------
-   * @param {String} key  Not the event listener Key, but the System Action Key
+   * @param {String} key    Not the event listener Key, but the System Action Key
+   * @param {String} upDown Picking up or putting down - up|down
    * ----------------------------------------------------------------------*/
-  keyManager = key => {
+  keyManager = (key, upDown) => {
     this.keyTimers[key]++;
     // DGMN MENU
-    if(this.battle.battleActive){
+    if(this.battle?.battleActive){
         if(this.keyTimers[key] === 2){ // Prevent instant tap from taking action
           this.battle.keyTriage(key);
         }
         if((key === 'right' || key === 'left' || key === 'down' || key === 'up') && this.keyTimers[key] > 15){ // Only directions can be held to take action
           this.keyTimers[key] = 0;
         }
+    }
+
+    if(this.dungeon?.dungeonState === 'free'){
+      // TODO - Logic that checks things like "held down" or "tapped" go here
+      this.dungeon.dungeonIO.keyTriage(key,upDown);
+      
     }
   }
 
@@ -118,7 +133,23 @@ class Game{
   buildDungeon = () => {
     debugLog("Building Dungeon...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
-    this.dungeon = new Dungeon();
+
+    // CREATE EVERYTHING
+    // this.dungeon = new Dungeon(true,this.onDungeonLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
+    this.dungeon = new Dungeon(true,this.onDungeonLoad);
+    this.digiBeetle = new DigiBeetle();
+
+    // CONNECT EVERYTHING
+    this.digiBeetle.initDungeonAH(this.dungeon.dungeonAH);
+    this.digiBeetle.initGameAH(this.gameAH);
+    this.digiBeetle.initSystemAH(this.systemAH);
+    this.dungeon.initDigiBeetleAH(this.digiBeetle.digiBeetleAH);
+    this.dungeon.initGameAH(this.gameAH);
+    this.dungeon.initSystemAH(this.systemAH);
+
+    // START EVERYTHING
+    this.dungeon.init();
+    this.digiBeetle.init();
   }
 
   /**------------------------------------------------------------------------
@@ -133,6 +164,17 @@ class Game{
   }
 
   /**------------------------------------------------------------------------
+   * ON DUNGEON LOAD
+   * ------------------------------------------------------------------------
+   * Sent into the Dungeon as a Callback.
+   * Runs whenever the Dungeon returns that it has been fully loaded
+   * ----------------------------------------------------------------------*/
+  onDungeonLoad = () => {
+    console.log("Dungeon Loaded...");
+    this.drawGameScreen();
+  }
+
+  /**------------------------------------------------------------------------
    * ADD TO OBJECT LIST
    * ------------------------------------------------------------------------
    * Sent into parts of the Game as a Callback.
@@ -141,7 +183,9 @@ class Game{
    * @param {Object} newObject  New item to add to the list
    * ----------------------------------------------------------------------*/
   addToObjectList = newObject => {
-    this.objectList.push(newObject);
+    if(this.objectList.indexOf(newObject) === -1){
+      this.objectList.push(newObject);
+    }
   }
 
   /**------------------------------------------------------------------------

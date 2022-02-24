@@ -7,6 +7,8 @@ import { debugLog } from "../../utils/log-utils";
 import { attacksDB } from "../../data/attacks.db";
 import { getDgmnById, getStatNameFromIndex } from "../../utils/dgmn-utils";
 
+// TODO - I need to remove access to dgmnData here and send in what it needs
+
 class BattleMenu{
   constructor(dgmnData, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback){ // TODO - I do not want (if I can help it) ANY dgmnData in this file
     this.dgmnData = dgmnData;
@@ -78,7 +80,8 @@ class BattleMenu{
    * @param {String}  message Text to display in the top bar
    * ----------------------------------------------------------------------*/
   setTopText = message => {
-    this.topTextManager.instantPaint(this.menuCanvas,message);
+    // TODO - Clear Top Text
+    if(message) this.topTextManager.instantPaint(this.menuCanvas,message);
   }
 
   /**------------------------------------------------------------------------
@@ -468,6 +471,29 @@ class BattleMenu{
     this.topTextManager.instantPaint(this.menuCanvas,this.menus[this.currentState].icons[index].label);
 
     this.triggerGameScreenRedraw();
+  }
+
+  resetBattleMenuForNewTurn = (indexZeroDgmn) => {
+    this.menus.dgmn.currentIndex = 0;
+    this.currentState = 'dgmn';
+    this.currentDgmnActor = 0;
+    this.setTopText( this.menus.dgmn.icons[0].label );
+    this.menuCanvas.paintImage(this.fetchImage('cursor'),80 * config.screenSize,( ( 2 + (4 * (0) ) ) * (8 * config.screenSize) ) + (8 * config.screenSize));
+    this.paintBottomData( indexZeroDgmn );
+    this.paintInitialIcons('dgmn');
+  }
+
+  setDgmnWeakenedState = (statusIndex,imageName) => {
+    dgmnStatus.setWeakened(this.dgmnStatusList[statusIndex],this.fetchImage(imageName))
+  }
+
+  setDgmnComboState = (comboLetter, dgmnId) => {
+    this.dgmnStatusList[this.getStatusIndex(dgmnId)].setCombo(this.menuCanvas,comboLetter,this.fetchImage('fontsWhite'))
+  }
+
+  setDgmnKOState = dgmnId =>{
+    this.dgmnKOs[dgmnId] = true; // Lets the menus know to ignore this Dgmn
+    this.dgmnStatusList[this.getStatusIndex(dgmnId)].cleanAll();
   }
 }
 

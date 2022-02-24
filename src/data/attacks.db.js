@@ -9,7 +9,7 @@ export const attacksDB = {
     hits: 1,
     animationFrames: [['bubbles1',1],['bubbles2',4],['bubbles1',1]],
     animationFrameCount: 2,
-    effect: ['buff',1,.5,25]
+    effect: ['buff',1,1,100]
   },
   babyFlame: {
     displayName: 'Baby Flame',

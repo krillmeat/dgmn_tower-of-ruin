@@ -13,7 +13,7 @@
         "${workspaceRoot}/node_modules/jest/bin/jest",
         "--runInBand",
         "--detectOpenHandles",
-        "dungeon"
+        "floor"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

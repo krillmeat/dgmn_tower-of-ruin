@@ -1,6 +1,8 @@
 import { beforeEach, expect, test } from "@jest/globals";
 import System from "../../src/classes/system";
 
+import 'jest-canvas-mock';
+
 describe('System Class',()=>{
   beforeEach(()=>{
     document.body.innerHTML = "<div id='game-screen'></div>";
