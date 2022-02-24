@@ -14,9 +14,10 @@
  * I'm thinking there should be no methods. Just callbacks in the constructors
  * ----------------------------------------------------------------------*/
 class GameAH{
-    constructor(addToObjectListCB,drawGameScreenCB){
+    constructor(addToObjectListCB,drawGameScreenCB,startBattleCB){
         this.addCanvasObject = canvas => { addToObjectListCB(canvas) }
         this.refreshScreen = () => { drawGameScreenCB() }
+        this.startBattle = () => { startBattleCB() }
     }
 }
 

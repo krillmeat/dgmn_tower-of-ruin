@@ -159,7 +159,7 @@ class Floor{
    * ----------------------------------------------------------------------*/
     generateEnemies = () => {
       let potentialSpots = this.findAllTilesOnFloor([6,8,10,11,12,14,15]);
-      let enemyChance = this.floorEventMod === 'enemy' ? 30 : 15; // TODO - There's a chance that a Floor Mod will make enemies more likely
+      let enemyChance = this.floorEventMod === 'enemy' ? 30 : 60; // TODO - 30 : 15
       let encounterId = 1;
       for(let i = 0; i < potentialSpots.length; i++){
         let rando = Math.floor( Math.random() * 100 );
@@ -168,6 +168,8 @@ class Floor{
           encounterId++;
         }
       }
+
+      debugLog("ENCOUNTERS = ",this.encounters);
     }
 
   /**------------------------------------------------------------------------
@@ -304,6 +306,7 @@ class Floor{
    * COLLISION CHECK
    * ------------------------------------------------------------------------
    * Checks all surrounding tiles and sets the correct collision values
+   *  TODO - Potential here to move some of this to Map Utility
    * ----------------------------------------------------------------------*/
     checkCollision = () => {
       
@@ -414,7 +417,7 @@ class Floor{
    * DRAW FLOOR BASE
    * ------------------------------------------------------------------------
    * Draws the initial, unedited Room images in their respective places
-   * ----------------------------------------------------------------------*/
+   * ----------------------------------------------------------------------*/ /* istanbul ignore next */
     drawFloorBase = () => {
       for(let r = 0; r < this.roomMatrix.length; r++){
         for(let c = 0; c < this.roomMatrix[r].length; c++){

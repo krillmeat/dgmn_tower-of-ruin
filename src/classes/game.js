@@ -27,7 +27,7 @@ class Game{
   constructor(loadImageCallback,fetchImageCallback){
     debugLog('Game Created...');
 
-    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen);
+    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle);
     this.systemAH;
 
     this.battle;                              // Init Battle (cleared and created by Game Logic)

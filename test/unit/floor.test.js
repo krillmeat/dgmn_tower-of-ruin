@@ -285,6 +285,24 @@ describe('Dungeon Floor',()=>{
           expect(mockFloor.currentTile.room).toEqual([0,0]);
           expect(mockFloor.currentTile.tile).toEqual([7,0]);
         })
+        test('Moving into the room to the right will update the current room and tile correctly',()=>{
+          mockFloor.currentTile = {room:[0,0], tile:[0,7]}
+          mockFloor.moveIntoRoom('right');
+          expect(mockFloor.currentTile.room).toEqual([0,1]);
+          expect(mockFloor.currentTile.tile).toEqual([0,0]);
+        })
+        test('Moving into the room below will update the current room and tile correctly',()=>{
+          mockFloor.currentTile = {room:[0,0], tile:[7,0]}
+          mockFloor.moveIntoRoom('down');
+          expect(mockFloor.currentTile.room).toEqual([1,0]);
+          expect(mockFloor.currentTile.tile).toEqual([0,0]);
+        })
+        test('Moving into the room to the left will update the current room and tile correctly',()=>{
+          mockFloor.currentTile = {room:[0,1], tile:[0,0]}
+          mockFloor.moveIntoRoom('left');
+          expect(mockFloor.currentTile.room).toEqual([0,0]);
+          expect(mockFloor.currentTile.tile).toEqual([0,7]);
+        })
       })
 
       describe('Check Collision',()=>{

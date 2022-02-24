@@ -75,4 +75,15 @@ describe("Dungeon",()=>{
       });
     })
   })
+
+  describe("Battle Management",()=>{
+    test('Starting a Battle will change the dungeon to battle state and take away movement',()=>{
+      let mockDungeon = new Dungeon(true,emptyFn);
+          mockDungeon.moving = 'up';
+          mockDungeon.dungeonState = 'free';
+      mockDungeon.startBattle();
+      expect(mockDungeon.moving).toEqual('none');
+      expect(mockDungeon.dungeonState).toEqual('battle');
+    })
+  })
 })

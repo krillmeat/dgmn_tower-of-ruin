@@ -105,7 +105,7 @@ class Dungeon{
        * ON DUNGEON IMAGES LOADED
        * ------------------------------------------------------------------------
        * After all of the images have been loaded, runs a lot of setup
-       * ----------------------------------------------------------------------*/
+       * ----------------------------------------------------------------------*/ /* istanbul ignore next */
       onDungeonImagesLoaded = () => {
         this.gameAH.addCanvasObject(this.dungeonCanvas);
         
@@ -123,7 +123,7 @@ class Dungeon{
    *  Black Fills -> Paint New Floor -> Refresh Screen
    * ------------------------------------------------------------------------
    * @param {Canvas}  canvas  Floor Canvas to paint on the Dungeon
-   * ----------------------------------------------------------------------*/
+   * ----------------------------------------------------------------------*/ /* istanbul ignore next */
   paintFloorCanvas = canvas => {
     this.dungeonCanvas.blackFill();
     this.dungeonCanvas.paintCanvas(canvas);
@@ -161,6 +161,7 @@ class Dungeon{
     debugLog("Starting Battle...");
     this.moving = 'none';
     this.dungeonState = 'battle';
+    this.gameAH.startBattle(); // TODO - I need to send in data to help pick the encounter
   }
 
   /**------------------------------------------------------------------------

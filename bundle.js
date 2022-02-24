@@ -2047,7 +2047,7 @@ var Floor = function Floor(_floorNumber) {
   });
   _defineProperty(this, "generateEnemies", function () {
     var potentialSpots = _this.findAllTilesOnFloor([6, 8, 10, 11, 12, 14, 15]);
-    var enemyChance = _this.floorEventMod === 'enemy' ? 30 : 15;
+    var enemyChance = _this.floorEventMod === 'enemy' ? 30 : 60;
     var encounterId = 1;
     for (var i = 0; i < potentialSpots.length; i++) {
       var rando = Math.floor(Math.random() * 100);
@@ -2056,6 +2056,7 @@ var Floor = function Floor(_floorNumber) {
         encounterId++;
       }
     }
+    console.log("ENCOUNTERS = ", _this.encounters);
   });
   _defineProperty(this, "addEncounter", function (tile, encounterId) {
     var tileNumber = 105 + encounterId / 100;
@@ -2150,21 +2151,21 @@ var Floor = function Floor(_floorNumber) {
     var tile = _this.currentTile.tile;
     if (tile[0] !== 0 && room.tileMatrix[tile[0] - 1][tile[1]] === 0) {
       _this.dungeonAH.setCollision('up', true);
-    } else if (tile[0] === 0 && _this.currentTile.room[0] >= _this.roomMatrix.length) {
+    } else if (tile[0] === 0 && _this.currentTile.room[0] === 0) {
       _this.dungeonAH.setCollision('up', true);
     } else {
       _this.dungeonAH.setCollision('up', false);
     }
     if (tile[1] !== 7 && room.tileMatrix[tile[0]][tile[1] + 1] === 0) {
       _this.dungeonAH.setCollision('right', true);
-    } else if (tile[1] === 7 && _this.currentTile.room[1] >= _this.roomMatrix[_this.currentTile.room[0]].length) {
+    } else if (tile[1] === 7 && _this.currentTile.room[1] >= _this.roomMatrix[_this.currentTile.room[0]].length - 1) {
       _this.dungeonAH.setCollision('right', true);
     } else {
       _this.dungeonAH.setCollision('right', false);
     }
     if (tile[0] !== 7 && room.tileMatrix[tile[0] + 1][tile[1]] === 0) {
       _this.dungeonAH.setCollision('down', true);
-    } else if (tile[0] === 7 && _this.currentTile.room[0] >= _this.roomMatrix.length) {
+    } else if (tile[0] === 7 && _this.currentTile.room[0] >= _this.roomMatrix.length - 1) {
       _this.dungeonAH.setCollision('down', true);
     } else {
       _this.dungeonAH.setCollision('down', false);
@@ -2454,6 +2455,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     debugLog("Starting Battle...");
     _this.moving = 'none';
     _this.dungeonState = 'battle';
+    _this.gameAH.startBattle();
   });
   _defineProperty(this, "getCurrentDirection", function () {
     return _this.facing;
@@ -2735,13 +2737,16 @@ var setupMockEnemyDgmn = function setupMockEnemyDgmn() {
   return dgmnList;
 };
 
-var GameAH = function GameAH(addToObjectListCB, drawGameScreenCB) {
+var GameAH = function GameAH(addToObjectListCB, drawGameScreenCB, startBattleCB) {
   _classCallCheck(this, GameAH);
   this.addCanvasObject = function (canvas) {
     addToObjectListCB(canvas);
   };
   this.refreshScreen = function () {
     drawGameScreenCB();
+  };
+  this.startBattle = function () {
+    startBattleCB();
   };
 };
 
@@ -2854,7 +2859,7 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
     }
   });
   debugLog('Game Created...');
-  this.gameAH = new GameAH(this.addToObjectList, this.drawGameScreen);
+  this.gameAH = new GameAH(this.addToObjectList, this.drawGameScreen, this.startBattle);
   this.systemAH;
   this.battle;
   this.dungeon;
