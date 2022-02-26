@@ -1,7 +1,7 @@
 /**------------------------------------------------------------------------
- * GAME ACTION HANDLER
+* BATTLE ACTION HANDLER
  * ------------------------------------------------------------------------
- * Maintains Callbacks (actions) for the Game
+ * Maintains Callbacks (actions) for the Battle
  * ------
  * Action Handlers create an interface for lower-level Objects to act on
  * higher-level Objects
@@ -13,13 +13,10 @@
  * ------
  * I'm thinking there should be no methods. Just callbacks in the constructors
  * ----------------------------------------------------------------------*/
-class GameAH{
-    constructor(addToObjectListCB,drawGameScreenCB,startBattleCB,getDgmnPartyCB){
-        this.addCanvasObject = canvas => { addToObjectListCB(canvas) }
-        this.refreshScreen = () => { drawGameScreenCB() }
-        this.startBattle = () => { startBattleCB() }
-        this.getDgmnParty = () => { return getDgmnPartyCB() }
-    }
-}
+ class BattleAH{
+   constructor(drawBattleCanvasCB){
+    this.drawBattleCanvas = () => { drawBattleCanvasCB }
+   }
+ }
 
-export default GameAH;
+ export default BattleAH;

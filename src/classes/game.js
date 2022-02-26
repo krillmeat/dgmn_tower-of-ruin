@@ -1,4 +1,5 @@
 import { debugLog } from "../utils/log-utils";
+import YourDgmn from "./dgmn/your-dgmn";
 import DigiBeetle from "./digibeetle";
 import Battle from "./battle/battle";
 import Dungeon from "./dungeon/dungeon";
@@ -7,13 +8,15 @@ import GameCanvas from "./canvas";
 import config from "../config";
 import { setupMockDgmn, setupMockEnemyDgmn } from "../debug/dgmn.mock";
 import GameAH from "./action-handlers/game.ah";
+import Dgmn from "./dgmn/dgmn";
 
 // TODO - There has to be a better way to mock this stuff up...
-const mockDgmn = setupMockDgmn();
-const mockEnemyDgmn = setupMockEnemyDgmn();
+// const mockDgmn = setupMockDgmn();
+// const mockEnemyDgmn = setupMockEnemyDgmn();
+// const mockDgmn = ;
 
-debugLog("PARTY = ",mockDgmn);
-debugLog("ENEMY = ",mockEnemyDgmn);
+// debugLog("PARTY = ",mockDgmn);
+// debugLog("ENEMY = ",mockEnemyDgmn);
 
 /**------------------------------------------------------------------------
  * GAME
@@ -27,9 +30,11 @@ class Game{
   constructor(loadImageCallback,fetchImageCallback){
     debugLog('Game Created...');
 
-    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle);
+    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty);
     this.systemAH;
 
+    this.yourDgmn = new YourDgmn();           // All of your Dgmn (party, reserves, etc.)
+    this.yourParty = this.yourDgmn.party;     // Your current Party of Dgmn (possible to be empty)
     this.battle;                              // Init Battle (cleared and created by Game Logic)
     this.dungeon;
 
@@ -127,7 +132,10 @@ class Game{
   startBattle = () => {
     debugLog("Starting Battle...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
-    this.battle = new Battle(mockDgmn,mockEnemyDgmn,this.onBattleLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
+    // this.battle = new Battle(mockDgmn,mockEnemyDgmn,this.onBattleLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
+    this.battle = new Battle();
+    this.battle.initAH(this.systemAH,this.gameAH,()=>{},()=>{}); // The other two AH's aren't generated, because there's no dungeon/beetle yet
+    this.battle.init();
   }
 
   buildDungeon = () => {
@@ -199,6 +207,24 @@ class Game{
     for(let obj of this.objectList){
       this.gameCanvas.paintCanvas(obj);
     }
+  }
+
+  /**------------------------------------------------------------------------
+   * ------------------------------------------------------------------------
+   * GETTERS AND SETTERS                                        [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * ------------------------------------------------------------------------
+   * All of the following methods are passed into the AH, to allow other
+   * Classes to use them
+   * ------------------------------------------------------------------------
+   * ----------------------------------------------------------------------*/
+  getDgmnParty = () => {
+    /*
+      Is this an anti-pattern? I've worked hard to pass down references and not actual objects
+      Is there a clean way to avoid actually passing in a list of Objects?
+      Could I pass in a 
+    */
+    return this.yourParty;
   }
 }
 

@@ -2,6 +2,7 @@ import Room from './room';
 import MapUtility from './utility/map.util';
 import FloorCanvas from './canvas/floor-canvas';
 import config from '../../config';
+import {debugLog} from '../../utils/log-utils';
 
 class Floor{
   constructor(floorNumber){
@@ -9,6 +10,7 @@ class Floor{
 
     // ACTION HANDLERS
     this.systemAH;
+    this.gameAH;
     this.dungeonAH;
 
     // UTILITIES
