@@ -1,6 +1,11 @@
+import config from "../../config";
 import { dgmnDB } from "../../data/dgmn.db";
 // import BattleDgmnCanvas from "../battle/canvas/battle-dgmn-canvas";
 import DgmnCanvas from "./canvas/dgmn-canvas";
+
+const mockStats1 = {
+  ATK: 10, DEF: 10, INT: 10, RES: 10, HIT: 10, AVO: 10, SPD: 10
+}
 
 /**
  * DIGIMON
@@ -17,10 +22,11 @@ class Dgmn {
     this.nickname = nickname;
     this.speciesName = speciesName;
 
+    this.currentLevel = 1;
     this.currentHP = 25;
-    this.currentEnergy = 100;
+    this.currentEN = 100;
     this.currentStats = {
-      ATK: 0, DEF: 0, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 0
+      HP: 30, ATK: 0, DEF: 0, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 0
     }
 
     this.dgmnCanvas;
@@ -67,8 +73,33 @@ class Dgmn {
    * ------------------------------------------------------------------------
    * Sets up the Dgmn Canvas
    * ----------------------------------------------------------------------*/ /* istanbul ignore next */
-  initCanvas = refreshScreenCB => {
+  initCanvas = (refreshScreenCB,dgmnImageList,battlePosition) => {
     this.dgmnCanvas = new DgmnCanvas(refreshScreenCB,this.speciesName,'dgmn-canvas',32,32);
+    this.dgmnCanvas.x = (24 + (this.isEnemy ? 8 : 72) ) * config.screenSize;
+    this.dgmnCanvas.y = (16 + (battlePosition * 32) ) * config.screenSize;
+    this.dgmnCanvas.frames = dgmnImageList;
+    if(this.isEnemy){ this.dgmnCanvas.flip() }
+  }
+
+  /**------------------------------------------------------------------------
+   * START IDLE ANIMATION
+   * ------------------------------------------------------------------------
+   * Starts the Idle Animation on the DGMN Canvas
+   * ----------------------------------------------------------------------*/
+  startIdleAnimation = () => {
+    let speed = 1200 - (Math.floor(this.currentStats.SPD*2) * 33);
+    this.dgmnCanvas.animate(speed); // TODO - Based on DGMN SPD Stat
+  }
+
+  /**------------------------------------------------------------------------
+   * DRAW DGMN TO CANVAS
+   * ------------------------------------------------------------------------
+   * Draws a Specific Image to the DGMN Canvas
+   * ------------------------------------------------------------------------
+   * @param {Image} image Image Object to be drawn to the Canvas
+   * ----------------------------------------------------------------------*/
+  drawDgmnToCanvas = image => {
+    this.dgmnCanvas.paintImage(image);
   }
 
   // loadDgmn = loadData => {
@@ -101,6 +132,7 @@ class Dgmn {
   //   }
   // }
 
+  getMaxHP = () => { return this.currentStats.HP }
   getATK = () => { return this.currentStats.ATK }
 }
 

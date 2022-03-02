@@ -6,17 +6,7 @@ import Dungeon from "./dungeon/dungeon";
 import GameCanvas from "./canvas";
 
 import config from "../config";
-import { setupMockDgmn, setupMockEnemyDgmn } from "../debug/dgmn.mock";
 import GameAH from "./action-handlers/game.ah";
-import Dgmn from "./dgmn/dgmn";
-
-// TODO - There has to be a better way to mock this stuff up...
-// const mockDgmn = setupMockDgmn();
-// const mockEnemyDgmn = setupMockEnemyDgmn();
-// const mockDgmn = ;
-
-// debugLog("PARTY = ",mockDgmn);
-// debugLog("ENEMY = ",mockEnemyDgmn);
 
 /**------------------------------------------------------------------------
  * GAME
@@ -27,7 +17,7 @@ import Dgmn from "./dgmn/dgmn";
  * @param {Function} fetchImageCallback Gets an image from the System
  * ----------------------------------------------------------------------*/
 class Game{
-  constructor(loadImageCallback,fetchImageCallback){
+  constructor(){
     debugLog('Game Created...');
 
     this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty);
@@ -74,7 +64,6 @@ class Game{
    * @param {Object} keyState The true/false values for all pressed keys
    * ----------------------------------------------------------------------*/
   keyHandler = keyState => {
-
     if(keyState[config.keyBindings.action]){ this.keyManager('action')
     } else { this.keyTimers.action = 0 }
 
@@ -105,10 +94,10 @@ class Game{
    * ----------------------------------------------------------------------*/
   keyManager = (key, upDown) => {
     this.keyTimers[key]++;
-    // DGMN MENU
+
     if(this.battle?.battleActive){
-        if(this.keyTimers[key] === 2){ // Prevent instant tap from taking action
-          this.battle.keyTriage(key);
+        if(this.keyTimers[key] === 2){
+          this.battle.battleIO.keyTriage(key,upDown);
         }
         if((key === 'right' || key === 'left' || key === 'down' || key === 'up') && this.keyTimers[key] > 15){ // Only directions can be held to take action
           this.keyTimers[key] = 0;
@@ -118,7 +107,6 @@ class Game{
     if(this.dungeon?.dungeonState === 'free'){
       // TODO - Logic that checks things like "held down" or "tapped" go here
       this.dungeon.dungeonIO.keyTriage(key,upDown);
-      
     }
   }
 
@@ -138,12 +126,17 @@ class Game{
     this.battle.init();
   }
 
+  /**------------------------------------------------------------------------
+   * BUILD DUNGEON
+   * ------------------------------------------------------------------------
+   * Gathers up needed data and creates a new Dungeon
+   *   TODO - Also creates a new DigiBeetle, but this should move to on boot up
+   * ----------------------------------------------------------------------*/
   buildDungeon = () => {
     debugLog("Building Dungeon...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
 
     // CREATE EVERYTHING
-    // this.dungeon = new Dungeon(true,this.onDungeonLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
     this.dungeon = new Dungeon(true,this.onDungeonLoad);
     this.digiBeetle = new DigiBeetle();
 

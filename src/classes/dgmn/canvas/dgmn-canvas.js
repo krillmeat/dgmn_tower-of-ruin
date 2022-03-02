@@ -18,12 +18,13 @@ class DgmnCanvas extends GameCanvas{
       if(this.isIdle){
         this.clearCanvas();
         // if(counter % 4 === 0){
-          this.paintImage(this.imageStack[currentFrame]);
+          this.paintImage(this.frames[currentFrame]);
           currentFrame++;
           if(currentFrame > 1) currentFrame = 0;
         // }
       }
       counter++;
+      this.refreshScreen();
     },speed);
   }
 

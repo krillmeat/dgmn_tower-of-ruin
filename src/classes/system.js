@@ -9,6 +9,7 @@ import Controller from "./controller";
 import DebugMenu from "./debug-menu";
 import ImageHandler from "./image-handler";
 import { fontImages, genericImages } from "../data/images.db";
+import { fontImages as globalFontImages} from "../data/font.db";
 import SystemAH from "./action-handlers/system.ah";
 
 /**------------------------------------------------------------------------
@@ -40,6 +41,8 @@ class System{
     this.game = new Game(this.systemAH);
     this.game.initSystemAH(this.systemAH);
     this.subCanvases = [this.backgroundCanvas]; // TODO - this should be loaded
+
+    this.buildFontImages();
   }
 
   /**------------------------------------------------------------------------
@@ -95,6 +98,14 @@ class System{
 
   addToActionQueue = action => {
     this.actionQueue.push(action);
+  }
+
+  buildFontImages = () => {
+    for(let imgURL of fontImages){
+      let image = new Image();
+          image.src = imgURL;
+      globalFontImages.push(image);
+    }
   }
 
   /**------------------------------------------------------------------------

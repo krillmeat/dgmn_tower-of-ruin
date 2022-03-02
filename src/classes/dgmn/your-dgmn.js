@@ -1,4 +1,5 @@
 import Dgmn from "./dgmn";
+import DgmnParty from "./dgmn-party";
 
 // TODO - THIS CLASS WILL NEVER WORK LIKE THIS. IT WILL INTERACT HEAVILY WITH THE SAVE DATA TO BUILD OUT THE allDgmn OBJECT
 class YourDgmn{
@@ -9,7 +10,7 @@ class YourDgmn{
       dId1: new Dgmn(1,"SPROUT","Lala"),
       dId2: new Dgmn(2,"GEAR","Haguru")
     }
-    this.party = this.mockParty();
+    this.party = new DgmnParty(this.mockParty());
   }
 
   // FOR NOW

@@ -2,7 +2,7 @@ import { debugLog } from "../../utils/log-utils";
 
 import BackgroundCanvas from "../background-canvas";
 import config from "../../config";
-import BattleMenu from "../menu/battle-menu";
+import BattleMenu from "./battle-menu";
 import { battleImages } from "../../data/images.db";
 import Attack from "./attack";
 import { comboRanks, powerRanks } from "../../data/ranks.db";
@@ -47,12 +47,12 @@ class Battle {
    * Loads all data and then preps the menus.
    * Relies on all Battle Images being loaded
    * ----------------------------------------------------------------------*/
-  loadBattle = () => {
-    debugLog("-- Loading Battle");
+  // loadBattle = () => {
+  //   debugLog("-- Loading Battle");
 
-    // Loads images, and then calls the function that loads data
-    this.loadBattleImages(this.onBattleImagesLoaded);
-  }
+  //   // Loads images, and then calls the function that loads data
+  //   this.loadBattleImages(this.onBattleImagesLoaded);
+  // }
 
   /**------------------------------------------------------------------------
    * ON BATTLE IMAGES LOADED
@@ -87,30 +87,30 @@ class Battle {
    * ------------------------------------------------------------------------
    * @param {Function} loadedCallback Function called after everything is loaded
    * ----------------------------------------------------------------------*/
-  loadBattleImages = loadedCallback => {
-    // Get all of the Dgmn-related Images together
-    let allDgmn = this.dgmnList.concat(this.enemyDgmnList);
-    let dgmnImages = [];
-    for(let i = 0; i < allDgmn.length; i++){
-      // TODO - I need to push these to an array, and loop them, rather than declaring each
-      let urlOne = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Idle0.png`;
-      let urlTwo = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Idle1.png`;
-      let attackUrl = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Attack.png`;
-      let hurtUrl = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Hurt.png`;
-      let urlThree = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Portrait.png`;
-      if(!dgmnImages.includes(urlOne)){
-        dgmnImages.push(urlOne);
-        dgmnImages.push(urlTwo);
-        dgmnImages.push(urlThree);
-        dgmnImages.push(attackUrl);
-        dgmnImages.push(hurtUrl);
-      }
-    }
+  // loadBattleImages = loadedCallback => {
+  //   // Get all of the Dgmn-related Images together
+  //   let allDgmn = this.dgmnList.concat(this.enemyDgmnList);
+  //   let dgmnImages = [];
+  //   for(let i = 0; i < allDgmn.length; i++){
+  //     // TODO - I need to push these to an array, and loop them, rather than declaring each
+  //     let urlOne = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Idle0.png`;
+  //     let urlTwo = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Idle1.png`;
+  //     let attackUrl = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Attack.png`;
+  //     let hurtUrl = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Hurt.png`;
+  //     let urlThree = `./sprites/Battle/Dgmn/${allDgmn[i].name.toLowerCase()}Portrait.png`;
+  //     if(!dgmnImages.includes(urlOne)){
+  //       dgmnImages.push(urlOne);
+  //       dgmnImages.push(urlTwo);
+  //       dgmnImages.push(urlThree);
+  //       dgmnImages.push(attackUrl);
+  //       dgmnImages.push(hurtUrl);
+  //     }
+  //   }
 
-    let allImages = battleImages.concat(dgmnImages); // Battle Images + Dgmn Images
+  //   let allImages = battleImages.concat(dgmnImages); // Battle Images + Dgmn Images
 
-    this.loadImages(allImages, ()=>{this.setupBattleBackground(loadedCallback)});
-  }
+  //   this.loadImages(allImages, ()=>{this.setupBattleBackground(loadedCallback)});
+  // }
 
   /**------------------------------------------------------------------------
    * SETUP BATTLE BACKGROUND
@@ -118,13 +118,13 @@ class Battle {
    * This code runs after the Images are loaded in loadBattleImages
    * It references the callback from that function to wrap up all image loading
    * ----------------------------------------------------------------------*/
-  setupBattleBackground = loadedCallback => {
-    this.battleBackground.imageStack = [this.fetchImage('battleBackground')];
-    this.battleBackground.paintImage(this.battleBackground.imageStack[0]);
-    this.addObject(this.battleBackground);
+  // setupBattleBackground = loadedCallback => {
+  //   this.battleBackground.imageStack = [this.fetchImage('battleBackground')];
+  //   this.battleBackground.paintImage(this.battleBackground.imageStack[0]);
+  //   this.addObject(this.battleBackground);
 
-    loadedCallback();
-  }
+  //   loadedCallback();
+  // }
 
   /**------------------------------------------------------------------------
    * ADD DGMN TO OBJECT LIST
@@ -133,11 +133,11 @@ class Battle {
    * ------------------------------------------------------------------------
    * @param {Array} dgmnList List of Dgmn
    * ----------------------------------------------------------------------*/
-  addDgmnToObjectList = (dgmnList) => {
-    for(let i = 0; i < dgmnList.length; i++){
-      this.addObject(dgmnList[i].battleCanvas);
-    }
-  }
+  // addDgmnToObjectList = (dgmnList) => {
+  //   for(let i = 0; i < dgmnList.length; i++){
+  //     this.addObject(dgmnList[i].battleCanvas);
+  //   }
+  // }
 
   /**------------------------------------------------------------------------
    * LOAD DGMN
@@ -178,9 +178,9 @@ class Battle {
    * ------------------------------------------------------------------------
    * Builds the Encounter Enemies based off data
    * ----------------------------------------------------------------------*/
-  generateEnemies = encounterData => {
-    // new Dgmn / enemy
-  }
+  // generateEnemies = encounterData => {
+  //   // new Dgmn / enemy
+  // }
 
   /**------------------------------------------------------------------------
    * GENERATE ENEMY ATTACKS
@@ -746,13 +746,13 @@ class Battle {
    * After all of your Dgmn's selections are made, this triggers the start
    *   of the battle phase.
    * ----------------------------------------------------------------------*/
-  beginBattle = () => {
-    this.battleMenu.currentState = 'battling'
-    this.generateEnemyAttacks();
+  // beginBattle = () => {
+  //   this.battleMenu.currentState = 'battling'
+  //   this.generateEnemyAttacks();
     
-    debugLog("Running Attacks...");
-    this.loadAttacks();
-  }
+  //   debugLog("Running Attacks...");
+  //   this.loadAttacks();
+  // }
 
   /**------------------------------------------------------------------------
    * ------------------------------------------------------------------------
@@ -771,21 +771,21 @@ class Battle {
    * ------------------------------------------------------------------------
    * @param {String} key  The Key that's being pressed (NOT Event Key)
    * ----------------------------------------------------------------------*/
-  keyTriage = key => {
-    if(key === 'action'){
-      this.actionKeyHandler();
-    } else if(key === 'cancel'){
-      this.cancelKeyHandler();
-    } else if(key === 'up'){
-      this.upKeyHandler();
-    } else if(key === 'right'){
-      this.rightKeyHandler();
-    } else if(key === 'down'){
-      this.downKeyHandler();
-    } else if(key === 'left'){
-      this.leftKeyHandler();
-    }
-  }
+  // keyTriage = key => {
+  //   if(key === 'action'){
+  //     this.actionKeyHandler();
+  //   } else if(key === 'cancel'){
+  //     this.cancelKeyHandler();
+  //   } else if(key === 'up'){
+  //     this.upKeyHandler();
+  //   } else if(key === 'right'){
+  //     this.rightKeyHandler();
+  //   } else if(key === 'down'){
+  //     this.downKeyHandler();
+  //   } else if(key === 'left'){
+  //     this.leftKeyHandler();
+  //   }
+  // }
 
   actionKeyHandler = () => {
     if(this.battleMenu.currentState === 'dgmn'){

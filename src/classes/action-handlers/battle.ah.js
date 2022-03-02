@@ -14,8 +14,12 @@
  * I'm thinking there should be no methods. Just callbacks in the constructors
  * ----------------------------------------------------------------------*/
  class BattleAH{
-   constructor(drawBattleCanvasCB){
+   constructor(drawBattleCanvasCB,paintToBattleCanvasCB,getDgmnDataByIndexCB,setCurrentMenuButtonCB,getMenuChartCB){
     this.drawBattleCanvas = () => { drawBattleCanvasCB }
+    this.paintToBattleCanvas = (image,x,y) => { paintToBattleCanvasCB(image,x,y) }
+    this.getDgmnDataByIndex = (dgmnIndex,data) => { return getDgmnDataByIndexCB(dgmnIndex,data) }
+    this.setCurrentMenuButton = label => { setCurrentMenuButtonCB(label) }
+    this.getMenuChart = () => { return getMenuChartCB() }
    }
  }
 
