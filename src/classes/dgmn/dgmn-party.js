@@ -1,11 +1,14 @@
+// TODO - This whole damn thing seems flimsy
+
 class DgmnParty{
-  constructor(partyList=[],isEnemy=false){
+  constructor(dgmnAH,partyList=[],isEnemy=false){
     this.dgmnList = partyList;
+    this.dgmnAH = dgmnAH;
   }
 
   getBattleLocation = dgmnId => {
     for(let i = 0; i < this.dgmnList.length; i++){
-      if(this.dgmnList[i].dgmnId === dgmnId){
+      if(this.dgmnList[i] === dgmnId){
         return i;
       }
     }
@@ -22,13 +25,13 @@ class DgmnParty{
    * ----------------------------------------------------------------------*/
    buildDgmnCanvases = (fetchImageCB,drawBattleCanvasCB) => {
     for(let i = 0; i < this.dgmnList.length; i++){
-      let dgmn = this.dgmnList[i];
-      let battleLocation = this.getBattleLocation(dgmn.dgmnId);
+      let dgmn = this.dgmnAH.getDgmnData(this.dgmnList[i],['speciesName']);
+      let battleLocation = this.getBattleLocation(this.dgmnList[i]);
       let dgmnImageList = [fetchImageCB(`${dgmn.speciesName.toLowerCase()}Idle0`),
                            fetchImageCB(`${dgmn.speciesName.toLowerCase()}Idle1`)];
-      dgmn.initCanvas(drawBattleCanvasCB,dgmnImageList,battleLocation);
-      dgmn.drawDgmnToCanvas(fetchImageCB(`${dgmn.speciesName.toLowerCase()}Idle1`)); // Starts at Idle1 because otherwise the first "tick" of the animation is the same as the first
-      dgmn.startIdleAnimation();
+      this.dgmnAH.initDgmnCanvas(this.dgmnList[i],drawBattleCanvasCB,dgmnImageList,battleLocation);
+      this.dgmnAH.drawDgmnToCanvas(fetchImageCB(`${dgmn.speciesName.toLowerCase()}Idle1`)); // Starts at Idle1 because otherwise the first "tick" of the animation is the same as the first
+      this.dgmnAH.startDgmnIdleAnimation();
     }
   }
 

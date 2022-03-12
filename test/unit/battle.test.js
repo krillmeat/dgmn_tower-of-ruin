@@ -6,11 +6,46 @@ import Dgmn from '../../src/classes/dgmn/dgmn';
 import DgmnParty from '../../src/classes/dgmn/dgmn-party';
 
 const emptyFn = () => {}
+const expect_or = (...tests) => {
+  try {
+    tests.shift()();
+  } catch(e) {
+    if (tests.length) expect_or(...tests);
+    else throw e;
+  }
+}
 
 describe('Battle System',()=>{
   let mockBattle;
   describe("Building Battle",()=>{
 
+  })
+
+  describe("Turn Order",()=>{
+    let mockBattleUtility = new BattleUtility();
+    test('With two Dgmn',()=>{
+       let mockDgmnData = [{dgmnId: 'dId0',SPD:5},{dgmnId: 'dId1',SPD:10}]
+       let expectedData = ['dId1','dId0'];
+       expect(mockBattleUtility.calculateTurnOrder(mockDgmnData)).toEqual(expectedData);
+    })
+    test('With four Dgmn',()=>{
+      let mockDgmnData = [{dgmnId: 'dId0',SPD:5},{dgmnId: 'dId1',SPD:10},{dgmnId:'dId2',SPD:20},{dgmnId:'dId3',SPD:2}]
+      let expectedData = ['dId2','dId1','dId0','dId3'];
+      expect(mockBattleUtility.calculateTurnOrder(mockDgmnData)).toEqual(expectedData);
+   })
+   test('With six Dgmn',()=>{
+    let mockDgmnData = [{dgmnId: 'dId0',SPD:5},{dgmnId: 'dId1',SPD:10},{dgmnId:'dId2',SPD:20},{dgmnId:'dId3',SPD:2},{dgmnId:'dId4',SPD:4},{dgmnId:'dId5',SPD:22}]
+    let expectedData = ['dId5','dId2','dId1','dId0','dId4','dId3'];
+    expect(mockBattleUtility.calculateTurnOrder(mockDgmnData)).toEqual(expectedData);
+   })
+   test('With a SPD tie',()=>{
+    let mockDgmnData = [{dgmnId: 'dId0',SPD:5},{dgmnId: 'dId1',SPD:10},{dgmnId: 'dId2',SPD:10}]
+    let expectedData = ['dId2','dId1','dId0'];
+    let expectedData2 = ['dId1','dId2','dId0'];
+    expect_or(
+      () => expect(mockBattleUtility.calculateTurnOrder(mockDgmnData)).toEqual(expectedData),
+      () => expect(mockBattleUtility.calculateTurnOrder(mockDgmnData)).toEqual(expectedData2))
+   })
   })
 
   describe("Attacking",()=>{

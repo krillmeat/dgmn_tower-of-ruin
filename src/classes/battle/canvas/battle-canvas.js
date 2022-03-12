@@ -12,7 +12,7 @@ class BattleCanvas extends GameCanvas{
   }
 
   drawDgmnCanvas = dgmnCanvas => {
-    this.paintCanvas(dgmnCanvas); // TODO - Flipped?
+    this.paintCanvas(dgmnCanvas);
   }
 
   drawDgmnPortrait = dgmnPortraitImage => {

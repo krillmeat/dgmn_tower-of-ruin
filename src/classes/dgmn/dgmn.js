@@ -2,6 +2,7 @@ import config from "../../config";
 import { dgmnDB } from "../../data/dgmn.db";
 // import BattleDgmnCanvas from "../battle/canvas/battle-dgmn-canvas";
 import DgmnCanvas from "./canvas/dgmn-canvas";
+import Attack from "./attack";
 
 const mockStats1 = {
   ATK: 10, DEF: 10, INT: 10, RES: 10, HIT: 10, AVO: 10, SPD: 10
@@ -28,6 +29,8 @@ class Dgmn {
     this.currentStats = {
       HP: 30, ATK: 0, DEF: 0, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 0
     }
+    this.attackList = ["bubbles","babyFlame"];
+    this.attacks = [] // TODO - this needs to be "built"
 
     this.dgmnCanvas;
     // this.stage = dgmnDB[name].stage;
@@ -131,6 +134,8 @@ class Dgmn {
   //     this.currStats.push(finalStat);
   //   }
   // }
+
+  getAllAttacks = () => { return this.attacks }
 
   getMaxHP = () => { return this.currentStats.HP }
   getATK = () => { return this.currentStats.ATK }

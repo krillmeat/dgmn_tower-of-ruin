@@ -1,5 +1,5 @@
 import { debugLog } from "../utils/log-utils";
-import YourDgmn from "./dgmn/your-dgmn";
+import DgmnManager from "./dgmn/dgmn-manager";
 import DigiBeetle from "./digibeetle";
 import Battle from "./battle/battle";
 import Dungeon from "./dungeon/dungeon";
@@ -23,7 +23,7 @@ class Game{
     this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty);
     this.systemAH;
 
-    this.yourDgmn = new YourDgmn();           // All of your Dgmn (party, reserves, etc.)
+    this.yourDgmn = new DgmnManager();           // All of your Dgmn (party, reserves, etc.)
     this.yourParty = this.yourDgmn.party;     // Your current Party of Dgmn (possible to be empty)
     this.battle;                              // Init Battle (cleared and created by Game Logic)
     this.dungeon;
@@ -104,7 +104,7 @@ class Game{
         }
     }
 
-    if(this.dungeon?.dungeonState === 'free'){
+    if(this.dungeon?.dungeonState === 'free'){ // TODO - Probably should be a more specific check
       // TODO - Logic that checks things like "held down" or "tapped" go here
       this.dungeon.dungeonIO.keyTriage(key,upDown);
     }
@@ -122,7 +122,7 @@ class Game{
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
     // this.battle = new Battle(mockDgmn,mockEnemyDgmn,this.onBattleLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
     this.battle = new Battle();
-    this.battle.initAH(this.systemAH,this.gameAH,()=>{},()=>{}); // The other two AH's aren't generated, because there's no dungeon/beetle yet
+    this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,()=>{},()=>{}); // The other two AH's aren't generated, because there's no dungeon/beetle yet
     this.battle.init();
   }
 

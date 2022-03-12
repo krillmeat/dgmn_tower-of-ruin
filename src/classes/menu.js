@@ -5,7 +5,6 @@ import MenuUtility from "./menu/menu.util";
 class Menu{
   constructor(systemAH,gameAH,parentAH){
     this.currentState;
-    this.menuChart;
 
     this.systemAH = systemAH;
     this.gameAH = gameAH;

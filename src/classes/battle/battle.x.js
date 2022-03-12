@@ -59,25 +59,25 @@ class Battle {
    * ------------------------------------------------------------------------
    * Split out from the original so it can be tested
    * ----------------------------------------------------------------------*/
-  onBattleImagesLoaded = () => {
-    // Load Player Dgmn
-    this.loadDgmn(this.dgmnList,false);
-    this.addDgmnToObjectList(this.dgmnList,false);
+  // onBattleImagesLoaded = () => {
+  //   // Load Player Dgmn
+  //   this.loadDgmn(this.dgmnList,false);
+  //   this.addDgmnToObjectList(this.dgmnList,false);
 
-    // Load Enemy Dgmn
-    this.loadDgmn(this.enemyDgmnList,true);
-    this.addDgmnToObjectList(this.enemyDgmnList,true);
+  //   // Load Enemy Dgmn
+  //   this.loadDgmn(this.enemyDgmnList,true);
+  //   this.addDgmnToObjectList(this.enemyDgmnList,true);
 
-    // Setup Initial Battle Menu
-    this.addObject(this.battleMenu.menuCanvas);
-    this.battleMenu.buildBattleMenus();
-    this.battleMenu.fullMenuPaint();
+  //   // Setup Initial Battle Menu
+  //   this.addObject(this.battleMenu.menuCanvas);
+  //   this.battleMenu.buildBattleMenus();
+  //   this.battleMenu.fullMenuPaint();
 
-    // Load Attack Canvas
-    this.addObject(this.attackCanvas);
+  //   // Load Attack Canvas
+  //   this.addObject(this.attackCanvas);
 
-    this.onLoaded();
-  }
+  //   this.onLoaded();
+  // }
 
   /**------------------------------------------------------------------------
    * LOAD BATTLE IMAGES
@@ -147,31 +147,31 @@ class Battle {
    * @param {Array}   dgmnList List of Dgmn
    * @param {Boolean} isEnemy Whether or not the Dgmn is Party or Enemy
    * ----------------------------------------------------------------------*/
-  loadDgmn = (dgmnList,isEnemy) => {
-    for(let i = 0; i < dgmnList.length; i++){
-      let dgmn = dgmnList[i];
+  // loadDgmn = (dgmnList,isEnemy) => {
+  //   for(let i = 0; i < dgmnList.length; i++){
+  //     let dgmn = dgmnList[i];
 
-      // Set Locations of Dgmn
-      let side = isEnemy ? 'enemy' : 'party';
-      this.battleLocations[side][dgmn.battleLocation] = dgmn.dgmnId;
+  //     // Set Locations of Dgmn
+  //     let side = isEnemy ? 'enemy' : 'party';
+  //     this.battleLocations[side][dgmn.battleLocation] = dgmn.dgmnId;
 
-      let imageStack = [
-        this.fetchImage(`${dgmn.name.toLowerCase()}Idle0`),
-        this.fetchImage(`${dgmn.name.toLowerCase()}Idle1`),
-        this.fetchImage(`${dgmn.name.toLowerCase()}Attack`),
-        this.fetchImage(`${dgmn.name.toLowerCase()}Hurt`)
-      ];
+  //     let imageStack = [
+  //       this.fetchImage(`${dgmn.name.toLowerCase()}Idle0`),
+  //       this.fetchImage(`${dgmn.name.toLowerCase()}Idle1`),
+  //       this.fetchImage(`${dgmn.name.toLowerCase()}Attack`),
+  //       this.fetchImage(`${dgmn.name.toLowerCase()}Hurt`)
+  //     ];
 
-      dgmn.initBattleCanvas(this.triggerGameScreenRedraw, imageStack);
-      dgmn.battleCanvas.x = isEnemy ? 
-                            2 * (16 * config.screenSize) : 
-                            6 * (16 * config.screenSize);
-      dgmn.battleCanvas.y = (16 * config.screenSize)+( (32 * i * config.screenSize));
-      dgmn.battleCanvas.paintImage(dgmn.battleCanvas.imageStack[0],0,0,isEnemy);
-      let speed = 1200 - (Math.floor(dgmn.baseStats[7]*2) * 33);
-      dgmn.battleCanvas.animate(speed);
-    }
-  }
+  //     dgmn.initBattleCanvas(this.triggerGameScreenRedraw, imageStack);
+  //     dgmn.battleCanvas.x = isEnemy ? 
+  //                           2 * (16 * config.screenSize) : 
+  //                           6 * (16 * config.screenSize);
+  //     dgmn.battleCanvas.y = (16 * config.screenSize)+( (32 * i * config.screenSize));
+  //     dgmn.battleCanvas.paintImage(dgmn.battleCanvas.imageStack[0],0,0,isEnemy);
+  //     let speed = 1200 - (Math.floor(dgmn.baseStats[7]*2) * 33);
+  //     dgmn.battleCanvas.animate(speed);
+  //   }
+  // }
 
   /**------------------------------------------------------------------------
    * GENERATE ENEMIES
@@ -207,23 +207,23 @@ class Battle {
    * ------------------------------------------------------------------------
    * Organizes the Battle Order for Dgmn based on their Speed
    * ----------------------------------------------------------------------*/
-  setupOrder = () => {
-    let order = this.dgmnList.concat(this.enemyDgmnList);
+  // setupOrder = () => {
+  //   let order = this.dgmnList.concat(this.enemyDgmnList);
 
-    for(let i = 0; i < order.length; i++){
-      for(let r = 0; r < order.length - 1; r++){
-        let temp = order[r];
-        let currSpeed = order[r].currStats[7] * order[r].currBuffs[7];
-        let nextSpeed = order[r+1].currStats[7] * order[r+1].currBuffs[7];
-        if(currSpeed < nextSpeed){
-          order[r] = order[r+1];
-          order[r+1] = temp;
-        }
-      }
-    }
+  //   for(let i = 0; i < order.length; i++){
+  //     for(let r = 0; r < order.length - 1; r++){
+  //       let temp = order[r];
+  //       let currSpeed = order[r].currStats[7] * order[r].currBuffs[7];
+  //       let nextSpeed = order[r+1].currStats[7] * order[r+1].currBuffs[7];
+  //       if(currSpeed < nextSpeed){
+  //         order[r] = order[r+1];
+  //         order[r+1] = temp;
+  //       }
+  //     }
+  //   }
 
-    return order;
-  }
+  //   return order;
+  // }
 
   /**------------------------------------------------------------------------
    * BUILD ATTACK IMAGE LIST

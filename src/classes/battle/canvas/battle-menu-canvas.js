@@ -19,6 +19,7 @@ class BattleMenuCanvas extends GameCanvas{
   }
 
   setTopMessage = message => {
+    this.ctx.clearRect(0,8*config.screenSize, 160*config.screenSize,8*config.screenSize);
     this.topTxt.instantText(this.ctx,message,'white');
   }
 
@@ -98,8 +99,16 @@ class BattleMenuCanvas extends GameCanvas{
     }
   }
 
-  drawAttackMenu = () => {
-
+  /**------------------------------------------------------------------------
+   * PAINT CURRENT CURSOR
+   * ------------------------------------------------------------------------
+   * Draws the cursor at the correct index
+   * ------------------------------------------------------------------------
+   * @param {Number}  battleIndex Spot the Dgmn is in
+   * @param {Image}   image       Cursor Image
+   * ----------------------------------------------------------------------*/
+  paintCurrentCursor = (battleIndex,image) => {
+    this.paintImage(image,80*config.screenSize,(24+(battleIndex*16))*config.screenSize);
   }
 
   // TEXT AREA CALCS
