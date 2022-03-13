@@ -6,8 +6,9 @@ import BattleAH from "../action-handlers/battle.ah";
 import BattleUtility from "./utility/battle.util";
 import BattleIO from "../input-output/battle.io";
 import BattleCanvas from "./canvas/battle-canvas";
-import BattleMenu from "./battle-menu";
+import BattleMenu from "./menus/battle-menu";
 import AttackMenu from "../menu/attack-menu";
+import AttackManager from "./attack-manager";
 
 import DgmnParty from "../dgmn/dgmn-party";
 import BattleDgmnStatusCanvas from "./canvas/battle-dgmn-status-canvas";
@@ -17,7 +18,6 @@ class Battle {
   constructor(){ // TODO - Needs floor and mods to determine enemies
     this.battleActive = true;
     this.turn = 0;                            // Which Turn it currently is
-    this.attackActions = {};                  // The Attacks for Each DGMN for the turn TODO - Replace w/ Attack Manager
     this.yourParty;                           // Your Dgmn : TODO - gameAH Reference to fetch this
     this.enemyParty = ['edId0','edId1','edId2']; // Enemies for the Battle TODO - Should be generated
 
@@ -28,18 +28,27 @@ class Battle {
     // ACTION HANDLERS
     this.systemAH; this.gameAH; this.digiBeetleAH;
     this.dungeonAH; // TODO - We'll see if I need this, probably not
-    this.battleAH = new BattleAH(this.drawBattleCanvas,this.paintToBattleCanvas,this.getDgmnDataByIndex,this.getCurrentMenuButton,this.setCurrentMenuButton,this.getMenuChart,this.launchAttackSelect,this.getMenuState,this.setCurrentAttackMenuItem,this.selectAttack,this.launchTargetSelect,this.setCurrentAttackTarget);
+
+    this.battleAH = new BattleAH({
+      drawBattleCanvasCB: this.drawBattleCanvas,
+      paintToBattleCanvasCB: this.paintToBattleCanvas,
+      getDgmnDataByIndexCB: this.getDgmnDataByIndex,
+      selectAttackCB: this.selectAttack,
+      selectTargetCB: this.selectTarget,
+      setCurrentAttackTargetCB: this.setCurrentAttackTarget,
+      getDgmnAttackDataCB: this.getDgmnAttackData,
+      getCurrDgmnChoiceCB: this.getCurrDgmnChoice
+    });
 
     this.battleIO = new BattleIO(this.battleAH);  // Key Manager
     this.battleUtility = new BattleUtility();
     this.dgmnUtility = new DgmnUtility();
 
-    // this.attackManager = new AttackManager(); // TODO - I want this to handle the Attacking Process as much as possible
+    this.attackManager = new AttackManager();
 
     this.battleCanvas;
     this.dgmnStatusCanvas;
     this.battleMenu;
-    this.attackMenu;
   }
 
   /**------------------------------------------------------------------------
@@ -52,6 +61,7 @@ class Battle {
     debugLog("Building New Battle...");
 
     this.battleMenu = new BattleMenu(this.systemAH,this.gameAH,this.battleAH);
+    this.battleIO.setMenuAH(this.battleMenu.battleMenuAH);
 
     this.yourParty = this.gameAH.getDgmnParty();
     this.generateEnemyParty(); // TODO - Mocked for now, needs actual params for calculations
@@ -111,18 +121,41 @@ class Battle {
        * ON BATTLE IMAGES LOADED
        * ------------------------------------------------------------------------
        * After all of the images have been loaded, runs a lot of setup
+       * TODO - The battleMenu.init needs to be split up so that it's reusable
        * ----------------------------------------------------------------------*/ /* istanbul ignore next */
       onBattleImagesLoaded = () => {
         this.dgmnStatusCanvas = new BattleDgmnStatusCanvas('battle-dgmn-status',160,144);
         this.gameAH.addCanvasObject(this.battleCanvas);
-        // this.yourParty.buildDgmnCanvases(this.systemAH.fetchImage,this.drawBattleCanvas);
-        // this.enemyParty.buildDgmnCanvases(this.systemAH.fetchImage,this.drawBattleCanvas);
         this.buildDgmnCanvases();
         this.battleMenu.init();
-        this.drawAllStatuses();
+        this.drawAllStatuses(); // TODO - Move to BattleMenu
         this.drawBattleCanvas();
         this.gameAH.refreshScreen();
       }
+
+  /**------------------------------------------------------------------------
+   * INITIALIZE DGMN CHOICE
+   * ------------------------------------------------------------------------
+   * Sets up everything for a certain Dgmn's "Choice".
+   *  Choice refers to when it's their turn to choose an Action
+   * ----------------------------------------------------------------------*/
+  initDgmnChoice = () => {
+    this.battleMenu.setCurrentDgmn(this.currDgmnChoice);
+  }
+
+  /**------------------------------------------------------------------------
+   * GOTO NEXT CHOICE
+   * ------------------------------------------------------------------------
+   * Sets things up for the next Dgmn to choose their Action
+   * ----------------------------------------------------------------------*/
+  gotoNextChoice = () => {
+    this.currDgmnChoice++;
+    if(this.currDgmnChoice >= 3){
+      console.log("BEGIN ACTIONS");
+    } else{
+      this.initDgmnChoice();
+    }
+  }
 
   /**------------------------------------------------------------------------
    * GENERATE ENEMY PARTY
@@ -201,8 +234,6 @@ class Battle {
 
     this.battleCanvas.paintCanvas(this.battleMenu.menuCanvas);
 
-    if(this.attackMenu) this.battleCanvas.paintCanvas(this.attackMenu.menuCanvas)
-
     this.gameAH.refreshScreen();
   }
 
@@ -232,12 +263,12 @@ class Battle {
    * ------------------------------------------------------------------------
    * Creates the Attack Select Menu
    * ----------------------------------------------------------------------*/ /* istanbul ignore next */
-  launchAttackSelect = () => {
-    this.menuState = 'attack-list';
-    this.attackMenu = new AttackMenu(2,this.systemAH,this.gameAH,this.battleAH);
-    this.attackMenu.init(this.dgmnAH.getDgmnAttackData(this.yourParty[this.currDgmnChoice],['displayName','currCost','maxCost','type','power','hits','targets']));
-    this.battleMenu.menuChart.level = 'attack-select';
-  }
+  // launchAttackSelect = () => {
+  //   this.menuState = 'attack-list';
+  //   this.attackMenu = new AttackMenu(2,this.systemAH,this.gameAH,this.battleAH);
+  //   this.attackMenu.init(this.dgmnAH.getDgmnAttackData(this.yourParty[this.currDgmnChoice],['displayName','currCost','maxCost','type','power','hits','targets']));
+  //   this.battleMenu.menuChart.level = 'attack-select';
+  // }
 
   /**------------------------------------------------------------------------
    * LAUNCH TARGET SELECT                                       [[EXPORTED ]]
@@ -293,15 +324,19 @@ class Battle {
     return this.dgmnAH.getDgmnData(this.yourParty[dgmnIndex],data);
   }
 
-  getCurrentAttackMenuIndex = () => { return this.attackMenu.currentIndex }
-  setCurrentAttackMenuItem = dir => { this.attackMenu.setMenuItem(dir) }
-  setCurrentMenuButton = label => { this.battleMenu.setCurrentButton(label) }
-  getCurrentMenuButton = () => { return this.battleMenu.getCurrentMenuButton() }
-  getCurrentDgmnChoice = () => { return this.currDgmnChoice }
-  getCurrentDgmnAttacks = () => {  return this.getDgmnDataByIndex(0,'attacks') } // TODO - Dgmn AH needs to exist to get this kind of data
-  getMenuChart = () => { return this.battleMenu.menuChart }
-  getMenuState = () => { return this.menuState }
+  getDgmnAttackData = (dgmnIndex,data) => { return this.dgmnAH.getDgmnAttackData(this.yourParty[dgmnIndex],data) }
+
+  getCurrDgmnChoice = () => { return this.currDgmnChoice }
+ 
   selectAttack = () => { this.attackMenu.selectAttack() }
+  selectTarget = () => { 
+    this.attackManager.addAction(); 
+    this.gotoNextChoice();
+  }
+
+  menuInput = dir => {
+    console.log("MENU INPUT = ",dir);
+  }
 
 }
 

@@ -19,3 +19,8 @@ export const debugLog = (message,object) => {
   if(inDebug())
     object ? console.log(`%c${message}`,'color:#A6E22E',object) : console.log(`%c${message}`,'color:#A6E22E');
 }
+
+export const warningLog = (message,object) => {
+  if(inDebug())
+    object ? console.log(`%c${message}`,'color:#E6DB74',object) : console.log(`%c${message}`,'color:#E6DB74');
+}

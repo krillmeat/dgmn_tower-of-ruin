@@ -15,7 +15,7 @@ class BattleMenuCanvas extends GameCanvas{
     this.dgmnSpeciesNameTxt = new TextArea(4,15,16);
     this.dgmnHPTxt = new TextArea(4,16,4,1, (char,wholeString,index) => { return this.dgmnHPENTxtColorize(char,wholeString,index) });
     this.dgmnENTxt = new TextArea(4,17,4,1, (char,wholeString,index) => { return this.dgmnHPENTxtColorize(char,wholeString,index) });
-    this.dgmnLVTxt = new TextArea(16,14,4,1, (char,wholeString,index) => { return this.dgmnHPENTxtColorize(char,wholeString,index) })
+    this.dgmnLVTxt = new TextArea(16,14,4,1, (char,wholeString,index) => { return this.dgmnHPENTxtColorize(char,wholeString,index) });
   }
 
   setTopMessage = message => {
@@ -108,7 +108,19 @@ class BattleMenuCanvas extends GameCanvas{
    * @param {Image}   image       Cursor Image
    * ----------------------------------------------------------------------*/
   paintCurrentCursor = (battleIndex,image) => {
-    this.paintImage(image,80*config.screenSize,(24+(battleIndex*16))*config.screenSize);
+    this.paintImage(image,80*config.screenSize,(24+(battleIndex*32))*config.screenSize);
+  }
+
+  clearCurrentCursors = isEnemy => {
+    let xOffset = !isEnemy ? 72 : 56;
+    this.ctx.clearRect(xOffset*config.screenSize,16*config.screenSize,
+      24*config.screenSize,96 * config.screenSize);
+  }
+
+  setCurrentTargetCursor = (battleIndex,image) => {
+    this.clearCurrentCursors(true);
+    this.paintImage(image,
+    64*config.screenSize, ((battleIndex * 32) + 24)*config.screenSize);
   }
 
   // TEXT AREA CALCS

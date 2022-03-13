@@ -5,23 +5,17 @@ class BattleIO extends IO{
   constructor(battleAH,...args){
     super(...args);
     this.battleAH = battleAH;
+    this.battleMenuAH;
     this.menuUtility = new MenuUtility();
   }
 
+  setMenuAH = ah => {
+    this.battleMenuAH = ah;
+  }
+
   actionKeyHandler = upDown => {
-    let currAction;
-    if(this.battleAH.getMenuState() === 'battle'){
-      currAction = this.battleAH.getCurrentMenuButton()
-      if(currAction === 'attack'){ this.battleAH.launchAttackSelect();
-      } else if(currAction === 'defend'){
-        // TODO - Add Defend Event to Attack Actions
-      } else if(currAction === 'stats'){
-        // TODO - Launch Stats Menu
-      } else if(currAction === 'back'){
-        // TODO - Move up a level on the Menu
-      }
-    } else if(this.battleAH.getMenuState() === 'attack-list'){
-      this.battleAH.selectAttack();
+    if(this.battleMenuAH.getCurrMenuType() === 'icon'){
+      this.battleMenuAH.selectIcon();
     }
   }
 
@@ -33,13 +27,23 @@ class BattleIO extends IO{
 
   rightKeyHandler = upDown => {
     if(upDown === 'down'){
-      this.triageMenuMove('right',this.battleAH.getMenuState(),this.battleAH.getMenuChart());
+      if(this.battleMenuAH.getCurrMenuType() === 'icon'){
+        this.battleMenuAH.nextIcon();
+      }      
     }
   }
 
   downKeyHandler = upDown => {
     if(upDown === 'down'){
       this.triageMenuMove('down',this.battleAH.getMenuState(),this.battleAH.getMenuChart());
+    }
+  }
+
+  leftKeyHandler = upDown => {
+    if(upDown === 'down'){
+      if(this.battleMenuAH.getCurrMenuType() === 'icon'){
+        this.battleMenuAH.prevIcon();
+      }
     }
   }
 
