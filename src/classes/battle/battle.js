@@ -34,10 +34,11 @@ class Battle {
       paintToBattleCanvasCB: this.paintToBattleCanvas,
       getDgmnDataByIndexCB: this.getDgmnDataByIndex,
       selectAttackCB: this.selectAttack,
-      selectTargetCB: this.selectTarget,
+      addActionCB: this.addAction,
       setCurrentAttackTargetCB: this.setCurrentAttackTarget,
       getDgmnAttackDataCB: this.getDgmnAttackData,
-      getCurrDgmnChoiceCB: this.getCurrDgmnChoice
+      getCurrDgmnChoiceCB: this.getCurrDgmnChoice,
+      beginCombatCB: this.beginCombat
     });
 
     this.battleIO = new BattleIO(this.battleAH);  // Key Manager
@@ -274,6 +275,7 @@ class Battle {
    * LAUNCH TARGET SELECT                                       [[EXPORTED ]]
    * ------------------------------------------------------------------------
    * After choosing your attack, launches the selector for Attack target
+   * TODO - Move this into the Menus
    * ----------------------------------------------------------------------*/ /* istanbul ignore next */
    launchTargetSelect = attackData => {
      console.log("Launch Target Select for ",attackData.displayName);
@@ -328,10 +330,16 @@ class Battle {
 
   getCurrDgmnChoice = () => { return this.currDgmnChoice }
  
-  selectAttack = () => { this.attackMenu.selectAttack() }
-  selectTarget = () => { 
-    this.attackManager.addAction(); 
-    this.gotoNextChoice();
+  selectAttack = () => { this.attackMenu.selectAttack() } // TODO - Likely don't need
+
+
+  addAction = (dgmnIndex,attackName) => {
+    this.attackManager.addAction(this.yourParty[dgmnIndex],attackName); 
+  }
+
+  beginCombat = () => {
+    debugLog("+ Begin Combat...");
+    debugLog("++ Action List = ",this.attackManager.attackActions)
   }
 
   menuInput = dir => {

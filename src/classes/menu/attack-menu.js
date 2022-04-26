@@ -7,85 +7,18 @@ class AttackMenu extends ListMenu{
   constructor(fetchImageCB,...args){
     super(...args);
     this.fetchImage = imgName => fetchImageCB(imgName);
-//     this.battleAH = this.parentAH;
-
-//     this.listSpaces = []
-//   }
-
-//   // TODO - Right now, I'm sending in the entire attack, and then making a shortened object from that
-//   //        I SHOULD be making a request to Attack to create that Data
-//   init = (allAttacks) => {
-//     this.menuCanvas = new ListMenuCanvas('attack-menu-canvas',160,144);
-//     this.menuCanvas.paintImage(this.fetchImage("battleOptionSelectBaseRight"),0,0);
-//     this.buildAttackList(allAttacks);
-//     this.drawAttackList();
-//     this.battleAH.drawBattleCanvas() // TODO - I think I have t owatch this, because ATK Menu should be able to run on Dgmn Stats Menu
   }
-
-  /**------------------------------------------------------------------------
-   * BUILD ATTACK LIST
-   * ------------------------------------------------------------------------
-   * Builds the Attack list with Objects with the needed data
-   * ----------------------------------------------------------------------*/
-  // buildList = () => {
-
-  // }
-
-//   /**------------------------------------------------------------------------
-//    * BUILD ATTACK LIST
-//    * ------------------------------------------------------------------------
-//    * Builds the Attack list with Objects with the needed data
-//    * ------------------------------------------------------------------------
-//    * @param {Array} allAttacks List of Attack Data
-//    * ----------------------------------------------------------------------*/
-//   buildAttackList = allAttacks => {
-
-//     let spacesLength = allAttacks.length < 7 ? allAttacks.length : 6;
-
-//     // Loop through and create the Elements needed for your list
-//     for(let i = 0; i < spacesLength; i++){
-//       this.listSpaces.push({
-//         textArea: new TextArea(5,2+(i*2),8,1),
-//         attackName: allAttacks[i].attackName,
-//         displayName: allAttacks[i].displayName,
-//         currCost: allAttacks[i].currCost,
-//         maxCost: allAttacks[i].maxCost,
-//         type: allAttacks[i].type,
-//         power: allAttacks[i].power,
-//         targets: allAttacks[i].targets,
-//         hits: allAttacks[i].hits
-//       })
-//     }
-//   }
-
-//   setMenuItem = dir => {
-//     this.repaintCanvas();
-//     if(dir === 'next'){
-//       if(this.currentIndex + 1 < this.listSpaces.length){
-//         this.currentIndex++;
-//       }
-//     } else if(dir === 'prev'){
-//       if(this.currentIndex - 1 >= 0){
-//         this.currentIndex--;
-//       }
-//     }
-
-//     this.repaintCanvas();
-//   }
-
-//   selectAttack = () => {
-//     this.battleAH.launchTargetSelect( this.listSpaces[this.currentIndex] );
-//   }
 
   /**------------------------------------------------------------------------
    * DRAW ATTACK LIST
    * ------------------------------------------------------------------------
    * Paints the Elements needed for the Attac List
    * ----------------------------------------------------------------------*/
-  drawAttackList = () => {
-    // this.drawCursor(this.currentIndex,4,2);
-    for(let i = 0; i < this.listItems.length; i++){
-      let attack = this.listItems[i];
+  drawList = () => {
+    for(let i = 0; i < this.itemAmount; i++){
+      let pageOffset = i+(this.currPage * this.itemAmount);
+      if(pageOffset >= this.listItems.length) break;
+      let attack = this.listItems[pageOffset];
       attack.textArea = new TextArea(1,(i*2),8,1);
       attack.textArea.instantText(this.menuCanvas.ctx,attack.displayName,"white");
       this.drawCostMeter(i,attack.maxCost,attack.currCost);
@@ -94,13 +27,8 @@ class AttackMenu extends ListMenu{
       this.drawTargetsIcon(i,attack.targets);
       this.drawHitsIcon(i,attack.hits);
     }
+    this.drawScrollBar();
   }
-
-//   repaintCanvas = () => {
-//     this.menuCanvas.paintImage(this.fetchImage("battleOptionSelectBaseRight"),0,0);
-//     this.drawAttackList();
-//     this.battleAH.drawBattleCanvas();
-//   }
 
   drawTypeIcon = (listIndex,type) => {
     this.menuCanvas.paintImage(this.fetchImage(`${type}TypeIcon`), 

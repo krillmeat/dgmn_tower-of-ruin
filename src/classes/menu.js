@@ -12,9 +12,12 @@ class Menu{
     this.menuUtility = new MenuUtility();
   }
 
-  // TODO - Circular Dependency
   addSubMenu = (label,menu) => {
     this.subMenus[label] = menu;
+  }
+
+  removeSubMenu = label => {
+    delete this.subMenus[label];
   }
 
   buildIconImages = labels => {

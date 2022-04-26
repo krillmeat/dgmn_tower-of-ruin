@@ -29,7 +29,7 @@ class DgmnManager{
   // FOR NOW
   mockParty = () => {
     this.enemyDgmn.edId0.isEnemy = true; this.enemyDgmn.edId1.isEnemy = true; this.enemyDgmn.edId2.isEnemy = true;
-    this.allDgmn.dId0.attacks = [new Attack('bubbles'), new Attack('babyFlame'), new Attack('magicalFire'), new Attack('darknessGear'), new Attack('petitFire'), new Attack('petitTwister')];
+    this.allDgmn.dId0.attacks = [new Attack('bubbles'), new Attack('babyFlame'), new Attack('magicalFire'), new Attack('darknessGear'), new Attack('petitFire'), new Attack('petitTwister'), new Attack('picoDarts')];
     return ['dId0','dId1','dId2'];
   }
 

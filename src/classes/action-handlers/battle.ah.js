@@ -21,7 +21,8 @@
     this.getDgmnAttackData = (dgmnIndex,data) => { return cbObj.getDgmnAttackDataCB(dgmnIndex,data) }
     this.selectAttack = () => { cbObj.selectAttackCB() }
     this.setCurrentAttackTarget = dir => { cbObj.setCurrentAttackTargetCB(dir) }
-    this.selectTarget = () => { cbObj.selectTargetCB() }
+    this.addAction = (dgmnIndex,action) => { cbObj.addActionCB(dgmnIndex,action) }
+    this.beginCombat = () => { cbObj.beginCombatCB() }
     this.getCurrDgmnChoice = () => { return cbObj.getCurrDgmnChoiceCB() }
    }
  }

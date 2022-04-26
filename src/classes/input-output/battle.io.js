@@ -16,12 +16,16 @@ class BattleIO extends IO{
   actionKeyHandler = upDown => {
     if(this.battleMenuAH.getCurrMenuType() === 'icon'){
       this.battleMenuAH.selectIcon();
+    } else if(this.battleMenuAH.getCurrMenuType() === 'list'){
+      this.battleMenuAH.selectListItem();
     }
   }
 
   upKeyHandler = upDown => {
     if(upDown === 'down'){
-      this.triageMenuMove('up',this.battleAH.getMenuState(),this.battleAH.getMenuChart());
+      if(this.battleMenuAH.getCurrMenuType() === 'list'){
+        this.battleMenuAH.prevListItem();
+      }
     }
   }
 
@@ -35,7 +39,9 @@ class BattleIO extends IO{
 
   downKeyHandler = upDown => {
     if(upDown === 'down'){
-      this.triageMenuMove('down',this.battleAH.getMenuState(),this.battleAH.getMenuChart());
+      if(this.battleMenuAH.getCurrMenuType() === 'list'){
+        this.battleMenuAH.nextListItem();
+      }
     }
   }
 

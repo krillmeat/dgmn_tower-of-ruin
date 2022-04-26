@@ -5,6 +5,7 @@ import IconMenu from "../../menu/icon-menu";
 import AttackMenu from "../../menu/attack-menu";
 import BattleMenuAH from "../battle-menu.ah";
 import BattleMenuCanvas from "../canvas/battle-menu-canvas";
+import TargetSelect from "./target-select";
 
 class BattleMenu extends Menu{
   constructor(...args){
@@ -12,20 +13,29 @@ class BattleMenu extends Menu{
     this.battleAH = this.parentAH;
     this.menuCanvas = new BattleMenuCanvas('battle-menu-canvas',160,144);
 
-    this.currTargetChoice = 0;
+    this.currDgmnIndex = 0;
+    this.currAttackAction = {};
 
     this.battleMenuAH = new BattleMenuAH({
       nextIconCB: this.nextIcon,
       prevIconCB: this.prevIcon,
       getCurrMenuTypeCB: this.getCurrMenuType,
-      selectIconCB: this.selectIcon
+      selectIconCB: this.selectIcon,
+      nextListItemCB: this.nextListItem,
+      prevListItemCB: this.prevListItem,
+      selectListItemCB: this.selectListItem
     });
   }
 
+  /**------------------------------------------------------------------------
+   * INITIALIZER
+   * ------------------------------------------------------------------------
+   * Sets up the Battle Menu
+   * ----------------------------------------------------------------------*/
   init = () => {
     debugLog("+ Battle Menu");
     this.menuCanvas.setTopMessage("Attack");
-    this.setCurrentDgmn(0);
+    this.setCurrentDgmn(this.currDgmnIndex);
 
     this.buildDgmnMenu();
     this.currSubMenu = 'dgmn';
@@ -33,6 +43,11 @@ class BattleMenu extends Menu{
     this.drawMenu();
   }
 
+  /**------------------------------------------------------------------------
+   * BUILD DGMN MENU
+   * ------------------------------------------------------------------------
+   * Creates the Icon Menu for when you're selecting Dgmn Actions
+   * ----------------------------------------------------------------------*/
   buildDgmnMenu = () => {
     this.addSubMenu('dgmn',new IconMenu([14,16],['attack','defend','stats'],'dgmn'));
     this.subMenus.dgmn.isVisible = true;
@@ -40,53 +55,44 @@ class BattleMenu extends Menu{
     this.subMenus.dgmn.drawIcons(0);
   }
 
+  /**------------------------------------------------------------------------
+   * BUILD ATTACK MENU
+   * ------------------------------------------------------------------------
+   * Creates the List Menu of all of the Dgmn's Attacks
+   * ----------------------------------------------------------------------*/
   buildAttackMenu = () => {
     let currDgmnAttackData = this.battleAH.getDgmnAttackData(this.battleAH.getCurrDgmnChoice(),['displayName','currCost','maxCost','type','power','hits','targets']);
     debugLog("++ Build Attack List | Data = ",currDgmnAttackData);
     this.addSubMenu('attack',new AttackMenu(this.systemAH.fetchImage,[4,2],6,16,2,currDgmnAttackData,this.systemAH.fetchImage('miniCursor'),this.systemAH.fetchImage('battleOptionSelectBaseRight'),'attack'));
-    this.subMenus.attack.drawAttackList();
-  }
-
-  setCurrentDgmn = battleIndex => {
-    // NEED TO CLEAR
-    this.menuCanvas.paintCurrentCursor(battleIndex,this.systemAH.fetchImage('cursor'));
-    let dgmnData = this.battleAH.getDgmnDataByIndex(0,['speciesName','nickname','currentHP','currentEN','currentLevel']);
-        dgmnData.portrait = this.systemAH.fetchImage(`${dgmnData.speciesName.toLowerCase()}Portrait`)
-    this.menuCanvas.drawBottomSection(dgmnData);
+    this.subMenus.attack.drawList();
   }
 
   /**------------------------------------------------------------------------
-   * SET CURRENT ATTACK TARGET
+   * BUILD TARGET SELECT
    * ------------------------------------------------------------------------
-   * Puts the cursor on the correct Dgmn
-   * ------------------------------------------------------------------------
-   * @param {String}  targets Whether to target all or one [single|all]
-   * @param {String}  dir     Which direction to move in [next|prev]
+   * Creates the List Menu for selecting an Enemy to hit with an attack
    * ----------------------------------------------------------------------*/
-  setCurrentAttackTarget = (targets,dir) => {
-    let spot = dir ? this.validateTarget(dir) : this.currTargetChoice;
-    if(targets === 'single'){
-      this.menuCanvas.setCurrentTargetCursor(spot,this.systemAH.fetchImage('cursorLeft'));
-      this.currTargetChoice = spot;
-    } else{
-      for(let i = 0; i < 3; i++){
-        this.menuCanvas.paintImage(this.systemAH.fetchImage('cursorLeft'),
-                                 64*config.screenSize, ((i * 32) + 24)*config.screenSize);
-      }
-    }
-    this.battleAH.drawBattleCanvas();
+  buildTargetSelect = () => {
+    debugLog("++ Selecting Target...");
+    let hitsAll = this.currAttackAction.targets === 'all';
+    this.addSubMenu('target',new TargetSelect(hitsAll,this.menuCanvas.ctx,[8,2],3,3,4,['one','two','three'],this.systemAH.fetchImage('cursorLeft'),null,'target'));
+    this.subMenus.target.drawList();
   }
 
-  validateTarget = dir => {
-    let newTargetChoice = this.currTargetChoice;
-    
-    if(dir === 'next' && this.currTargetChoice < 2){
-      newTargetChoice++;
-    } else if(dir === 'prev' && this.currTargetChoice > 0){
-      newTargetChoice--;
-    }
-
-    return newTargetChoice;
+  /**------------------------------------------------------------------------
+   * SET CURRENT DGMN
+   * ------------------------------------------------------------------------
+   * Sets the Current Dgmn (shown at the bottom)
+   * ------------------------------------------------------------------------
+   * @param {Number}  battleIndex Spot of the Dgmn [0-3]
+   * ----------------------------------------------------------------------*/
+  setCurrentDgmn = battleIndex => {
+    // NEED TO CLEAR
+    this.menuCanvas.paintCurrentCursor(battleIndex,this.systemAH.fetchImage('cursor'));
+    let dgmnData = this.battleAH.getDgmnDataByIndex(this.currDgmnIndex,['speciesName','nickname','currentHP','currentEN','currentLevel']);
+        dgmnData.portrait = this.systemAH.fetchImage(`${dgmnData.speciesName.toLowerCase()}Portrait`)
+    this.menuCanvas.drawBottomSection(dgmnData);
+    this.drawMenu();
   }
 
   /**------------------------------------------------------------------------
@@ -98,6 +104,24 @@ class BattleMenu extends Menu{
     this.buildAttackMenu();
     this.currSubMenu = 'attack';
     this.subMenus[this.currSubMenu].isVisible = true;
+    this.drawMenu();
+  }
+
+  /**------------------------------------------------------------------------
+   * LAUNCH TARGET SELECT
+   * ------------------------------------------------------------------------
+   * Launches the Target Selection
+   * TODO - Add Team-facing selection also
+   * ----------------------------------------------------------------------*/
+  launchTargetSelect = () => {
+    this.buildTargetSelect();
+    if(this.currSubMenu === 'attack'){
+      this.menuCanvas.ctx.clearRect(32*config.screenSize,16*config.screenSize,128*config.screenSize,96*config.screenSize);
+    }
+    this.removeSubMenu(this.currSubMenu);
+    this.currSubMenu = 'target';
+    this.subMenus[this.currSubMenu].isVisible = true;
+    this.menuCanvas.paintCurrentCursor(this.currDgmnIndex,this.systemAH.fetchImage('cursor'));
     this.drawMenu();
   }
 
@@ -145,6 +169,75 @@ class BattleMenu extends Menu{
     if(selected === 'attack'){
       this.launchAttackList();
     }
+  }
+
+  /**------------------------------------------------------------------------
+   * NEXT LIST ITEM
+   * ------------------------------------------------------------------------
+   * Moves to the next List Item
+   * ----------------------------------------------------------------------*/
+  nextListItem = () => {
+    this.subMenus[this.currSubMenu].nextListItem();
+    this.drawMenu();
+  }
+
+  /**------------------------------------------------------------------------
+   * PREV LIST ITEM
+   * ------------------------------------------------------------------------
+   * Moves to the previous List Item
+   * ----------------------------------------------------------------------*/
+  prevListItem = () => {
+    this.subMenus[this.currSubMenu].prevListItem();
+    this.drawMenu();
+  }
+
+  /**------------------------------------------------------------------------
+   * SELECT LIST ITEM
+   * ------------------------------------------------------------------------
+   * Takes action on the current List Item
+   * TODO - I have too much logic in here for specific spots
+   * ----------------------------------------------------------------------*/
+  selectListItem = () => {
+    let currSubMenuLabel = this.subMenus[this.currSubMenu].label;
+    if(currSubMenuLabel === 'attack'){
+      this.setCurrentAttack();
+      this.launchTargetSelect();
+    } else if(currSubMenuLabel === 'target'){
+      let targets = this.subMenus.target.hitsAll ? [0,1,2] : [this.subMenus.target.currIndex];
+      this.subMenus.target.clearAllCursors(true);
+      this.setCurrentTargets(targets);
+      this.drawMenu();
+    }
+  }
+
+  setCurrentAttack = () => {
+    const attackData = this.subMenus.attack.listItems[this.subMenus.attack.currIndex];
+    this.currAttackAction.attackName = attackData.attackName;
+    this.currAttackAction.attacker = this.currDgmnIndex;
+    this.currAttackAction.targets = attackData.targets;
+  }
+
+  setCurrentTargets = targets => {
+    this.currAttackAction.targets = targets;
+    this.removeSubMenu(this.currSubMenu);
+    debugLog("++ Action = ",this.currAttackAction);
+    this.battleAH.addAction(this.currDgmnIndex,this.currAttackAction.attackName);
+    this.gotoNextChoice();
+  }
+
+  gotoNextChoice = () => {
+    debugLog("+ Next Dgmn...");
+    this.currDgmnIndex++;
+    if(this.currDgmnIndex < 3){
+      this.setCurrentDgmn(this.currDgmnIndex);
+      this.addSubMenu('dgmn',new IconMenu([14,16],['attack','defend','stats'],'dgmn'));
+      this.subMenus.dgmn.isVisible = true;
+      this.currSubMenu = 'dgmn';
+    } else{
+      debugLog("+ BEGIN COMBAT!");
+      this.battleAH.beginCombat();
+    }
+    
   }
 
   /**------------------------------------------------------------------------

@@ -3,8 +3,15 @@ class AttackManager{
     this.attackActions = {};  
   }
 
-  addAction = action => {
-    console.log("Adding Action = ",action);
+  addAction = (dgmnId,attackName) => {
+    this.attackActions[dgmnId] = {};
+    this.attackActions[dgmnId].attackName = attackName;
+    // this.attackActions[dgmnId].attacker = attacker;
+    // this.attackActions[dgmnId].targets = targets;
+  }
+
+  removeAction = action => {
+    console.log("Removing Actions = ",action);
   }
 
 }

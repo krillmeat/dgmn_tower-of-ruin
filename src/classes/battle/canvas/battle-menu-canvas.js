@@ -32,8 +32,8 @@ class BattleMenuCanvas extends GameCanvas{
    * ------------------------------------------------------------------------
    * @param {Object}  dgmnData  Object of properties the Bottom Section needs
    * ----------------------------------------------------------------------*/
-  drawBottomSection = (dgmnData) => {
-    // Dgmn Data
+  drawBottomSection = dgmnData => {
+    this.ctx.clearRect(0,14*8*config.screenSize,20*8*config.screenSize,4*8*config.screenSize);
     this.drawNickname(this.dgmnNicknameTxt,dgmnData.nickname);
     this.dgmnSpeciesNameTxt.instantText(this.ctx,dgmnData.speciesName+".MON","green");
     this.dgmnHPTxt.instantText(this.ctx,".hp"+this.menuUtility.prependZeros(dgmnData.currentHP,3),"white");
@@ -111,12 +111,14 @@ class BattleMenuCanvas extends GameCanvas{
     this.paintImage(image,80*config.screenSize,(24+(battleIndex*32))*config.screenSize);
   }
 
+  // TODO - Moved to Target Select
   clearCurrentCursors = isEnemy => {
     let xOffset = !isEnemy ? 72 : 56;
     this.ctx.clearRect(xOffset*config.screenSize,16*config.screenSize,
       24*config.screenSize,96 * config.screenSize);
   }
 
+  // TODO - Moved to Target Select
   setCurrentTargetCursor = (battleIndex,image) => {
     this.clearCurrentCursors(true);
     this.paintImage(image,
