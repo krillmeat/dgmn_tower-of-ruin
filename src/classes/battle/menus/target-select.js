@@ -6,11 +6,15 @@ class TargetSelect extends ListMenu{
     super(...args);
     this.parentCTX = parentCTX; // Used to clear the Cursors off of the canvas
     this.hitsAll = hitsAll;
+
+    // this.drawMenu(startingIndex); // TODO - Constructors shouldn't be calling their own methods
   }
 
-  drawMenu = () => {
+  drawMenu = (startingIndex = 0) => {
     this.menuCanvas.clearCanvas();
-    this.drawCursor();
+    if(this.hitsAll){
+      this.drawAllCursors(true);
+    } else{ this.drawCursor(startingIndex) }
   }
 
   clearAllCursors = isEnemy => {
@@ -32,7 +36,7 @@ class TargetSelect extends ListMenu{
   }
 
   nextListItem = () => {
-    if(this.currIndex < this.listItems.length-1) {
+    if(this.currIndex < this.listItems.length-1 && !this.hitsAll) { // Not at end && Single-target
       this.clearAllCursors(true);
       if(this.currIndex % this.itemAmount === this.itemAmount - 1 && this.currIndex !== 0) this.currPage++; 
       this.currIndex++;
@@ -41,7 +45,7 @@ class TargetSelect extends ListMenu{
   }
 
   prevListItem = () => {
-    if(this.currIndex > 0){
+    if(this.currIndex > 0 && !this.hitsAll){  // Not at beginning && Single-target
       this.clearAllCursors(true);
       if(this.currIndex % this.itemAmount === 0) this.currPage--;
       this.currIndex--;

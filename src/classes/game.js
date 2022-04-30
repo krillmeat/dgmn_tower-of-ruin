@@ -20,7 +20,7 @@ class Game{
   constructor(){
     debugLog('Game Created...');
 
-    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty);
+    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty,this.endBattle);
     this.systemAH;
 
     this.yourDgmn = new DgmnManager();           // All of your Dgmn (party, reserves, etc.)
@@ -175,6 +175,17 @@ class Game{
     this.drawGameScreen();
   }
 
+  endBattle = () => {
+    debugLog("Ending Battle...");
+    this.removeFromObjectList(this.battle.battleCanvas);
+    this.battle = null;
+
+    setTimeout(()=>{
+      this.dungeon.dungeonState = 'free';
+    },1000)
+    
+  }
+
   /**------------------------------------------------------------------------
    * ADD TO OBJECT LIST
    * ------------------------------------------------------------------------
@@ -186,6 +197,19 @@ class Game{
   addToObjectList = newObject => {
     if(this.objectList.indexOf(newObject) === -1){
       this.objectList.push(newObject);
+    }
+  }
+
+  /**------------------------------------------------------------------------
+   * REMOVE FROM OBJECT LIST
+   * ------------------------------------------------------------------------
+   * Removes an Object from the List used to Draw Canvases
+   * ------------------------------------------------------------------------
+   * @param {Object} removeObject  Object to remove from the list
+   * ----------------------------------------------------------------------*/
+  removeFromObjectList = removeObject => {
+    if(this.objectList.indexOf(removeObject) !== -1){
+      this.objectList.splice(this.objectList.indexOf(removeObject),1);
     }
   }
 

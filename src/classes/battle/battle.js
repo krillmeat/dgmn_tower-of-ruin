@@ -7,8 +7,8 @@ import BattleUtility from "./utility/battle.util";
 import BattleIO from "../input-output/battle.io";
 import BattleCanvas from "./canvas/battle-canvas";
 import BattleMenu from "./menus/battle-menu";
-import AttackMenu from "../menu/attack-menu";
 import AttackManager from "./attack-manager";
+import TextArea from "../text-area";
 
 import DgmnParty from "../dgmn/dgmn-party";
 import BattleDgmnStatusCanvas from "./canvas/battle-dgmn-status-canvas";
@@ -38,7 +38,14 @@ class Battle {
       setCurrentAttackTargetCB: this.setCurrentAttackTarget,
       getDgmnAttackDataCB: this.getDgmnAttackData,
       getCurrDgmnChoiceCB: this.getCurrDgmnChoice,
-      beginCombatCB: this.beginCombat
+      beginCombatCB: this.beginCombat,
+      drawActionTextCB: this.drawActionText,
+      drawDgmnStatusMeterCB: this.drawDgmnStatusMeter,
+      drawAllStatusesCB: this.drawAllStatuses,
+      newTurnCB: this.newTurn,
+      checkBattleConditionCB: this.checkBattleCondition,
+      battleWinCB: this.battleWin,
+      battleLoseCB: this.battleLose
     });
 
     this.battleIO = new BattleIO(this.battleAH);  // Key Manager
@@ -63,6 +70,7 @@ class Battle {
 
     this.battleMenu = new BattleMenu(this.systemAH,this.gameAH,this.battleAH);
     this.battleIO.setMenuAH(this.battleMenu.battleMenuAH);
+    this.attackManager.battleMenuAH = this.battleMenu.battleMenuAH;
 
     this.yourParty = this.gameAH.getDgmnParty();
     this.generateEnemyParty(); // TODO - Mocked for now, needs actual params for calculations
@@ -90,6 +98,7 @@ class Battle {
     this.systemAH = systemAH; this.gameAH = gameAH;
     this.dgmnAH = dgmnAH;
     this.DungeonAH = dungeonAH; this.digiBeetleAH = digiBeetleAH;
+    this.attackManager.initAH(this.systemAH,this.battleAH,this.dgmnAH);
   }
 
   /**------------------------------------------------------------------------
@@ -144,6 +153,11 @@ class Battle {
     this.battleMenu.setCurrentDgmn(this.currDgmnChoice);
   }
 
+  newTurn = () => {
+    this.turn++;
+    this.battleMenu.newTurn();
+  }
+
   /**------------------------------------------------------------------------
    * GOTO NEXT CHOICE
    * ------------------------------------------------------------------------
@@ -166,11 +180,31 @@ class Battle {
    *  TODO - Move to DgmnParty Class?
    * ----------------------------------------------------------------------*/
   generateEnemyParty = () => {
-    // this.enemyParty.dgmnAH = this.dgmnAH;
-    // MOCK DATA
-    // this.enemyDgmn.allDgmn.edId0.isEnemy = true;
-    // this.enemyDgmn.allDgmn.edId1.isEnemy = true;
-    // this.enemyDgmn.allDgmn.edId2.isEnemy = true;
+    this.dgmnAH.generateEnemies();
+  }
+
+  /**------------------------------------------------------------------------
+   * CALC TURN ORDER
+   * ------------------------------------------------------------------------
+   * Organizes the Battle Order for Dgmn based on their Speed
+   * TODO - REMOVE, THIS IS IN THE UTILITIES
+   * ----------------------------------------------------------------------*/
+  calcTurnOrder = () => {
+    let order = this.yourParty.concat(this.enemyParty);
+
+    for(let i = 0; i < order.length; i++){
+      for(let r = 0; r < order.length - 1; r++){
+        let temp = order[r];
+        let currSPD = this.dgmnAH.getDgmnData(order[r],['currentStats'],order[r].charAt(0) === 'e').currentStats.SPD;
+        let nextSPD = this.dgmnAH.getDgmnData(order[r+1],['currentStats'],order[r+1].charAt(0) === 'e').currentStats.SPD;
+        if(currSPD < nextSPD){
+          order[r] = order[r+1];
+          order[r+1] = temp;
+        }
+      }
+    }
+
+    return order;
   }
 
   /**------------------------------------------------------------------------
@@ -219,6 +253,10 @@ class Battle {
     this.battleCanvas.paintImage(image,x,y);
   }
 
+  drawActionText = (species,message) => {
+    this.battleMenu.drawActionText(species,message);
+  }
+
   /**------------------------------------------------------------------------
    * REDRAW BATTLE CANVAS                                       [[EXPORTED ]]
    * ------------------------------------------------------------------------
@@ -234,6 +272,7 @@ class Battle {
     }
 
     this.battleCanvas.paintCanvas(this.battleMenu.menuCanvas);
+    if(this.attackManager.attackCanvas) this.battleCanvas.paintCanvas(this.attackManager.attackCanvas);
 
     this.gameAH.refreshScreen();
   }
@@ -300,6 +339,34 @@ class Battle {
    }
 
   /**------------------------------------------------------------------------
+   * CHECK BATTLE CONDITIONS                                    [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * Checks to see if the Battle is Over or not
+   * ----------------------------------------------------------------------*/
+   checkBattleCondition = () => {
+     if(this.dgmnAH.checkAllDead(true)){
+       return 'win';
+     } else if(this.dgmnAH.checkAllDead(false)){
+       return 'lose';
+     } return 'ongoing'
+   }
+
+   battleWin = () => {
+     debugLog("BATTLE WON!");
+     this.battleMenu.endBattle(); // TODO - Don't bypass the Victory Screen
+     this.end();
+   }
+
+   battleLose = () => {
+     debugLog("BATTLE LOST...");
+     this.battleMenu.endBattle(); // TODO - Don't bypass the Dungeon End Screen
+   }
+
+   end = () => {
+     this.gameAH.endBattle();
+   }
+
+  /**------------------------------------------------------------------------
    * ------------------------------------------------------------------------
    * GETTERS AND SETTERS                                        [[EXPORTED ]]
    * ------------------------------------------------------------------------
@@ -322,8 +389,9 @@ class Battle {
    * ------------------------------------------------------------------------
    * Creates a Dgmn Data Object of only the properties you need
    * ----------------------------------------------------------------------*/
-  getDgmnDataByIndex = (dgmnIndex,data) => {
-    return this.dgmnAH.getDgmnData(this.yourParty[dgmnIndex],data);
+  getDgmnDataByIndex = (dgmnIndex,data,isEnemy = false) => {
+    let dgmnId = isEnemy ? this.enemyParty[dgmnIndex] : this.yourParty[dgmnIndex];
+    return this.dgmnAH.getDgmnData(dgmnId,data,isEnemy);
   }
 
   getDgmnAttackData = (dgmnIndex,data) => { return this.dgmnAH.getDgmnAttackData(this.yourParty[dgmnIndex],data) }
@@ -333,17 +401,23 @@ class Battle {
   selectAttack = () => { this.attackMenu.selectAttack() } // TODO - Likely don't need
 
 
-  addAction = (dgmnIndex,attackName) => {
-    this.attackManager.addAction(this.yourParty[dgmnIndex],attackName); 
+  addAction = (dgmnIndex,attackName,attackTargets,attackPower,isEnemy) => {
+    let convertedTargets;
+    let attacker = isEnemy ? this.enemyParty[dgmnIndex] : this.yourParty[dgmnIndex];
+
+    if(isEnemy){
+      convertedTargets = attackTargets.length === 1 ? [this.yourParty[attackTargets[0]]] : this.yourParty;
+    } else{
+      convertedTargets = attackTargets.length === 1 ? [this.enemyParty[attackTargets[0]]] : this.enemyParty;
+    }
+
+    this.attackManager.addAction(attacker,attackName,attackTargets,convertedTargets,attackPower);
   }
 
   beginCombat = () => {
     debugLog("+ Begin Combat...");
-    debugLog("++ Action List = ",this.attackManager.attackActions)
-  }
-
-  menuInput = dir => {
-    console.log("MENU INPUT = ",dir);
+    debugLog("++ Action List = ",this.attackManager.attackActions);
+    this.attackManager.attackLoop(this.calcTurnOrder()); // TODO - Callback function
   }
 
 }

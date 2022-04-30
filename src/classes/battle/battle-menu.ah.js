@@ -7,6 +7,8 @@ class BattleMenuAH{
     this.nextListItem = () => { cbObj.nextListItemCB() }
     this.prevListItem = () => { cbObj.prevListItemCB() }
     this.selectListItem = () => { cbObj.selectListItemCB() }
+    this.setTopMessage = () => { cbObj.setTopMessageCB() }
+    
   }
 }
 

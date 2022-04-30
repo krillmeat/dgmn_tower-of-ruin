@@ -18,8 +18,7 @@ class ListMenu extends SubMenu{
     this.menuCanvas.x = coord[0] * 8 * config.screenSize;
     this.menuCanvas.y = coord[1] * 8 * config.screenSize;
 
-    this.drawBackImg();
-    this.drawCursor();
+    this.drawMenu();  // TODO - Constructors shouldn't be calling their own methods
   }
 
   

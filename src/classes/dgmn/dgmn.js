@@ -22,6 +22,7 @@ class Dgmn {
     this.dgmnId = id;
     this.nickname = nickname;
     this.speciesName = speciesName;
+    this.eggField = ""; // The Field the Egg Belongs to
 
     this.currentLevel = 1;
     this.currentHP = 25;
@@ -31,6 +32,8 @@ class Dgmn {
     }
     this.attackList = ["bubbles","babyFlame"];
     this.attacks = [] // TODO - this needs to be "built"
+
+    this.isDead = false;
 
     this.dgmnCanvas;
     // this.stage = dgmnDB[name].stage;
@@ -71,6 +74,10 @@ class Dgmn {
     // this.isDefending = false;
   }
 
+  initializeStats = () => {
+    console.log("STATS");
+  }
+
   /**------------------------------------------------------------------------
    * INITIALIZE CANVAS
    * ------------------------------------------------------------------------
@@ -90,7 +97,8 @@ class Dgmn {
    * Starts the Idle Animation on the DGMN Canvas
    * ----------------------------------------------------------------------*/
   startIdleAnimation = () => {
-    let speed = 1200 - (Math.floor(this.currentStats.SPD*2) * 33);
+    let speed = 1800 - (Math.floor(this.currentStats.SPD*2) * 33);
+        speed = speed <= 0 ? 33 : speed;
     this.dgmnCanvas.animate(speed); // TODO - Based on DGMN SPD Stat
   }
 

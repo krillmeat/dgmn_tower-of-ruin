@@ -24,7 +24,7 @@ class TextArea{
   }
 
   /**------------------------------------------------------------------------
-   * CREATE CHARACTER ARRAY
+   * INSTANT TEXT
    * ------------------------------------------------------------------------
    * Sets up the message to be paintable
    *  TODO - Need to handle multi-line stuff
@@ -50,6 +50,61 @@ class TextArea{
                     ((w + this.x) * (8 * config.screenSize)),((h + this.y) * (8 * config.screenSize)),
                     8 * config.screenSize, 8 * config.screenSize);
     }
+  }
+
+  /**------------------------------------------------------------------------
+   * TIMED TEXT
+   * ------------------------------------------------------------------------
+   * Sets up the message to be paintable
+   *  TODO - Need to handle multi-line stuff
+   * ------------------------------------------------------------------------
+   * @param {Canvas.ctx}  ctx     Canvas ctx to draw on
+   * @param {String}      message Text to paint
+   * ----------------------------------------------------------------------*/
+  timedText = (ctx,message,drawCB) => {
+    let wordArray = message.split(" ");
+    let word = 0; let char = 0;
+    let r = 0; let c = 0;
+
+    let paintInterval = setInterval(()=>{
+      let charArray = this.createCharArray(wordArray[word]);  // Split word into Chars
+
+      // Draw Char and Refresh Screen
+      this.drawChar(ctx,charArray[char],c,r);
+      drawCB();
+
+      char++; // Iterate Char
+      r = c + 1 >= this.width ? r + 1 : r;  // Move Row up if at the end of the Column
+      c = c + 1 >= this.width ? 0 : c + 1;  // Move Column spot (goes to next row if out of room)
+
+      if(char >= charArray.length){ // Done with Word
+        word++; char = 0; // Go to next Word
+        if(c !== 0) { // Draw a Space at the end of the word, but not if it's the first word on a new Row
+          this.drawChar(ctx,'space',c,r); drawCB(); c++; 
+          if(c >= this.width) r = 0 // In case of Space at the end of a Row
+        }
+        if(word < wordArray.length && wordArray[word].length + c > this.width){ r++; c = 0} // Prevents word from splitting across rows
+      }
+      
+      if(word >= wordArray.length) clearInterval(paintInterval); // Done with Message
+    },config.textSpeed * 33);
+  }
+
+  /**------------------------------------------------------------------------
+   * DRAW CHARACTER
+   * ------------------------------------------------------------------------
+   * Draws a Character to the Text Area Canvas
+   * ------------------------------------------------------------------------
+   * @param {Canvas.ctx}  ctx   Canvas ctx to draw on
+   * @param {String}      char  Character to Draw
+   * @param {Number}      col   Column to draw at
+   * @param {Number}      row   Row to draw at
+   * ----------------------------------------------------------------------*/
+  drawChar = (ctx,char,col,row) => {
+    let coord = this.getCharCoordinates(char);
+    ctx.drawImage(this.colorImages.white,
+                  coord[0] * 64, coord[1] * 64, 64,64,
+                  (col+this.x)*config.tileSize,(row+this.y)*config.tileSize,config.tileSize,config.tileSize);
   }
 
   /**------------------------------------------------------------------------
@@ -79,6 +134,7 @@ class TextArea{
         modifiedMessage = modifiedMessage.replace(/\.hp/g,'%');
         modifiedMessage = modifiedMessage.replace(/\.en/g,'$');
         modifiedMessage = modifiedMessage.replace(/\.lv/g,'@');
+        modifiedMessage = modifiedMessage.replace(/\!/g,'#');
 
     return modifiedMessage;
   }
@@ -101,7 +157,8 @@ class TextArea{
       } else if(char === " "){ modifiedCharArray[i] = "space" 
       } else if(char === "%"){ modifiedCharArray[i] = "hp"
       } else if(char === "$"){ modifiedCharArray[i] = "en" 
-      } else if(char === "@"){ modifiedCharArray[i] = "lv" }
+      } else if(char === "@"){ modifiedCharArray[i] = "lv" 
+      } else if(char === "#"){ modifiedCharArray[i] = "exclamation" }
     }
 
     return modifiedCharArray;

@@ -16,11 +16,20 @@ class BattleMenuCanvas extends GameCanvas{
     this.dgmnHPTxt = new TextArea(4,16,4,1, (char,wholeString,index) => { return this.dgmnHPENTxtColorize(char,wholeString,index) });
     this.dgmnENTxt = new TextArea(4,17,4,1, (char,wholeString,index) => { return this.dgmnHPENTxtColorize(char,wholeString,index) });
     this.dgmnLVTxt = new TextArea(16,14,4,1, (char,wholeString,index) => { return this.dgmnHPENTxtColorize(char,wholeString,index) });
+
+  }
+
+  clearTopMessage = () => {
+    this.ctx.clearRect(0,8*config.screenSize, 160*config.screenSize,8*config.screenSize);
   }
 
   setTopMessage = message => {
-    this.ctx.clearRect(0,8*config.screenSize, 160*config.screenSize,8*config.screenSize);
+    this.clearTopMessage();
     this.topTxt.instantText(this.ctx,message,'white');
+  }
+
+  clearBottomSection = () => {
+    this.ctx.clearRect(0,14*8*config.screenSize,20*8*config.screenSize,4*8*config.screenSize);
   }
 
   /**------------------------------------------------------------------------
@@ -33,7 +42,7 @@ class BattleMenuCanvas extends GameCanvas{
    * @param {Object}  dgmnData  Object of properties the Bottom Section needs
    * ----------------------------------------------------------------------*/
   drawBottomSection = dgmnData => {
-    this.ctx.clearRect(0,14*8*config.screenSize,20*8*config.screenSize,4*8*config.screenSize);
+    this.clearBottomSection();
     this.drawNickname(this.dgmnNicknameTxt,dgmnData.nickname);
     this.dgmnSpeciesNameTxt.instantText(this.ctx,dgmnData.speciesName+".MON","green");
     this.dgmnHPTxt.instantText(this.ctx,".hp"+this.menuUtility.prependZeros(dgmnData.currentHP,3),"white");
