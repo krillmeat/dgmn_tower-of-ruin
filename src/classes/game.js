@@ -23,7 +23,7 @@ class Game{
     this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty,this.endBattle);
     this.systemAH;
 
-    this.yourDgmn = new DgmnManager();           // All of your Dgmn (party, reserves, etc.)
+    this.yourDgmn = new DgmnManager();        // All of your Dgmn (party, reserves, etc.)
     this.yourParty = this.yourDgmn.party;     // Your current Party of Dgmn (possible to be empty)
     this.battle;                              // Init Battle (cleared and created by Game Logic)
     this.dungeon;
