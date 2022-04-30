@@ -147,6 +147,16 @@ class GameCanvas{
       }
       this.ctx.drawImage(image,imgX,imgY,imgWidth,imgHeight);
   }
+
+  /**------------------------------------------------------------------------
+   * FLIP
+   * ------------------------------------------------------------------------
+   * Flips the Canvas Horizontally
+   * ----------------------------------------------------------------------*/
+  flip = () => {
+    this.ctx.scale(-1,1);
+    this.ctx.translate((this.width * -1),0);
+  }
 }
 
 export default GameCanvas;

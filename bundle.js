@@ -189,6 +189,7 @@ var config = {
     select: 'q'
   },
   screenSize: 2,
+  tileSize: 2 * 8,
   textSpeed: 2
 };
 
@@ -218,11 +219,41 @@ var getAllQueryParams = function getAllQueryParams() {
 var debugLog = function debugLog(message, object) {
   if (inDebug()) object ? console.log("%c".concat(message), 'color:#A6E22E', object) : console.log("%c".concat(message), 'color:#A6E22E');
 };
+var warningLog = function warningLog(message, object) {
+  if (inDebug()) object ? console.log("%c".concat(message), 'color:#E6DB74', object) : console.log("%c".concat(message), 'color:#E6DB74');
+};
 
-var DigiBeetleAH = function DigiBeetleAH(addItemToToolBoxCB) {
-  _classCallCheck(this, DigiBeetleAH);
-  this.addItemToToolBox = function (item) {
-    addItemToToolBoxCB(item);
+var DgmnAH = function DgmnAH(cbObj) {
+  _classCallCheck(this, DgmnAH);
+  this.getDgmnData = function (dgmnId, dataList, isEnemy) {
+    return cbObj.getDgmnDataCB(dgmnId, dataList, isEnemy);
+  };
+  this.getDgmnAttackData = function (dgmnId, dataList) {
+    return cbObj.getDgmnAttackDataCB(dgmnId, dataList);
+  };
+  this.initDgmnCanvas = function (dgmnId, drawCB, imageList, battleLocation) {
+    return cbObj.initDgmnCanvasCB(dgmnId, drawCB, imageList, battleLocation);
+  };
+  this.getCanvas = function (dgmnId) {
+    return cbObj.getCanvasCB(dgmnId);
+  };
+  this.startDgmnIdleAnimation = function (dgmnId) {
+    return cbObj.animateDgmnCB(dgmnId);
+  };
+  this.dealDMG = function (dgmnId, dmg) {
+    return cbObj.dealDMGCB(dgmnId, dmg);
+  };
+  this.checkKO = function (dgmnId) {
+    return cbObj.checkKOCB(dgmnId);
+  };
+  this.checkAllDead = function (isEnemy) {
+    return cbObj.checkAllDeadCB(isEnemy);
+  };
+  this.createDgmn = function (index, data, isEnemy) {
+    return cbObj.createDgmnCB(index, data, isEnemy);
+  };
+  this.generateEnemies = function () {
+    return cbObj.generateEnemiesCB();
   };
 };
 
@@ -287,6 +318,10 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdle
     }
     _this.ctx.drawImage(image, imgX, imgY, imgWidth, imgHeight);
   });
+  _defineProperty(this, "flip", function () {
+    _this.ctx.scale(-1, 1);
+    _this.ctx.translate(_this.width * -1, 0);
+  });
   this.canvasClass = canvasClass;
   this.x = _x * config.screenSize || 0;
   this.y = _y * config.screenSize || 0;
@@ -307,356 +342,50 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdle
 }
 ;
 
-var DigiBeetleCanvas = function (_GameCanvas) {
-  _inherits(DigiBeetleCanvas, _GameCanvas);
-  var _super = _createSuper(DigiBeetleCanvas);
-  function DigiBeetleCanvas(currentDirectionCallback) {
+var DgmnCanvas = function (_GameCanvas) {
+  _inherits(DgmnCanvas, _GameCanvas);
+  var _super = _createSuper(DgmnCanvas);
+  function DgmnCanvas(refreshScreenCB, dgmnName) {
     var _this;
-    _classCallCheck(this, DigiBeetleCanvas);
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
+    _classCallCheck(this, DgmnCanvas);
+    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      args[_key - 2] = arguments[_key];
     }
     _this = _super.call.apply(_super, [this].concat(args));
-    _defineProperty(_assertThisInitialized(_this), "animateBeetle", function () {
-      var frame = 0;
-      _this.animateTimer = setInterval(function () {
-        _this.animationCounter++;
-        if (_this.animationCounter % 8 === 0 || _this.getDirection() !== _this.prevDirection) {
-          _this.prevDirection = _this.getDirection();
-          _this.animationCounter = 0;
-          if (frame === 0) {
-            frame = 1;
-          } else {
-            frame = 0;
-          }
+    _defineProperty(_assertThisInitialized(_this), "animate", function (speed) {
+      var currentFrame = 0;
+      setInterval(function () {
+        if (_this.isIdle) {
           _this.clearCanvas();
-          _this.paintImage(_this.frames[_this.getDirection()][frame]);
-          _this.triggerGameScreenRedraw();
+          _this.paintImage(_this.frames[currentFrame]);
+          currentFrame++;
+          if (currentFrame > 1) currentFrame = 0;
         }
-      }, 66);
+        _this.refreshScreen();
+      }, speed);
     });
-    _defineProperty(_assertThisInitialized(_this), "stopAnimatingBeetle", function () {
-      clearInterval(_this.animateTimer);
+    _defineProperty(_assertThisInitialized(_this), "attackAnimation", function () {
+      _this.isIdle = false;
+      _this.clearCanvas();
+      _this.paintImage(_this.imageStack[2]);
+      _this.triggerGameScreenRedraw();
     });
-    _this.direction = 'down';
-    _this.frames = {
-      down: [],
-      up: [],
-      left: [],
-      right: []
-    };
+    _defineProperty(_assertThisInitialized(_this), "hurtAnimation", function () {
+      _this.isIdle = false;
+      _this.clearCanvas();
+      _this.paintImage(_this.imageStack[3]);
+      _this.triggerGameScreenRedraw();
+    });
+    _this.dgmnName = dgmnName;
+    _this.frames = [];
     _this.animateSpeed = 2000;
-    _this.animationCounter = 0;
-    _this.animateTimer;
-    _this.prevDirection = 'down';
-    _this.getDirection = function () {
-      return currentDirectionCallback();
+    _this.refreshScreen = function () {
+      refreshScreenCB();
     };
     return _this;
   }
-  return DigiBeetleCanvas;
+  return DgmnCanvas;
 }(GameCanvas);
-
-var genericImages = ['./sprites/Battle/Menu/miniCursor.png', './sprites/Menus/typeLabel.png', './sprites/Menus/costLabel.png', './sprites/Menus/targetLabel.png', './sprites/Menus/powerLabel.png', './sprites/Menus/hitLabel.png', './sprites/Menus/noneTypeIcon.png', './sprites/Menus/fireTypeIcon.png', './sprites/Menus/windTypeIcon.png', './sprites/Menus/plantTypeIcon.png', './sprites/Menus/elecTypeIcon.png', './sprites/Menus/evilTypeIcon.png', './sprites/Menus/metalTypeIcon.png', './sprites/Menus/targetOne.png', './sprites/Menus/targetAll.png', './sprites/Menus/pwrFIcon.png', './sprites/Menus/pwrEIcon.png', './sprites/Menus/pwrDIcon.png', './sprites/Menus/oneHitIcon.png', './sprites/Menus/costMeter100.png', './sprites/Menus/costMeter75.png', './sprites/Menus/costMeter50.png', './sprites/Menus/costMeter25.png', './sprites/Menus/costMeter0.png', './sprites/Battle/Attacks/blankAttack.png'];
-var fontImages = ['./sprites/Fonts/fontsBlack.png', './sprites/Fonts/fontsWhite.png', './sprites/Fonts/fontsLightGreen.png'];
-var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarRed.png', './sprites/Battle/Menu/dgmnBarBlue.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/dgmnBarDarkGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png', './sprites/Battle/Menu/comboLabel.png', './sprites/Battle/Menu/weak0.png', './sprites/Battle/Menu/weak1.png', './sprites/Battle/Menu/weak2.png', './sprites/Battle/Menu/weak3.png'];
-var dungeonImages = ['./sprites/Dungeon/startTile.png', './sprites/Dungeon/endTile.png', './sprites/Dungeon/enemyTile.png'];
-var digiBeetleImages = ['./sprites/Dungeon/DigiBeetle/digiBeetleDown0.png', './sprites/Dungeon/DigiBeetle/digiBeetleDown1.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp0.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp1.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight0.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight1.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft0.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft1.png'];
-
-var DigiBeetle = function DigiBeetle(dungeonAH) {
-  var _this = this;
-  _classCallCheck(this, DigiBeetle);
-  _defineProperty(this, "init", function () {
-    _this.initCanvas();
-    _this.loadDigiBeetleImages();
-  });
-  _defineProperty(this, "initSystemAH", function (actionHandler) {
-    _this.systemAH = actionHandler;
-  });
-  _defineProperty(this, "initGameAH", function (actionHandler) {
-    _this.gameAH = actionHandler;
-  });
-  _defineProperty(this, "initDungeonAH", function (actionHandler) {
-    _this.dungeonAH = actionHandler;
-  });
-  _defineProperty(this, "initCanvas", function () {
-    _this.digiBeetleCanvas = new DigiBeetleCanvas(_this.dungeonAH.getCurrentDirection, 'digibeetle-canvas', 16, 16, 64, 64, false, _this.gameAH.refreshScreen);
-  });
-  _defineProperty(this, "addItemToToolBox", function (item) {
-    _this.toolBox.push(item);
-  });
-  _defineProperty(this, "loadDigiBeetleImages", function () {
-    var allImages = [];
-    for (var img = 0; img < digiBeetleImages.length; img++) {
-      allImages.push(digiBeetleImages[img]);
-    }
-    _this.systemAH.loadImages(allImages, function () {
-      _this.drawDigiBeetle();
-      _this.onDigiBeetleImagesLoaded();
-    });
-  });
-  _defineProperty(this, "onDigiBeetleImagesLoaded", function () {
-    _this.gameAH.addCanvasObject(_this.digiBeetleCanvas);
-    _this.onLoaded();
-  });
-  _defineProperty(this, "drawDigiBeetle", function () {
-    _this.digiBeetleCanvas.frames.down = [_this.systemAH.fetchImage('digiBeetleDown0'), _this.systemAH.fetchImage('digiBeetleDown1')];
-    _this.digiBeetleCanvas.frames.up = [_this.systemAH.fetchImage('digiBeetleUp0'), _this.systemAH.fetchImage('digiBeetleUp1')];
-    _this.digiBeetleCanvas.frames.right = [_this.systemAH.fetchImage('digiBeetleRight0'), _this.systemAH.fetchImage('digiBeetleRight1')];
-    _this.digiBeetleCanvas.frames.left = [_this.systemAH.fetchImage('digiBeetleLeft0'), _this.systemAH.fetchImage('digiBeetleLeft1')];
-    _this.digiBeetleCanvas.animateBeetle('down');
-  });
-  _defineProperty(this, "onLoaded", function () {});
-  this.digiBeetleAH = new DigiBeetleAH(this.addItemToToolBox);
-  this.dungeonAH;
-  this.gameAH;
-  this.systemAH;
-  this.digiBeetleCanvas;
-  this.toolBox = {
-    version: 'dodo',
-    items: []
-  };
-};
-
-var BackgroundCanvas = function (_GameCanvas) {
-  _inherits(BackgroundCanvas, _GameCanvas);
-  var _super = _createSuper(BackgroundCanvas);
-  function BackgroundCanvas() {
-    _classCallCheck(this, BackgroundCanvas);
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-    return _super.call.apply(_super, [this].concat(args));
-  }
-  return BackgroundCanvas;
-}(GameCanvas);
-
-var fontData = {
-  A: [0, 0],
-  a: [0, 2],
-  B: [1, 0],
-  b: [1, 2],
-  C: [2, 0],
-  c: [2, 2],
-  D: [3, 0],
-  d: [3, 2],
-  E: [4, 0],
-  e: [4, 2],
-  F: [5, 0],
-  f: [5, 2],
-  G: [6, 0],
-  g: [6, 2],
-  H: [7, 0],
-  h: [7, 2],
-  I: [8, 0],
-  i: [8, 2],
-  J: [9, 0],
-  j: [9, 2],
-  K: [10, 0],
-  k: [10, 2],
-  L: [11, 0],
-  l: [11, 2],
-  M: [12, 0],
-  m: [12, 2],
-  N: [13, 0],
-  n: [13, 2],
-  O: [14, 0],
-  o: [14, 2],
-  P: [15, 0],
-  p: [15, 2],
-  Q: [16, 0],
-  q: [16, 2],
-  R: [17, 0],
-  r: [17, 2],
-  S: [0, 1],
-  s: [0, 3],
-  T: [1, 1],
-  t: [1, 3],
-  U: [2, 1],
-  u: [2, 3],
-  V: [3, 1],
-  v: [3, 3],
-  W: [4, 1],
-  w: [4, 3],
-  X: [5, 1],
-  x: [5, 3],
-  Y: [6, 1],
-  y: [6, 3],
-  Z: [7, 1],
-  z: [7, 3],
-  space: [8, 1],
-  dotM: [0, 4],
-  hp: [1, 4],
-  en: [2, 4],
-  0: [3, 4],
-  1: [4, 4],
-  2: [5, 4],
-  3: [6, 4],
-  4: [7, 4],
-  5: [8, 4],
-  6: [9, 4],
-  7: [10, 4],
-  8: [11, 4],
-  9: [12, 4],
-  exclamation: [13, 4],
-  period: [14, 4]
-};
-
-var TextManager = function TextManager(colors, rows, cols, x, y, colorizeCallback) {
-  var _this = this;
-  _classCallCheck(this, TextManager);
-  _defineProperty(this, "getFontCoord", function (_char) {
-    return fontData[_char];
-  });
-  _defineProperty(this, "clearTextBox", function (canvas) {
-    canvas.ctx.clearRect(_this.x * 8 * config.screenSize, _this.y * 8 * config.screenSize, _this.cols * 7 * config.screenSize, _this.rows * 7 * config.screenSize);
-    canvas.ctx.fillStyle = '#00131a';
-    canvas.ctx.fillRect(_this.x * 8 * config.screenSize, _this.y * 8 * config.screenSize, _this.cols * 7 * config.screenSize, _this.rows * 7 * config.screenSize);
-  });
-  _defineProperty(this, "instantPaint", function (canvas, message) {
-    var ctx = canvas.ctx;
-    var splitMessage = _this.replaceSpecials(message);
-    _this.clearTextBox(canvas);
-    for (var i = 0; i < splitMessage.length; i++) {
-      var _char2 = splitMessage[i];
-      var charX = fontData[_char2][0] * 64;
-      var charY = fontData[_char2][1] * 64;
-      var fontIndex = _this.colorize(_char2);
-      ctx.drawImage(_this.colors[fontIndex], charX, charY, 64, 64, 8 * config.screenSize * i + _this.x * 8 * config.screenSize, _this.y * 8 * config.screenSize, 8 * config.screenSize, 8 * config.screenSize);
-    }
-  });
-  _defineProperty(this, "slowPaint", function (canvas, message, triggerRedraw, onDone) {
-    var ctx = canvas.ctx;
-    var splitWords = message.split(" ");
-    for (var i = 0; i < splitWords.length; i++) {
-      splitWords[i] = _this.replaceSpecials(splitWords[i]);
-    }
-    _this.clearTextBox(canvas);
-    var c = 0;
-    var r = 0;
-    var word = 0;
-    var _char3 = 0;
-    var paintInterval = setInterval(function () {
-      _this.drawCharacter(ctx, splitWords[word][_char3], c, r);
-      triggerRedraw();
-      _char3++;
-      c++;
-      if (c === _this.cols) {
-        c = 0;
-        r++;
-      }
-      if (r === _this.rows) ;
-      if (_char3 >= splitWords[word].length) {
-        if (c !== 0) {
-          _this.drawCharacter(ctx, 'space', c, r);
-          triggerRedraw();
-          c++;
-        }
-        if (word + 1 <= splitWords.length - 1 && splitWords[word + 1].length + c > _this.cols) {
-          r++;
-          c = 0;
-        }
-        _char3 = 0;
-        word++;
-      }
-      if (word >= splitWords.length) {
-        onDone();
-        clearInterval(paintInterval);
-      }
-    }, config.textSpeed * 33);
-  });
-  _defineProperty(this, "replaceSpecials", function (message) {
-    var modArray;
-    if (message) {
-      var modString = message;
-      modString = modString.replace(/.M/g, '^');
-      modString = modString.replace(/.hp/g, '%');
-      modString = modString.replace(/.en/g, '@');
-      modArray = modString.split('');
-      for (var i = 0; i < modArray.length; i++) {
-        if (modArray[i] === '^') modArray[i] = 'dotM';
-        if (modArray[i] === '%') modArray[i] = 'hp';
-        if (modArray[i] === '@') modArray[i] = 'en';
-        if (modArray[i] === ' ') modArray[i] = 'space';
-        if (modArray[i] === '!') modArray[i] = 'exclamation';
-        if (modArray[i] === '.') modArray[i] = 'period';
-      }
-    }
-    return modArray;
-  });
-  _defineProperty(this, "drawCharacter", function (ctx, _char4, c, r) {
-    ctx.drawImage(_this.colors[0], fontData[_char4][0] * 64, fontData[_char4][1] * 64, 64, 64, 8 * config.screenSize * c + _this.x * 8 * config.screenSize, 8 * config.screenSize * r + _this.y * 8 * config.screenSize, 8 * config.screenSize, 8 * config.screenSize);
-  });
-  _defineProperty(this, "progressivePaint", function (speed) {
-  });
-  _defineProperty(this, "paintToCanvas", function (canvas) {
-  });
-  this.colors = colors;
-  this.rows = rows;
-  this.cols = cols;
-  this.x = x || 0;
-  this.y = y || 0;
-  this.colorize = function (_char5) {
-    var fontIndex = 0;
-    if (colorizeCallback) fontIndex = colorizeCallback(_char5);
-    return fontIndex;
-  };
-};
-
-var BattleMeter = function BattleMeter(stat) {
-  _classCallCheck(this, BattleMeter);
-  _defineProperty(this, "paintBase", function () {});
-  this.stat = stat;
-  this.currentValue = 0;
-  this.maxValue = 100;
-};
-
-var DgmnBattleStatus = function DgmnBattleStatus(listIndex, dgmnData) {
-  var _this = this;
-  _classCallCheck(this, DgmnBattleStatus);
-  _defineProperty(this, "drawMeter", function (canvas, meter, image, meterLength, color) {
-    var meterOffset = meter === 'hp' ? 0 : 8 * config.screenSize;
-    var leftOffset = _this.dgmnData.isEnemy ? 8 * config.screenSize : 17 * 8 * config.screenSize;
-    var battleLocationOffset = _this.dgmnData.battleLocation * 32 * config.screenSize;
-    var barColor;
-    if (color === 'Red') {
-      barColor = '#F83018';
-    } else if (color === 'Blue') {
-      barColor = '#58A0F8';
-    } else {
-      barColor = '#6CA66C';
-    }
-    canvas.ctx.clearRect(leftOffset, 16 * config.screenSize + meterOffset + battleLocationOffset, 24 * config.screenSize, 8 * config.screenSize);
-    canvas.ctx.drawImage(image, leftOffset, 16 * config.screenSize + meterOffset + battleLocationOffset, 24 * config.screenSize, 8 * config.screenSize);
-    canvas.ctx.fillStyle = barColor;
-    canvas.ctx.fillRect(leftOffset + 4 * config.screenSize, 16 * config.screenSize + meterOffset + battleLocationOffset + 2 * config.screenSize, meterLength * config.screenSize, 3 * config.screenSize);
-  });
-  _defineProperty(this, "setCombo", function (canvas, combo, comboImg) {
-    var tileMod = 8 * config.screenSize;
-    var leftOffset = _this.dgmnData.isEnemy ? 3 * tileMod : 19 * tileMod;
-    var battleLocationOffset = _this.dgmnData.battleLocation * 4 * tileMod;
-    var _char = combo;
-    canvas.ctx.clearRect(leftOffset, 4 * tileMod + battleLocationOffset, tileMod, tileMod);
-    if (combo !== 'F') {
-      canvas.ctx.drawImage(comboImg, fontData[_char][0] * 64, fontData[_char][1] * 64, 64, 64, leftOffset, 4 * tileMod + battleLocationOffset, tileMod, tileMod);
-    }
-  });
-  _defineProperty(this, "setWeakened", function (canvas, levelImg) {
-    var tileMod = 8 * config.screenSize;
-    var leftOffset = _this.dgmnData.isEnemy ? 0 * tileMod : 16 * tileMod;
-    var battleLocationOffset = _this.dgmnData.battleLocation * 4 * tileMod;
-    canvas.paintImage(levelImg, leftOffset, 5 * tileMod + battleLocationOffset);
-  });
-  _defineProperty(this, "setStatusConditions", function (canvas, conditionImages) {});
-  _defineProperty(this, "cleanAll", function (canvas) {
-    console.log("CLEAN AFTER KO");
-  });
-  this.listIndex = listIndex;
-  this.dgmnData = dgmnData;
-  this.currHP = new BattleMeter();
-  this.currEN = new BattleMeter();
-  this.statuses = [];
-};
 
 var attacksDB = {
   bubbles: {
@@ -771,426 +500,1432 @@ var attacksDB = {
   }
 };
 
-var DgmnAttackMenu = function DgmnAttackMenu(fetchImageCallback) {
+var AttackUtility = function AttackUtility() {
+  _classCallCheck(this, AttackUtility);
+  _defineProperty(this, "getDisplayName", function (attackName) {
+    return attacksDB[attackName].displayName;
+  });
+  _defineProperty(this, "getMaxCost", function (attackName) {
+    return attacksDB[attackName].maxCost;
+  });
+  _defineProperty(this, "getType", function (attackName) {
+    return attacksDB[attackName].type;
+  });
+  _defineProperty(this, "getPower", function (attackName) {
+    return attacksDB[attackName].power;
+  });
+  _defineProperty(this, "getTargets", function (attackName) {
+    return attacksDB[attackName].targets;
+  });
+  _defineProperty(this, "getHits", function (attackName) {
+    return attacksDB[attackName].hits;
+  });
+};
+
+var Attack = function Attack(attackName) {
+  _classCallCheck(this, Attack);
+  this.attackName = attackName;
+  this.currCost = 4;
+  this.attackUtility = new AttackUtility();
+  this.displayName = this.attackUtility.getDisplayName(this.attackName);
+  this.maxCost = this.attackUtility.getMaxCost(this.attackName);
+  this.type = this.attackUtility.getType(this.attackName);
+  this.power = this.attackUtility.getPower(this.attackName);
+  this.targets = this.attackUtility.getTargets(this.attackName);
+  this.hits = this.attackUtility.getHits(this.attackName);
+};
+
+var Dgmn = function Dgmn(id, nickname, speciesName) {
   var _this = this;
-  _classCallCheck(this, DgmnAttackMenu);
-  _defineProperty(this, "loadAttackList", function (attackData) {
-    _this.attackList = attackData;
+  _classCallCheck(this, Dgmn);
+  _defineProperty(this, "initializeStats", function () {
+    console.log("STATS");
   });
-  _defineProperty(this, "selectUp", function (canvas, newIndex) {
-    if (newIndex >= 0) {
-      _this.setSelection(canvas, newIndex);
-    } else {
-      console.log("Can't go up");
+  _defineProperty(this, "initCanvas", function (refreshScreenCB, dgmnImageList, battlePosition) {
+    _this.dgmnCanvas = new DgmnCanvas(refreshScreenCB, _this.speciesName, 'dgmn-canvas', 32, 32);
+    _this.dgmnCanvas.x = (24 + (_this.isEnemy ? 8 : 72)) * config.screenSize;
+    _this.dgmnCanvas.y = (16 + battlePosition * 32) * config.screenSize;
+    _this.dgmnCanvas.frames = dgmnImageList;
+    if (_this.isEnemy) {
+      _this.dgmnCanvas.flip();
     }
   });
-  _defineProperty(this, "selectDown", function (canvas, newIndex) {
-    if (newIndex < _this.attackList.length) {
-      _this.setSelection(canvas, newIndex);
-    } else {
-      console.log("Can't go down");
+  _defineProperty(this, "startIdleAnimation", function () {
+    var speed = 1800 - Math.floor(_this.currentStats.SPD * 2) * 33;
+    speed = speed <= 0 ? 33 : speed;
+    _this.dgmnCanvas.animate(speed);
+  });
+  _defineProperty(this, "drawDgmnToCanvas", function (image) {
+    _this.dgmnCanvas.paintImage(image);
+  });
+  _defineProperty(this, "getAllAttacks", function () {
+    return _this.attacks;
+  });
+  _defineProperty(this, "getMaxHP", function () {
+    return _this.currentStats.HP;
+  });
+  _defineProperty(this, "getATK", function () {
+    return _this.currentStats.ATK;
+  });
+  this.dgmnId = id;
+  this.nickname = nickname;
+  this.speciesName = speciesName;
+  this.eggField = "";
+  this.currentLevel = 1;
+  this.currentHP = 25;
+  this.currentEN = 100;
+  this.currentStats = {
+    HP: 30,
+    ATK: 0,
+    DEF: 0,
+    INT: 0,
+    RES: 0,
+    HIT: 0,
+    AVO: 0,
+    SPD: 0
+  };
+  this.attackList = ["bubbles", "babyFlame"];
+  this.attacks = [];
+  this.isDead = false;
+  this.dgmnCanvas;
+};
+
+var partyMock = {
+  dId0: {
+    currentLevel: 2,
+    attacks: [new Attack('bubbles'), new Attack('babyFlame'), new Attack('magicalFire'), new Attack('darknessGear'), new Attack('petitFire'), new Attack('petitTwister'), new Attack('picoDarts')],
+    currentStats: {
+      HP: 30,
+      ATK: 10,
+      DEF: 0,
+      INT: 0,
+      RES: 0,
+      HIT: 0,
+      AVO: 0,
+      SPD: 8
+    }
+  },
+  dId1: {
+    currentLevel: 2,
+    attacks: [new Attack('bubbles'), new Attack('nutsShoot'), new Attack('picoDarts')],
+    currentStats: {
+      HP: 30,
+      ATK: 8,
+      DEF: 0,
+      INT: 0,
+      RES: 0,
+      HIT: 0,
+      AVO: 0,
+      SPD: 12
+    }
+  },
+  dId2: {
+    currentLevel: 2,
+    attacks: [new Attack('bubbles'), new Attack('darknessGear')],
+    currentStats: {
+      HP: 30,
+      ATK: 4,
+      DEF: 0,
+      INT: 0,
+      RES: 0,
+      HIT: 0,
+      AVO: 0,
+      SPD: 4
+    }
+  }
+};
+var enemyPartyMock = {
+  edId0: {
+    speciesName: 'gabu',
+    currentStats: {
+      HP: 30,
+      ATK: 0,
+      DEF: 4,
+      INT: 0,
+      RES: 0,
+      HIT: 0,
+      AVO: 0,
+      SPD: 5
+    }
+  },
+  edId1: {
+    speciesName: 'picoDevi',
+    currentStats: {
+      HP: 30,
+      ATK: 0,
+      DEF: 2,
+      INT: 0,
+      RES: 0,
+      HIT: 0,
+      AVO: 0,
+      SPD: 3
+    }
+  },
+  edId2: {
+    speciesName: 'pulse',
+    currentStats: {
+      HP: 30,
+      ATK: 0,
+      DEF: 8,
+      INT: 0,
+      RES: 0,
+      HIT: 0,
+      AVO: 0,
+      SPD: 7
+    }
+  }
+};
+
+var EnemyGenerator = function EnemyGenerator(dgmnAH) {
+  var _this = this;
+  _classCallCheck(this, EnemyGenerator);
+  _defineProperty(this, "generate", function (data) {
+    var enemies = {};
+    console.log("Generating Enemies");
+    for (var i = 0; i < 3; i++) {
+      var dgmnData = {
+        speciesName: enemyPartyMock["edId".concat(i)].speciesName,
+        currentStats: enemyPartyMock["edId".concat(i)].currentStats
+      };
+      _this.dgmnAH.createDgmn(i, dgmnData, true);
+    }
+    return enemies;
+  });
+  this.dgmnAH = dgmnAH;
+};
+
+var DgmnManager = function DgmnManager() {
+  var _this = this;
+  _classCallCheck(this, DgmnManager);
+  _defineProperty(this, "mockParty", function () {
+    for (var i = 0; i < 3; i++) {
+      _this.allDgmn["dId".concat(i)].currentLevel = partyMock["dId".concat(i)].currentLevel;
+      _this.allDgmn["dId".concat(i)].attacks = partyMock["dId".concat(i)].attacks;
+      _this.allDgmn["dId".concat(i)].currentStats = partyMock["dId".concat(i)].currentStats;
+    }
+    return ['dId0', 'dId1', 'dId2'];
+  });
+  _defineProperty(this, "createDgmn", function (index, data, isEnemy) {
+    if (isEnemy) {
+      _this.enemyDgmn["edId".concat(index)] = new Dgmn(index, "ENEMY", data.speciesName);
+      _this.enemyDgmn["edId".concat(index)].isEnemy = true;
+      _this.enemyDgmn["edId".concat(index)].currentHP = _this.enemyDgmn["edId".concat(index)].currentStats.HP;
     }
   });
-  _defineProperty(this, "setSelection", function (canvas, newIndex) {
-    _this.clearCursor(canvas, _this.currentChoice);
-    _this.paintCursor(canvas, newIndex);
-    _this.currentChoice = newIndex;
+  _defineProperty(this, "isEnemy", function (dgmnId) {
+    return dgmnId.charAt(0) === 'e';
   });
-  _defineProperty(this, "clearCursor", function (canvas, index) {
-    var tileMod = 8 * config.screenSize;
-    canvas.ctx.fillStyle = '#00131A';
-    canvas.ctx.fillRect((4 * 8 + 1) * config.screenSize, (2 + index * 2) * tileMod, tileMod - 1 * config.screenSize, tileMod);
+  _defineProperty(this, "generateEnemies", function (data) {
+    _this.enemyGenerator.generate(data);
   });
-  _defineProperty(this, "paintCursor", function (canvas, index) {
-    canvas.paintImage(_this.fetchImage('miniCursor'), 4 * (8 * config.screenSize), (2 + index * 2) * (8 * config.screenSize));
+  _defineProperty(this, "getDgmnData", function (dgmnId, dataList, isEnemy) {
+    var obj = {};
+    for (var i = 0; i < dataList.length; i++) {
+      obj[dataList[i]] = !isEnemy ? _this.allDgmn[dgmnId][dataList[i]] : _this.enemyDgmn[dgmnId][dataList[i]];
+    }
+    return obj;
   });
-  _defineProperty(this, "refreshList", function (canvas) {
-    var loopCount = _this.attackList.length > 6 ? 6 : _this.attackList.length;
-    for (var i = 0; i < loopCount; i++) {
-      var attack = _this.attackList[i];
-      var targetCount = attack.targets === 'single' ? 'targetOne' : 'targetAll';
-      _this.textManagers[i].instantPaint(canvas, attack.displayName);
-      canvas.ctx.drawImage(_this.fetchImage('costLabel'), 5 * (8 * config.screenSize), (3 + 2 * i) * (8 * config.screenSize), 16 * config.screenSize, 8 * config.screenSize);
-      _this.calculateCost(canvas, attack, i);
-      canvas.ctx.drawImage(_this.fetchImage("".concat(attack.type, "TypeIcon")), 16 * (8 * config.screenSize), (3 + 2 * i) * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
-      canvas.ctx.drawImage(_this.fetchImage("pwr".concat(attack.power, "Icon")), 17 * (8 * config.screenSize), (3 + 2 * i) * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
-      canvas.ctx.drawImage(_this.fetchImage(targetCount), 18 * (8 * config.screenSize), (3 + 2 * i) * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
-      canvas.ctx.drawImage(_this.fetchImage('oneHitIcon'), 19 * (8 * config.screenSize), (3 + 2 * i) * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
+  _defineProperty(this, "getDgmnAttackData", function (dgmnId, dataList) {
+    var objList = [];
+    var dgmnAttacks = _this.allDgmn[dgmnId].attacks;
+    for (var a = 0; a < dgmnAttacks.length; a++) {
+      var obj = {
+        attackName: _this.allDgmn[dgmnId].attacks[a].attackName
+      };
+      for (var i = 0; i < dataList.length; i++) {
+        obj[dataList[i]] = _this.allDgmn[dgmnId].attacks[a][dataList[i]];
+      }
+      objList.push(obj);
+    }
+    return objList;
+  });
+  _defineProperty(this, "dealDMG", function (target, dmg) {
+    if (target.charAt(0) === 'e') {
+      _this.enemyDgmn[target].currentHP -= dmg;
     }
   });
-  _defineProperty(this, "calculateCost", function (canvas, attack, index) {
-    var blockCount = attack.maxCost / 4;
-    var remCount = attack.currCost;
-    for (var i = 0; i < blockCount; i++) {
-      var remove = attack.maxCost - (i + 1) * 4;
-      var check = attack.maxCost - remove - i * 4;
-      var _final = 25 * (remCount - check);
-      _final = _final >= 0 ? 0 : _final;
-      _final = _final / 25 < -3 ? -100 : _final;
-      canvas.ctx.drawImage(_this.fetchImage("costMeter".concat(100 + _final)), (7 + i) * (8 * config.screenSize), (3 + index * 2) * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
-      remCount -= 4;
+  _defineProperty(this, "checkKO", function (target) {
+    if (_this.isEnemy(target)) {
+      if (_this.enemyDgmn[target].isDead) return true;
+      if (_this.enemyDgmn[target].currentHP <= 0) {
+        _this.enemyDgmn[target].isDead = true;
+        return true;
+      }
     }
+    return false;
   });
-  this.attackList = [];
-  this.currentChoice = 0;
-  this.textManagers = [new TextManager([fetchImageCallback('fontsWhite')], 1, 15, 5, 2), new TextManager([fetchImageCallback('fontsWhite')], 1, 15, 5, 4), new TextManager([fetchImageCallback('fontsWhite')], 1, 15, 5, 6)];
-  this.fetchImage = function (imageName) {
-    return fetchImageCallback(imageName);
+  _defineProperty(this, "checkAllDead", function (isEnemy) {
+    var party = isEnemy ? _this.enemyDgmn : _this.party;
+    for (var dgmn in party) {
+      if (!party[dgmn].isDead) return false;
+    }
+    return true;
+  });
+  _defineProperty(this, "initDgmnCanvas", function (dgmnId, drawCB, imageList, battleLocation) {
+    !_this.isEnemy(dgmnId) ? _this.allDgmn[dgmnId].initCanvas(drawCB, imageList, battleLocation) : _this.enemyDgmn[dgmnId].initCanvas(drawCB, imageList, battleLocation);
+  });
+  _defineProperty(this, "animateDgmn", function (dgmnId) {
+    !_this.isEnemy(dgmnId) ? _this.allDgmn[dgmnId].startIdleAnimation() : _this.enemyDgmn[dgmnId].startIdleAnimation();
+  });
+  _defineProperty(this, "getCanvas", function (dgmnId) {
+    return !_this.isEnemy(dgmnId) ? _this.allDgmn[dgmnId].dgmnCanvas : _this.enemyDgmn[dgmnId].dgmnCanvas;
+  });
+  this.allDgmn = {
+    dId0: new Dgmn(0, "FLARE", "Agu"),
+    dId1: new Dgmn(1, "SPROUT", "Lala"),
+    dId2: new Dgmn(2, "GEAR", "Haguru")
+  };
+  this.dgmnAH = new DgmnAH({
+    getDgmnDataCB: this.getDgmnData,
+    getDgmnAttackDataCB: this.getDgmnAttackData,
+    initDgmnCanvasCB: this.initDgmnCanvas,
+    getCanvasCB: this.getCanvas,
+    animateDgmnCB: this.animateDgmn,
+    dealDMGCB: this.dealDMG,
+    checkKOCB: this.checkKO,
+    checkAllDeadCB: this.checkAllDead,
+    createDgmnCB: this.createDgmn,
+    generateEnemiesCB: this.generateEnemies
+  });
+  this.enemyGenerator = new EnemyGenerator(this.dgmnAH);
+  this.enemyDgmn = {};
+  this.party = this.mockParty();
+}
+;
+
+var DigiBeetleAH = function DigiBeetleAH(addItemToToolBoxCB) {
+  _classCallCheck(this, DigiBeetleAH);
+  this.addItemToToolBox = function (item) {
+    addItemToToolBoxCB(item);
   };
 };
 
-var getComboLetter = function getComboLetter(combo) {
-  var letter = 'F';
-  if (combo > 1 && combo < 5) {
-    letter = 'E';
-  } else if (combo > 4 && combo < 9) {
-    letter = 'D';
-  } else if (combo > 8 && combo < 14) {
-    letter = 'C';
-  } else if (combo > 13 && combo < 19) {
-    letter = 'B';
-  } else if (combo > 18 && combo < 24) {
-    letter = 'A';
-  } else if (combo >= 25) {
-    letter = 'S';
-  }
-  return letter;
-};
-var getStatNameFromIndex = function getStatNameFromIndex(index) {
-  var stat = '';
-  switch (index) {
-    case 0:
-      stat = 'HP';
-      break;
-    case 1:
-      stat = 'ATK';
-      break;
-    case 2:
-      stat = 'DEF';
-      break;
-    case 3:
-      stat = 'INT';
-      break;
-    case 4:
-      stat = 'RES';
-      break;
-    case 5:
-      stat = 'HIT';
-      break;
-    case 6:
-      stat = 'AVO';
-      break;
-    case 7:
-      stat = 'SPD';
-      break;
-  }
-  return stat;
-};
-
-var BattleMenu = function BattleMenu(dgmnData, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback) {
-  var _this = this;
-  _classCallCheck(this, BattleMenu);
-  _defineProperty(this, "buildStatusList", function () {
-    for (var i = 0; i < _this.dgmnData.length; i++) {
-      _this.dgmnStatusList.push(new DgmnBattleStatus(i, _this.dgmnData[i]));
+var DigiBeetleCanvas = function (_GameCanvas) {
+  _inherits(DigiBeetleCanvas, _GameCanvas);
+  var _super = _createSuper(DigiBeetleCanvas);
+  function DigiBeetleCanvas(currentDirectionCallback) {
+    var _this;
+    _classCallCheck(this, DigiBeetleCanvas);
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
     }
-  });
-  _defineProperty(this, "getStatusIndex", function (dgmnId) {
-    var index = -1;
-    for (var i = 0; i < _this.dgmnStatusList.length; i++) {
-      if (_this.dgmnStatusList[i].dgmnData.dgmnId === dgmnId) {
-        index = i;
-      }
-    }
-    return index;
-  });
-  _defineProperty(this, "setTopText", function (message) {
-    if (message) _this.topTextManager.instantPaint(_this.menuCanvas, message);
-  });
-  _defineProperty(this, "buildBattleMenus", function () {
-    _this.menus.beetle = [];
-    _this.menus.dgmn = {
-      currentIndex: 0,
-      totalIcons: 3,
-      icons: [{
-        label: 'Attack',
-        activeImg: _this.fetchImage('attackSelected'),
-        inactiveImg: _this.fetchImage('attackDeselected')
-      }, {
-        label: 'Defend',
-        activeImg: _this.fetchImage('defendSelected'),
-        inactiveImg: _this.fetchImage('defendDeselected')
-      }, {
-        label: 'Stats',
-        activeImg: _this.fetchImage('statsSelected'),
-        inactiveImg: _this.fetchImage('statsDeselected')
-      }]
-    };
-    _this.menus.attack = {
-      currentIndex: 0,
-      currentPage: 0,
-      currentPageMax: 0
-    };
-    _this.menus.targetSelect = {
-      currentIndex: 0
-    };
-  });
-  _defineProperty(this, "fullMenuPaint", function () {
-    _this.paintMenu(0);
-    _this.paintInitialIcons('dgmn');
-    _this.updateAllStatusBars();
-    _this.drawAllComboLabels();
-    _this.topTextManager.instantPaint(_this.menuCanvas, 'Attack');
-  });
-  _defineProperty(this, "paintInitialIcons", function (phase) {
-    _this.menuCanvas.paintImage(_this.menus[phase].icons[0].activeImg, 112 * config.screenSize, 128 * config.screenSize);
-    _this.menuCanvas.paintImage(_this.menus[phase].icons[1].inactiveImg, 128 * config.screenSize, 128 * config.screenSize);
-    _this.menuCanvas.paintImage(_this.menus[phase].icons[2].inactiveImg, 144 * config.screenSize, 128 * config.screenSize);
-    _this.triggerGameScreenRedraw();
-  });
-  _defineProperty(this, "setupDgmn", function (index) {
-    _this.menuCanvas.ctx.clearRect(10 * (8 * config.screenSize), 2 * (8 * config.screenSize), 4 * (8 * config.screenSize), 12 * (8 * config.screenSize));
-    _this.paintMenu(index);
-  });
-  _defineProperty(this, "paintMenu", function (index) {
-    _this.menuCanvas.paintImage(_this.fetchImage('cursor'), 80 * config.screenSize, (2 + 4 * index) * (8 * config.screenSize) + 8 * config.screenSize);
-    _this.paintBottomData(_this.dgmnData[index]);
-  });
-  _defineProperty(this, "clearBottomData", function (clearIcons) {
-    if (clearIcons) {
-      _this.menuCanvas.ctx.clearRect(0 * (8 * config.screenSize), 14 * (8 * config.screenSize), 20 * (8 * config.screenSize), 4 * (8 * config.screenSize));
-    } else {
-      _this.menuCanvas.ctx.clearRect(0 * (8 * config.screenSize), 14 * (8 * config.screenSize), 20 * (8 * config.screenSize), 2 * (8 * config.screenSize));
-      _this.menuCanvas.ctx.clearRect(0 * (8 * config.screenSize), 16 * (8 * config.screenSize), 14 * (8 * config.screenSize), 2 * (8 * config.screenSize));
-    }
-  });
-  _defineProperty(this, "paintBottomData", function (dgmn) {
-    _this.clearBottomData();
-    _this.dgmnNameTextManager.instantPaint(_this.menuCanvas, dgmn.nickname);
-    _this.dgmnSpeciesTextManager.instantPaint(_this.menuCanvas, "".concat(dgmn.name, ".MON"));
-    _this.currDgmnHP.instantPaint(_this.menuCanvas, ".hp".concat(dgmn.currHP));
-    _this.currDgmnEN.instantPaint(_this.menuCanvas, ".en".concat(dgmn.currEN));
-    _this.setDgmnPortrait(dgmn.name);
-    _this.triggerGameScreenRedraw();
-  });
-  _defineProperty(this, "clearIcon", function (index) {
-    _this.menuCanvas.ctx.clearRect((112 + 16 * index) * config.screenSize, 128 * config.screenSize, 16 * config.screenSize, 16 * config.screenSize);
-  });
-  _defineProperty(this, "setDgmnPortrait", function (species) {
-    _this.menuCanvas.ctx.drawImage(_this.fetchImage("".concat(species.toLowerCase(), "Portrait")), 0, 0, 32 * 8, (32 - 1) * 8, 0 * 8 * config.screenSize, 14 * 8 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
-  });
-  _defineProperty(this, "updateAllStatusBars", function () {
-    for (var i = 0; i < _this.dgmnStatusList.length; i++) {
-      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currHP, _this.dgmnData[_this.dgmnStatusList[i].listIndex].currStats[0], 'hp');
-      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currEN, 100, 'en');
-    }
-  });
-  _defineProperty(this, "drawAllComboLabels", function () {
-    var tileMod = 8 * config.screenSize;
-    for (var i = 0; i < _this.dgmnStatusList.length; i++) {
-      var battleLocationOffset = _this.dgmnStatusList[i].dgmnData.battleLocation * 4 * tileMod;
-      var leftOffset = _this.dgmnStatusList[i].dgmnData.isEnemy ? 0 : 16 * tileMod;
-      _this.menuCanvas.paintImage(_this.fetchImage('comboLabel'), leftOffset, 4 * tileMod + battleLocationOffset);
-    }
-  });
-  _defineProperty(this, "updateStatusBar", function (status, curr, max, bar) {
-    var calcValue = Math.floor(curr / max * 18);
-    var barColor = calcValue >= 9 ? 'White' : 'LightGreen';
-    if (bar === 'hp') {
-      barColor = 'LightGreen';
-    } else if (bar === 'en') {
-      barColor = 'LightGreen';
-    }
-    barColor = curr <= 0 ? 'DarkGreen' : barColor;
-    status.drawMeter(_this.menuCanvas, bar, _this.fetchImage("dgmnBar".concat(barColor)), calcValue, barColor);
-    _this.triggerGameScreenRedraw();
-  });
-  _defineProperty(this, "launchDgmnAttackMenu", function (attackList) {
-    debugLog("Attacking");
-    debugLog("-- Selecting attack...");
-    _this.currentState = 'attack';
-    _this.topTextManager.instantPaint(_this.menuCanvas, 'Select Attack');
-    _this.menuCanvas.paintImage(_this.fetchImage('battleOptionSelectBaseRight'), 0, 0);
-    _this.menuCanvas.paintImage(_this.fetchImage('miniCursor'), 4 * (8 * config.screenSize), 2 * (8 * config.screenSize));
-    _this.dgmnAttackMenu.currentChoice = 0;
-    _this.dgmnAttackMenu.loadAttackList(_this.dgmnData[_this.currentDgmnActor].permAttacks);
-    _this.dgmnAttackMenu.refreshList(_this.menuCanvas, 0);
-    _this.triggerGameScreenRedraw();
-  });
-  _defineProperty(this, "closeDgmnAttackMenu", function () {
-    _this.topTextManager.instantPaint(_this.menuCanvas, 'Attack');
-    _this.menuCanvas.ctx.clearRect(4 * (8 * config.screenSize), 2 * (8 * config.screenSize), 16 * (8 * config.screenSize), 12 * (8 * config.screenSize));
-    for (var i = 0; i < _this.dgmnStatusList.length; i++) {
-      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currHP, _this.dgmnData[_this.dgmnStatusList[i].listIndex].currStats[0], 'hp');
-      _this.updateStatusBar(_this.dgmnStatusList[i], _this.dgmnData[_this.dgmnStatusList[i].listIndex].currEN, 100, 'en');
-      _this.dgmnStatusList[i].setCombo(_this.menuCanvas, _this.dgmnStatusList[i].dgmnData.comboLetter, _this.fetchImage('fontsWhite'));
-    }
-    _this.drawAllComboLabels();
-    _this.triggerGameScreenRedraw();
-  });
-  _defineProperty(this, "launchSelectTarget", function () {
-    debugLog("-- Selecting target...");
-    _this.currentState = 'targetSelect';
-    _this.closeDgmnAttackMenu();
-    var firstAlive = 0;
-    for (var i = 0; i < _this.dgmnData.length; i++) {
-      if (_this.dgmnData[i].isEnemy && !_this.dgmnData[i].isDead) {
-        firstAlive = _this.dgmnData[i].battleLocation;
-        break;
-      }
-    }
-    _this.menus.targetSelect.currentIndex = 0;
-    var attackData = attacksDB[_this.dgmnAttackMenu.attackList[_this.dgmnAttackMenu.currentChoice].attackName];
-    if (attackData.targets === 'single') {
-      _this.targetSelectedType = 'single';
-      _this.paintTargetSelectCursor('single', firstAlive);
-    } else {
-      _this.targetSelectedType = 'all';
-      _this.paintTargetSelectCursor('all');
-    }
-  });
-  _defineProperty(this, "targetSelect", function (mod, battleLocations) {
-    if (_this.targetSelectedType !== 'all') {
-      if (!(mod < 0 && _this.menus.targetSelect.currentIndex === 0) && !(mod > 0 && _this.menus.targetSelect.currentIndex === 2) && battleLocations.enemy[_this.menus.targetSelect.currentIndex + mod] && !_this.dgmnKOs[battleLocations.enemy[_this.menus.targetSelect.currentIndex + mod]]) {
-        _this.clearTargetSelectCursor();
-        _this.menus.targetSelect.currentIndex += mod;
-        _this.paintTargetSelectCursor('single', _this.menus.targetSelect.currentIndex);
-      }
-    }
-  });
-  _defineProperty(this, "clearCurrentDgmnCursors", function () {
-    var tileMod = 8 * config.screenSize;
-    _this.menuCanvas.ctx.clearRect(10 * tileMod, 2 * tileMod, 2 * tileMod, 12 * tileMod);
-  });
-  _defineProperty(this, "clearTargetSelectCursor", function () {
-    var tileMod = 8 * config.screenSize;
-    _this.menuCanvas.ctx.clearRect(8 * tileMod, 2 * tileMod, 2 * tileMod, 12 * tileMod);
-  });
-  _defineProperty(this, "paintTargetSelectCursor", function (targetCount, index) {
-    var tileMod = 8 * config.screenSize;
-    if (targetCount === 'single') {
-      _this.menuCanvas.paintImage(_this.fetchImage('cursorLeft'), 8 * tileMod, (3 + index * 4) * tileMod);
-    } else {
-      for (var i = 0; i < 3; i++) {
-        _this.menuCanvas.paintImage(_this.fetchImage('cursorLeft'), 8 * tileMod, (3 + i * 4) * tileMod);
-      }
-    }
-    _this.triggerGameScreenRedraw();
-  });
-  _defineProperty(this, "setAttackBottomInfo", function (attacker, attack, missCrit, onDone) {
-    _this.clearBottomData(true);
-    _this.setDgmnPortrait(attacker.name);
-    var attackMessage = attacker.isEnemy ? "Enemy ".concat(attacker.name, ".MON used ").concat(attack.displayName, "!") : "".concat(attacker.nickname, " used ").concat(attack.displayName, "!");
-    if (missCrit === 'missed') attackMessage += " ...but missed.";
-    if (missCrit === 'critical') attackMessage += " Critical Hit!";
-    _this.bottomTextManager.slowPaint(_this.menuCanvas, attackMessage, _this.triggerGameScreenRedraw, onDone);
-  });
-  _defineProperty(this, "setDefendBottomInfo", function (defender, onDone) {
-    _this.clearBottomData(true);
-    _this.setDgmnPortrait(defender.name);
-    var defendMessage = defender.isEnemy ? "Enemy ".concat(defender.name, ".MON Defends!") : "".concat(defender.nickname, " Defends!");
-    _this.bottomTextManager.slowPaint(_this.menuCanvas, defendMessage, _this.triggerGameScreenRedraw, onDone);
-  });
-  _defineProperty(this, "setEffectBottomInfo", function (effect, attacker, target, isCapped, onDone) {
-    var effectMessage;
-    if (!isCapped) {
-      switch (effect[0]) {
-        case 'buff':
-          var amount = '';
-          if (effect[2] === 1) {
-            amount = ' a bit';
-          } else if (effect[2] === 2) {
-            amount = 'a lot';
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "animateBeetle", function () {
+      var frame = 0;
+      _this.animateTimer = setInterval(function () {
+        _this.animationCounter++;
+        if (_this.animationCounter % 8 === 0 || _this.getDirection() !== _this.prevDirection) {
+          _this.prevDirection = _this.getDirection();
+          _this.animationCounter = 0;
+          if (frame === 0) {
+            frame = 1;
+          } else {
+            frame = 0;
           }
-          effectMessage = "".concat(getStatNameFromIndex(effect[1]), " went up").concat(amount, "!");
-          break;
-        case 'status':
-          console.log("EFFECT = ", effect);
-          effectMessage = "".concat(target, " inflicted with ").concat(effect[1]);
-          break;
-        default:
-          effectMessage = 'Something went wrong...';
-          onDone();
-          break;
-      }
-    } else {
-      effectMessage = "Couldn't increase ".concat(getStatNameFromIndex(effect[1]), "...");
+          _this.clearCanvas();
+          _this.paintImage(_this.frames[_this.getDirection()][frame]);
+          _this.triggerGameScreenRedraw();
+        }
+      }, 66);
+    });
+    _defineProperty(_assertThisInitialized(_this), "stopAnimatingBeetle", function () {
+      clearInterval(_this.animateTimer);
+    });
+    _this.direction = 'down';
+    _this.frames = {
+      down: [],
+      up: [],
+      left: [],
+      right: []
+    };
+    _this.animateSpeed = 2000;
+    _this.animationCounter = 0;
+    _this.animateTimer;
+    _this.prevDirection = 'down';
+    _this.getDirection = function () {
+      return currentDirectionCallback();
+    };
+    return _this;
+  }
+  return DigiBeetleCanvas;
+}(GameCanvas);
+
+var genericImages = ['./sprites/Battle/Menu/miniCursor.png', './sprites/Menus/typeLabel.png', './sprites/Menus/costLabel.png', './sprites/Menus/targetLabel.png', './sprites/Menus/powerLabel.png', './sprites/Menus/hitLabel.png', './sprites/Menus/noneTypeIcon.png', './sprites/Menus/fireTypeIcon.png', './sprites/Menus/windTypeIcon.png', './sprites/Menus/plantTypeIcon.png', './sprites/Menus/elecTypeIcon.png', './sprites/Menus/evilTypeIcon.png', './sprites/Menus/metalTypeIcon.png', './sprites/Menus/targetOne.png', './sprites/Menus/targetAll.png', './sprites/Menus/pwrFIcon.png', './sprites/Menus/pwrEIcon.png', './sprites/Menus/pwrDIcon.png', './sprites/Menus/oneHitIcon.png', './sprites/Menus/costMeter100.png', './sprites/Menus/costMeter75.png', './sprites/Menus/costMeter50.png', './sprites/Menus/costMeter25.png', './sprites/Menus/costMeter0.png', './sprites/Battle/Attacks/blankAttack.png'];
+var fontImages$1 = ['./sprites/Fonts/fontsBlack.png', './sprites/Fonts/fontsWhite.png', './sprites/Fonts/fontsLightGreen.png', './sprites/Fonts/fontsDarkGreen.png'];
+var battleImages = ['./sprites/Battle/battleBackground.png', './sprites/Battle/Menu/cursor.png', './sprites/Battle/Menu/cursorLeft.png', './sprites/Battle/Menu/attackDeselected.png', './sprites/Battle/Menu/attackSelected.png', './sprites/Battle/Menu/defendDeselected.png', './sprites/Battle/Menu/defendSelected.png', './sprites/Battle/Menu/statsDeselected.png', './sprites/Battle/Menu/statsSelected.png', './sprites/Battle/Menu/dgmnBarWhite.png', './sprites/Battle/Menu/dgmnBarRed.png', './sprites/Battle/Menu/dgmnBarBlue.png', './sprites/Battle/Menu/dgmnBarLightGreen.png', './sprites/Battle/Menu/dgmnBarDarkGreen.png', './sprites/Battle/Menu/battleOptionSelectBaseRight.png', './sprites/Battle/Menu/comboLabel.png', './sprites/Battle/Menu/weak0.png', './sprites/Battle/Menu/weak1.png', './sprites/Battle/Menu/weak2.png', './sprites/Battle/Menu/weak3.png'];
+var dungeonImages = ['./sprites/Dungeon/startTile.png', './sprites/Dungeon/endTile.png', './sprites/Dungeon/enemyTile.png'];
+var digiBeetleImages = ['./sprites/Dungeon/DigiBeetle/digiBeetleDown0.png', './sprites/Dungeon/DigiBeetle/digiBeetleDown1.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp0.png', './sprites/Dungeon/DigiBeetle/digiBeetleUp1.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight0.png', './sprites/Dungeon/DigiBeetle/digiBeetleRight1.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft0.png', './sprites/Dungeon/DigiBeetle/digiBeetleLeft1.png'];
+
+var DigiBeetle = function DigiBeetle(dungeonAH) {
+  var _this = this;
+  _classCallCheck(this, DigiBeetle);
+  _defineProperty(this, "init", function () {
+    _this.initCanvas();
+    _this.loadDigiBeetleImages();
+  });
+  _defineProperty(this, "initSystemAH", function (actionHandler) {
+    _this.systemAH = actionHandler;
+  });
+  _defineProperty(this, "initGameAH", function (actionHandler) {
+    _this.gameAH = actionHandler;
+  });
+  _defineProperty(this, "initDungeonAH", function (actionHandler) {
+    _this.dungeonAH = actionHandler;
+  });
+  _defineProperty(this, "initCanvas", function () {
+    _this.digiBeetleCanvas = new DigiBeetleCanvas(_this.dungeonAH.getCurrentDirection, 'digibeetle-canvas', 16, 16, 64, 64, false, _this.gameAH.refreshScreen);
+  });
+  _defineProperty(this, "addItemToToolBox", function (item) {
+    _this.toolBox.push(item);
+  });
+  _defineProperty(this, "loadDigiBeetleImages", function () {
+    var allImages = [];
+    for (var img = 0; img < digiBeetleImages.length; img++) {
+      allImages.push(digiBeetleImages[img]);
     }
-    _this.bottomTextManager.slowPaint(_this.menuCanvas, effectMessage, _this.triggerGameScreenRedraw, onDone);
+    _this.systemAH.loadImages(allImages, function () {
+      _this.drawDigiBeetle();
+      _this.onDigiBeetleImagesLoaded();
+    });
   });
-  _defineProperty(this, "setMissedBottomInfo", function (onDone) {
-    _this.bottomTextManager.slowPaint(_this.menuCanvas, '', _this.triggerGameScreenRedraw, onDone);
+  _defineProperty(this, "onDigiBeetleImagesLoaded", function () {
+    _this.gameAH.addCanvasObject(_this.digiBeetleCanvas);
+    _this.onLoaded();
   });
-  _defineProperty(this, "setCurrentIcon", function (index) {
-    var prevIndex = _this.menus[_this.currentState].currentIndex;
-    _this.menus[_this.currentState].currentIndex = index;
-    _this.clearIcon(prevIndex);
-    _this.clearIcon(index);
-    _this.menuCanvas.paintImage(_this.menus[_this.currentState].icons[prevIndex].inactiveImg, (112 + 16 * prevIndex) * config.screenSize, 128 * config.screenSize);
-    _this.menuCanvas.paintImage(_this.menus[_this.currentState].icons[index].activeImg, (112 + 16 * index) * config.screenSize, 128 * config.screenSize);
-    _this.topTextManager.clearTextBox(_this.menuCanvas);
-    _this.topTextManager.instantPaint(_this.menuCanvas, _this.menus[_this.currentState].icons[index].label);
-    _this.triggerGameScreenRedraw();
+  _defineProperty(this, "drawDigiBeetle", function () {
+    _this.digiBeetleCanvas.frames.down = [_this.systemAH.fetchImage('digiBeetleDown0'), _this.systemAH.fetchImage('digiBeetleDown1')];
+    _this.digiBeetleCanvas.frames.up = [_this.systemAH.fetchImage('digiBeetleUp0'), _this.systemAH.fetchImage('digiBeetleUp1')];
+    _this.digiBeetleCanvas.frames.right = [_this.systemAH.fetchImage('digiBeetleRight0'), _this.systemAH.fetchImage('digiBeetleRight1')];
+    _this.digiBeetleCanvas.frames.left = [_this.systemAH.fetchImage('digiBeetleLeft0'), _this.systemAH.fetchImage('digiBeetleLeft1')];
+    _this.digiBeetleCanvas.animateBeetle('down');
   });
-  _defineProperty(this, "resetBattleMenuForNewTurn", function (indexZeroDgmn) {
-    _this.menus.dgmn.currentIndex = 0;
-    _this.currentState = 'dgmn';
-    _this.currentDgmnActor = 0;
-    _this.setTopText(_this.menus.dgmn.icons[0].label);
-    _this.menuCanvas.paintImage(_this.fetchImage('cursor'), 80 * config.screenSize, (2 + 4 * 0) * (8 * config.screenSize) + 8 * config.screenSize);
-    _this.paintBottomData(indexZeroDgmn);
-    _this.paintInitialIcons('dgmn');
-  });
-  _defineProperty(this, "setDgmnWeakenedState", function (statusIndex, imageName) {
-    dgmnStatus.setWeakened(_this.dgmnStatusList[statusIndex], _this.fetchImage(imageName));
-  });
-  _defineProperty(this, "setDgmnComboState", function (comboLetter, dgmnId) {
-    _this.dgmnStatusList[_this.getStatusIndex(dgmnId)].setCombo(_this.menuCanvas, comboLetter, _this.fetchImage('fontsWhite'));
-  });
-  _defineProperty(this, "setDgmnKOState", function (dgmnId) {
-    _this.dgmnKOs[dgmnId] = true;
-    _this.dgmnStatusList[_this.getStatusIndex(dgmnId)].cleanAll();
-  });
-  this.dgmnData = dgmnData;
-  this.currentState = 'dgmn';
-  this.currentDgmnActor = 0;
-  this.selectedTarget = 0;
-  this.targetSelectedType = 'single';
-  this.selectedAttack;
-  this.topTextManager = new TextManager([fetchImageCallback('fontsWhite')], 1, 20, 0, 1);
-  this.bottomTextManager = new TextManager([fetchImageCallback('fontsWhite')], 4, 16, 4, 14);
-  this.dgmnNameTextManager = new TextManager([fetchImageCallback('fontsWhite')], 1, 10, 4, 14);
-  this.dgmnSpeciesTextManager = new TextManager([fetchImageCallback('fontsLightGreen')], 1, 16, 4, 15);
-  this.currDgmnHP = new TextManager([fetchImageCallback('fontsWhite'), fetchImageCallback('fontsLightGreen')], 1, 6, 4, 16, function (_char) {
-    if (_char === 'hp') {
-      return 1;
-    }
-    return 0;
-  });
-  this.currDgmnEN = new TextManager([fetchImageCallback('fontsWhite'), fetchImageCallback('fontsLightGreen')], 1, 6, 4, 17, function (_char2) {
-    if (_char2 === 'en') {
-      return 1;
-    }
-    return 0;
-  });
-  this.dgmnKOs = {};
-  this.dgmnStatusList = [];
-  this.menus = {};
-  this.menuImages = ['./sprites/Battle/Menu/dgmn-bar-white.png', './sprites/Battle/Menu/dgmn-bar-light-green.png', './sprites/Battle/Menu/attack-select-popup-base.png'];
-  this.menuCanvas = new GameCanvas('battle-menu-canvas', 160, 144, 0, 0, false);
-  this.menuCanvas.loadImageStack(this.menuImages);
-  this.dgmnAttackMenu = new DgmnAttackMenu(function (imageName) {
-    return fetchImageCallback(imageName);
-  });
-  this.buildStatusList();
-  this.triggerGameScreenRedraw = function () {
-    gameScreenRedrawCallback();
+  _defineProperty(this, "onLoaded", function () {});
+  this.digiBeetleAH = new DigiBeetleAH(this.addItemToToolBox);
+  this.dungeonAH;
+  this.gameAH;
+  this.systemAH;
+  this.digiBeetleCanvas;
+  this.toolBox = {
+    version: 'dodo',
+    items: []
   };
-  this.fetchImage = function (imageName) {
-    return fetchImageCallback(imageName);
+};
+
+var DgmnUtility = function DgmnUtility() {
+  _classCallCheck(this, DgmnUtility);
+  _defineProperty(this, "getAllDgmnImages", function (speciesName) {
+    return ["./sprites/Battle/Dgmn/".concat(speciesName.toLowerCase(), "Idle0.png"), "./sprites/Battle/Dgmn/".concat(speciesName.toLowerCase(), "Idle1.png"), "./sprites/Battle/Dgmn/".concat(speciesName.toLowerCase(), "Attack.png"), "./sprites/Battle/Dgmn/".concat(speciesName.toLowerCase(), "Hurt.png"), "./sprites/Battle/Dgmn/".concat(speciesName.toLowerCase(), "Portrait.png")];
+  });
+};
+
+var BattleAH = function BattleAH(cbObj) {
+  _classCallCheck(this, BattleAH);
+  this.drawBattleCanvas = function () {
+    cbObj.drawBattleCanvasCB();
+  };
+  this.paintToBattleCanvas = function (image, x, y) {
+    cbObj.paintToBattleCanvasCB(image, x, y);
+  };
+  this.getDgmnDataByIndex = function (dgmnIndex, data, isEnemy) {
+    return cbObj.getDgmnDataByIndexCB(dgmnIndex, data, isEnemy);
+  };
+  this.getDgmnAttackData = function (dgmnIndex, data) {
+    return cbObj.getDgmnAttackDataCB(dgmnIndex, data);
+  };
+  this.selectAttack = function () {
+    cbObj.selectAttackCB();
+  };
+  this.setCurrentAttackTarget = function (dir) {
+    cbObj.setCurrentAttackTargetCB(dir);
+  };
+  this.addAction = function (dgmnIndex, attackName, targetIndex, attackTargets, attackPower) {
+    cbObj.addActionCB(dgmnIndex, attackName, targetIndex, attackTargets, attackPower);
+  };
+  this.beginCombat = function () {
+    cbObj.beginCombatCB();
+  };
+  this.getCurrDgmnChoice = function () {
+    return cbObj.getCurrDgmnChoiceCB();
+  };
+  this.drawActionText = function (species, message) {
+    cbObj.drawActionTextCB(species, message);
+  };
+  this.drawDgmnStatusMeter = function (isEnemy, index, stat) {
+    return cbObj.drawDgmnStatusMeterCB(isEnemy, index, stat);
+  };
+  this.drawAllStatuses = function () {
+    return cbObj.drawAllStatusesCB();
+  };
+  this.newTurn = function () {
+    return cbObj.newTurnCB();
+  };
+  this.checkBattleCondition = function () {
+    return cbObj.checkBattleConditionCB();
+  };
+  this.battleWin = function () {
+    return cbObj.battleWinCB();
+  };
+  this.battleLose = function () {
+    return cbObj.battleLoseCB();
+  };
+};
+
+var BattleUtility = function BattleUtility() {
+  _classCallCheck(this, BattleUtility);
+  _defineProperty(this, "getDefaultBattleImages", function () {
+    return battleImages;
+  });
+  _defineProperty(this, "calculateTurnOrder", function (idList) {
+    var order = [];
+    var sortArray = idList;
+    for (var i = 0; i < sortArray.length; i++) {
+      for (var r = 0; r < sortArray.length - 1; r++) {
+        var store = sortArray[r];
+        if (sortArray[r].SPD < sortArray[r + 1].SPD) {
+          sortArray[r] = sortArray[r + 1];
+          sortArray[r + 1] = store;
+        }
+      }
+    }
+    var _iterator = _createForOfIteratorHelper(sortArray),
+        _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var dgmn = _step.value;
+        order.push(dgmn.dgmnId);
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+    return order;
+  });
+  _defineProperty(this, "calculateMeterLength", function (curr, max) {
+    return Math.floor(curr / max * 18);
+  });
+};
+
+var MenuUtility = function MenuUtility() {
+  _classCallCheck(this, MenuUtility);
+  _defineProperty(this, "prependZeros", function (number, max) {
+    var zeroCount = max - number.toString().length;
+    var zeroString = "";
+    for (var i = 0; i < zeroCount; i++) {
+      zeroString += "0";
+    }
+    return zeroString + number.toString();
+  });
+}
+;
+
+var IO = function IO() {
+  var _this = this;
+  _classCallCheck(this, IO);
+  _defineProperty(this, "keyTriage", function (key, upDown) {
+    if (key === 'action') {
+      _this.actionKeyHandler();
+    } else if (key === 'cancel') {
+      _this.cancelKeyHandler();
+    } else if (key === 'up') {
+      _this.upKeyHandler(upDown);
+    } else if (key === 'right') {
+      _this.rightKeyHandler(upDown);
+    } else if (key === 'down') {
+      _this.downKeyHandler(upDown);
+    } else if (key === 'left') {
+      _this.leftKeyHandler(upDown);
+    }
+  });
+  _defineProperty(this, "actionKeyHandler", function (upDown) {});
+  _defineProperty(this, "cancelKeyHandler", function (upDown) {});
+  _defineProperty(this, "upKeyHandler", function (upDown) {});
+  _defineProperty(this, "rightKeyHandler", function (upDown) {});
+  _defineProperty(this, "downKeyHandler", function (upDown) {});
+  _defineProperty(this, "leftKeyHandler", function (upDown) {});
+};
+
+var BattleIO = function (_IO) {
+  _inherits(BattleIO, _IO);
+  var _super = _createSuper(BattleIO);
+  function BattleIO(battleAH) {
+    var _this;
+    _classCallCheck(this, BattleIO);
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "setMenuAH", function (ah) {
+      _this.battleMenuAH = ah;
+    });
+    _defineProperty(_assertThisInitialized(_this), "actionKeyHandler", function (upDown) {
+      if (_this.battleMenuAH.getCurrMenuType() === 'icon') {
+        _this.battleMenuAH.selectIcon();
+      } else if (_this.battleMenuAH.getCurrMenuType() === 'list') {
+        _this.battleMenuAH.selectListItem();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "upKeyHandler", function (upDown) {
+      if (upDown === 'down') {
+        if (_this.battleMenuAH.getCurrMenuType() === 'list') {
+          _this.battleMenuAH.prevListItem();
+        }
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "rightKeyHandler", function (upDown) {
+      if (upDown === 'down') {
+        if (_this.battleMenuAH.getCurrMenuType() === 'icon') {
+          _this.battleMenuAH.nextIcon();
+        }
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "downKeyHandler", function (upDown) {
+      if (upDown === 'down') {
+        if (_this.battleMenuAH.getCurrMenuType() === 'list') {
+          _this.battleMenuAH.nextListItem();
+        }
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "leftKeyHandler", function (upDown) {
+      if (upDown === 'down') {
+        if (_this.battleMenuAH.getCurrMenuType() === 'icon') {
+          _this.battleMenuAH.prevIcon();
+        }
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "triageMenuMove", function (dir, menuState, menuChart) {
+      var newIndex = menuChart.index;
+      if (dir === 'up') {
+        if (menuState === 'attack-list') {
+          _this.battleAH.setCurrentAttackMenuItem('prev');
+        } else if (menuState === 'target-select') {
+          _this.battleAH.setCurrentAttackTarget('prev');
+        }
+      }
+      if (dir === 'right') {
+        if (menuState === 'battle') {
+          newIndex = newIndex === menuChart[menuChart.level].length - 1 ? 0 : newIndex + 1;
+          _this.battleAH.setCurrentMenuButton(menuChart[menuChart.level][newIndex]);
+        }
+      }
+      if (dir === 'down') {
+        if (menuState === 'attack-list') {
+          _this.battleAH.setCurrentAttackMenuItem('next');
+        } else if (menuState === 'target-select') {
+          _this.battleAH.setCurrentAttackTarget('next');
+        }
+      }
+    });
+    _this.battleAH = battleAH;
+    _this.battleMenuAH;
+    _this.menuUtility = new MenuUtility();
+    return _this;
+  }
+  return BattleIO;
+}(IO);
+
+var BattleCanvas = function (_GameCanvas) {
+  _inherits(BattleCanvas, _GameCanvas);
+  var _super = _createSuper(BattleCanvas);
+  function BattleCanvas() {
+    var _this;
+    _classCallCheck(this, BattleCanvas);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "drawBattleBase", function (backgroundImage) {
+      _this.blackFill();
+      _this.paintImage(backgroundImage);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnCanvas", function (dgmnCanvas) {
+      _this.paintCanvas(dgmnCanvas);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnPortrait", function (dgmnPortraitImage) {
+      var portraitX = 0;
+      var portraitY = 0;
+      _this.paintImage(dgmnPortraitImage, portraitX, portraitY);
+    });
+    return _this;
+  }
+  return BattleCanvas;
+}(GameCanvas);
+
+var Menu = function Menu(systemAH, gameAH, parentAH) {
+  var _this = this;
+  _classCallCheck(this, Menu);
+  _defineProperty(this, "addSubMenu", function (label, menu) {
+    _this.subMenus[label] = menu;
+  });
+  _defineProperty(this, "removeSubMenu", function (label) {
+    delete _this.subMenus[label];
+  });
+  _defineProperty(this, "buildIconImages", function (labels) {
+    var images = {};
+    var _iterator = _createForOfIteratorHelper(labels),
+        _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var label = _step.value;
+        images[label] = {
+          selected: _this.systemAH.fetchImage("".concat(label, "Selected")),
+          deselected: _this.systemAH.fetchImage("".concat(label, "Deselected"))
+        };
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+    return images;
+  });
+  this.currSubMenu;
+  this.subMenus = {};
+  this.systemAH = systemAH;
+  this.gameAH = gameAH;
+  this.parentAH = parentAH;
+  this.menuUtility = new MenuUtility();
+};
+
+var SubMenu = function SubMenu(label) {
+  _classCallCheck(this, SubMenu);
+  this.label = label;
+  this.isVisible = false;
+  this.isActive = false;
+};
+
+var IconMenu = function (_SubMenu) {
+  _inherits(IconMenu, _SubMenu);
+  var _super = _createSuper(IconMenu);
+  function IconMenu(coord, iconList) {
+    var _this;
+    _classCallCheck(this, IconMenu);
+    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      args[_key - 2] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "nextIcon", function () {
+      var newIndex = _this.currIcon < _this.iconList.length - 1 ? _this.currIcon + 1 : 0;
+      _this.drawIcons(newIndex);
+      _this.currIcon = newIndex;
+    });
+    _defineProperty(_assertThisInitialized(_this), "prevIcon", function () {
+      var newIndex = _this.currIcon > 0 ? _this.currIcon - 1 : _this.iconList.length - 1;
+      _this.drawIcons(newIndex);
+      _this.currIcon = newIndex;
+    });
+    _defineProperty(_assertThisInitialized(_this), "selectIcon", function () {
+      _this.currIcon = 0;
+      _this.isActive = false;
+    });
+    _defineProperty(_assertThisInitialized(_this), "getCurrLabel", function () {
+      return _this.iconList[_this.currIcon];
+    });
+    _defineProperty(_assertThisInitialized(_this), "clearIcons", function () {
+      _this.menuCanvas.blackFill();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawIcons", function (selected) {
+      _this.clearIcons();
+      for (var i = 0; i < _this.iconList.length; i++) {
+        var img = selected === i ? _this.images[_this.iconList[i]].selected : _this.images[_this.iconList[i]].deselected;
+        _this.menuCanvas.paintImage(img, i * 16 * config.screenSize, 0);
+      }
+    });
+    _this.currIcon = 0;
+    _this.menuChart;
+    _this.iconList = iconList;
+    _this.images;
+    _this.menuCanvas = new GameCanvas("".concat(_this.label, "-menu"), _this.iconList.length * 16, 16);
+    _this.menuCanvas.x = coord[0] * 8 * config.screenSize;
+    _this.menuCanvas.y = coord[1] * 8 * config.screenSize;
+    return _this;
+  }
+  return IconMenu;
+}(SubMenu);
+
+var fontData = {
+  A: [0, 0],
+  a: [0, 2],
+  B: [1, 0],
+  b: [1, 2],
+  C: [2, 0],
+  c: [2, 2],
+  D: [3, 0],
+  d: [3, 2],
+  E: [4, 0],
+  e: [4, 2],
+  F: [5, 0],
+  f: [5, 2],
+  G: [6, 0],
+  g: [6, 2],
+  H: [7, 0],
+  h: [7, 2],
+  I: [8, 0],
+  i: [8, 2],
+  J: [9, 0],
+  j: [9, 2],
+  K: [10, 0],
+  k: [10, 2],
+  L: [11, 0],
+  l: [11, 2],
+  M: [12, 0],
+  m: [12, 2],
+  N: [13, 0],
+  n: [13, 2],
+  O: [14, 0],
+  o: [14, 2],
+  P: [15, 0],
+  p: [15, 2],
+  Q: [16, 0],
+  q: [16, 2],
+  R: [17, 0],
+  r: [17, 2],
+  S: [0, 1],
+  s: [0, 3],
+  T: [1, 1],
+  t: [1, 3],
+  U: [2, 1],
+  u: [2, 3],
+  V: [3, 1],
+  v: [3, 3],
+  W: [4, 1],
+  w: [4, 3],
+  X: [5, 1],
+  x: [5, 3],
+  Y: [6, 1],
+  y: [6, 3],
+  Z: [7, 1],
+  z: [7, 3],
+  space: [9, 1],
+  dotM: [0, 4],
+  hp: [1, 4],
+  en: [2, 4],
+  lv: [8, 1],
+  0: [3, 4],
+  1: [4, 4],
+  2: [5, 4],
+  3: [6, 4],
+  4: [7, 4],
+  5: [8, 4],
+  6: [9, 4],
+  7: [10, 4],
+  8: [11, 4],
+  9: [12, 4],
+  exclamation: [13, 4],
+  period: [14, 4]
+};
+var fontImages = [];
+
+var TextArea = function TextArea(x, y, width) {
+  var _this = this;
+  var height = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
+  var colorizeCB = arguments.length > 4 ? arguments[4] : undefined;
+  _classCallCheck(this, TextArea);
+  _defineProperty(this, "instantText", function (ctx, message, color) {
+    var charArray = _this.createCharArray(message);
+    var h = 0;
+    for (var w = 0; w < charArray.length; w++) {
+      var coord = _this.getCharCoordinates(charArray[w]);
+      var callbackColor = _this.colorizeCB(charArray[w], charArray, w);
+      callbackColor = callbackColor === "none" ? _this.colorImages[color] : _this.colorImages[callbackColor];
+      ctx.drawImage(callbackColor, coord[0] * 64, coord[1] * 64, 64, 64, (w + _this.x) * (8 * config.screenSize), (h + _this.y) * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
+    }
+  });
+  _defineProperty(this, "timedText", function (ctx, message, drawCB) {
+    var wordArray = message.split(" ");
+    var word = 0;
+    var _char = 0;
+    var r = 0;
+    var c = 0;
+    var paintInterval = setInterval(function () {
+      var charArray = _this.createCharArray(wordArray[word]);
+      _this.drawChar(ctx, charArray[_char], c, r);
+      drawCB();
+      _char++;
+      r = c + 1 >= _this.width ? r + 1 : r;
+      c = c + 1 >= _this.width ? 0 : c + 1;
+      if (_char >= charArray.length) {
+        word++;
+        _char = 0;
+        if (c !== 0) {
+          _this.drawChar(ctx, 'space', c, r);
+          drawCB();
+          c++;
+          if (c >= _this.width) r = 0;
+        }
+        if (word < wordArray.length && wordArray[word].length + c > _this.width) {
+          r++;
+          c = 0;
+        }
+      }
+      if (word >= wordArray.length) clearInterval(paintInterval);
+    }, config.textSpeed * 33);
+  });
+  _defineProperty(this, "drawChar", function (ctx, _char2, col, row) {
+    var coord = _this.getCharCoordinates(_char2);
+    ctx.drawImage(_this.colorImages.white, coord[0] * 64, coord[1] * 64, 64, 64, (col + _this.x) * config.tileSize, (row + _this.y) * config.tileSize, config.tileSize, config.tileSize);
+  });
+  _defineProperty(this, "createCharArray", function (message) {
+    return _this.returnSpecialCharacters(_this.splitMessage(_this.replaceSpecialCharacters(message)));
+  });
+  _defineProperty(this, "replaceSpecialCharacters", function (message) {
+    var modifiedMessage;
+    modifiedMessage = message.replace(/\.M/g, '^');
+    modifiedMessage = modifiedMessage.replace(/\.hp/g, '%');
+    modifiedMessage = modifiedMessage.replace(/\.en/g, '$');
+    modifiedMessage = modifiedMessage.replace(/\.lv/g, '@');
+    modifiedMessage = modifiedMessage.replace(/\!/g, '#');
+    return modifiedMessage;
+  });
+  _defineProperty(this, "returnSpecialCharacters", function (charArray) {
+    var modifiedCharArray = charArray;
+    for (var i = 0; i < modifiedCharArray.length; i++) {
+      var _char3 = modifiedCharArray[i];
+      if (_char3 === "^") {
+        modifiedCharArray[i] = "dotM";
+      } else if (_char3 === " ") {
+        modifiedCharArray[i] = "space";
+      } else if (_char3 === "%") {
+        modifiedCharArray[i] = "hp";
+      } else if (_char3 === "$") {
+        modifiedCharArray[i] = "en";
+      } else if (_char3 === "@") {
+        modifiedCharArray[i] = "lv";
+      } else if (_char3 === "#") {
+        modifiedCharArray[i] = "exclamation";
+      }
+    }
+    return modifiedCharArray;
+  });
+  _defineProperty(this, "splitMessage", function (message) {
+    return message.split("");
+  });
+  _defineProperty(this, "getCharCoordinates", function (_char4) {
+    return fontData[_char4];
+  });
+  this.x = x;
+  this.y = y;
+  this.width = width;
+  this.height = height;
+  this.colorImages = {
+    white: fontImages[1],
+    green: fontImages[2],
+    black: fontImages[0],
+    darkGreen: fontImages[3]
+  };
+  this.colorizeCB = colorizeCB ? function (_char5, wholeString, index) {
+    return colorizeCB(_char5, wholeString, index);
+  } : function () {
+    return 'none';
   };
 }
 ;
+
+var ListMenu = function (_SubMenu) {
+  _inherits(ListMenu, _SubMenu);
+  var _super = _createSuper(ListMenu);
+  function ListMenu(coord, itemAmount, listWidth) {
+    var _this;
+    var itemHeight = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
+    var listItems = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
+    var cursorImg = arguments.length > 5 ? arguments[5] : undefined;
+    var backImg = arguments.length > 6 ? arguments[6] : undefined;
+    _classCallCheck(this, ListMenu);
+    for (var _len = arguments.length, args = new Array(_len > 7 ? _len - 7 : 0), _key = 7; _key < _len; _key++) {
+      args[_key - 7] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "drawList", function () {
+      warningLog("WARNING - SubMenu ".concat(_this.label, " is missing drawList Method"));
+    });
+    _defineProperty(_assertThisInitialized(_this), "buildList", function () {
+      warningLog("WARNING - SubMenu ".concat(_this.label, " is missing buildList Method"));
+    });
+    _defineProperty(_assertThisInitialized(_this), "setMenuItem", function (dir) {
+      warningLog("WARNING - SubMenu ".concat(_this.label, " is missing setMenuItem Method"));
+    });
+    _defineProperty(_assertThisInitialized(_this), "getCurrLabel", function () {
+      return _this.listItems[_this.currIndex];
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawBackImg", function () {
+      if (_this.backImg) _this.menuCanvas.paintImage(_this.backImg, 0, 0);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawCursor", function (index) {
+      var spotIndex = index ? index : _this.currIndex;
+      _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      _this.drawBackImg();
+      _this.drawList();
+      _this.drawCursor();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawScrollBar", function () {
+      var barMax = 8 * config.screenSize * _this.itemHeight * _this.itemAmount;
+      var barHeight = barMax / Math.ceil(_this.listItems.length / _this.itemAmount);
+      var barX = _this.menuCanvas.width - 8 * config.screenSize;
+      var barY = barHeight * (Math.ceil((_this.currIndex + 1) / _this.itemAmount) - 1);
+      barY = barY < 0 ? 0 : barY;
+      _this.menuCanvas.ctx.fillStyle = "#6CA66C";
+      _this.menuCanvas.ctx.fillRect(barX + 2 * config.screenSize, barY + 1 * config.screenSize, 5 * config.screenSize, barHeight - 3 * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "getYOffsetForIndex", function (listIndex) {
+      return _this.itemHeight * listIndex * 8 * config.screenSize;
+    });
+    _defineProperty(_assertThisInitialized(_this), "nextListItem", function () {
+      if (_this.currIndex < _this.listItems.length - 1) {
+        if (_this.currIndex % _this.itemAmount === _this.itemAmount - 1 && _this.currIndex !== 0) _this.currPage++;
+        _this.currIndex++;
+        _this.drawMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "prevListItem", function () {
+      if (_this.currIndex > 0) {
+        if (_this.currIndex % _this.itemAmount === 0) _this.currPage--;
+        _this.currIndex--;
+        _this.drawMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "selectListItem", function () {
+      _this.currIndex = 0;
+      _this.isActive = false;
+    });
+    _this.listItems = listItems;
+    _this.itemHeight = itemHeight;
+    _this.itemAmount = itemAmount;
+    _this.currIndex = 0;
+    _this.currPage = 0;
+    _this.backImg = backImg;
+    _this.cursorImg = cursorImg;
+    _this.menuCanvas = new GameCanvas("".concat(_this.label, "-menu"), listWidth * 8, itemAmount * (itemHeight * 8));
+    _this.menuCanvas.x = coord[0] * 8 * config.screenSize;
+    _this.menuCanvas.y = coord[1] * 8 * config.screenSize;
+    _this.drawMenu();
+    return _this;
+  }
+  return ListMenu;
+}(SubMenu);
+
+var AttackMenu = function (_ListMenu) {
+  _inherits(AttackMenu, _ListMenu);
+  var _super = _createSuper(AttackMenu);
+  function AttackMenu(fetchImageCB) {
+    var _this;
+    _classCallCheck(this, AttackMenu);
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "drawList", function () {
+      for (var i = 0; i < _this.itemAmount; i++) {
+        var pageOffset = i + _this.currPage * _this.itemAmount;
+        if (pageOffset >= _this.listItems.length) break;
+        var attack = _this.listItems[pageOffset];
+        attack.textArea = new TextArea(1, i * 2, 8, 1);
+        attack.textArea.instantText(_this.menuCanvas.ctx, attack.displayName, "white");
+        _this.drawCostMeter(i, attack.maxCost, attack.currCost);
+        _this.drawTypeIcon(i, attack.type);
+        _this.drawPowerIcon(i, attack.power);
+        _this.drawTargetsIcon(i, attack.targets);
+        _this.drawHitsIcon(i, attack.hits);
+      }
+      _this.drawScrollBar();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawTypeIcon", function (listIndex, type) {
+      _this.menuCanvas.paintImage(_this.fetchImage("".concat(type, "TypeIcon")), 88 * config.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawPowerIcon", function (listIndex, power) {
+      _this.menuCanvas.paintImage(_this.fetchImage("pwr".concat(power, "Icon")), 96 * config.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawTargetsIcon", function (listIndex, targets) {
+      var imageName = targets === 'single' ? 'targetOne' : 'targetAll';
+      _this.menuCanvas.paintImage(_this.fetchImage(imageName), 104 * config.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawHitsIcon", function (listIndex, hits) {
+      _this.menuCanvas.paintImage(_this.fetchImage('oneHitIcon'),
+      112 * config.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawCostMeter", function (listIndex, maxCost, currCost) {
+      var blockCount = maxCost / 4;
+      var remCount = currCost;
+      for (var i = 0; i < blockCount; i++) {
+        var remove = maxCost - (i + 1) * 4;
+        var check = maxCost - remove - i * 4;
+        var _final = 25 * (remCount - check);
+        _final = _final >= 0 ? 0 : _final;
+        _final = _final / 25 < -3 ? -100 : _final;
+        _this.menuCanvas.ctx.drawImage(_this.fetchImage("costMeter".concat(100 + _final)), (1 + i) * (8 * config.screenSize), (1 + listIndex * 2) * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
+        remCount -= 4;
+      }
+    });
+    _this.fetchImage = function (imgName) {
+      return fetchImageCB(imgName);
+    };
+    return _this;
+  }
+  return AttackMenu;
+}(ListMenu);
+
+var BattleMenuAH = function BattleMenuAH(cbObj) {
+  _classCallCheck(this, BattleMenuAH);
+  this.nextIcon = function () {
+    cbObj.nextIconCB();
+  };
+  this.prevIcon = function () {
+    cbObj.prevIconCB();
+  };
+  this.selectIcon = function () {
+    cbObj.selectIconCB();
+  };
+  this.getCurrMenuType = function () {
+    return cbObj.getCurrMenuTypeCB();
+  };
+  this.nextListItem = function () {
+    cbObj.nextListItemCB();
+  };
+  this.prevListItem = function () {
+    cbObj.prevListItemCB();
+  };
+  this.selectListItem = function () {
+    cbObj.selectListItemCB();
+  };
+  this.setTopMessage = function () {
+    cbObj.setTopMessageCB();
+  };
+};
+
+var BattleMenuCanvas = function (_GameCanvas) {
+  _inherits(BattleMenuCanvas, _GameCanvas);
+  var _super = _createSuper(BattleMenuCanvas);
+  function BattleMenuCanvas() {
+    var _this;
+    _classCallCheck(this, BattleMenuCanvas);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "clearTopMessage", function () {
+      _this.ctx.clearRect(0, 8 * config.screenSize, 160 * config.screenSize, 8 * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "setTopMessage", function (message) {
+      _this.clearTopMessage();
+      _this.topTxt.instantText(_this.ctx, message, 'white');
+    });
+    _defineProperty(_assertThisInitialized(_this), "clearBottomSection", function () {
+      _this.ctx.clearRect(0, 14 * 8 * config.screenSize, 20 * 8 * config.screenSize, 4 * 8 * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawBottomSection", function (dgmnData) {
+      _this.clearBottomSection();
+      _this.drawNickname(_this.dgmnNicknameTxt, dgmnData.nickname);
+      _this.dgmnSpeciesNameTxt.instantText(_this.ctx, dgmnData.speciesName + ".MON", "green");
+      _this.dgmnHPTxt.instantText(_this.ctx, ".hp" + _this.menuUtility.prependZeros(dgmnData.currentHP, 3), "white");
+      _this.dgmnENTxt.instantText(_this.ctx, ".en" + dgmnData.currentEN, "white");
+      _this.drawLevel(_this.dgmnLVTxt, dgmnData.currentLevel);
+      _this.drawDgmnPortrait(dgmnData.portrait);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawNickname", function (textArea, nickname) {
+      textArea.instantText(_this.ctx, nickname, "white");
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawLevel", function (textArea, level) {
+      textArea.instantText(_this.ctx, ".lv" + _this.menuUtility.prependZeros(level, 3), "white");
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnPortrait", function (portraitImg) {
+      _this.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenuButtons", function (selected, images, coord) {
+      var buttonCount = Object.keys(images).length;
+      _this.ctx.clearRect(coord[0] * 8 * config.screenSize, coord[1] * 8 * config.screenSize, buttonCount * 16 * config.screenSize, 16 * config.screenSize);
+      var offset = 0;
+      for (var image in images) {
+        var img = image === selected ? images[image].selected : images[image].deselected;
+        _this.ctx.drawImage(img, (offset * 16 + coord[0] * 8) * config.screenSize, coord[1] * 8 * config.screenSize, 16 * config.screenSize, 16 * config.screenSize);
+        offset++;
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "paintCurrentCursor", function (battleIndex, image) {
+      _this.paintImage(image, 80 * config.screenSize, (24 + battleIndex * 32) * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "clearCurrentCursors", function (isEnemy) {
+      var xOffset = !isEnemy ? 72 : 56;
+      _this.ctx.clearRect(xOffset * config.screenSize, 16 * config.screenSize, 24 * config.screenSize, 96 * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "setCurrentTargetCursor", function (battleIndex, image) {
+      _this.clearCurrentCursors(true);
+      _this.paintImage(image, 64 * config.screenSize, (battleIndex * 32 + 24) * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "dgmnHPENTxtColorize", function (_char, wholeString, index) {
+      var color = 'none';
+      if (_char === 'hp' || _char === 'en' || _char === 'lv') {
+        color = 'green';
+      } else if (_char === '0' && index === 1 || _char === '0' && index === 2 && wholeString[1] === '0') {
+        color = 'darkGreen';
+      }
+      return color;
+    });
+    _this.menuUtility = new MenuUtility();
+    _this.topTxt = new TextArea(0, 1, 20);
+    _this.dgmnNicknameTxt = new TextArea(4, 14, 10);
+    _this.dgmnSpeciesNameTxt = new TextArea(4, 15, 16);
+    _this.dgmnHPTxt = new TextArea(4, 16, 4, 1, function (_char2, wholeString, index) {
+      return _this.dgmnHPENTxtColorize(_char2, wholeString, index);
+    });
+    _this.dgmnENTxt = new TextArea(4, 17, 4, 1, function (_char3, wholeString, index) {
+      return _this.dgmnHPENTxtColorize(_char3, wholeString, index);
+    });
+    _this.dgmnLVTxt = new TextArea(16, 14, 4, 1, function (_char4, wholeString, index) {
+      return _this.dgmnHPENTxtColorize(_char4, wholeString, index);
+    });
+    return _this;
+  }
+  return BattleMenuCanvas;
+}(GameCanvas);
+
+var TargetSelect = function (_ListMenu) {
+  _inherits(TargetSelect, _ListMenu);
+  var _super = _createSuper(TargetSelect);
+  function TargetSelect(hitsAll, parentCTX) {
+    var _this;
+    _classCallCheck(this, TargetSelect);
+    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      args[_key - 2] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      var startingIndex = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+      _this.menuCanvas.clearCanvas();
+      if (_this.hitsAll) {
+        _this.drawAllCursors(true);
+      } else {
+        _this.drawCursor(startingIndex);
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "clearAllCursors", function (isEnemy) {
+      if (isEnemy) {
+        _this.parentCTX.clearRect(8 * 8 * config.screenSize, 2 * 8 * config.screenSize, 2 * 8 * config.screenSize, 12 * 8 * config.screenSize);
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawAllCursors", function (isEnemy) {
+      if (isEnemy) {
+        _this.drawCursor(0);
+        _this.drawCursor(1);
+        _this.drawCursor(2);
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "nextListItem", function () {
+      if (_this.currIndex < _this.listItems.length - 1 && !_this.hitsAll) {
+        _this.clearAllCursors(true);
+        if (_this.currIndex % _this.itemAmount === _this.itemAmount - 1 && _this.currIndex !== 0) _this.currPage++;
+        _this.currIndex++;
+        _this.drawMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "prevListItem", function () {
+      if (_this.currIndex > 0 && !_this.hitsAll) {
+        _this.clearAllCursors(true);
+        if (_this.currIndex % _this.itemAmount === 0) _this.currPage--;
+        _this.currIndex--;
+        _this.drawMenu();
+      }
+    });
+    _this.parentCTX = parentCTX;
+    _this.hitsAll = hitsAll;
+    return _this;
+  }
+  return TargetSelect;
+}(ListMenu);
+
+var BattleMenu = function (_Menu) {
+  _inherits(BattleMenu, _Menu);
+  var _super = _createSuper(BattleMenu);
+  function BattleMenu() {
+    var _this;
+    _classCallCheck(this, BattleMenu);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "init", function () {
+      debugLog("+ Battle Menu");
+      _this.newTurn();
+    });
+    _defineProperty(_assertThisInitialized(_this), "buildDgmnMenu", function () {
+      _this.addSubMenu('dgmn', new IconMenu([14, 16], ['attack', 'defend', 'stats'], 'dgmn'));
+      _this.subMenus.dgmn.isVisible = true;
+      _this.subMenus.dgmn.images = _this.buildIconImages(_this.subMenus.dgmn.iconList);
+      _this.subMenus.dgmn.drawIcons(0);
+    });
+    _defineProperty(_assertThisInitialized(_this), "newTurn", function () {
+      _this.menuCanvas.setTopMessage("Attack");
+      _this.currDgmnIndex = 0;
+      _this.setCurrentDgmn(_this.currDgmnIndex);
+      _this.buildDgmnMenu();
+      _this.currSubMenu = 'dgmn';
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "buildAttackMenu", function () {
+      var currDgmnAttackData = _this.battleAH.getDgmnAttackData(_this.currDgmnIndex, ['displayName', 'currCost', 'maxCost', 'type', 'power', 'hits', 'targets']);
+      debugLog("++ Build Attack List | Data = ", currDgmnAttackData);
+      _this.addSubMenu('attack', new AttackMenu(_this.systemAH.fetchImage, [4, 2], 6, 16, 2, currDgmnAttackData, _this.systemAH.fetchImage('miniCursor'), _this.systemAH.fetchImage('battleOptionSelectBaseRight'), 'attack'));
+      _this.subMenus.attack.drawList();
+    });
+    _defineProperty(_assertThisInitialized(_this), "buildTargetSelect", function () {
+      debugLog("++ Selecting Target...");
+      var hitsAll = _this.currAttackAction.targets === 'all';
+      _this.addSubMenu('target', new TargetSelect(hitsAll, _this.menuCanvas.ctx, [8, 2], 3, 3, 4, ['one', 'two', 'three'], _this.systemAH.fetchImage('cursorLeft'), null, 'target'));
+      _this.subMenus.target.currIndex = _this.getStartingTarget();
+      _this.subMenus.target.drawMenu(_this.getStartingTarget());
+    });
+    _defineProperty(_assertThisInitialized(_this), "getStartingTarget", function () {
+      var start = 0;
+      if (_this.battleAH.getDgmnDataByIndex(0, ['isDead'], true).isDead) {
+        if (_this.battleAH.getDgmnDataByIndex(1, ['isDead'], true).isDead) {
+          start = 2;
+        } else {
+          start = 1;
+        }
+      }
+      return start;
+    });
+    _defineProperty(_assertThisInitialized(_this), "setCurrentDgmn", function (battleIndex) {
+      _this.menuCanvas.ctx.clearRect(10 * config.tileSize, 2 * config.tileSize, 2 * config.tileSize, 12 * config.tileSize);
+      _this.menuCanvas.paintCurrentCursor(battleIndex, _this.systemAH.fetchImage('cursor'));
+      var dgmnData = _this.battleAH.getDgmnDataByIndex(_this.currDgmnIndex, ['speciesName', 'nickname', 'currentHP', 'currentEN', 'currentLevel']);
+      dgmnData.portrait = _this.systemAH.fetchImage("".concat(dgmnData.speciesName.toLowerCase(), "Portrait"));
+      _this.menuCanvas.drawBottomSection(dgmnData);
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "launchAttackList", function () {
+      _this.buildAttackMenu();
+      _this.currSubMenu = 'attack';
+      _this.subMenus[_this.currSubMenu].isVisible = true;
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawActionText", function (species, message) {
+      _this.menuCanvas.clearBottomSection();
+      _this.menuCanvas.drawDgmnPortrait(_this.systemAH.fetchImage(species.toLowerCase() + 'Portrait'));
+      _this.actionTxt.timedText(_this.menuCanvas.ctx, message, _this.drawMenu);
+    });
+    _defineProperty(_assertThisInitialized(_this), "launchTargetSelect", function () {
+      _this.buildTargetSelect();
+      if (_this.currSubMenu === 'attack') {
+        _this.menuCanvas.ctx.clearRect(32 * config.screenSize, 16 * config.screenSize, 128 * config.screenSize, 96 * config.screenSize);
+      }
+      _this.removeSubMenu(_this.currSubMenu);
+      _this.currSubMenu = 'target';
+      _this.subMenus[_this.currSubMenu].isVisible = true;
+      _this.menuCanvas.paintCurrentCursor(_this.currDgmnIndex, _this.systemAH.fetchImage('cursor'));
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "getCurrMenuType", function () {
+      if (_this.currSubMenu === null) return null;
+      return _this.subMenus[_this.currSubMenu] instanceof IconMenu ? 'icon' : 'list';
+    });
+    _defineProperty(_assertThisInitialized(_this), "nextIcon", function () {
+      _this.subMenus[_this.currSubMenu].nextIcon();
+      var message = _this.subMenus[_this.currSubMenu].getCurrLabel();
+      _this.menuCanvas.setTopMessage(message.charAt(0).toUpperCase() + message.slice(1));
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "prevIcon", function () {
+      _this.subMenus[_this.currSubMenu].prevIcon();
+      var message = _this.subMenus[_this.currSubMenu].getCurrLabel();
+      _this.menuCanvas.setTopMessage(message.charAt(0).toUpperCase() + message.slice(1));
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "selectIcon", function () {
+      var selected = _this.subMenus[_this.currSubMenu].getCurrLabel();
+      _this.subMenus[_this.currSubMenu].selectIcon();
+      if (selected === 'attack') {
+        _this.launchAttackList();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "nextListItem", function () {
+      _this.subMenus[_this.currSubMenu].nextListItem();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "prevListItem", function () {
+      _this.subMenus[_this.currSubMenu].prevListItem();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "selectListItem", function () {
+      var currSubMenuLabel = _this.subMenus[_this.currSubMenu].label;
+      if (currSubMenuLabel === 'attack') {
+        _this.setCurrentAttack();
+        _this.launchTargetSelect();
+      } else if (currSubMenuLabel === 'target') {
+        var targets = _this.subMenus.target.hitsAll ? [0, 1, 2] : [_this.subMenus.target.currIndex];
+        _this.subMenus.target.clearAllCursors(true);
+        _this.setCurrentTargets(targets);
+        _this.drawMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "setCurrentAttack", function () {
+      var attackData = _this.subMenus.attack.listItems[_this.subMenus.attack.currIndex];
+      _this.currAttackAction.attackName = attackData.attackName;
+      _this.currAttackAction.attacker = _this.currDgmnIndex;
+      _this.currAttackAction.targets = attackData.targets;
+      _this.currAttackAction.power = attackData.power;
+      _this.currAttackAction.isEnemy = false;
+    });
+    _defineProperty(_assertThisInitialized(_this), "setCurrentTargets", function (targets) {
+      _this.currAttackAction.targetIndex = targets;
+      _this.removeSubMenu(_this.currSubMenu);
+      debugLog("++ Action = ", _this.currAttackAction);
+      _this.battleAH.addAction(_this.currDgmnIndex, _this.currAttackAction.attackName, _this.currAttackAction.targetIndex, _this.currAttackAction.power, _this.currAttackAction.isEnemy);
+      _this.gotoNextChoice();
+    });
+    _defineProperty(_assertThisInitialized(_this), "gotoNextChoice", function () {
+      debugLog("+ Next Dgmn...");
+      _this.currDgmnIndex++;
+      if (_this.currDgmnIndex < 3) {
+        _this.setCurrentDgmn(_this.currDgmnIndex);
+        _this.buildDgmnMenu();
+        _this.currSubMenu = 'dgmn';
+      } else {
+        _this.beginCombat();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "beginCombat", function () {
+      debugLog("+ BEGIN COMBAT!");
+      _this.menuCanvas.ctx.clearRect(10 * config.tileSize, 2 * config.tileSize, 2 * config.tileSize, 12 * config.tileSize);
+      _this.menuCanvas.clearTopMessage();
+      _this.menuCanvas.clearBottomSection();
+      _this.removeSubMenu(_this.currSubMenu);
+      _this.removeSubMenu('dgmn');
+      _this.currSubMenu = null;
+      _this.battleAH.beginCombat();
+    });
+    _defineProperty(_assertThisInitialized(_this), "endBattle", function () {
+      _this.menuCanvas.clearBottomSection();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      for (var key in _this.subMenus) {
+        if (_this.subMenus[key].isVisible) {
+          _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
+        }
+      }
+      _this.battleAH.drawBattleCanvas();
+    });
+    _this.battleAH = _this.parentAH;
+    _this.menuCanvas = new BattleMenuCanvas('battle-menu-canvas', 160, 144);
+    _this.actionTxt = new TextArea(4, 14, 16, 4);
+    _this.currDgmnIndex = 0;
+    _this.currAttackAction = {};
+    _this.battleMenuAH = new BattleMenuAH({
+      nextIconCB: _this.nextIcon,
+      prevIconCB: _this.prevIcon,
+      getCurrMenuTypeCB: _this.getCurrMenuType,
+      selectIconCB: _this.selectIcon,
+      nextListItemCB: _this.nextListItem,
+      prevListItemCB: _this.prevListItem,
+      selectListItemCB: _this.selectListItem,
+      setTopMessageCB: function setTopMessageCB(message) {
+        _this.menuCanvas.setTopMessage(message);
+      }
+    });
+    return _this;
+  }
+  return BattleMenu;
+}(Menu);
 
 var powerRanks = {
   F: 1,
@@ -1201,479 +1936,278 @@ var powerRanks = {
   A: 4,
   S: 8
 };
-var comboRanks = {
-  F: .75,
-  E: 1,
-  D: 1.5,
-  C: 2,
-  B: 3,
-  A: 4,
-  S: 6
-};
 
-var Attack = function Attack(attackName) {
-  var _this = this;
-  _classCallCheck(this, Attack);
-  _defineProperty(this, "calculateDamage", function (targetDefense, attackerAttack, attackerLevel) {
-    var atkDefDiff = attackerAttack / targetDefense;
-    var preMods = Math.floor(atkDefDiff * (attackerLevel / 2) * powerRanks[_this.power] / _this.hits);
-    return preMods;
-  });
-  _defineProperty(this, "animate", function (targets, attacker, triggerRedraw, canvas, fetchImage, callback) {
-    attacker.battleCanvas.attackAnimation();
-    triggerRedraw();
-    var x,
-        y = 0;
-    var target = undefined;
-    var animationCounter = 0;
-    var animationSection = 0;
-    var currentTarget = 0;
-    var targetCount = _this.targets === 'single' ? 1 : 3;
-    canvas.clearCanvas();
-    var attackAnimation = setInterval(function () {
-      if (currentTarget < targetCount) {
-        target = targets[currentTarget];
-        if (!target.isDead) {
-          target.battleCanvas.hurtAnimation();
-          x = target.isEnemy ? 4 * (8 * config.screenSize) : 12 * (8 * config.screenSize);
-          y = (2 + target.battleLocation * 4) * (8 * config.screenSize);
-          if (animationCounter === 0) {
-            canvas.clearCanvas();
-            if (animationSection === _this.animationFrames.length) {
-              currentTarget++;
-              animationCounter = 0;
-              animationSection = 0;
-            } else {
-              canvas.paintImage(fetchImage(_this.animationFrames[animationSection][0]), x, y);
-              triggerRedraw();
-            }
-            animationCounter++;
-          } else if (animationCounter !== 0 && animationCounter >= _this.animationFrames[animationSection][1]) {
-            animationSection++;
-            animationCounter = 0;
-          } else {
-            animationCounter++;
-          }
-        } else {
-          currentTarget++;
-          animationCounter = 0;
-          animationSection = 0;
-        }
-      } else {
-        canvas.clearCanvas();
-        triggerRedraw();
-        clearInterval(attackAnimation);
-        setTimeout(function () {
-          attacker.battleCanvas.isIdle = true;
-          for (var i = 0; i < targetCount; i++) {
-            if (!targets[i].isDead) targets[i].battleCanvas.isIdle = true;
-          }
-          triggerRedraw();
-        }, 200);
-        setTimeout(function () {
-          callback();
-        }, 2000);
-      }
-    }, 66);
-  });
-  this.attackName = attackName;
-  this.displayName = attacksDB[this.attackName].displayName;
-  this.type = attacksDB[this.attackName].type;
-  this.maxCost = attacksDB[this.attackName].maxCost;
-  this.currCost = 6;
-  this.power = attacksDB[this.attackName].power;
-  this.targets = attacksDB[this.attackName].targets;
-  this.hits = attacksDB[this.attackName].hits;
-  this.stat = attacksDB[this.attackName].stat;
-  this.effect = attacksDB[this.attackName].effect || null;
-  this.animationFrames = attacksDB[this.attackName].animationFrames;
-}
-;
-
-var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjectCallback, gameScreenRedrawCallback, loadImageCallback, fetchImageCallback) {
-  var _this = this;
-  _classCallCheck(this, Battle);
-  _defineProperty(this, "loadBattle", function () {
-    debugLog("-- Loading Battle");
-    _this.loadBattleImages(_this.onBattleImagesLoaded);
-  });
-  _defineProperty(this, "onBattleImagesLoaded", function () {
-    _this.loadDgmn(_this.dgmnList, false);
-    _this.addDgmnToObjectList(_this.dgmnList, false);
-    _this.loadDgmn(_this.enemyDgmnList, true);
-    _this.addDgmnToObjectList(_this.enemyDgmnList, true);
-    _this.addObject(_this.battleMenu.menuCanvas);
-    _this.battleMenu.buildBattleMenus();
-    _this.battleMenu.fullMenuPaint();
-    _this.addObject(_this.attackCanvas);
-    _this.onLoaded();
-  });
-  _defineProperty(this, "loadBattleImages", function (loadedCallback) {
-    var allDgmn = _this.dgmnList.concat(_this.enemyDgmnList);
-    var dgmnImages = [];
-    for (var i = 0; i < allDgmn.length; i++) {
-      var urlOne = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Idle0.png");
-      var urlTwo = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Idle1.png");
-      var attackUrl = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Attack.png");
-      var hurtUrl = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Hurt.png");
-      var urlThree = "./sprites/Battle/Dgmn/".concat(allDgmn[i].name.toLowerCase(), "Portrait.png");
-      if (!dgmnImages.includes(urlOne)) {
-        dgmnImages.push(urlOne);
-        dgmnImages.push(urlTwo);
-        dgmnImages.push(urlThree);
-        dgmnImages.push(attackUrl);
-        dgmnImages.push(hurtUrl);
-      }
+var AttackCanvas = function (_GameCanvas) {
+  _inherits(AttackCanvas, _GameCanvas);
+  var _super = _createSuper(AttackCanvas);
+  function AttackCanvas(drawCB) {
+    var _this;
+    _classCallCheck(this, AttackCanvas);
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
     }
-    var allImages = battleImages.concat(dgmnImages);
-    _this.loadImages(allImages, function () {
-      _this.setupBattleBackground(loadedCallback);
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "animateAttack", function (targetSpot, isTargetEnemy, images, callback) {
+      var targets = targetSpot === 'all' ? [0, 1, 2] : [targetSpot];
+      var i = 1;
+      var f = 0;
+      var t = 0;
+      _this.paintAttackFrame(targetSpot, images[0].img);
+      var animationInterval = setInterval(function () {
+        f++;
+        if (f > images[i].frameCount) {
+          _this.paintAttackFrame(targets[t], images[i].img);
+          i++;
+          f = 0;
+        }
+        if (i >= images.length) {
+          if (t === targets.length - 1) {
+            clearInterval(animationInterval);
+            callback();
+          } else {
+            t++;
+            f = 0;
+            i = 0;
+          }
+        }
+      }, 66);
     });
+    _defineProperty(_assertThisInitialized(_this), "paintAttackFrame", function (targetIndex, frame) {
+      _this.clearCanvas();
+      _this.paintImage(frame, 0, 4 * targetIndex * config.tileSize);
+      _this.drawCB();
+    });
+    _this.drawCB = function () {
+      return drawCB();
+    };
+    return _this;
+  }
+  return AttackCanvas;
+}(GameCanvas);
+
+var AttackManager = function AttackManager() {
+  var _this = this;
+  _classCallCheck(this, AttackManager);
+  _defineProperty(this, "initAH", function (systemAH, battleAH, dgmnAH) {
+    _this.systemAH = systemAH;
+    _this.battleAH = battleAH;
+    _this.dgmnAH = dgmnAH;
+    _this.attackCanvas = new AttackCanvas(_this.battleAH.drawBattleCanvas, 'attack', 64, 96, 32, 16);
   });
-  _defineProperty(this, "setupBattleBackground", function (loadedCallback) {
-    _this.battleBackground.imageStack = [_this.fetchImage('battleBackground')];
-    _this.battleBackground.paintImage(_this.battleBackground.imageStack[0]);
-    _this.addObject(_this.battleBackground);
-    loadedCallback();
+  _defineProperty(this, "addAction", function (dgmnId, attackName, targetIndex, targets, power) {
+    _this.attackActions[dgmnId] = {};
+    _this.attackActions[dgmnId].attackName = attackName;
+    _this.attackActions[dgmnId].targets = targets;
+    _this.attackActions[dgmnId].power = power;
+    _this.attackActions[dgmnId].status = 'pending';
+    _this.attackActions[dgmnId].targetIndex = targetIndex.length === 1 ? targetIndex[0] : 'all';
   });
-  _defineProperty(this, "addDgmnToObjectList", function (dgmnList) {
-    for (var i = 0; i < dgmnList.length; i++) {
-      _this.addObject(dgmnList[i].battleCanvas);
-    }
+  _defineProperty(this, "removeAction", function (dgmnId) {
+    _this.attackActions[dgmnId] = {};
   });
-  _defineProperty(this, "loadDgmn", function (dgmnList, isEnemy) {
-    for (var i = 0; i < dgmnList.length; i++) {
-      var dgmn = dgmnList[i];
-      var side = isEnemy ? 'enemy' : 'party';
-      _this.battleLocations[side][dgmn.battleLocation] = dgmn.dgmnId;
-      var imageStack = [_this.fetchImage("".concat(dgmn.name.toLowerCase(), "Idle0")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Idle1")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Attack")), _this.fetchImage("".concat(dgmn.name.toLowerCase(), "Hurt"))];
-      dgmn.initBattleCanvas(_this.triggerGameScreenRedraw, imageStack);
-      dgmn.battleCanvas.x = isEnemy ? 2 * (16 * config.screenSize) : 6 * (16 * config.screenSize);
-      dgmn.battleCanvas.y = 16 * config.screenSize + 32 * i * config.screenSize;
-      dgmn.battleCanvas.paintImage(dgmn.battleCanvas.imageStack[0], 0, 0, isEnemy);
-      var speed = 1200 - Math.floor(dgmn.baseStats[7] * 2) * 33;
-      dgmn.battleCanvas.animate(speed);
-    }
-  });
-  _defineProperty(this, "generateEnemies", function (encounterData) {
-  });
-  _defineProperty(this, "generateEnemyAttacks", function () {
-    for (var i = 0; i < 3; i++) {
-      if (!_this.enemyDgmnList[i].isDead) {
-        _this.attackActions[_this.enemyDgmnList[i].dgmnId] = {
-          attacker: _this.enemyDgmnList[i],
-          targets: [_this.dgmnList[i]],
-          attack: _this.enemyDgmnList[i].permAttacks[0],
-          status: 'todo'
-        };
-      }
-    }
-  });
-  _defineProperty(this, "setupOrder", function () {
-    var order = _this.dgmnList.concat(_this.enemyDgmnList);
-    for (var i = 0; i < order.length; i++) {
-      for (var r = 0; r < order.length - 1; r++) {
-        var temp = order[r];
-        var currSpeed = order[r].currStats[7] * order[r].currBuffs[7];
-        var nextSpeed = order[r + 1].currStats[7] * order[r + 1].currBuffs[7];
-        if (currSpeed < nextSpeed) {
-          order[r] = order[r + 1];
-          order[r + 1] = temp;
-        }
-      }
-    }
-    return order;
-  });
-  _defineProperty(this, "buildAttackImageList", function (attackList) {
-    var imagesList = [];
-    for (var prop in attackList) {
-      if (!attackList[prop].defend) {
-        var attackName = attackList[prop].attack.attackName;
-        if (!_this.loadedAttacks.includes(attackName)) {
-          _this.loadedAttacks.push(attackName);
-          for (var r = 0; r < attacksDB[attackName].animationFrameCount; r++) {
-            var url = "./sprites/Battle/Attacks/".concat(attackName).concat(r + 1, ".png");
-            if (!imagesList.includes(url)) imagesList.push(url);
-          }
-        }
-      }
-    }
-    return imagesList;
-  });
-  _defineProperty(this, "loadAttacks", function () {
-    _this.battleMenu.clearBottomData(true);
-    var attackImageList = _this.buildAttackImageList(_this.attackActions);
-    if (attackImageList.length !== 0) {
-      _this.loadImages(attackImageList, function () {
-        _this.runAttacks();
-      });
-    } else {
-      _this.runAttacks();
-    }
-  });
-  _defineProperty(this, "runAttacks", function () {
-    debugLog('Attacks = ', _this.attackActions);
-    var turnOrder = _this.setupOrder();
+  _defineProperty(this, "attackLoop", function (turnOrder) {
+    debugLog("Attack Loop...");
     var i = 0;
-    var prevI = -1;
     var attackInterval = setInterval(function () {
-      var targets, attacker, attack;
-      if (i !== prevI) {
-        prevI = i;
-        if (!turnOrder[i].isDead) {
-          if (!_this.attackActions[turnOrder[i].dgmnId].defend) {
-            targets = _this.attackActions[turnOrder[i].dgmnId].targets;
-            attacker = _this.attackActions[turnOrder[i].dgmnId].attacker;
-            attack = _this.attackActions[turnOrder[i].dgmnId].attack;
-            var accuracy = '';
-            if (targets.length === 1 && targets[0].isDead) {
-              i++;
-            } else {
-              for (var _i = 0; _i < targets.length; _i++) {
-                accuracy = _this.calculateAccuracy(attacker.dgmnId, targets[_i].currStats[6] * targets[_i].currBuffs[6], attacker.currStats[5] * attacker.currBuffs[5]);
-                if (accuracy !== 'missed') {
-                  var critMod = accuracy === 'critical' ? 2 : 1;
-                  _this.attack(targets[_i], attacker, attack, critMod);
-                }
-              }
-              if (accuracy !== 'missed') {
-                _this.battleMenu.setAttackBottomInfo(attacker, attack, accuracy, function () {
-                  setTimeout(function () {
-                    attack.animate(targets, attacker, _this.triggerGameScreenRedraw, _this.attackCanvas, _this.fetchImage, function () {
-                      if (!attack.effect) {
-                        _this.attackActions[turnOrder[i].dgmnId].status = 'done';
-                        _this.finishAttack(targets);
-                      } else {
-                        _this.handleEffect(attack.effect, attacker, targets);
-                      }
-                    });
-                  }, 1000);
-                });
-              } else {
-                _this.battleMenu.setAttackBottomInfo(attacker, attack, accuracy, function () {
-                  setTimeout(function () {
-                    _this.attackActions[turnOrder[i].dgmnId].status = 'done';
-                    _this.finishAttack(targets);
-                  }, 1000);
-                });
-              }
-            }
-          } else {
-            _this.defend(_this.attackActions[turnOrder[i].dgmnId]);
-          }
-        } else if (turnOrder[i].isDead && i !== turnOrder.length) {
+      var attacker = turnOrder[i];
+      var action = _this.attackActions[attacker];
+      if (action) {
+        if (action.status === 'pending') {
+          _this.takeAction(attacker, action);
+        } else if (action.status === 'done') {
           i++;
         }
+      } else {
+        debugLog("No Action for " + attacker);
+        i++;
       }
-      if (i < turnOrder.length && _this.attackActions[turnOrder[i].dgmnId].status === 'done') i++;
-      if (i === turnOrder.length) {
-        _this.startNewTurn();
+      if (_this.battleAH.checkBattleCondition() !== 'ongoing' || i >= turnOrder.length) {
         clearInterval(attackInterval);
-      } else if (_this.battleResult !== 'ongoing') {
-        clearInterval(attackInterval);
+        setTimeout(function () {
+          if (_this.battleAH.checkBattleCondition() === 'win') {
+            _this.battleAH.battleWin();
+          } else if (_this.battleAH.checkBattleCondition() === 'lose') {
+            _this.battleAH.battleLose();
+          } else {
+            _this.battleAH.newTurn();
+          }
+        }, 2000);
       }
-    }, 33);
+    }, 1000);
   });
-  _defineProperty(this, "defend", function (attackAction) {
-    var defender = attackAction.defender;
-    defender.isDefending = true;
-    _this.battleMenu.setDefendBottomInfo(defender, function () {
-      setTimeout(function () {
-        attackAction.status = 'done';
-      }, 1000);
+  _defineProperty(this, "buildAttackImageList", function (attackName) {
+    var images = [];
+    for (var i = 0; i < attacksDB[attackName].animationFrameCount; i++) {
+      images.push("./sprites/Battle/Attacks/" + attackName + "" + (i + 1) + ".png");
+    }
+    return images;
+  });
+  _defineProperty(this, "triggerAnimation", function (attacker, attackName) {
+    var images = _this.buildAttackImageList(attackName);
+    var loadedImages = [];
+    _this.systemAH.loadImages(images, function () {
+      var frames = attacksDB[attackName].animationFrames;
+      for (var i = 0; i < frames.length; i++) {
+        loadedImages.push({
+          img: _this.systemAH.fetchImage(frames[i][0]),
+          frameCount: frames[i][1]
+        });
+      }
+      _this.attackCanvas.animateAttack(_this.attackActions[attacker].targetIndex, true, loadedImages, function () {
+        _this.animationDone(attacker);
+      });
     });
   });
-  _defineProperty(this, "attack", function (target, attacker, attack, missCritMod) {
-    debugLog("-- ".concat(attacker.nickname, " uses ").concat(attack.attackName, " on ").concat(target.nickname));
-    attack.currCost--;
-    var enCost = Math.floor(100 / 4 / attack.maxCost);
-    enCost = enCost <= 0 ? 1 : enCost;
-    attacker.currEN -= enCost;
-    var typeMod = target.types[attack.type] || 1;
-    var totalDamage = 0;
-    for (var i = 0; i < attack.hits; i++) {
-      var comboMod = _this.calculateCombo(target, typeMod);
-      var topMessage = "";
-      if (typeMod > 1) {
-        topMessage += 'Strong Attack!';
-      } else if (typeMod < 1) {
-        topMessage += 'Weak Attack. ';
+  _defineProperty(this, "animationDone", function (attacker) {
+    if (_this.attackActions[attacker].targetIndex === 'all') {
+      _this.battleAH.drawAllStatuses();
+      var _iterator = _createForOfIteratorHelper(_this.attackActions[attacker].targets),
+          _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var target = _step.value;
+          _this.dgmnAH.checkKO(target);
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
       }
-      if (attack.hits > 1) {
-        topMessage += "".concat(attack.hits, " hits! ");
-      }
-      _this.battleMenu.setTopText(topMessage);
-      _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(target.dgmnId)].setCombo(_this.battleMenu.menuCanvas, target.comboLetter, _this.fetchImage('fontsWhite'));
-      totalDamage += _this.calculateDamage(attacker, target, attack, typeMod, comboMod, missCritMod);
-      debugLog("--- Total Attack Damage = ", totalDamage);
-      if (typeMod > 1) {
-        target.weakenedState[0] = true;
-        if (target.weakenedState[1] < 3) target.weakenedState[1]++;
-      }
-      if (target.weakenedState[0]) _this.battleMenu.dgmnStatusList[_this.battleMenu.getStatusIndex(target.dgmnId)].setWeakened(_this.battleMenu.menuCanvas, _this.fetchImage("weak".concat(target.weakenedState[1])));
+    } else {
+      _this.battleAH.drawDgmnStatusMeter(_this.attackActions[attacker].targets[0].charAt(0) === 'e', _this.attackActions[attacker].targetIndex, 'hp');
+      _this.dgmnAH.checkKO(_this.attackActions[attacker].targets[0]);
     }
-    target.currHP -= totalDamage;
-  });
-  _defineProperty(this, "finishAttack", function (targets) {
     _this.attackCanvas.clearCanvas();
-    for (var i = 0; i < targets.length; i++) {
-      if (targets[i].currHP <= 0) _this.knockOut(targets[i]);
-    }
-    _this.battleMenu.updateAllStatusBars();
+    setTimeout(function () {
+      _this.attackActions[attacker].status = 'done';
+    }, 500);
   });
-  _defineProperty(this, "handleEffect", function (effect, attacker, targets) {
-    debugLog("---- Running Attack Effect");
-    var isBuffCapped;
-    var shouldRun = '';
-    if (effect[0] === 'buff') {
-      shouldRun = _this.buffStat(targets[0], effect[3], effect[1], effect[2]);
-      isBuffCapped = shouldRun === 'capped';
-    } else if (effect[0] === 'debuff') ; else if (effect[0] === 'status') {
-      shouldRun = _this.inflictStatus(targets[0], attacker, targets[0].nickname, effect[2], effect[1]);
+  _defineProperty(this, "takeAction", function (attacker, action) {
+    _this.attackActions[attacker].status = 'acting';
+    if (!action.isDefend) {
+      _this.takeAttack(attacker, action);
     }
-    if (shouldRun !== 'missed' && shouldRun !== '') {
-      _this.battleMenu.setEffectBottomInfo(effect, attacker, targets[0].nickname, isBuffCapped, function () {
-        setTimeout(function () {
-          _this.attackActions[attacker.dgmnId].status = 'done';
-          _this.finishAttack(targets);
-        }, 1000);
-      });
-    } else {
-      _this.attackActions[attacker.dgmnId].status = 'done';
-      _this.finishAttack(targets);
+    var dgmnData = _this.dgmnAH.getDgmnData(attacker, ['nickname', 'speciesName'], attacker.charAt(0) === 'e');
+    var species = dgmnData.speciesName;
+    var message = _this.buildActionMessage(dgmnData, action.attackName);
+    _this.battleAH.drawActionText(species, message);
+    setTimeout(function () {
+      _this.triggerAnimation(attacker, action.attackName);
+    }, 1200);
+  });
+  _defineProperty(this, "buildActionMessage", function (dgmnData, attackName) {
+    var message = dgmnData.nickname + " used " + _this.attackUtility.getDisplayName(attackName) + "!";
+    return message;
+  });
+  _defineProperty(this, "takeAttack", function (attacker, action) {
+    debugLog("".concat(attacker, " using ").concat(action.attackName, " on ").concat(action.targets));
+    for (var i in action.targets) {
+      var attackerData = _this.dgmnAH.getDgmnData(attacker, ['currentStats', 'currentLevel'], attacker.charAt(0) === 'e');
+      var targetDEF = _this.dgmnAH.getDgmnData(action.targets[i], ['currentStats'], action.targets[i].charAt(0) === 'e').currentStats.DEF;
+      var baseDMG = _this.calcBaseDMG(attackerData.currentStats.ATK, attackerData.currentLevel, powerRanks[action.power], targetDEF);
+      var finalDMG = baseDMG;
+      _this.dealDMG(action.targets[i], finalDMG);
     }
   });
-  _defineProperty(this, "buffStat", function (dgmn, chance, stat, amount) {
-    var buffStatus = '';
-    var shouldRun = Math.floor(Math.random() * (100 - 1) + 1) <= chance;
-    if (shouldRun) {
-      if (dgmn.currBuffs[stat] + amount <= 4) {
-        dgmn.currBuffs[stat] += amount;
-        buffStatus = 'yes';
-        debugLog("----- Buffing ".concat(stat, " by ").concat(amount));
-      } else {
-        dgmn.currBuffs[stat] = 4;
-        buffStatus = 'capped';
-      }
-    } else {
-      buffStatus = 'missed';
-    }
-    return buffStatus;
+  _defineProperty(this, "calcBaseDMG", function (attackerATK, attackerLV, attackPWR, targetDEF) {
+    var baseDMG = attackerATK / targetDEF * (attackerLV / 2) * attackPWR;
+    debugLog("    ((".concat(attackerATK, "/").concat(targetDEF, ") x (").concat(attackerLV, "/2)) x ").concat(attackPWR, " = ").concat(baseDMG));
+    baseDMG += 50;
+    return baseDMG;
   });
-  _defineProperty(this, "inflictStatus", function (dgmn, chance, condition) {
-    var shouldInflict = Math.floor(Math.random() * (100 - 1) + 1) <= chance;
-    if (shouldInflict) {
-      if (!dgmn.currConditions[condition]) {
-        debugLog("----- Adding condition - ", condition);
-        dgmn.currConditions[condition] = true;
-      }
-    }
-    return shouldInflict;
+  _defineProperty(this, "dealDMG", function (target, dmg) {
+    debugLog("  Dealt " + dmg + "DMG to " + target);
+    _this.dgmnAH.dealDMG(target, dmg);
   });
-  _defineProperty(this, "calculateCombo", function (target, typeMod) {
-    var mod = .75;
-    if (typeMod === 1) {
-      target.currCombo++;
-    } else if (typeMod > 1) {
-      target.currCombo += 2;
+  this.attackActions = {};
+  this.attackCanvas;
+  this.attackUtility = new AttackUtility();
+};
+
+var BattleDgmnStatusCanvas = function (_GameCanvas) {
+  _inherits(BattleDgmnStatusCanvas, _GameCanvas);
+  var _super = _createSuper(BattleDgmnStatusCanvas);
+  function BattleDgmnStatusCanvas() {
+    var _this;
+    _classCallCheck(this, BattleDgmnStatusCanvas);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
     }
-    if (target.weakenedState[0]) {
-      target.currCombo++;
-    }
-    var comboLetter = getComboLetter(target.currCombo);
-    target.comboLetter = comboLetter;
-    mod = comboRanks[comboLetter];
-    return mod;
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnStatusMeter", function (coord, images, meterLength) {
+      var xPosition = coord[0] * 8;
+      var yPosition = coord[1] * 8;
+      var barHex = meterLength >= 9 ? "#6CA66C" : "#1D5A4A";
+      var borderImg = meterLength >= 9 ? images[0] : images[1];
+      _this.ctx.clearRect(xPosition * config.screenSize, yPosition * config.screenSize, 24 * config.screenSize, 8 * config.screenSize);
+      _this.ctx.drawImage(borderImg, xPosition * config.screenSize, yPosition * config.screenSize, 24 * config.screenSize, 8 * config.screenSize);
+      _this.ctx.fillStyle = barHex;
+      _this.ctx.fillRect((xPosition + 4) * config.screenSize, (yPosition + 2) * config.screenSize, meterLength * config.screenSize, 3 * config.screenSize);
+    });
+    return _this;
+  }
+  return BattleDgmnStatusCanvas;
+}(GameCanvas);
+
+var Battle = function Battle() {
+  var _this = this;
+  _classCallCheck(this, Battle);
+  _defineProperty(this, "init", function () {
+    debugLog("Building New Battle...");
+    _this.battleMenu = new BattleMenu(_this.systemAH, _this.gameAH, _this.battleAH);
+    _this.battleIO.setMenuAH(_this.battleMenu.battleMenuAH);
+    _this.attackManager.battleMenuAH = _this.battleMenu.battleMenuAH;
+    _this.yourParty = _this.gameAH.getDgmnParty();
+    _this.generateEnemyParty();
+    _this.initCanvas();
+    _this.loadBattleImages();
+    debugLog("Your Party = ", _this.yourParty);
   });
-  _defineProperty(this, "calculateAccuracy", function (attackerDgmnId, targetAvo, attackerHit) {
-    var accuracy = 'hit';
-    var missRange = targetAvo / attackerHit;
-    var critRange = attackerHit / targetAvo;
-    if (missRange !== 1) {
-      missRange = missRange < 1 ? missRange * .5 : missRange * 2;
-      critRange = critRange < 1 ? critRange * .5 : critRange * 2;
-    }
-    missRange *= 10;
-    critRange *= 10;
-    var rand = Math.floor(Math.random() * (1000 - 1) + 1);
-    if (rand <= missRange) {
-      console.log("ATTACK MISSED");
-      accuracy = 'missed';
-    } else if (rand >= 1000 - critRange) {
-      console.log("CRITICAL HIT");
-      accuracy = 'critical';
-    }
-    return accuracy;
+  _defineProperty(this, "initCanvas", function () {
+    _this.battleCanvas = new BattleCanvas('battle-canvas', 160, 144);
   });
-  _defineProperty(this, "calculateDamage", function (attacker, target, attack, typeMod, comboMod, missCritMod) {
-    var weakenedMod = target.weakenedState[0] ? 1.25 : 1;
-    var defendMod = target.isDefending ? .5 : 1;
-    var stats = attack.stat === 'physical' ? [target.currStats[2] * target.currBuffs[2], attacker.currStats[1] * attacker.currBuffs[1]] : [target.currStats[4] * target.currBuffs[4], attacker.currStats[3] * attacker.currBuffs[3]];
-    var damage = attack.calculateDamage(stats[0], stats[1], attacker.level);
-    var postMods = damage * typeMod * comboMod * weakenedMod * defendMod * missCritMod;
-    var rando = Math.floor(Math.random() * (4 - 1) + 1);
-    var finalDamage = Math.floor(postMods) + rando;
-    return finalDamage;
+  _defineProperty(this, "initAH", function (systemAH, gameAH, dgmnAH, dungeonAH, digiBeetleAH) {
+    _this.systemAH = systemAH;
+    _this.gameAH = gameAH;
+    _this.dgmnAH = dgmnAH;
+    _this.DungeonAH = dungeonAH;
+    _this.digiBeetleAH = digiBeetleAH;
+    _this.attackManager.initAH(_this.systemAH, _this.battleAH, _this.dgmnAH);
   });
-  _defineProperty(this, "knockOut", function (target) {
-    target.currHP = 0;
-    target.currEN = 0;
-    target.battleCanvas.isIdle = false;
-    target.battleCanvas.clearCanvas();
-    _this.battleMenu.setDgmnKOState(target.dgmnId);
-    target.isDead = true;
-    _this.checkAllDead(target.isEnemy);
-  });
-  _defineProperty(this, "checkAllDead", function (isEnemy) {
-    var checkList = isEnemy ? _this.enemyDgmnList : _this.dgmnList;
-    var dgmnCount = 0;
-    var _iterator = _createForOfIteratorHelper(checkList),
+  _defineProperty(this, "loadBattleImages", function () {
+    var allImages = [];
+    var defaultImages = _this.battleUtility.getDefaultBattleImages();
+    var _iterator = _createForOfIteratorHelper(defaultImages),
         _step;
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var dgmn = _step.value;
-        if (dgmn.isDead) dgmnCount++;
+        var img = _step.value;
+        allImages.push(img);
       }
     } catch (err) {
       _iterator.e(err);
     } finally {
       _iterator.f();
     }
-    if (dgmnCount >= checkList.length) {
-      isEnemy ? _this.battleWin() : _this.battleLose();
-    }
-  });
-  _defineProperty(this, "resetCombos", function (dgmnList) {
-    for (var i = 0; i < dgmnList.length; i++) {
-      if (!dgmnList[i].isDead) {
-        var combo = dgmnList[i].currCombo - 3;
-        combo = combo < 0 ? 0 : combo;
-        var comboLetter = getComboLetter(combo);
-        dgmnList[i].currCombo = combo;
-        dgmnList[i].comboLetter = comboLetter;
-        _this.battleMenu.setDgmnComboState(comboLetter, dgmnList[i].dgmnId);
-      } else {
-        dgmnList[i].comboLetter = 'F';
-        dgmnList[i].currCombo = 0;
-        _this.battleMenu.setDgmnComboState('F', dgmnList[i].dgmnId);
-      }
-    }
-  });
-  _defineProperty(this, "resetWeakened", function (dgmnList) {
-    var _iterator2 = _createForOfIteratorHelper(dgmnList),
+    var allDgmn = _this.yourParty.concat(_this.enemyParty);
+    var _iterator2 = _createForOfIteratorHelper(allDgmn),
         _step2;
     try {
       for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var dgmn = _step2.value;
-        var weakenedState = dgmn.weakenedState;
-        if (weakenedState[1] > 0) {
-          weakenedState[1]--;
-          if (weakenedState[1] === 0) {
-            weakenedState[0] = false;
+        var dgmnId = _step2.value;
+        var dgmnData = _this.dgmnAH.getDgmnData(dgmnId, ['speciesName'], dgmnId.charAt(0) === 'e');
+        var allDgmnImages = _this.dgmnUtility.getAllDgmnImages(dgmnData.speciesName);
+        var _iterator3 = _createForOfIteratorHelper(allDgmnImages),
+            _step3;
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var dgmnImage = _step3.value;
+            allImages.push(dgmnImage);
           }
-          var imageName = "weak".concat(weakenedState[1]);
-          var statusIndex = _this.battleMenu.getStatusIndex(dgmn.dgmnId);
-          _this.battleMenu.setDgmnWeakenedState(statusIndex, imageName);
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
         }
       }
     } catch (err) {
@@ -1681,169 +2215,204 @@ var Battle = function Battle(_dgmnList, enemyDgmnList, _loadedCallback, addObjec
     } finally {
       _iterator2.f();
     }
+    _this.systemAH.loadImages(allImages, function () {
+      _this.onBattleImagesLoaded();
+    });
   });
-  _defineProperty(this, "resetDefend", function (dgmnList) {
-    var _iterator3 = _createForOfIteratorHelper(dgmnList),
-        _step3;
-    try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var dgmn = _step3.value;
-        dgmn.isDefending = false;
-      }
-    } catch (err) {
-      _iterator3.e(err);
-    } finally {
-      _iterator3.f();
-    }
+  _defineProperty(this, "onBattleImagesLoaded", function () {
+    _this.dgmnStatusCanvas = new BattleDgmnStatusCanvas('battle-dgmn-status', 160, 144);
+    _this.gameAH.addCanvasObject(_this.battleCanvas);
+    _this.buildDgmnCanvases();
+    _this.battleMenu.init();
+    _this.drawAllStatuses();
+    _this.drawBattleCanvas();
+    _this.gameAH.refreshScreen();
   });
-  _defineProperty(this, "startNewTurn", function () {
+  _defineProperty(this, "initDgmnChoice", function () {
+    _this.battleMenu.setCurrentDgmn(_this.currDgmnChoice);
+  });
+  _defineProperty(this, "newTurn", function () {
     _this.turn++;
-    _this.attackActions = {};
-    _this.resetWeakened(_this.dgmnList.concat(_this.enemyDgmnList));
-    _this.resetCombos(_this.dgmnList.concat(_this.enemyDgmnList));
-    _this.resetDefend(_this.dgmnList.concat(_this.enemyDgmnList));
-    _this.battleMenu.resetBattleMenuForNewTurn(_this.dgmnList[0]);
+    _this.battleMenu.newTurn();
   });
-  _defineProperty(this, "battleWin", function () {
-    _this.battleResult = 'win';
-    _this.battleMenu.setTopText('Victory');
-    debugLog('You Win!!');
-  });
-  _defineProperty(this, "battleLose", function () {
-    _this.battleResult = 'lose';
-    debugLog('You lost...');
-  });
-  _defineProperty(this, "goToNextDgmn", function () {
-    _this.battleMenu.currentState = 'dgmn';
-    _this.battleMenu.currentDgmnActor++;
-    _this.battleMenu.setCurrentIcon(0);
-    _this.battleMenu.setupDgmn(_this.battleMenu.currentDgmnActor);
-  });
-  _defineProperty(this, "beginBattle", function () {
-    _this.battleMenu.currentState = 'battling';
-    _this.generateEnemyAttacks();
-    debugLog("Running Attacks...");
-    _this.loadAttacks();
-  });
-  _defineProperty(this, "keyTriage", function (key) {
-    if (key === 'action') {
-      _this.actionKeyHandler();
-    } else if (key === 'cancel') {
-      _this.cancelKeyHandler();
-    } else if (key === 'up') {
-      _this.upKeyHandler();
-    } else if (key === 'right') {
-      _this.rightKeyHandler();
-    } else if (key === 'down') {
-      _this.downKeyHandler();
-    } else if (key === 'left') {
-      _this.leftKeyHandler();
+  _defineProperty(this, "gotoNextChoice", function () {
+    _this.currDgmnChoice++;
+    if (_this.currDgmnChoice >= 3) {
+      console.log("BEGIN ACTIONS");
+    } else {
+      _this.initDgmnChoice();
     }
   });
-  _defineProperty(this, "actionKeyHandler", function () {
-    if (_this.battleMenu.currentState === 'dgmn') {
-      if (_this.battleMenu.menus.dgmn.currentIndex === 0) {
-        _this.battleMenu.launchDgmnAttackMenu();
-      } else if (_this.battleMenu.menus.dgmn.currentIndex === 1) {
-        _this.battleMenu.clearCurrentDgmnCursors();
-        _this.attackActions[_this.dgmnList[_this.battleMenu.currentDgmnActor].dgmnId] = {
-          defend: true,
-          defender: _this.dgmnList[_this.battleMenu.currentDgmnActor],
-          status: 'todo'
-        };
-        _this.battleMenu.menuCanvas.ctx.clearRect(8 * (8 * config.screenSize), 2 * (8 * config.screenSize), 2 * (8 * config.screenSize), 12 * (8 * config.screenSize));
-        if (_this.battleMenu.currentDgmnActor === _this.dgmnList.length - 1) {
-          _this.beginBattle();
-        } else {
-          _this.goToNextDgmn();
+  _defineProperty(this, "generateEnemyParty", function () {
+    _this.dgmnAH.generateEnemies();
+  });
+  _defineProperty(this, "calcTurnOrder", function () {
+    var order = _this.yourParty.concat(_this.enemyParty);
+    for (var i = 0; i < order.length; i++) {
+      for (var r = 0; r < order.length - 1; r++) {
+        var temp = order[r];
+        var currSPD = _this.dgmnAH.getDgmnData(order[r], ['currentStats'], order[r].charAt(0) === 'e').currentStats.SPD;
+        var nextSPD = _this.dgmnAH.getDgmnData(order[r + 1], ['currentStats'], order[r + 1].charAt(0) === 'e').currentStats.SPD;
+        if (currSPD < nextSPD) {
+          order[r] = order[r + 1];
+          order[r + 1] = temp;
         }
       }
-    } else if (_this.battleMenu.currentState === 'attack') {
-      var chosenAttack = _this.battleMenu.dgmnAttackMenu.attackList[_this.battleMenu.dgmnAttackMenu.currentChoice];
-      _this.battleMenu.selectedAttack = chosenAttack;
-      _this.battleMenu.launchSelectTarget();
-    } else if (_this.battleMenu.currentState === 'targetSelect') {
-      _this.battleMenu.menuCanvas.ctx.clearRect(8 * (8 * config.screenSize), 2 * (8 * config.screenSize), 2 * (8 * config.screenSize), 12 * (8 * config.screenSize));
-      _this.triggerGameScreenRedraw();
-      var dgmnId = _this.dgmnList[_this.battleMenu.currentDgmnActor].dgmnId;
-      var attackTargets = _this.battleMenu.selectedAttack.targets === 'single' ? [_this.enemyDgmnList[_this.battleMenu.menus.targetSelect.currentIndex]] : _this.enemyDgmnList;
-      _this.attackActions[dgmnId] = {
-        attacker: _this.dgmnList[_this.battleMenu.currentDgmnActor],
-        targets: attackTargets,
-        attack: _this.battleMenu.selectedAttack,
-        status: 'todo'
-      };
-      if (_this.battleMenu.currentDgmnActor === _this.dgmnList.length - 1) {
-        _this.beginBattle();
-      } else {
-        _this.goToNextDgmn();
-      }
+    }
+    return order;
+  });
+  _defineProperty(this, "drawAllStatuses", function () {
+    for (var i = 0; i < 3; i++) {
+      _this.drawDgmnStatusMeter(false, i, 'hp');
+      _this.drawDgmnStatusMeter(false, i, 'en');
+      _this.drawDgmnStatusMeter(true, i, 'hp');
+      _this.drawDgmnStatusMeter(true, i, 'en');
     }
   });
-  _defineProperty(this, "upKeyHandler", function () {
-    if (_this.battleMenu.currentState === 'attack') {
-      _this.battleMenu.dgmnAttackMenu.selectUp(_this.battleMenu.menuCanvas, _this.battleMenu.dgmnAttackMenu.currentChoice - 1);
-      _this.triggerGameScreenRedraw();
-    } else if (_this.battleMenu.currentState === 'targetSelect') {
-      _this.battleMenu.targetSelect(-1, _this.battleLocations);
+  _defineProperty(this, "drawDgmnStatusMeter", function (isEnemy, dgmnIndex, stat) {
+    var dgmnData = !isEnemy ? _this.dgmnAH.getDgmnData(_this.yourParty[dgmnIndex], ["current".concat(stat.toUpperCase()), 'currentStats']) : _this.dgmnAH.getDgmnData(_this.enemyParty[dgmnIndex], ["current".concat(stat.toUpperCase()), 'currentStats'], true);
+    var coord = [];
+    coord[0] = isEnemy ? 1 : 17;
+    coord[1] = dgmnIndex * 4 + 2 + (stat === 'hp' ? 0 : 1);
+    var currStat = dgmnData["current".concat(stat.toUpperCase())];
+    var maxStat = stat === 'hp' ? dgmnData.currentStats.HP : 100;
+    _this.dgmnStatusCanvas.drawDgmnStatusMeter(coord, [_this.systemAH.fetchImage('dgmnBarLightGreen'), _this.systemAH.fetchImage('dgmnBarDarkGreen')], _this.battleUtility.calculateMeterLength(currStat, maxStat));
+  });
+  _defineProperty(this, "paintToBattleCanvas", function (image, x, y) {
+    _this.battleCanvas.paintImage(image, x, y);
+  });
+  _defineProperty(this, "drawActionText", function (species, message) {
+    _this.battleMenu.drawActionText(species, message);
+  });
+  _defineProperty(this, "drawBattleCanvas", function () {
+    _this.battleCanvas.drawBattleBase(_this.systemAH.fetchImage('battleBackground'));
+    _this.battleCanvas.paintCanvas(_this.dgmnStatusCanvas);
+    for (var i = 0; i < 3; i++) {
+      _this.battleCanvas.drawDgmnCanvas(_this.dgmnAH.getCanvas(_this.yourParty[i]));
+      _this.battleCanvas.drawDgmnCanvas(_this.dgmnAH.getCanvas(_this.enemyParty[i]));
+    }
+    _this.battleCanvas.paintCanvas(_this.battleMenu.menuCanvas);
+    if (_this.attackManager.attackCanvas) _this.battleCanvas.paintCanvas(_this.attackManager.attackCanvas);
+    _this.gameAH.refreshScreen();
+  });
+  _defineProperty(this, "buildDgmnCanvases", function () {
+    var dgmnList = _this.yourParty.concat(_this.enemyParty);
+    for (var i = 0; i < dgmnList.length; i++) {
+      var isEnemy = dgmnList[i].charAt(0) === 'e';
+      var dgmnData = _this.dgmnAH.getDgmnData(dgmnList[i], ['speciesName'], isEnemy);
+      var battleLocation = !isEnemy ? i : i - 3;
+      var dgmnImageList = [_this.systemAH.fetchImage("".concat(dgmnData.speciesName.toLowerCase(), "Idle0")), _this.systemAH.fetchImage("".concat(dgmnData.speciesName.toLowerCase(), "Idle1"))];
+      _this.dgmnAH.initDgmnCanvas(dgmnList[i], _this.drawBattleCanvas, dgmnImageList, battleLocation);
+      _this.dgmnAH.startDgmnIdleAnimation(dgmnList[i]);
     }
   });
-  _defineProperty(this, "rightKeyHandler", function () {
-    if (_this.battleMenu.currentState === 'dgmn') {
-      var newIndex = _this.battleMenu.menus.dgmn.currentIndex === _this.battleMenu.menus.dgmn.totalIcons - 1 ? 0 : _this.battleMenu.menus.dgmn.currentIndex + 1;
-      _this.battleMenu.setCurrentIcon(newIndex);
+  _defineProperty(this, "launchTargetSelect", function (attackData) {
+    console.log("Launch Target Select for ", attackData.displayName);
+    _this.attackChoice = attackData;
+    _this.attackMenu = undefined;
+    _this.menuState = 'target-select';
+    _this.setCurrentAttackTarget();
+    _this.drawBattleCanvas();
+  });
+  _defineProperty(this, "setCurrentAttackTarget", function (dir) {
+    if (dir) {
+      _this.battleMenu.setCurrentAttackTarget(_this.attackChoice.targets, dir);
+    } else {
+      _this.battleMenu.setCurrentAttackTarget(_this.attackChoice.targets);
     }
   });
-  _defineProperty(this, "downKeyHandler", function () {
-    if (_this.battleMenu.currentState === 'attack') {
-      _this.battleMenu.dgmnAttackMenu.selectDown(_this.battleMenu.menuCanvas, _this.battleMenu.dgmnAttackMenu.currentChoice + 1);
-      _this.triggerGameScreenRedraw();
-    } else if (_this.battleMenu.currentState === 'targetSelect') {
-      _this.battleMenu.targetSelect(1, _this.battleLocations);
+  _defineProperty(this, "checkBattleCondition", function () {
+    if (_this.dgmnAH.checkAllDead(true)) {
+      return 'win';
+    } else if (_this.dgmnAH.checkAllDead(false)) {
+      return 'lose';
     }
+    return 'ongoing';
   });
-  _defineProperty(this, "leftKeyHandler", function () {
-    if (_this.battleMenu.currentState === 'dgmn') {
-      var newIndex = _this.battleMenu.menus.dgmn.currentIndex === 0 ? _this.battleMenu.menus.dgmn.totalIcons - 1 : _this.battleMenu.menus.dgmn.currentIndex - 1;
-      _this.battleMenu.setCurrentIcon(newIndex);
-    }
+  _defineProperty(this, "battleWin", function () {
+    debugLog("BATTLE WON!");
+    _this.battleMenu.endBattle();
+    _this.end();
   });
-  _defineProperty(this, "cancelKeyHandler", function () {
-    if (_this.battleMenu.currentState === 'attack') {
-      _this.battleMenu.currentState = 'dgmn';
-      _this.battleMenu.closeDgmnAttackMenu();
+  _defineProperty(this, "battleLose", function () {
+    debugLog("BATTLE LOST...");
+    _this.battleMenu.endBattle();
+  });
+  _defineProperty(this, "end", function () {
+    _this.gameAH.endBattle();
+  });
+  _defineProperty(this, "getDgmnValueByIndex", function (isEnemy, dgmnIndex, value) {
+    var returnValue;
+    if (!isEnemy) {
+      returnValue = _this.yourParty[dgmnIndex][value];
     }
+    return returnValue;
+  });
+  _defineProperty(this, "getDgmnDataByIndex", function (dgmnIndex, data) {
+    var isEnemy = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+    var dgmnId = isEnemy ? _this.enemyParty[dgmnIndex] : _this.yourParty[dgmnIndex];
+    return _this.dgmnAH.getDgmnData(dgmnId, data, isEnemy);
+  });
+  _defineProperty(this, "getDgmnAttackData", function (dgmnIndex, data) {
+    return _this.dgmnAH.getDgmnAttackData(_this.yourParty[dgmnIndex], data);
+  });
+  _defineProperty(this, "getCurrDgmnChoice", function () {
+    return _this.currDgmnChoice;
+  });
+  _defineProperty(this, "selectAttack", function () {
+    _this.attackMenu.selectAttack();
+  });
+  _defineProperty(this, "addAction", function (dgmnIndex, attackName, attackTargets, attackPower, isEnemy) {
+    var convertedTargets;
+    var attacker = isEnemy ? _this.enemyParty[dgmnIndex] : _this.yourParty[dgmnIndex];
+    if (isEnemy) {
+      convertedTargets = attackTargets.length === 1 ? [_this.yourParty[attackTargets[0]]] : _this.yourParty;
+    } else {
+      convertedTargets = attackTargets.length === 1 ? [_this.enemyParty[attackTargets[0]]] : _this.enemyParty;
+    }
+    _this.attackManager.addAction(attacker, attackName, attackTargets, convertedTargets, attackPower);
+  });
+  _defineProperty(this, "beginCombat", function () {
+    debugLog("+ Begin Combat...");
+    debugLog("++ Action List = ", _this.attackManager.attackActions);
+    _this.attackManager.attackLoop(_this.calcTurnOrder());
   });
   this.battleActive = true;
-  this.dgmnList = _dgmnList;
-  this.enemyDgmnList = enemyDgmnList;
-  this.battleResult = 'ongoing';
   this.turn = 0;
-  this.battleLocations = {
-    party: {},
-    enemy: {}
-  };
-  this.attackActions = {};
-  this.triggerGameScreenRedraw = function () {
-    gameScreenRedrawCallback();
-  };
-  this.addObject = function (newObject) {
-    addObjectCallback(newObject);
-  };
-  this.loadImages = function (imageList, callback) {
-    loadImageCallback(imageList, callback);
-  };
-  this.fetchImage = function (imageName) {
-    return fetchImageCallback(imageName);
-  };
-  this.loadedAttacks = [];
-  this.battleBackground = new BackgroundCanvas('background-canvas', 160, 144);
-  this.battleMenu = new BattleMenu(this.dgmnList.concat(this.enemyDgmnList), gameScreenRedrawCallback, loadImageCallback, this.fetchImage);
-  this.attackCanvas = new GameCanvas('attack-canvas', 160, 144);
-  this.onLoaded = function () {
-    _loadedCallback();
-  };
-  this.loadBattle();
+  this.yourParty;
+  this.enemyParty = ['edId0', 'edId1', 'edId2'];
+  this.menuState = 'battle';
+  this.currDgmnChoice = 0;
+  this.attackChoice;
+  this.systemAH;
+  this.gameAH;
+  this.digiBeetleAH;
+  this.dungeonAH;
+  this.battleAH = new BattleAH({
+    drawBattleCanvasCB: this.drawBattleCanvas,
+    paintToBattleCanvasCB: this.paintToBattleCanvas,
+    getDgmnDataByIndexCB: this.getDgmnDataByIndex,
+    selectAttackCB: this.selectAttack,
+    addActionCB: this.addAction,
+    setCurrentAttackTargetCB: this.setCurrentAttackTarget,
+    getDgmnAttackDataCB: this.getDgmnAttackData,
+    getCurrDgmnChoiceCB: this.getCurrDgmnChoice,
+    beginCombatCB: this.beginCombat,
+    drawActionTextCB: this.drawActionText,
+    drawDgmnStatusMeterCB: this.drawDgmnStatusMeter,
+    drawAllStatusesCB: this.drawAllStatuses,
+    newTurnCB: this.newTurn,
+    checkBattleConditionCB: this.checkBattleCondition,
+    battleWinCB: this.battleWin,
+    battleLoseCB: this.battleLose
+  });
+  this.battleIO = new BattleIO(this.battleAH);
+  this.battleUtility = new BattleUtility();
+  this.dgmnUtility = new DgmnUtility();
+  this.attackManager = new AttackManager();
+  this.battleCanvas;
+  this.dgmnStatusCanvas;
+  this.battleMenu;
 }
 ;
 
@@ -2056,7 +2625,7 @@ var Floor = function Floor(_floorNumber) {
         encounterId++;
       }
     }
-    console.log("ENCOUNTERS = ", _this.encounters);
+    debugLog("ENCOUNTERS = ", _this.encounters);
   });
   _defineProperty(this, "addEncounter", function (tile, encounterId) {
     var tileNumber = 105 + encounterId / 100;
@@ -2141,6 +2710,7 @@ var Floor = function Floor(_floorNumber) {
       _this.dungeonAH.goUpFloor();
       return true;
     } else if (Math.floor(tile) === 105 || Math.floor(tile) === 106) {
+      room.changeTile([_this.currentTile.tile[0], _this.currentTile.tile[1]], 1);
       _this.dungeonAH.startBattle();
       return true;
     }
@@ -2244,6 +2814,7 @@ var Floor = function Floor(_floorNumber) {
   });
   this.number = _floorNumber || 1;
   this.systemAH;
+  this.gameAH;
   this.dungeonAH;
   this.mapUtility = new MapUtility();
   this.floorCanvas;
@@ -2258,6 +2829,7 @@ var Floor = function Floor(_floorNumber) {
     tile: []
   };
   this.encounters = [null];
+  this.activeEncounterIndex = 0;
   this.currentTile = {
     room: [],
     tile: []
@@ -2300,32 +2872,6 @@ var DungeonAH = function DungeonAH(getCurrentDirectionCB, setCurrentDirectionCB,
   this.startBattle = function () {
     startBattleCB();
   };
-};
-
-var IO = function IO() {
-  var _this = this;
-  _classCallCheck(this, IO);
-  _defineProperty(this, "keyTriage", function (key, upDown) {
-    if (key === 'action') {
-      _this.actionKeyHandler();
-    } else if (key === 'cancel') {
-      _this.cancelKeyHandler();
-    } else if (key === 'up') {
-      _this.upKeyHandler(upDown);
-    } else if (key === 'right') {
-      _this.rightKeyHandler(upDown);
-    } else if (key === 'down') {
-      _this.downKeyHandler(upDown);
-    } else if (key === 'left') {
-      _this.leftKeyHandler(upDown);
-    }
-  });
-  _defineProperty(this, "actionKeyHandler", function (upDown) {});
-  _defineProperty(this, "cancelKeyHandler", function (upDown) {});
-  _defineProperty(this, "upKeyHandler", function (upDown) {});
-  _defineProperty(this, "rightKeyHandler", function (upDown) {});
-  _defineProperty(this, "downKeyHandler", function (upDown) {});
-  _defineProperty(this, "leftKeyHandler", function (upDown) {});
 };
 
 var DungeonIO = function (_IO) {
@@ -2501,243 +3047,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
 }
 ;
 
-var evolutions = {
-  agu: [{
-    grey: {
-      crests: [10, 0, 0, 0, 0, 0, 0, 0, 0],
-      bond: 0
-    }
-  }, {
-    geoGrey: {
-      crests: [8, 0, 0, 0, 0, 0, 0, 2, 0],
-      bond: 0
-    }
-  }]
-};
-
-var dgmnDB = {
-  Agu: {
-    stage: 3,
-    "class": 'vaccine',
-    crests: [0],
-    stats: [5, 5, 4, 3, 4, 4, 4, 3],
-    evolutions: evolutions['agu'],
-    types: {
-      fire: .5,
-      water: 1.5,
-      plant: .75,
-      evil: 2
-    }
-  },
-  Gabu: {
-    stage: 3,
-    "class": 'data',
-    crests: [0],
-    stats: [5, 5, 5, 5, 5, 5, 5, 6],
-    evolutions: evolutions['agu'],
-    types: {
-      water: .75,
-      plant: 1.5
-    }
-  },
-  Piyo: {
-    stage: 3,
-    "class": 'vaccine',
-    crests: [],
-    stats: [5, 5, 5, 5, 5, 5, 5, 6],
-    evolutions: evolutions['agu']
-  },
-  Terrier: {
-    stage: 3,
-    "class": 'vaccine',
-    crests: [],
-    stats: [5, 5, 5, 5, 5, 5, 5, 6],
-    evolutions: evolutions['agu'],
-    types: {
-      evil: 1.5,
-      metal: 2
-    }
-  },
-  Pulse: {
-    stage: 3,
-    "class": 'vaccine',
-    stats: [5, 6, 4, 4, 4, 5, 5, 6],
-    evolutions: evolutions['agu'],
-    types: {
-      earth: 2,
-      water: .5
-    }
-  },
-  Lala: {
-    stage: 3,
-    "class": 'data',
-    stats: [5, 5, 5, 5, 5, 5, 5, 5],
-    evolutions: evolutions['agu'],
-    types: {
-      fire: 2,
-      water: .5
-    }
-  },
-  Haguru: {
-    stage: 3,
-    "class": 'virus',
-    crests: [],
-    stats: [5, 5, 7, 5, 6, 5, 5, 3],
-    evolutions: evolutions['agu'],
-    types: {}
-  },
-  PicoDevi: {
-    stage: 3,
-    "class": 'virus',
-    crests: [],
-    stats: [5, 5, 5, 5, 5, 5, 5, 8],
-    evolutions: evolutions['agu'],
-    types: {
-      holy: 2
-    }
-  },
-  Grey: {
-    stage: 4,
-    "class": 'vaccine',
-    crests: [0],
-    stats: [6, 5, 5, 5, 5, 5, 5, 6],
-    evolutions: evolutions['agu'],
-    types: {
-      fire: .5,
-      water: 1.5,
-      plant: .75,
-      evil: 2
-    }
-  }
-};
-
-var BattleDgmnCanvas = function (_GameCanvas) {
-  _inherits(BattleDgmnCanvas, _GameCanvas);
-  var _super = _createSuper(BattleDgmnCanvas);
-  function BattleDgmnCanvas(dgmnName) {
-    var _this;
-    _classCallCheck(this, BattleDgmnCanvas);
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-    _this = _super.call.apply(_super, [this].concat(args));
-    _defineProperty(_assertThisInitialized(_this), "attackAnimation", function () {
-      _this.isIdle = false;
-      _this.clearCanvas();
-      _this.paintImage(_this.imageStack[2]);
-      _this.triggerGameScreenRedraw();
-    });
-    _defineProperty(_assertThisInitialized(_this), "hurtAnimation", function () {
-      _this.isIdle = false;
-      _this.clearCanvas();
-      _this.paintImage(_this.imageStack[3]);
-      _this.triggerGameScreenRedraw();
-    });
-    _this.dgmnName = dgmnName;
-    _this.frames = [];
-    _this.animateSpeed = 2000;
-    return _this;
-  }
-  return BattleDgmnCanvas;
-}(GameCanvas);
-
-var Dgmn = function Dgmn(id, nickname, name, battleLocation, isEnemy) {
-  var _this = this;
-  _classCallCheck(this, Dgmn);
-  _defineProperty(this, "loadDgmn", function (loadData) {
-    _this.level = loadData.level || _this.level;
-    _this.permAttacks = loadData.permAttacks || _this.permAttacks;
-  });
-  _defineProperty(this, "initBattleCanvas", function (gameScreenRedrawCallback, imageStack) {
-    _this.battleCanvas = new BattleDgmnCanvas(_this.name, 'dgmn-canvas', 32, 32, 0, 0, true, gameScreenRedrawCallback);
-    _this.battleCanvas.imageStack = imageStack;
-  });
-  _defineProperty(this, "calcEnergyCost", function (maxCost) {
-    var cost = 0;
-    cost = Math.floor(_this.currStats[1] / maxCost);
-    cost = cost <= 0 ? 0 : cost;
-    return cost;
-  });
-  _defineProperty(this, "buildDgmn", function () {
-    for (var i = 0; i < _this.baseStats.length; i++) {
-      var finalStat = _this.baseStats[i] * _this.level;
-      finalStat *= i === 0 ? 1.25 : 1;
-      finalStat = Math.floor(finalStat);
-      _this.currStats.push(finalStat);
-    }
-  });
-  this.dgmnId = id;
-  this.nickname = nickname;
-  this.name = name;
-  this.stage = dgmnDB[name].stage;
-  this["class"] = dgmnDB[name]["class"];
-  this.baseStats = dgmnDB[name].stats;
-  this.crests = dgmnDB[name].crests;
-  this.types = dgmnDB[name].types;
-  this.permAttacks = [];
-  this.permCrests = {};
-  this.permSync = {};
-  this.fullDgmnList = [];
-  this.level = 1;
-  this.currDgmnPath = [];
-  this.currHP = 52;
-  this.currEN = 70;
-  this.currHunger = 0;
-  this.currPoop = 0;
-  this.currStats = [];
-  this.currCombo = 0;
-  this.comboLetter = 'F';
-  this.weakenedState = [false, 0];
-  this.currConditions = {};
-  this.currBuffs = [0, 1, 1, 1, 1, 1, 1, 1];
-  this.battleCanvas;
-  this.battleLocation = battleLocation || 0;
-  this.isEnemy = isEnemy || false;
-  this.isDead = false;
-  this.isDefending = false;
-};
-
-var setupMockDgmn = function setupMockDgmn() {
-  var dgmnList = [new Dgmn(0, 'FLARE', 'Agu', 0),
-  new Dgmn(1, 'SPROUT', 'Lala', 1),
-  new Dgmn(2, 'GEAR', 'Haguru', 2)];
-  dgmnList[0].level = 10;
-  dgmnList[0].permAttacks = [new Attack('babyFlame'), new Attack('bubbles')];
-  dgmnList[0].permAttacks[0].currCost = 3;
-  dgmnList[0].permAttacks[1].currCost = 24;
-  dgmnList[0].buildDgmn();
-  dgmnList[0].currHP = dgmnList[0].currStats[0];
-  dgmnList[1].level = 10;
-  dgmnList[1].permAttacks = [new Attack('nutsShoot'), new Attack('bubbles')];
-  dgmnList[1].permAttacks[0].currCost = 8;
-  dgmnList[1].permAttacks[1].currCost = 30;
-  dgmnList[1].buildDgmn();
-  dgmnList[1].currHP = dgmnList[1].currStats[0];
-  dgmnList[2].level = 10;
-  dgmnList[2].buildDgmn();
-  dgmnList[2].currHP = dgmnList[2].currStats[0];
-  dgmnList[2].permAttacks = [new Attack('darknessGear'), new Attack('bubbles')];
-  dgmnList[2].permAttacks[0].currCost = 6;
-  return dgmnList;
-};
-var setupMockEnemyDgmn = function setupMockEnemyDgmn() {
-  var dgmnList = [new Dgmn(4, 'ENEMY', 'Gabu', 0, true), new Dgmn(5, 'ENEMY', 'PicoDevi', 1, true), new Dgmn(6, 'ENEMY', 'Pulse', 2, true)];
-  dgmnList[0].level = 5;
-  dgmnList[0].buildDgmn();
-  dgmnList[0].currHP = dgmnList[0].currStats[0];
-  dgmnList[0].permAttacks = [new Attack('babyFlame')];
-  dgmnList[1].level = 5;
-  dgmnList[1].permAttacks = [new Attack('picoDarts')];
-  dgmnList[1].buildDgmn();
-  dgmnList[1].currHP = dgmnList[1].currStats[0];
-  dgmnList[2].level = 5;
-  dgmnList[2].buildDgmn();
-  dgmnList[2].permAttacks = [new Attack('elecRush')];
-  dgmnList[2].currHP = dgmnList[2].currStats[0];
-  return dgmnList;
-};
-
-var GameAH = function GameAH(addToObjectListCB, drawGameScreenCB, startBattleCB) {
+var GameAH = function GameAH(addToObjectListCB, drawGameScreenCB, startBattleCB, getDgmnPartyCB, endBattleCB) {
   _classCallCheck(this, GameAH);
   this.addCanvasObject = function (canvas) {
     addToObjectListCB(canvas);
@@ -2748,13 +3058,15 @@ var GameAH = function GameAH(addToObjectListCB, drawGameScreenCB, startBattleCB)
   this.startBattle = function () {
     startBattleCB();
   };
+  this.getDgmnParty = function () {
+    return getDgmnPartyCB();
+  };
+  this.endBattle = function () {
+    return endBattleCB();
+  };
 };
 
-var mockDgmn = setupMockDgmn();
-var mockEnemyDgmn = setupMockEnemyDgmn();
-debugLog("PARTY = ", mockDgmn);
-debugLog("ENEMY = ", mockEnemyDgmn);
-var Game = function Game(loadImageCallback, fetchImageCallback) {
+var Game = function Game() {
   var _this = this;
   _classCallCheck(this, Game);
   _defineProperty(this, "initSystemAH", function (actionHandler) {
@@ -2803,7 +3115,7 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
     _this.keyTimers[key]++;
     if ((_this$battle = _this.battle) !== null && _this$battle !== void 0 && _this$battle.battleActive) {
       if (_this.keyTimers[key] === 2) {
-        _this.battle.keyTriage(key);
+        _this.battle.battleIO.keyTriage(key, upDown);
       }
       if ((key === 'right' || key === 'left' || key === 'down' || key === 'up') && _this.keyTimers[key] > 15) {
         _this.keyTimers[key] = 0;
@@ -2815,7 +3127,9 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
   });
   _defineProperty(this, "startBattle", function () {
     debugLog("Starting Battle...");
-    _this.battle = new Battle(mockDgmn, mockEnemyDgmn, _this.onBattleLoad, _this.addToObjectList, _this.drawGameScreen, _this.loadImages, _this.fetchImage);
+    _this.battle = new Battle();
+    _this.battle.initAH(_this.systemAH, _this.gameAH, _this.yourDgmn.dgmnAH, function () {}, function () {});
+    _this.battle.init();
   });
   _defineProperty(this, "buildDungeon", function () {
     debugLog("Building Dungeon...");
@@ -2838,9 +3152,22 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
     console.log("Dungeon Loaded...");
     _this.drawGameScreen();
   });
+  _defineProperty(this, "endBattle", function () {
+    debugLog("Ending Battle...");
+    _this.removeFromObjectList(_this.battle.battleCanvas);
+    _this.battle = null;
+    setTimeout(function () {
+      _this.dungeon.dungeonState = 'free';
+    }, 1000);
+  });
   _defineProperty(this, "addToObjectList", function (newObject) {
     if (_this.objectList.indexOf(newObject) === -1) {
       _this.objectList.push(newObject);
+    }
+  });
+  _defineProperty(this, "removeFromObjectList", function (removeObject) {
+    if (_this.objectList.indexOf(removeObject) !== -1) {
+      _this.objectList.splice(_this.objectList.indexOf(removeObject), 1);
     }
   });
   _defineProperty(this, "drawGameScreen", function () {
@@ -2858,9 +3185,14 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
       _iterator.f();
     }
   });
+  _defineProperty(this, "getDgmnParty", function () {
+    return _this.yourParty;
+  });
   debugLog('Game Created...');
-  this.gameAH = new GameAH(this.addToObjectList, this.drawGameScreen, this.startBattle);
+  this.gameAH = new GameAH(this.addToObjectList, this.drawGameScreen, this.startBattle, this.getDgmnParty, this.endBattle);
   this.systemAH;
+  this.yourDgmn = new DgmnManager();
+  this.yourParty = this.yourDgmn.party;
   this.battle;
   this.dungeon;
   this.gameCanvas =
@@ -2878,6 +3210,19 @@ var Game = function Game(loadImageCallback, fetchImageCallback) {
   };
   this.objectList = [];
 };
+
+(function (_GameCanvas) {
+  _inherits(BackgroundCanvas, _GameCanvas);
+  var _super = _createSuper(BackgroundCanvas);
+  function BackgroundCanvas() {
+    _classCallCheck(this, BackgroundCanvas);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    return _super.call.apply(_super, [this].concat(args));
+  }
+  return BackgroundCanvas;
+})(GameCanvas);
 
 var Controller = function Controller(setKeyState) {
   var _this = this;
@@ -2991,7 +3336,7 @@ var System = function System() {
     if (inDebug()) {
       _this.debugMenu = new DebugMenu(_this.game.startBattle, _this.game.buildDungeon);
     }
-    _this.imageHandler.addToQueue(genericImages.concat(fontImages), function () {
+    _this.imageHandler.addToQueue(genericImages.concat(fontImages$1), function () {
       _this.game.bootGame();
       _this.systemScreen.appendChild(_this.screenCanvas.elem);
       setTimeout(function () {
@@ -3018,6 +3363,22 @@ var System = function System() {
   });
   _defineProperty(this, "addToActionQueue", function (action) {
     _this.actionQueue.push(action);
+  });
+  _defineProperty(this, "buildFontImages", function () {
+    var _iterator = _createForOfIteratorHelper(fontImages$1),
+        _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var imgURL = _step.value;
+        var image = new Image();
+        image.src = imgURL;
+        fontImages.push(image);
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
   });
   _defineProperty(this, "setKeyState", function (key, value) {
     _this.keyState[key] = value;
@@ -3047,6 +3408,7 @@ var System = function System() {
   this.game = new Game(this.systemAH);
   this.game.initSystemAH(this.systemAH);
   this.subCanvases = [this.backgroundCanvas];
+  this.buildFontImages();
 }
 ;
 

@@ -25,10 +25,10 @@ export const fontData = {
   X: [5,1], x: [5,3],
   Y: [6,1], y: [6,3],
   Z: [7,1], z: [7,3],
-  space: [8,1],
+  space: [9,1],
 
   dotM: [0,4],
-  hp: [1,4], en: [2,4],
+  hp: [1,4], en: [2,4], lv:[8,1],
   0: [3,4], 1: [4,4],
   2: [5,4], 3: [6,4],
   4: [7,4], 5: [8,4],
@@ -37,3 +37,5 @@ export const fontData = {
   exclamation: [13,4],
   period: [14,4]
 }
+
+export var fontImages = [];

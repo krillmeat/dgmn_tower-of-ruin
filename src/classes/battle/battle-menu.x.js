@@ -1,8 +1,8 @@
 import config from "../../config";
 import GameCanvas from "../canvas";
 import TextManager from "../text-manager";
-import DgmnBattleStatus from "./dgmn-battle-status";
-import DgmnAttackMenu from "./dgmn-attack-menu";
+import DgmnBattleStatus from "../menu/dgmn-battle-status";
+import DgmnAttackMenu from "../menu/dgmn-attack-menu";
 import { debugLog } from "../../utils/log-utils";
 import { attacksDB } from "../../data/attacks.db";
 import { getDgmnById, getStatNameFromIndex } from "../../utils/dgmn-utils";
@@ -18,16 +18,16 @@ class BattleMenu{
     this.targetSelectedType = 'single';
     this.selectedAttack;
 
-    this.topTextManager = new TextManager([fetchImageCallback('fontsWhite')],1,20, 0,1 ); // TODO - I'm not worried about the font loading slower than anything else, but just in case, I should change this a little...
+    // this.topTextManager = new TextManager([fetchImageCallback('fontsWhite')],1,20, 0,1 ); // TODO - I'm not worried about the font loading slower than anything else, but just in case, I should change this a little...
     this.bottomTextManager = new TextManager([fetchImageCallback('fontsWhite')],4,16, 4,14 );
-    this.dgmnNameTextManager = new TextManager([fetchImageCallback('fontsWhite')],1,10, 4,14) ;
-    this.dgmnSpeciesTextManager = new TextManager([fetchImageCallback('fontsLightGreen')],1,16, 4,15 );
-    this.currDgmnHP = new TextManager([fetchImageCallback('fontsWhite'),fetchImageCallback('fontsLightGreen')],1,6, 4,16, char => {
-      if(char === 'hp'){ return 1;
-      } return 0; });
-    this.currDgmnEN = new TextManager([fetchImageCallback('fontsWhite'),fetchImageCallback('fontsLightGreen')],1,6, 4,17, char => {
-      if(char === 'en'){ return 1;
-      } return 0; });
+    // this.dgmnNameTextManager = new TextManager([fetchImageCallback('fontsWhite')],1,10, 4,14) ;
+    // this.dgmnSpeciesTextManager = new TextManager([fetchImageCallback('fontsLightGreen')],1,16, 4,15 );
+    // this.currDgmnHP = new TextManager([fetchImageCallback('fontsWhite'),fetchImageCallback('fontsLightGreen')],1,6, 4,16, char => {
+      // if(char === 'hp'){ return 1;
+      // } return 0; });
+    // this.currDgmnEN = new TextManager([fetchImageCallback('fontsWhite'),fetchImageCallback('fontsLightGreen')],1,6, 4,17, char => {
+      // if(char === 'en'){ return 1;
+      // } return 0; });
 
     this.dgmnKOs = {};
 
@@ -37,16 +37,16 @@ class BattleMenu{
 
     this.menuImages = ['./sprites/Battle/Menu/dgmn-bar-white.png','./sprites/Battle/Menu/dgmn-bar-light-green.png','./sprites/Battle/Menu/attack-select-popup-base.png'];
 
-    this.menuCanvas = new GameCanvas('battle-menu-canvas',160,144,0,0,false);
-    this.menuCanvas.loadImageStack(this.menuImages);
+    // this.menuCanvas = new GameCanvas('battle-menu-canvas',160,144,0,0,false);
+    // this.menuCanvas.loadImageStack(this.menuImages);
 
     // this.dgmnPortraits = new DgmnPortrait(this.dgmnData,'sm'); // TODO - Find a way to load this in post, without the constructor needing any dgmnData
 
     this.dgmnAttackMenu = new DgmnAttackMenu( imageName => { return fetchImageCallback(imageName) } );
 
     this.buildStatusList();
-    this.triggerGameScreenRedraw = () => { gameScreenRedrawCallback() }
-    this.fetchImage = imageName => { return fetchImageCallback(imageName) }
+    // this.triggerGameScreenRedraw = () => { gameScreenRedrawCallback() }
+    // this.fetchImage = imageName => { return fetchImageCallback(imageName) }
   }
 
   /**------------------------------------------------------------------------
@@ -79,10 +79,10 @@ class BattleMenu{
    * ------------------------------------------------------------------------
    * @param {String}  message Text to display in the top bar
    * ----------------------------------------------------------------------*/
-  setTopText = message => {
-    // TODO - Clear Top Text
-    if(message) this.topTextManager.instantPaint(this.menuCanvas,message);
-  }
+  // setTopText = message => {
+  //   // TODO - Clear Top Text
+  //   if(message) this.topTextManager.instantPaint(this.menuCanvas,message);
+  // }
 
   /**------------------------------------------------------------------------
    * BUILD BATTLE MENUS
@@ -90,26 +90,26 @@ class BattleMenu{
    * Creates the Large collection of Objects that handles all of the logic
    *   for the Battle Menu
    * ----------------------------------------------------------------------*/
-  buildBattleMenus = () => {
-    this.menus.beetle = [];
-    this.menus.dgmn = {
-      currentIndex: 0,
-      totalIcons: 3,
-      icons: [ 
-        { label: 'Attack', activeImg: this.fetchImage('attackSelected'), inactiveImg: this.fetchImage('attackDeselected') },
-        { label: 'Defend', activeImg: this.fetchImage('defendSelected'), inactiveImg: this.fetchImage('defendDeselected') },
-        { label: 'Stats', activeImg: this.fetchImage('statsSelected'), inactiveImg: this.fetchImage('statsDeselected') }
-      ]
-    };
-    this.menus.attack = {
-      currentIndex: 0,
-      currentPage: 0,
-      currentPageMax: 0
-    }
-    this.menus.targetSelect = {
-      currentIndex: 0
-    }
-  }
+  // buildBattleMenus = () => {
+  //   this.menus.beetle = [];
+  //   this.menus.dgmn = {
+  //     currentIndex: 0,
+  //     totalIcons: 3,
+  //     icons: [ 
+  //       { label: 'Attack', activeImg: this.fetchImage('attackSelected'), inactiveImg: this.fetchImage('attackDeselected') },
+  //       { label: 'Defend', activeImg: this.fetchImage('defendSelected'), inactiveImg: this.fetchImage('defendDeselected') },
+  //       { label: 'Stats', activeImg: this.fetchImage('statsSelected'), inactiveImg: this.fetchImage('statsDeselected') }
+  //     ]
+  //   };
+  //   this.menus.attack = {
+  //     currentIndex: 0,
+  //     currentPage: 0,
+  //     currentPageMax: 0
+  //   }
+  //   this.menus.targetSelect = {
+  //     currentIndex: 0
+  //   }
+  // }
 
   /**------------------------------------------------------------------------
    * FULL MENU PAINT
@@ -225,12 +225,12 @@ class BattleMenu{
    * ------------------------------------------------------------------------
    * @param {String} species Dgmn species name
    * ----------------------------------------------------------------------*/
-  setDgmnPortrait = species => {
-    // TODO - Clear Portrait
-    this.menuCanvas.ctx.drawImage(this.fetchImage(`${species.toLowerCase()}Portrait`),
-                               0,0, 32 * 8, (32 - 1) * 8, 
-                               0 * 8 * config.screenSize, 14 * 8 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
-  }
+  // setDgmnPortrait = species => {
+  //   // TODO - Clear Portrait
+  //   this.menuCanvas.ctx.drawImage(this.fetchImage(`${species.toLowerCase()}Portrait`),
+  //                              0,0, 32 * 8, (32 - 1) * 8, 
+  //                              0 * 8 * config.screenSize, 14 * 8 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
+  // }
 
   /**------------------------------------------------------------------------
    * UPDATE ALL STATUS BARS

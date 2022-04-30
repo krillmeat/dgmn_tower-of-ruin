@@ -1,19 +1,12 @@
 import { debugLog } from "../utils/log-utils";
+import DgmnManager from "./dgmn/dgmn-manager";
 import DigiBeetle from "./digibeetle";
 import Battle from "./battle/battle";
 import Dungeon from "./dungeon/dungeon";
 import GameCanvas from "./canvas";
 
 import config from "../config";
-import { setupMockDgmn, setupMockEnemyDgmn } from "../debug/dgmn.mock";
 import GameAH from "./action-handlers/game.ah";
-
-// TODO - There has to be a better way to mock this stuff up...
-const mockDgmn = setupMockDgmn();
-const mockEnemyDgmn = setupMockEnemyDgmn();
-
-debugLog("PARTY = ",mockDgmn);
-debugLog("ENEMY = ",mockEnemyDgmn);
 
 /**------------------------------------------------------------------------
  * GAME
@@ -24,12 +17,14 @@ debugLog("ENEMY = ",mockEnemyDgmn);
  * @param {Function} fetchImageCallback Gets an image from the System
  * ----------------------------------------------------------------------*/
 class Game{
-  constructor(loadImageCallback,fetchImageCallback){
+  constructor(){
     debugLog('Game Created...');
 
-    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle);
+    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty,this.endBattle);
     this.systemAH;
 
+    this.yourDgmn = new DgmnManager();        // All of your Dgmn (party, reserves, etc.)
+    this.yourParty = this.yourDgmn.party;     // Your current Party of Dgmn (possible to be empty)
     this.battle;                              // Init Battle (cleared and created by Game Logic)
     this.dungeon;
 
@@ -69,7 +64,6 @@ class Game{
    * @param {Object} keyState The true/false values for all pressed keys
    * ----------------------------------------------------------------------*/
   keyHandler = keyState => {
-
     if(keyState[config.keyBindings.action]){ this.keyManager('action')
     } else { this.keyTimers.action = 0 }
 
@@ -100,20 +94,19 @@ class Game{
    * ----------------------------------------------------------------------*/
   keyManager = (key, upDown) => {
     this.keyTimers[key]++;
-    // DGMN MENU
+
     if(this.battle?.battleActive){
-        if(this.keyTimers[key] === 2){ // Prevent instant tap from taking action
-          this.battle.keyTriage(key);
+        if(this.keyTimers[key] === 2){
+          this.battle.battleIO.keyTriage(key,upDown);
         }
         if((key === 'right' || key === 'left' || key === 'down' || key === 'up') && this.keyTimers[key] > 15){ // Only directions can be held to take action
           this.keyTimers[key] = 0;
         }
     }
 
-    if(this.dungeon?.dungeonState === 'free'){
+    if(this.dungeon?.dungeonState === 'free'){ // TODO - Probably should be a more specific check
       // TODO - Logic that checks things like "held down" or "tapped" go here
       this.dungeon.dungeonIO.keyTriage(key,upDown);
-      
     }
   }
 
@@ -127,15 +120,23 @@ class Game{
   startBattle = () => {
     debugLog("Starting Battle...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
-    this.battle = new Battle(mockDgmn,mockEnemyDgmn,this.onBattleLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
+    // this.battle = new Battle(mockDgmn,mockEnemyDgmn,this.onBattleLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
+    this.battle = new Battle();
+    this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,()=>{},()=>{}); // The other two AH's aren't generated, because there's no dungeon/beetle yet
+    this.battle.init();
   }
 
+  /**------------------------------------------------------------------------
+   * BUILD DUNGEON
+   * ------------------------------------------------------------------------
+   * Gathers up needed data and creates a new Dungeon
+   *   TODO - Also creates a new DigiBeetle, but this should move to on boot up
+   * ----------------------------------------------------------------------*/
   buildDungeon = () => {
     debugLog("Building Dungeon...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
 
     // CREATE EVERYTHING
-    // this.dungeon = new Dungeon(true,this.onDungeonLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
     this.dungeon = new Dungeon(true,this.onDungeonLoad);
     this.digiBeetle = new DigiBeetle();
 
@@ -174,6 +175,17 @@ class Game{
     this.drawGameScreen();
   }
 
+  endBattle = () => {
+    debugLog("Ending Battle...");
+    this.removeFromObjectList(this.battle.battleCanvas);
+    this.battle = null;
+
+    setTimeout(()=>{
+      this.dungeon.dungeonState = 'free';
+    },1000)
+    
+  }
+
   /**------------------------------------------------------------------------
    * ADD TO OBJECT LIST
    * ------------------------------------------------------------------------
@@ -189,6 +201,19 @@ class Game{
   }
 
   /**------------------------------------------------------------------------
+   * REMOVE FROM OBJECT LIST
+   * ------------------------------------------------------------------------
+   * Removes an Object from the List used to Draw Canvases
+   * ------------------------------------------------------------------------
+   * @param {Object} removeObject  Object to remove from the list
+   * ----------------------------------------------------------------------*/
+  removeFromObjectList = removeObject => {
+    if(this.objectList.indexOf(removeObject) !== -1){
+      this.objectList.splice(this.objectList.indexOf(removeObject),1);
+    }
+  }
+
+  /**------------------------------------------------------------------------
    * DRAW GAME SCREEN
    * ------------------------------------------------------------------------
    * Sent into parts of the Game as a Callback.
@@ -199,6 +224,24 @@ class Game{
     for(let obj of this.objectList){
       this.gameCanvas.paintCanvas(obj);
     }
+  }
+
+  /**------------------------------------------------------------------------
+   * ------------------------------------------------------------------------
+   * GETTERS AND SETTERS                                        [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * ------------------------------------------------------------------------
+   * All of the following methods are passed into the AH, to allow other
+   * Classes to use them
+   * ------------------------------------------------------------------------
+   * ----------------------------------------------------------------------*/
+  getDgmnParty = () => {
+    /*
+      Is this an anti-pattern? I've worked hard to pass down references and not actual objects
+      Is there a clean way to avoid actually passing in a list of Objects?
+      Could I pass in a 
+    */
+    return this.yourParty;
   }
 }
 

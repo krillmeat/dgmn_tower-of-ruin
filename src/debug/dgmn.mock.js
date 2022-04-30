@@ -1,5 +1,5 @@
 import Attack from "../classes/battle/attack";
-import Dgmn from "../classes/dgmn";
+import Dgmn from "../classes/dgmn/dgmn";
 
 export const setupMockDgmn = () => {
   let dgmnList = [ new Dgmn(0,'FLARE','Agu',0),

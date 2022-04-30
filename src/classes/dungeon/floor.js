@@ -2,6 +2,7 @@ import Room from './room';
 import MapUtility from './utility/map.util';
 import FloorCanvas from './canvas/floor-canvas';
 import config from '../../config';
+import {debugLog} from '../../utils/log-utils';
 
 class Floor{
   constructor(floorNumber){
@@ -9,6 +10,7 @@ class Floor{
 
     // ACTION HANDLERS
     this.systemAH;
+    this.gameAH;
     this.dungeonAH;
 
     // UTILITIES
@@ -21,6 +23,7 @@ class Floor{
     this.start = {room: [], tile: []}   // Location of the Start of the Floor
     this.end = {room: [], tile: []}     // Location of the End of the Floor
     this.encounters = [null];
+    this.activeEncounterIndex = 0;
 
     this.currentTile = {room: [], tile: []} // Current Location of the DigiBeetle
   }
@@ -296,6 +299,7 @@ class Floor{
       this.dungeonAH.goUpFloor();
       return true;
     } else if(Math.floor(tile) === 105 || Math.floor(tile) === 106){
+      room.changeTile([this.currentTile.tile[0],this.currentTile.tile[1]],1);
       this.dungeonAH.startBattle();
       return true;
     }

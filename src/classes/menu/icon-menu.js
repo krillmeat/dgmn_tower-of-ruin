@@ -1,0 +1,53 @@
+import config from "../../config";
+import GameCanvas from "../canvas";
+import SubMenu from "./sub-menu";
+
+class IconMenu extends SubMenu{
+  constructor(coord,iconList,...args){
+    super(...args);
+    this.currIcon = 0;
+    this.menuChart;
+    this.iconList = iconList;
+    this.images;
+
+    this.menuCanvas = new GameCanvas(`${this.label}-menu`,this.iconList.length * 16 ,16 )
+    this.menuCanvas.x = coord[0] * 8 * config.screenSize;
+    this.menuCanvas.y = coord[1] * 8 * config.screenSize;
+  }
+
+  nextIcon = () => {
+    let newIndex = this.currIcon < this.iconList.length - 1 ? this.currIcon + 1 : 0;
+    this.drawIcons(newIndex);
+    this.currIcon = newIndex;
+  }
+
+  prevIcon = () => {
+    let newIndex = this.currIcon > 0 ? this.currIcon - 1 : this.iconList.length - 1;
+    this.drawIcons(newIndex);
+    this.currIcon = newIndex;
+  }
+
+  selectIcon = () => {
+    this.currIcon = 0;
+    this.isActive = false;
+  }
+
+  getCurrLabel = () => {
+    return this.iconList[this.currIcon];
+  }
+
+  clearIcons = () => {
+    this.menuCanvas.blackFill();
+  }
+
+  drawIcons = selected =>{
+    this.clearIcons();
+    for(let i = 0; i < this.iconList.length; i++){
+      let img = selected === i ? this.images[this.iconList[i]].selected : this.images[this.iconList[i]].deselected;
+      this.menuCanvas.paintImage(img,(i*16)*config.screenSize,0);
+    }
+  }
+
+}
+
+export default IconMenu;
