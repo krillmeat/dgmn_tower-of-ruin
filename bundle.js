@@ -2306,14 +2306,6 @@ var Battle = function Battle() {
       _this.dgmnAH.startDgmnIdleAnimation(dgmnList[i]);
     }
   });
-  _defineProperty(this, "launchTargetSelect", function (attackData) {
-    console.log("Launch Target Select for ", attackData.displayName);
-    _this.attackChoice = attackData;
-    _this.attackMenu = undefined;
-    _this.menuState = 'target-select';
-    _this.setCurrentAttackTarget();
-    _this.drawBattleCanvas();
-  });
   _defineProperty(this, "setCurrentAttackTarget", function (dir) {
     if (dir) {
       _this.battleMenu.setCurrentAttackTarget(_this.attackChoice.targets, dir);

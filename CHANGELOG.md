@@ -1,12 +1,15 @@
 # DIGIMON : TOWER OF RUIN
 
-## CURRENT VERSION : 0.0.0-alpha.8
+## CURRENT VERSION : 0.0.0-alpha.9
 
 ### 0.0.0
 Setting up all of the basic structure for the system, until the game is in any way testable with other users
 
+### v0.0.0-alpha.9
+* Iterate on the Battle System until it's (roughly) polished
+
 ### v0.0.0-alpha.8
-* Cleanup Battle System
+* Cleanup Battle System (more like completely re-do)
 * Unit tests for Battle Functionality
 
 ### v0.0.0-alpha.7

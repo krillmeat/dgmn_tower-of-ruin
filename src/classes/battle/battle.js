@@ -17,8 +17,8 @@ import Dgmn from "../dgmn/dgmn";
 class Battle {
   constructor(){ // TODO - Needs floor and mods to determine enemies
     this.battleActive = true;
-    this.turn = 0;                            // Which Turn it currently is
-    this.yourParty;                           // Your Dgmn : TODO - gameAH Reference to fetch this
+    this.turn = 0;                               // Which Turn it currently is
+    this.yourParty;                              // Your Dgmn : TODO - gameAH Reference to fetch this
     this.enemyParty = ['edId0','edId1','edId2']; // Enemies for the Battle TODO - Should be generated
 
     this.menuState = 'battle';
@@ -29,6 +29,7 @@ class Battle {
     this.systemAH; this.gameAH; this.digiBeetleAH;
     this.dungeonAH; // TODO - We'll see if I need this, probably not
 
+    // TODO - Make sure all of these are used and can't be moved elsewhere
     this.battleAH = new BattleAH({
       drawBattleCanvasCB: this.drawBattleCanvas,
       paintToBattleCanvasCB: this.paintToBattleCanvas,
@@ -184,10 +185,10 @@ class Battle {
   }
 
   /**------------------------------------------------------------------------
-   * CALC TURN ORDER
+   * CALCULATE TURN ORDER
    * ------------------------------------------------------------------------
    * Organizes the Battle Order for Dgmn based on their Speed
-   * TODO - REMOVE, THIS IS IN THE UTILITIES
+   * TODO - MOVE/MERGE WITH UTILITIES
    * ----------------------------------------------------------------------*/
   calcTurnOrder = () => {
     let order = this.yourParty.concat(this.enemyParty);
@@ -297,33 +298,6 @@ class Battle {
       this.dgmnAH.startDgmnIdleAnimation(dgmnList[i]);
     }
   }
-
-  /**------------------------------------------------------------------------
-   * LAUNCH ATTACK SELECT                                       [[EXPORTED ]]
-   * ------------------------------------------------------------------------
-   * Creates the Attack Select Menu
-   * ----------------------------------------------------------------------*/ /* istanbul ignore next */
-  // launchAttackSelect = () => {
-  //   this.menuState = 'attack-list';
-  //   this.attackMenu = new AttackMenu(2,this.systemAH,this.gameAH,this.battleAH);
-  //   this.attackMenu.init(this.dgmnAH.getDgmnAttackData(this.yourParty[this.currDgmnChoice],['displayName','currCost','maxCost','type','power','hits','targets']));
-  //   this.battleMenu.menuChart.level = 'attack-select';
-  // }
-
-  /**------------------------------------------------------------------------
-   * LAUNCH TARGET SELECT                                       [[EXPORTED ]]
-   * ------------------------------------------------------------------------
-   * After choosing your attack, launches the selector for Attack target
-   * TODO - Move this into the Menus
-   * ----------------------------------------------------------------------*/ /* istanbul ignore next */
-   launchTargetSelect = attackData => {
-     console.log("Launch Target Select for ",attackData.displayName);
-     this.attackChoice = attackData;
-     this.attackMenu = undefined;
-     this.menuState = 'target-select';
-     this.setCurrentAttackTarget();
-     this.drawBattleCanvas();
-   }
 
   /**------------------------------------------------------------------------
    * LAUNCH TARGET SELECT                                       [[EXPORTED ]]
