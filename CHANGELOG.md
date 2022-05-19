@@ -7,6 +7,19 @@ Setting up all of the basic structure for the system, until the game is in any w
 
 ### v0.0.0-alpha.9
 * Iterate on the Battle System until it's (roughly) polished
+  * Multi-hit Moves
+  * Combo System
+  * Weakened System
+  * HIT/AVO
+  * Physical/Special Split
+  * Hit/Hurt DGMN Animation
+  * Dead DGMN Sprite
+  * Reduce Energy Cost
+  * Defend
+  * Enemy Attacks
+  * Low Stage DMG Mod
+  * Battle Rewards
+  * Generate Enemy Data
 
 ### v0.0.0-alpha.8
 * Cleanup Battle System (more like completely re-do)

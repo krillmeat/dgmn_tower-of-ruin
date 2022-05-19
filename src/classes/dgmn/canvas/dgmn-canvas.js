@@ -8,13 +8,15 @@ class DgmnCanvas extends GameCanvas{
     this.frames = [];
     this.animateSpeed = 2000;
 
+    this.idleInterval;
+
     this.refreshScreen = () => { refreshScreenCB() }
   }
 
   animate = speed => {
     let counter = 0;
     let currentFrame = 0;
-    setInterval( () => {
+    this.idleInterval = setInterval( () => {
       if(this.isIdle){
         this.clearCanvas();
         // if(counter % 4 === 0){
@@ -28,18 +30,19 @@ class DgmnCanvas extends GameCanvas{
     },speed);
   }
 
-  attackAnimation = () => {
+  showFrame = frame => {
     this.isIdle = false;
     this.clearCanvas();
-    this.paintImage(this.imageStack[2]);
-    this.triggerGameScreenRedraw();
+    this.paintImage(frame);
   }
 
-  hurtAnimation = () => {
-    this.isIdle = false;
+  idle = () => { this.isIdle = true }
+
+  stop = () => {
+    clearInterval(this.idleInterval);
     this.clearCanvas();
-    this.paintImage(this.imageStack[3]);
-    this.triggerGameScreenRedraw();
+    this.refreshScreen();
+    this.refreshScreen = null;
   }
 }
 

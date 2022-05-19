@@ -6,6 +6,7 @@ import { dungeonImages } from "../../data/images.db";
 
 import DungeonAH from "../action-handlers/dungeon.ah";
 import DungeonIO from "../input-output/dungeon.io";
+import HatchingMenu from "../menu/hatching-menu";
 
 class Dungeon{
   constructor(isNewDungeon,loadedCallback){
@@ -19,7 +20,8 @@ class Dungeon{
       this.getMoving,this.setMoving,
       this.getCollision,this.setCollision,
       this.moveFloor, this.goUpFloor,
-      this.startBattle);
+      this.startBattle,
+      this.getCurrentFloor);
 
     this.dungeonCanvas = new GameCanvas('dungeon-canvas',160,144);  // Holds the Floor Canvas and is what gets painted to the screen
     this.dungeonIO = new DungeonIO(this.dungeonAH);                 // Key Manager
@@ -35,6 +37,7 @@ class Dungeon{
       down: false,
       left: false
     };
+    this.hatchingMenu;
 
     this.onLoaded = () => {loadedCallback()}
   }
@@ -45,7 +48,8 @@ class Dungeon{
    * Kicks things off
    * ----------------------------------------------------------------------*/
   init = () => {
-    this.buildFloor();
+    this.hatchingMenu = new HatchingMenu(this.systemAH,this.gameAH,this.dungeonAH);
+    // this.buildFloor();
   }
 
   /**------------------------------------------------------------------------
@@ -86,7 +90,7 @@ class Dungeon{
     for(let r = 0; r < roomMatrix.length; r++){
       for(let c = 0; c < roomMatrix[r].length; c++){
         if(rooms.indexOf(roomMatrix[r][c].roomId) === -1){
-          allImages.push(`./sprites/Dungeon/Rooms/room${roomMatrix[r][c].roomId}.png`);
+          allImages.push(`Dungeon/Rooms/room${roomMatrix[r][c].roomId}`);
         }
       }
     }
@@ -160,8 +164,12 @@ class Dungeon{
   startBattle = () => {
     debugLog("Starting Battle...");
     this.moving = 'none';
-    this.dungeonState = 'battle';
-    this.gameAH.startBattle(); // TODO - I need to send in data to help pick the encounter
+    this.dungeonState = 'loading';
+    setTimeout(()=>{
+      this.systemAH.startLoading(()=>{
+        this.gameAH.startBattle();
+      })
+    },500);
   }
 
   /**------------------------------------------------------------------------
@@ -174,6 +182,7 @@ class Dungeon{
    * ------------------------------------------------------------------------
    * ----------------------------------------------------------------------*/
 
+  getCurrentFloor = () => { return this.floorNumber }
   getCurrentDirection = () => { return this.facing; }
   setCurrentDirection = newValue => { this.facing = newValue }
   

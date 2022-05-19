@@ -13,7 +13,6 @@ These are all of the Properties created and handled by the Constructor. There ar
 | turn | 0 | Goes up by 1 at the start of each new Turn. Is used for reward calculation |
 | yourParty | undefined | Will end up being an Array of the DGMN IDs for each of your Party DGMN |
 | enemyParty | \[ 'edId0','edId1','edId2' \] | As there is always 3, it will always looks like this (for now, at least) |
-| menuState | 'battle' | Handles the current state of the Menu (_Do I use this?_) |
 | attackManager | new AttackManager() | Instance of Attack Manger (see more) |
 | battleCanvas | undefined | Canvas for drawing all Battle-related things |
 | dgmnStatusCanvas | undefined | Canvas for the Status bars on the side of the Screen |

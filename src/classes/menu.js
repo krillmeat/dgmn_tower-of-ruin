@@ -1,4 +1,5 @@
 import MenuUtility from "./menu/menu.util";
+import ContinueCursor from "./menu/continue-cursor";
 
 class Menu{
   constructor(systemAH,gameAH,parentAH){
@@ -31,6 +32,11 @@ class Menu{
     }
 
     return images;
+  }
+
+  drawContinueCursor = (continueCursorImg,drawCB) => {
+    this.continueCursor = new ContinueCursor(continueCursorImg,this.menuCanvas?.paintCanvas,drawCB);
+    this.continueCursor.blink();
   }
 }
 

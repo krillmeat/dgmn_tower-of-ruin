@@ -8,9 +8,10 @@ import GameCanvas from "./canvas";
 import Controller from "./controller";
 import DebugMenu from "./debug-menu";
 import ImageHandler from "./image-handler";
-import { fontImages, genericImages } from "../data/images.db";
+import { fontImages, genericImages, loadingImages } from "../data/images.db";
 import { fontImages as globalFontImages} from "../data/font.db";
 import SystemAH from "./action-handlers/system.ah";
+import LoadManager from "./load-manager";
 
 /**------------------------------------------------------------------------
  * SYSTEM CLASS
@@ -21,7 +22,7 @@ class System{
   constructor(){
     debugLog("Loading System...");
 
-    this.systemAH = new SystemAH(this.loadImage,this.fetchImage)
+    this.systemAH = new SystemAH(this.loadImage,this.fetchImage,this.startLoading,this.stopLoading)
 
     this.controllers = [];
     this.keyState = {};
@@ -32,6 +33,7 @@ class System{
     this.debugMenu;
 
     this.imageHandler = new ImageHandler();
+    this.loadManager = new LoadManager(this.systemAH);
 
     this.gameTimer;
     this.systemCount = 0;
@@ -39,7 +41,6 @@ class System{
 
     this.screenCanvas = new GameCanvas('screen-canvas',160,144);
     this.game = new Game(this.systemAH);
-    this.game.initSystemAH(this.systemAH);
     this.subCanvases = [this.backgroundCanvas]; // TODO - this should be loaded
 
     this.buildFontImages();
@@ -58,7 +59,7 @@ class System{
     }
 
     // Load Base Images - Run game once that is all done
-    this.imageHandler.addToQueue(genericImages.concat(fontImages),()=>{ 
+    this.imageHandler.addToQueue(genericImages.concat(fontImages).concat(loadingImages),()=>{ 
       this.game.bootGame(); // TODO - Eventually, this needs to wait until loaded to take actions
 
       this.systemScreen.appendChild(this.screenCanvas.elem);
@@ -73,6 +74,14 @@ class System{
     this.screenCanvas.paintCanvas(canvas);
   }
 
+  startLoading = callback => {
+    this.loadManager.load(callback);
+  }
+
+  stopLoading = () => {
+    this.loadManager.stop();
+  }
+
   /**------------------------------------------------------------------------
    * START GAME TIMER
    * ------------------------------------------------------------------------
@@ -85,6 +94,7 @@ class System{
         this.systemCount++;
         this.game.keyHandler(this.keyState);
         this.screenCanvas.paintCanvas(this.game.gameCanvas); // TODO - Should be a full compiler of all other canvases
+        if(this.loadManager.isLoading) this.screenCanvas.paintCanvas(this.loadManager.loadCanvas);
         if(this.actionQueue.length > 0){
           if(this.actionQueue[0] === null){ /* SPACER */ } else{
             debugLog("Taking Action ",this.actionQueue[0]);
@@ -103,7 +113,7 @@ class System{
   buildFontImages = () => {
     for(let imgURL of fontImages){
       let image = new Image();
-          image.src = imgURL;
+          image.src = `./sprites/${config.pixelKidMode}/${imgURL}.png`;
       globalFontImages.push(image);
     }
   }

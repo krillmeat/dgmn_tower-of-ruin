@@ -1,4 +1,5 @@
-import {battleImages} from '../../../data/images.db';
+import {battleImages, fieldIcons, typeIcons} from '../../../data/images.db';
+import {dgmnDB} from '../../../data/dgmn.db'
 
 class BattleUtility{
   constructor(){
@@ -6,7 +7,7 @@ class BattleUtility{
   }
 
   getDefaultBattleImages = () => {
-    return battleImages;
+    return battleImages.concat(typeIcons).concat(fieldIcons);
   }
 
   /**------------------------------------------------------------------------
@@ -39,7 +40,33 @@ class BattleUtility{
   }
 
   calculateMeterLength = (curr,max) => {
-    return Math.floor((curr/max) * 18);
+    return Math.floor((curr/max) * 10);
+  }
+
+  getRewards = species => {
+    let rewards = [];
+
+    // Add FP
+    for(let k in dgmnDB[species].fields){
+      let FP = dgmnDB[species].fields[k];
+      if(FP > 0){
+        for(let i = 0; i < FP; i++){
+          rewards.push(k);
+        }
+      }
+    }
+
+    // MOVING...
+    // // Add XP based on LV
+    // for(let r = 0; r < dgmnDB[species].stage; r++){
+    //   rewards.push('XP')
+    // }
+
+    return rewards;
+  }
+
+  getXP = species => {
+    return dgmnDB[species].stage;
   }
 }
 

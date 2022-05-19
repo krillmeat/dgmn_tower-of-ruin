@@ -8,6 +8,8 @@ class BattleMenuAH{
     this.prevListItem = () => { cbObj.prevListItemCB() }
     this.selectListItem = () => { cbObj.selectListItemCB() }
     this.setTopMessage = () => { cbObj.setTopMessageCB() }
+    this.getState = () => { return cbObj.getStateCB() }
+    this.levelUpNext = () => cbObj.levelUpNextCB()
     
   }
 }

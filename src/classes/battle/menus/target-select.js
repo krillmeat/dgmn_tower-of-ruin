@@ -2,9 +2,10 @@ import config from "../../../config";
 import ListMenu from "../../menu/list-menu";
 
 class TargetSelect extends ListMenu{
-  constructor(hitsAll,parentCTX,...args){
+  constructor(hitsAll,dgmnIsDeadCB,parentCTX,...args){
     super(...args);
     this.parentCTX = parentCTX; // Used to clear the Cursors off of the canvas
+    this.isDgmnDead = index => { return dgmnIsDeadCB(index) }
     this.hitsAll = hitsAll;
 
     // this.drawMenu(startingIndex); // TODO - Constructors shouldn't be calling their own methods
@@ -37,19 +38,29 @@ class TargetSelect extends ListMenu{
 
   nextListItem = () => {
     if(this.currIndex < this.listItems.length-1 && !this.hitsAll) { // Not at end && Single-target
-      this.clearAllCursors(true);
-      if(this.currIndex % this.itemAmount === this.itemAmount - 1 && this.currIndex !== 0) this.currPage++; 
-      this.currIndex++;
-      this.drawMenu();
+      if(!this.isDgmnDead(this.currIndex + 1)){ // If the next Dgmn is NOT dead
+        this.clearAllCursors(true);
+        this.currIndex++;
+        this.drawMenu();
+      } else if(this.currIndex === 0 && this.isDgmnDead(1) && !this.isDgmnDead(2)){ // If at First Spot and only the middle guy is dead
+        this.clearAllCursors(true);
+        this.currIndex = 2;
+        this.drawMenu();
+      }
     }
   }
 
   prevListItem = () => {
     if(this.currIndex > 0 && !this.hitsAll){  // Not at beginning && Single-target
-      this.clearAllCursors(true);
-      if(this.currIndex % this.itemAmount === 0) this.currPage--;
-      this.currIndex--;
-      this.drawMenu();
+      if(!this.isDgmnDead(this.currIndex - 1)){ // If the next Dgmn is NOT dead
+        this.clearAllCursors(true);
+        this.currIndex--;
+        this.drawMenu();
+      } else if(this.currIndex === 2 && this.isDgmnDead(1) && !this.isDgmnDead(0)){ // If at First Spot and only the middle guy is dead
+        this.clearAllCursors(true);
+        this.currIndex = 0;
+        this.drawMenu();
+      }
     }
   }
 }

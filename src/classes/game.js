@@ -17,13 +17,13 @@ import GameAH from "./action-handlers/game.ah";
  * @param {Function} fetchImageCallback Gets an image from the System
  * ----------------------------------------------------------------------*/
 class Game{
-  constructor(){
+  constructor(systemAH){
     debugLog('Game Created...');
 
     this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty,this.endBattle);
-    this.systemAH;
+    this.systemAH = systemAH;
 
-    this.yourDgmn = new DgmnManager();        // All of your Dgmn (party, reserves, etc.)
+    this.yourDgmn = new DgmnManager(this.systemAH);        // All of your Dgmn (party, reserves, etc.)
     this.yourParty = this.yourDgmn.party;     // Your current Party of Dgmn (possible to be empty)
     this.battle;                              // Init Battle (cleared and created by Game Logic)
     this.dungeon;
@@ -119,10 +119,8 @@ class Game{
    * ----------------------------------------------------------------------*/
   startBattle = () => {
     debugLog("Starting Battle...");
-    // TODO - ALL OF THIS IS TEMP RIGHT NOW
-    // this.battle = new Battle(mockDgmn,mockEnemyDgmn,this.onBattleLoad,this.addToObjectList,this.drawGameScreen,this.loadImages,this.fetchImage);
     this.battle = new Battle();
-    this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,()=>{},()=>{}); // The other two AH's aren't generated, because there's no dungeon/beetle yet
+    this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,this.dungeon?.dungeonAH,()=>{}); // The other two AH's aren't generated, because there's no dungeon/beetle yet
     this.battle.init();
   }
 
@@ -136,11 +134,13 @@ class Game{
     debugLog("Building Dungeon...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
 
+    this.setupPartyDgmn();
+
     // CREATE EVERYTHING
     this.dungeon = new Dungeon(true,this.onDungeonLoad);
     this.digiBeetle = new DigiBeetle();
 
-    // CONNECT EVERYTHING
+    // CONNECT EVERYTHING - TODO - Split these into 1 function apiece
     this.digiBeetle.initDungeonAH(this.dungeon.dungeonAH);
     this.digiBeetle.initGameAH(this.gameAH);
     this.digiBeetle.initSystemAH(this.systemAH);
@@ -151,6 +151,16 @@ class Game{
     // START EVERYTHING
     this.dungeon.init();
     this.digiBeetle.init();
+  }
+
+  /**------------------------------------------------------------------------
+   * SETUP PARTY DGMN
+   * ------------------------------------------------------------------------
+   * When the Dungeon Loads, I need to set up the DGMN Party properly
+   * TODO - When I implement the Hatching Screen, a lot of this logic will move
+   * ----------------------------------------------------------------------*/
+  setupPartyDgmn = () => {
+    this.yourDgmn.buildPartyEggs();
   }
 
   /**------------------------------------------------------------------------
@@ -180,9 +190,11 @@ class Game{
     this.removeFromObjectList(this.battle.battleCanvas);
     this.battle = null;
 
+    setTimeout(()=>{ this.systemAH.stopLoading(); },1000);
+
     setTimeout(()=>{
       this.dungeon.dungeonState = 'free';
-    },1000)
+    },2000)
     
   }
 

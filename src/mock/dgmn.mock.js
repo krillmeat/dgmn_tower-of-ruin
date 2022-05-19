@@ -2,33 +2,39 @@ import Attack from "../classes/dgmn/attack"
 
 export const partyMock = {
   dId0: {
-    currentLevel: 2,
+    currentLevel: 1,
     attacks: [new Attack('bubbles'), new Attack('babyFlame'), new Attack('magicalFire'), new Attack('darknessGear'), new Attack('petitFire'), new Attack('petitTwister'), new Attack('picoDarts')],
-    currentStats: {HP: 30, ATK: 10, DEF: 0, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 8}
+    currentStats: {HP: 10, ATK: 1, DEF: 1, INT: 1, RES: 1, HIT: 1, AVO: 1, SPD: 1}
   },
   dId1: {
-    currentLevel: 2,
+    currentLevel: 10,
     attacks: [new Attack('bubbles'), new Attack('nutsShoot'), new Attack('picoDarts')],
-    currentStats: {HP: 30, ATK: 8, DEF: 0, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 12}
+    currentStats: {HP: 24, ATK: 10, DEF: 6, INT: 10, RES: 7, HIT: 6, AVO: 6, SPD: 6}
   },
   dId2: {
-    currentLevel: 2,
+    currentLevel: 1,
     attacks: [new Attack('bubbles'), new Attack('darknessGear')],
-    currentStats: {HP: 30, ATK: 4, DEF: 0, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 4}
+    currentStats: {HP: 10, ATK: 1, DEF: 1, INT: 1, RES: 1, HIT: 1, AVO: 1, SPD: 1}
   }
 }
 
 export const enemyPartyMock = {
   edId0: {
-    speciesName: 'gabu',
-    currentStats: {HP: 30, ATK: 0, DEF: 4, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 5}
+    speciesName: 'Yura',
+    currentLevel: 3,
+    currentStats: {HP: 16, ATK: 4, DEF: 1, INT: 4, RES: 4, HIT: 1, AVO: 1, SPD: 1},
+    attacks: [new Attack('bubbles')]
   },
   edId1: {
-    speciesName: 'picoDevi',
-    currentStats: {HP: 30, ATK: 0, DEF: 2, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 3}
+    speciesName: 'Zuru',
+    currentLevel: 3,
+    currentStats: {HP: 16, ATK: 4, DEF: 1, INT: 4, RES: 1, HIT: 1, AVO: 4, SPD: 1},
+    attacks: [new Attack('bubbles')]
   },
   edId2: {
-    speciesName: 'pulse',
-    currentStats: {HP: 30, ATK: 0, DEF: 8, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 7}
+    speciesName: 'Doki',
+    currentLevel: 3,
+    currentStats: {HP: 16, ATK: 4, DEF: 1, INT: 1, RES: 1, HIT: 1, AVO: 4, SPD: 4},
+    attacks: [new Attack('bubbles')]
   }
 }

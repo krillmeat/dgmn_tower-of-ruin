@@ -6,78 +6,76 @@ class BattleIO extends IO{
     super(...args);
     this.battleAH = battleAH;
     this.battleMenuAH;
+    this.victoryMenuAH;
     this.menuUtility = new MenuUtility();
   }
 
+  // TODO - Rather than do this, maybe have an event handler on the Battle side that moves through all of these actions
   setMenuAH = ah => {
     this.battleMenuAH = ah;
   }
 
   actionKeyHandler = upDown => {
-    if(this.battleMenuAH.getCurrMenuType() === 'icon'){
-      this.battleMenuAH.selectIcon();
-    } else if(this.battleMenuAH.getCurrMenuType() === 'list'){
-      this.battleMenuAH.selectListItem();
+    if(this.battleAH.getBattleState() === 'battle'){
+      if(this.battleMenuAH.getCurrMenuType() === 'icon'){
+        this.battleMenuAH.selectIcon();
+      } else if(this.battleMenuAH.getCurrMenuType() === 'list'){
+        this.battleMenuAH.selectListItem();
+      } else if(this.battleMenuAH.getState() === 'victory'){
+        this.battleAH.gotoRewards();
+      }
+    } else if(this.battleAH.getBattleState() === 'victory'){
+      if(this.battleMenuAH.getState() === 'level-next'){
+        this.battleAH.levelUpNext();
+      } else if(this.battleMenuAH.getState() === 'evolution-choice'){
+        this.battleAH.evolveCurrDgmn();
+      }
     }
+    
   }
 
   upKeyHandler = upDown => {
+      if(upDown === 'down'){
+        if(this.battleAH.getBattleState() === 'battle'){
+          if(this.battleMenuAH.getCurrMenuType() === 'list'){
+            this.battleMenuAH.prevListItem();
+          }  
+        } else if(this.battleAH.getBattleState() === 'victory'){
+          if(this.battleMenuAH.getState() === 'rewards') this.battleAH.giveCurrReward('up');
+        }
+      }
+  }
+
+  rightKeyHandler = upDown => { 
     if(upDown === 'down'){
-      if(this.battleMenuAH.getCurrMenuType() === 'list'){
-        this.battleMenuAH.prevListItem();
+      if(this.battleAH.getBattleState() === 'battle'){
+        if(this.battleMenuAH.getCurrMenuType() === 'icon'){
+          this.battleMenuAH.nextIcon();
+        }    
+      } else if(this.battleAH.getBattleState() === 'victory'){
+        if(this.battleMenuAH.getState() === 'rewards') this.battleAH.giveCurrReward('right');
       }
     }
   }
 
-  rightKeyHandler = upDown => {
+  downKeyHandler = upDown => {    
     if(upDown === 'down'){
-      if(this.battleMenuAH.getCurrMenuType() === 'icon'){
-        this.battleMenuAH.nextIcon();
-      }      
-    }
-  }
-
-  downKeyHandler = upDown => {
-    if(upDown === 'down'){
-      if(this.battleMenuAH.getCurrMenuType() === 'list'){
-        this.battleMenuAH.nextListItem();
+      if(this.battleAH.getBattleState() === 'battle'){
+        if(this.battleMenuAH.getCurrMenuType() === 'list'){
+          this.battleMenuAH.nextListItem();
+        }
       }
     }
   }
 
-  leftKeyHandler = upDown => {
+  leftKeyHandler = upDown => { 
     if(upDown === 'down'){
-      if(this.battleMenuAH.getCurrMenuType() === 'icon'){
-        this.battleMenuAH.prevIcon();
-      }
-    }
-  }
-
-
-
-  triageMenuMove = (dir, menuState, menuChart) => {
-    let newIndex = menuChart.index;
-
-    if(dir === 'up'){
-      if(menuState === 'attack-list'){
-        this.battleAH.setCurrentAttackMenuItem('prev');
-      } else if(menuState === 'target-select'){
-        this.battleAH.setCurrentAttackTarget('prev');
-      }
-    }
-
-    if(dir === 'right'){
-      if(menuState === 'battle'){ // TODO - Should be more than this
-        newIndex = newIndex === menuChart[menuChart.level].length - 1 ? 0 : newIndex+1;
-        this.battleAH.setCurrentMenuButton(menuChart[menuChart.level][newIndex]);
-      }
-    }
-
-    if(dir === 'down'){
-      if(menuState === 'attack-list'){
-        this.battleAH.setCurrentAttackMenuItem('next');
-      } else if(menuState === 'target-select'){
-        this.battleAH.setCurrentAttackTarget('next');
+      if(this.battleAH.getBattleState() === 'battle'){
+        if(this.battleMenuAH.getCurrMenuType() === 'icon'){
+          this.battleMenuAH.prevIcon();
+        }
+      } else if(this.battleAH.getBattleState() === 'victory'){
+        if(this.battleMenuAH.getState() === 'rewards') this.battleAH.giveCurrReward('left');
       }
     }
   }

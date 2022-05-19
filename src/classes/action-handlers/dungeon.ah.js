@@ -11,7 +11,7 @@
  * NO METHODS ONLY CONSTRUCTOR
  * ----------------------------------------------------------------------*/
  class DungeonAH{
-    constructor(getCurrentDirectionCB,setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB,setCollisionCB, moveFloorCB, goUpFloorCB, startBattleCB){
+    constructor(getCurrentDirectionCB,setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB,setCollisionCB, moveFloorCB, goUpFloorCB, startBattleCB, getCurrentFloorCB){
         this.getCurrentDirection = () => { return getCurrentDirectionCB() }
         this.setCurrentDirection = newValue => { setCurrentDirectionCB(newValue) }
         this.paintFloorCanvas = canvas => { paintFloorCanvasCB(canvas) }
@@ -23,6 +23,7 @@
         this.moveFloor = (dir,upDown) => { moveFloorCB(dir,upDown) }
         this.goUpFloor = () => { goUpFloorCB() }
         this.startBattle = () => { startBattleCB() }
+        this.getCurrentFloor = () => { return getCurrentFloorCB() }
     }
 }
 

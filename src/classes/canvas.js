@@ -157,6 +157,10 @@ class GameCanvas{
     this.ctx.scale(-1,1);
     this.ctx.translate((this.width * -1),0);
   }
+
+  clearBottomSection = () => {
+    this.ctx.clearRect(0,14*8*config.screenSize,20*8*config.screenSize,4*8*config.screenSize);
+  }
 }
 
 export default GameCanvas;

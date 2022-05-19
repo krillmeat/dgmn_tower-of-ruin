@@ -135,6 +135,7 @@ class TextArea{
         modifiedMessage = modifiedMessage.replace(/\.en/g,'$');
         modifiedMessage = modifiedMessage.replace(/\.lv/g,'@');
         modifiedMessage = modifiedMessage.replace(/\!/g,'#');
+        modifiedMessage = modifiedMessage.replace(/\./g,'£');
 
     return modifiedMessage;
   }
@@ -158,7 +159,8 @@ class TextArea{
       } else if(char === "%"){ modifiedCharArray[i] = "hp"
       } else if(char === "$"){ modifiedCharArray[i] = "en" 
       } else if(char === "@"){ modifiedCharArray[i] = "lv" 
-      } else if(char === "#"){ modifiedCharArray[i] = "exclamation" }
+      } else if(char === "#"){ modifiedCharArray[i] = "exclamation" 
+      } else if(char === "£"){ modifiedCharArray[i] = "period" }
     }
 
     return modifiedCharArray;
