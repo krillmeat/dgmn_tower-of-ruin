@@ -42,7 +42,6 @@ class AttackCanvas extends GameCanvas{
         } else { t++; f = 0; i = 0 } // Go up 1 target, reset frames
       }
     },66);
-
   }
 
   /**------------------------------------------------------------------------

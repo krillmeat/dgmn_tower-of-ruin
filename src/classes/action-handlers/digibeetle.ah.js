@@ -14,8 +14,9 @@
  * I'm thinking there should be no methods. Just callbacks in the constructors
  * ----------------------------------------------------------------------*/
 class DigiBeetleAH{
-    constructor(addItemToToolBoxCB){
-        this.addItemToToolBox = item => { addItemToToolBoxCB(item) }
+    constructor(cbObj){
+      this.init = () => cbObj.initCB()
+      this.addItemToToolBox = item => cbObj.addItemToToolBoxCB(item)
     }
 }
 

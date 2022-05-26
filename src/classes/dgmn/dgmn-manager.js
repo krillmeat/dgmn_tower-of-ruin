@@ -6,6 +6,7 @@ import Attack from "./attack";
 import { partyMock, enemyPartyMock } from "../../mock/dgmn.mock";
 import EnemyGenerator from "./enemy-generator";
 import DgmnUtility from "./utility/dgmn.util";
+import { debugLog } from "../../utils/log-utils";
 
 // TODO - THIS CLASS WILL NEVER WORK LIKE THIS. IT WILL INTERACT HEAVILY WITH THE SAVE DATA TO BUILD OUT THE allDgmn OBJECT
 // TODO - RENAME TO ALL DGMN
@@ -13,9 +14,9 @@ class DgmnManager{
   constructor(systemAH){
     // TODO - In the future, dIdX should probably be generated. If I ever want to do a cool online thing, you might need very unique IDs
     this.allDgmn = {
-      dId0: new Dgmn(0,"FLARE","Bota"),
-      dId1: new Dgmn(1,"SPROUT","Lala"),
-      dId2: new Dgmn(2,"GEAR","Choro")
+      dId0: new Dgmn(0,"FLARE","Bota",'DR'),
+      dId1: new Dgmn(1,"SPROUT","Lala",'JT'),
+      dId2: new Dgmn(2,"GEAR","Choro",'ME')
     }
 
     // TODO - I need to clean this up BIG TIME
@@ -44,7 +45,8 @@ class DgmnManager{
       checkLevelUpCB: this.checkLevelUp,
       buildStatGrowthCB: this.buildStatGrowth,
       getTempDgmnCB: this.getTempDgmn,
-      evolveCB: this.evolve
+      evolveCB: this.evolve,
+      hatchEggCB: this.hatchEgg
     });
 
     this.systemAH = systemAH;
@@ -64,9 +66,9 @@ class DgmnManager{
   mockParty = () => {
     // this.enemyDgmn.edId0.isEnemy = true; this.enemyDgmn.edId1.isEnemy = true; this.enemyDgmn.edId2.isEnemy = true;
     for(let i = 0; i < 3; i++){
-      this.allDgmn[`dId${i}`].currentLevel = partyMock[`dId${i}`].currentLevel;
+      // this.allDgmn[`dId${i}`].currentLevel = partyMock[`dId${i}`].currentLevel;
       this.allDgmn[`dId${i}`].attacks = partyMock[`dId${i}`].attacks;
-      this.allDgmn[`dId${i}`].currentStats = partyMock[`dId${i}`].currentStats;
+      // this.allDgmn[`dId${i}`].currentStats = partyMock[`dId${i}`].currentStats;
 
       // this.enemyDgmn[`eId${i}`].attacks = enemyPartyMock[`eId${i}`].attacks;
       // this.enemyDgmn[`edId${i}`].currentStats = enemyPartyMock[`edId${i}`].currentStats;
@@ -94,10 +96,13 @@ class DgmnManager{
   }
 
   buildPartyEggs = () => {
-    console.log("PARTY ? ",this.party);
     for(let dgmn of this.party){
       this.allDgmn[dgmn].hatchSetup();
     }
+  }
+
+  hatchEgg = (dgmnId,species) => {
+    this.allDgmn[dgmnId].hatch(species);
   }
 
   /**------------------------------------------------------------------------
@@ -230,31 +235,26 @@ class DgmnManager{
    * ----------------------------------------------------------------------*/
   checkKO = target => {
     let party = this.getParty(target);
-    if(this.isEnemy(target)){
-      if(this[party][target].currentHP <= 0){ // If they're Dead...
-        // SPLIT OUT INTO ITS OWN FUNCTION
-        this.showDgmnFrame(target,'dead');
-        this[party][target].isDead = true;
-        this[party][target].currentHP = 0;
-        this[party][target].currentEN = 0;
-        this[party][target].combo = 0;
-        this[party][target].weak = 0;
-        return true;
+    if(!this[party][target].isDead){ // Did this to prevent already dead DGMN from KO'ing
+      if(this.isEnemy(target)){ // TODO - Not sure I need this
+        if(this[party][target].currentHP <= 0){ // If they're Dead...
+          // SPLIT OUT INTO ITS OWN FUNCTION
+          this.showDgmnFrame(target,'dead');
+          this[party][target].isDead = true;
+          this[party][target].currentHP = 0;
+          this[party][target].currentEN = 0;
+          this[party][target].combo = 0;
+          this[party][target].weak = 0;
+          return true;
+        }
       }
     }
     return false
   }
 
-  battleWrapUp = (dgmnId,rewards) => {
-    // this.giveRewards(dgmnId,rewards);
+  battleWrapUp = dgmnId => {
     let leveledUp = this.checkLevelUp(dgmnId);
     return leveledUp;
-  }
-
-  giveRewards = (dgmnId,rewards) => {
-    for(let reward of rewards){
-      reward === 'XP' ? this.allDgmn[dgmnId].currentXP++  : this.allDgmn[dgmnId].permFP[reward]++;
-    }
   }
 
   /**------------------------------------------------------------------------
@@ -266,7 +266,8 @@ class DgmnManager{
    * @param {String} reward FP or XP Boost to be rewarded
    * ----------------------------------------------------------------------*/
   giveDgmnReward = (dgmnId,reward) => {
-    reward === 'XP' ? this.allDgmn[dgmnId].currentXP++  : this.allDgmn[dgmnId].currentFP[reward]++; // TODO - XXP
+    console.log(dgmnId+" is getting "+reward);
+    reward === 'XP' ? this.allDgmn[dgmnId].currentXP++ : this.allDgmn[dgmnId].currentFP[reward]++; // TODO - XXP
   }
 
   /**------------------------------------------------------------------------
@@ -291,11 +292,12 @@ class DgmnManager{
   }
 
   levelUp = dgmnId => {
-    console.log(this.allDgmn[dgmnId].nickname+" Leveled Up!");
     this.allDgmn[dgmnId].currentXP = 0;
     this.allDgmn[dgmnId].currentLevel++;
     this.allDgmn[dgmnId].levelUpStats();
     this.allDgmn[dgmnId].levelUpFP();
+    debugLog(this.allDgmn[dgmnId].nickname+" Leveled Up!");
+    debugLog("  - New FP: ",this.allDgmn[dgmnId].currentFP);
   }
 
   evolve = (dgmnId,evoSpecies) => {

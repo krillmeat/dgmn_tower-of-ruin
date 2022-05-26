@@ -311,10 +311,12 @@ class Battle {
     this.battleCanvas.drawBattleBase(this.systemAH.fetchImage('battleBackground'));
     this.battleCanvas.paintCanvas(this.dgmnStatusCanvas);
 
-    if(this.battleMenu){ // Only Draw the DGMN here when the Battle Menu is Active  
+    if(this.battleMenu){ // Only Draw the DGMN here when the Battle Menu is Active and Battle isn't loading
       for(let i = 0; i < 3; i++){
-        this.battleCanvas.drawDgmnCanvas(this.dgmnAH.getCanvas(this.yourParty[i]));
-        this.battleCanvas.drawDgmnCanvas(this.dgmnAH.getCanvas(this.enemyParty[i]));
+        // Without the conditionals, it tries to draw all of the DGMN Canvases before they have loaded,
+        //   so only draw the DGMN that have been loaded
+        if(this.dgmnAH.getCanvas(this.yourParty[i])) this.battleCanvas.drawDgmnCanvas(this.dgmnAH.getCanvas(this.yourParty[i]));
+        if(this.dgmnAH.getCanvas(this.enemyParty[i])) this.battleCanvas.drawDgmnCanvas(this.dgmnAH.getCanvas(this.enemyParty[i]));
       }
 
       this.battleCanvas.paintCanvas(this.battleMenu.menuCanvas);
@@ -519,7 +521,7 @@ class Battle {
   giveCurrReward = dir => {
     let dgmnId;
 
-    let reward = this.battleRewards[this.victoryMenu.currRewardIndex];
+    let reward = this.battleRewards[this.victoryMenu.subMenus.rewards.currIndex];
 
     // TODO - This conversion should move to the Utility
     if(dir === 'left'){ dgmnId = this.yourParty[0]

@@ -4,6 +4,7 @@ import { dgmnDB } from "../../data/dgmn.db";
 import DgmnCanvas from "./canvas/dgmn-canvas";
 import Attack from "./attack";
 import DgmnUtility from "./utility/dgmn.util";
+import { debugLog } from "../../utils/log-utils";
 
 const mockStats1 = {
   ATK: 10, DEF: 10, INT: 10, RES: 10, HIT: 10, AVO: 10, SPD: 10
@@ -19,16 +20,16 @@ const mockStats1 = {
  * @param {Boolean} isEnemy         Whether the Dgmn is an Enemy or not
  */
 class Dgmn {
-  constructor(id, nickname, speciesName){
+  constructor(id, nickname, speciesName, eggField){
     this.dgmnId = id;
     this.nickname = nickname;
     this.speciesName = speciesName;
-    this.eggField = ""; // The Field the Egg Belongs to
+    this.eggField = eggField || ''; // The Field the Egg Belongs to
 
     this.permFP = { DR:0, NS:0, WG:0, ME:0, DS:0, JT:0, VB:0, NA:0 }
     this.permAttacks = [];
 
-    this.currentLevel = 6;
+    this.currentLevel = 1;
     this.currentHP = 23;
     this.currentEN = 100;
     this.currentStats = { HP: 13, ATK: 0, DEF: 0, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 0 }
@@ -46,10 +47,6 @@ class Dgmn {
     this.dgmnCanvas;
 
     this.dgmnUtility = new DgmnUtility();
-  }
-
-  initializeStats = () => {
-    console.log("STATS");
   }
 
   /**------------------------------------------------------------------------
@@ -93,13 +90,24 @@ class Dgmn {
     this.dgmnCanvas.paintImage(image);
   }
 
+  heal = amount => {
+    debugLog("  - Healing: ",amount);
+    this.currentHP += amount;
+    this.currentHP = this.currentHP > this.currentStats.HP ? this.currentStats.HP : this.currentHP;
+  }
+
   hatchSetup = () => {
     this.setInitialFP();
   }
 
+  hatch = species => {
+    this.speciesName = species;
+    this.currentHP = this.currentStats.HP;
+    this.currentStats = this.dgmnUtility.buildInitialStats(this.speciesName)
+  }
+
   setInitialFP = () => {
     let baseFP = this.dgmnUtility.getBaseFP(this.speciesName);
-    console.log("BASE FP = ",baseFP);
     for(let FP in baseFP){
       this.currentFP[FP] = baseFP[FP]; // TODO - Also add permanent FP
     }
@@ -126,6 +134,8 @@ class Dgmn {
       let growth = this.dgmnUtility.getBaseStat(this.speciesName,stat);
       this.currentStats[stat] += growth;
     }
+
+    this.heal(this.dgmnUtility.getBaseStat(this.speciesName,'HP') + Math.floor(this.currentStats.HP / 4));
   }
 
   levelUpFP = () => {

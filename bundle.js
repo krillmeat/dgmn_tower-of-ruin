@@ -301,6 +301,9 @@ var DgmnAH = function DgmnAH(cbObj) {
   this.evolve = function (dgmnId, speciesName) {
     return cbObj.evolveCB(dgmnId, speciesName);
   };
+  this.hatchEgg = function (dgmnId, species) {
+    return cbObj.hatchEggCB(dgmnId, species);
+  };
 };
 
 var evolutions = {
@@ -347,7 +350,7 @@ var evolutions = {
 var dgmnDB = {
   Bota: {
     stage: 1,
-    "class": 'free',
+    attr: 'Free',
     stats: {
       HP: 2,
       ATK: 1,
@@ -361,15 +364,24 @@ var dgmnDB = {
     evolutions: evolutions['Bota'],
     types: {},
     fields: {
-      DR: 4
+      DR: 1
     },
     attack: 'bubbles'
   },
   Yura: {
     stage: 1,
-    "class": 'free',
-    stats: [2, 1, 0, 1, 1, 0, 0, 0],
-    evolutions: [],
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 1,
+      DEF: 0,
+      INT: 1,
+      RES: 1,
+      HIT: 0,
+      AVO: 0,
+      SPD: 0
+    },
+    evolutions: ['Bud'],
     types: {},
     fields: {
       JT: 1
@@ -378,7 +390,7 @@ var dgmnDB = {
   },
   Doki: {
     stage: 1,
-    "class": 'free',
+    attr: 'Free',
     stats: [2, 1, 0, 0, 0, 0, 1, 1],
     evolutions: [],
     types: {},
@@ -389,7 +401,7 @@ var dgmnDB = {
   },
   Zuru: {
     stage: 1,
-    "class": 'free',
+    attr: 'Free',
     stats: [2, 1, 0, 1, 0, 0, 1, 0],
     evolutions: [],
     types: {},
@@ -400,7 +412,7 @@ var dgmnDB = {
   },
   Pururu: {
     stage: 1,
-    "class": 'free',
+    attr: 'Free',
     stats: [2, 1, 0, 0, 0, 1, 0, 1],
     evolutions: [],
     types: {},
@@ -411,7 +423,7 @@ var dgmnDB = {
   },
   Choro: {
     stage: 1,
-    "class": 'free',
+    attr: 'Free',
     stats: {
       HP: 2,
       ATK: 1,
@@ -431,7 +443,7 @@ var dgmnDB = {
   },
   Pitch: {
     stage: 1,
-    "class": 'free',
+    attr: 'Free',
     stats: [2, 0, 1, 0, 1, 0, 1, 0],
     evolutions: [],
     types: {},
@@ -442,7 +454,7 @@ var dgmnDB = {
   },
   Poyo: {
     stage: 1,
-    "class": 'free',
+    attr: 'Free',
     stats: [2, 1, 0, 1, 1, 0, 0, 0],
     evolutions: [],
     types: {},
@@ -473,7 +485,29 @@ var dgmnDB = {
       DR: 3
     }
   },
-  Bud: {},
+  Bud: {
+    stage: 2,
+    attr: 'Free',
+    stats: {
+      HP: 6,
+      ATK: 1,
+      DEF: 1,
+      INT: 2,
+      RES: 2,
+      HIT: 1,
+      AVO: 1,
+      SPD: 1
+    },
+    evolutions: [],
+    types: {},
+    fields: {
+      JT: 2
+    },
+    evoFields: {
+      JT: 3
+    }
+  },
+  Tane: {},
   Bibi: {},
   Pagu: {},
   Poro: {},
@@ -503,8 +537,7 @@ var dgmnDB = {
   Toko: {},
   Agu: {
     stage: 3,
-    "class": 'vaccine',
-    crests: [0],
+    attr: 'vaccine',
     stats: [5, 5, 4, 3, 4, 4, 4, 3],
     evolutions: evolutions['agu'],
     types: {
@@ -517,7 +550,6 @@ var dgmnDB = {
   Gabu: {
     stage: 3,
     "class": 'data',
-    crests: [0],
     stats: [5, 5, 5, 5, 5, 5, 5, 6],
     evolutions: evolutions['agu'],
     types: {
@@ -529,14 +561,12 @@ var dgmnDB = {
   Piyo: {
     stage: 3,
     "class": 'vaccine',
-    crests: [],
     stats: [5, 5, 5, 5, 5, 5, 5, 6],
     evolutions: evolutions['agu']
   },
   Terrier: {
     stage: 3,
     "class": 'vaccine',
-    crests: [],
     stats: [5, 5, 5, 5, 5, 5, 5, 6],
     evolutions: evolutions['agu'],
     types: {
@@ -567,7 +597,6 @@ var dgmnDB = {
   Haguru: {
     stage: 3,
     "class": 'virus',
-    crests: [],
     stats: [5, 5, 7, 5, 6, 5, 5, 3],
     evolutions: evolutions['agu'],
     types: {}
@@ -575,7 +604,6 @@ var dgmnDB = {
   PicoDevi: {
     stage: 3,
     "class": 'virus',
-    crests: [],
     stats: [5, 5, 5, 5, 5, 5, 5, 8],
     evolutions: evolutions['agu'],
     types: {
@@ -586,7 +614,6 @@ var dgmnDB = {
   Grey: {
     stage: 4,
     "class": 'vaccine',
-    crests: [0],
     stats: [6, 5, 5, 5, 5, 5, 5, 6],
     evolutions: evolutions['agu'],
     types: {
@@ -698,6 +725,8 @@ var DgmnCanvas = function (_GameCanvas) {
     _this = _super.call.apply(_super, [this].concat(args));
     _defineProperty(_assertThisInitialized(_this), "animate", function (speed) {
       var currentFrame = 0;
+      _this.paintImage(_this.frames[1]);
+      _this.refreshScreen();
       _this.idleInterval = setInterval(function () {
         if (_this.isIdle) {
           _this.clearCanvas();
@@ -930,7 +959,6 @@ var AttackUtility = function AttackUtility() {
 var Attack = function Attack(attackName) {
   _classCallCheck(this, Attack);
   this.attackName = attackName;
-  this.currCost = 4;
   this.attackUtility = new AttackUtility();
   this.displayName = this.attackUtility.getDisplayName(this.attackName);
   this.maxCost = this.attackUtility.getMaxCost(this.attackName);
@@ -938,6 +966,18 @@ var Attack = function Attack(attackName) {
   this.power = this.attackUtility.getPower(this.attackName);
   this.targets = this.attackUtility.getTargets(this.attackName);
   this.hits = this.attackUtility.getHits(this.attackName);
+  this.currCost = this.maxCost;
+};
+
+var digiTamaDB = {
+  DR: ['Bota'],
+  NS: ['Doki'],
+  WG: ['Pururu'],
+  ME: ['Choro'],
+  VB: ['Poyo'],
+  NA: ['Zuru'],
+  JT: ['Yura'],
+  DS: ['Pitch']
 };
 
 var DgmnUtility = function DgmnUtility() {
@@ -965,12 +1005,33 @@ var DgmnUtility = function DgmnUtility() {
     }
     return allImgs;
   });
+  _defineProperty(this, "getAllHatchImages", function (eggField) {
+    var allImgs = [];
+    var hatches = _this.getEggHatches(eggField);
+    var _iterator2 = _createForOfIteratorHelper(hatches),
+        _step2;
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var hatch = _step2.value;
+        allImgs.push("DGMN/".concat(hatch.toLowerCase(), "Idle0"));
+        allImgs.push("DGMN/".concat(hatch.toLowerCase(), "Idle1"));
+        allImgs.push("DGMN/".concat(hatch.toLowerCase(), "Portrait"));
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+    return allImgs;
+  });
   _defineProperty(this, "getTypeMod", function (type, speciesName) {
     return dgmnDB[speciesName].types[type] || 1;
   });
   _defineProperty(this, "getStage", function (speciesName) {
-    console.log("SN ? ", speciesName);
     return dgmnDB[speciesName].stage;
+  });
+  _defineProperty(this, "getAttribute", function (species) {
+    return dgmnDB[species].attr;
   });
   _defineProperty(this, "isEnemy", function (dgmnId) {
     return dgmnId.charAt(0) === 'e';
@@ -993,14 +1054,30 @@ var DgmnUtility = function DgmnUtility() {
   _defineProperty(this, "getEvoFP", function (speciesName) {
     return dgmnDB[speciesName].evoFields;
   });
+  _defineProperty(this, "buildInitialStats", function (species) {
+    var stats = {
+      HP: 10,
+      ATK: 1,
+      DEF: 1,
+      INT: 1,
+      RES: 1,
+      HIT: 1,
+      AVO: 1,
+      SPD: 1
+    };
+    for (var stat in stats) {
+      stats[stat] += _this.getAllBaseStats(species)[stat];
+    }
+    return stats;
+  });
   _defineProperty(this, "checkEvolution", function (dgmnData) {
     var evolutions = dgmnDB[dgmnData.speciesName].evolutions;
     if (evolutions.length === 0) return false;
-    var _iterator2 = _createForOfIteratorHelper(evolutions),
-        _step2;
+    var _iterator3 = _createForOfIteratorHelper(evolutions),
+        _step3;
     try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var evo = _step2.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var evo = _step3.value;
         var evoFP = _this.getEvoFP(evo);
         for (var FP in evoFP) {
           if (dgmnData.currentFP[FP] < evoFP[FP]) {
@@ -1009,9 +1086,9 @@ var DgmnUtility = function DgmnUtility() {
         }
       }
     } catch (err) {
-      _iterator2.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator2.f();
+      _iterator3.f();
     }
     return true;
   });
@@ -1024,14 +1101,14 @@ var DgmnUtility = function DgmnUtility() {
     }
     return true;
   });
+  _defineProperty(this, "getEggHatches", function (field) {
+    return digiTamaDB[field];
+  });
 };
 
-var Dgmn = function Dgmn(id, nickname, speciesName) {
+var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   var _this = this;
   _classCallCheck(this, Dgmn);
-  _defineProperty(this, "initializeStats", function () {
-    console.log("STATS");
-  });
   _defineProperty(this, "initCanvas", function (refreshScreenCB, dgmnImageList, battlePosition) {
     _this.dgmnCanvas = new DgmnCanvas(refreshScreenCB, _this.speciesName, 'dgmn-canvas', 32, 32);
     _this.dgmnCanvas.x = (24 + (_this.isEnemy ? 8 : 72)) * config.screenSize;
@@ -1055,12 +1132,21 @@ var Dgmn = function Dgmn(id, nickname, speciesName) {
   _defineProperty(this, "drawDgmnToCanvas", function (image) {
     _this.dgmnCanvas.paintImage(image);
   });
+  _defineProperty(this, "heal", function (amount) {
+    debugLog("  - Healing: ", amount);
+    _this.currentHP += amount;
+    _this.currentHP = _this.currentHP > _this.currentStats.HP ? _this.currentStats.HP : _this.currentHP;
+  });
   _defineProperty(this, "hatchSetup", function () {
     _this.setInitialFP();
   });
+  _defineProperty(this, "hatch", function (species) {
+    _this.speciesName = species;
+    _this.currentHP = _this.currentStats.HP;
+    _this.currentStats = _this.dgmnUtility.buildInitialStats(_this.speciesName);
+  });
   _defineProperty(this, "setInitialFP", function () {
     var baseFP = _this.dgmnUtility.getBaseFP(_this.speciesName);
-    console.log("BASE FP = ", baseFP);
     for (var FP in baseFP) {
       _this.currentFP[FP] = baseFP[FP];
     }
@@ -1081,6 +1167,7 @@ var Dgmn = function Dgmn(id, nickname, speciesName) {
       var growth = _this.dgmnUtility.getBaseStat(_this.speciesName, stat);
       _this.currentStats[stat] += growth;
     }
+    _this.heal(_this.dgmnUtility.getBaseStat(_this.speciesName, 'HP') + Math.floor(_this.currentStats.HP / 4));
   });
   _defineProperty(this, "levelUpFP", function () {
     var baseFP = _this.dgmnUtility.getBaseFP(_this.speciesName);
@@ -1100,7 +1187,7 @@ var Dgmn = function Dgmn(id, nickname, speciesName) {
   this.dgmnId = id;
   this.nickname = nickname;
   this.speciesName = speciesName;
-  this.eggField = "";
+  this.eggField = eggField || '';
   this.permFP = {
     DR: 0,
     NS: 0,
@@ -1112,7 +1199,7 @@ var Dgmn = function Dgmn(id, nickname, speciesName) {
     NA: 0
   };
   this.permAttacks = [];
-  this.currentLevel = 6;
+  this.currentLevel = 1;
   this.currentHP = 23;
   this.currentEN = 100;
   this.currentStats = {
@@ -1143,7 +1230,8 @@ var Dgmn = function Dgmn(id, nickname, speciesName) {
   this.isDead = false;
   this.dgmnCanvas;
   this.dgmnUtility = new DgmnUtility();
-};
+}
+;
 
 var partyMock = {
   dId0: {
@@ -1285,7 +1373,7 @@ var dgmnEncounterDB = {
     speciesName: 'Bota',
     currentLevel: 2,
     currentStats: {
-      HP: 6,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1300,7 +1388,7 @@ var dgmnEncounterDB = {
     speciesName: 'Yura',
     currentLevel: 2,
     currentStats: {
-      HP: 6,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 2,
@@ -1315,7 +1403,7 @@ var dgmnEncounterDB = {
     speciesName: 'Zuru',
     currentLevel: 2,
     currentStats: {
-      HP: 6,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 2,
@@ -1330,7 +1418,7 @@ var dgmnEncounterDB = {
     speciesName: 'Doki',
     currentLevel: 2,
     currentStats: {
-      HP: 6,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1345,7 +1433,7 @@ var dgmnEncounterDB = {
     speciesName: 'Pururu',
     currentLevel: 2,
     currentStats: {
-      HP: 6,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1360,7 +1448,7 @@ var dgmnEncounterDB = {
     speciesName: 'Choro',
     currentLevel: 2,
     currentStats: {
-      HP: 6,
+      HP: 5,
       ATK: 2,
       DEF: 2,
       INT: 1,
@@ -1375,7 +1463,7 @@ var dgmnEncounterDB = {
     speciesName: 'Pitch',
     currentLevel: 2,
     currentStats: {
-      HP: 6,
+      HP: 5,
       ATK: 1,
       DEF: 2,
       INT: 1,
@@ -1427,9 +1515,7 @@ var DgmnManager = function DgmnManager(systemAH) {
   _classCallCheck(this, DgmnManager);
   _defineProperty(this, "mockParty", function () {
     for (var i = 0; i < 3; i++) {
-      _this.allDgmn["dId".concat(i)].currentLevel = partyMock["dId".concat(i)].currentLevel;
       _this.allDgmn["dId".concat(i)].attacks = partyMock["dId".concat(i)].attacks;
-      _this.allDgmn["dId".concat(i)].currentStats = partyMock["dId".concat(i)].currentStats;
     }
     return ['dId0', 'dId1', 'dId2'];
   });
@@ -1443,7 +1529,6 @@ var DgmnManager = function DgmnManager(systemAH) {
     }
   });
   _defineProperty(this, "buildPartyEggs", function () {
-    console.log("PARTY ? ", _this.party);
     var _iterator = _createForOfIteratorHelper(_this.party),
         _step;
     try {
@@ -1456,6 +1541,9 @@ var DgmnManager = function DgmnManager(systemAH) {
     } finally {
       _iterator.f();
     }
+  });
+  _defineProperty(this, "hatchEgg", function (dgmnId, species) {
+    _this.allDgmn[dgmnId].hatch(species);
   });
   _defineProperty(this, "isEnemy", function (dgmnId) {
     return dgmnId.charAt(0) === 'e';
@@ -1512,38 +1600,27 @@ var DgmnManager = function DgmnManager(systemAH) {
   });
   _defineProperty(this, "checkKO", function (target) {
     var party = _this.getParty(target);
-    if (_this.isEnemy(target)) {
-      if (_this[party][target].currentHP <= 0) {
-        _this.showDgmnFrame(target, 'dead');
-        _this[party][target].isDead = true;
-        _this[party][target].currentHP = 0;
-        _this[party][target].currentEN = 0;
-        _this[party][target].combo = 0;
-        _this[party][target].weak = 0;
-        return true;
+    if (!_this[party][target].isDead) {
+      if (_this.isEnemy(target)) {
+        if (_this[party][target].currentHP <= 0) {
+          _this.showDgmnFrame(target, 'dead');
+          _this[party][target].isDead = true;
+          _this[party][target].currentHP = 0;
+          _this[party][target].currentEN = 0;
+          _this[party][target].combo = 0;
+          _this[party][target].weak = 0;
+          return true;
+        }
       }
     }
     return false;
   });
-  _defineProperty(this, "battleWrapUp", function (dgmnId, rewards) {
+  _defineProperty(this, "battleWrapUp", function (dgmnId) {
     var leveledUp = _this.checkLevelUp(dgmnId);
     return leveledUp;
   });
-  _defineProperty(this, "giveRewards", function (dgmnId, rewards) {
-    var _iterator2 = _createForOfIteratorHelper(rewards),
-        _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var reward = _step2.value;
-        reward === 'XP' ? _this.allDgmn[dgmnId].currentXP++ : _this.allDgmn[dgmnId].permFP[reward]++;
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-  });
   _defineProperty(this, "giveDgmnReward", function (dgmnId, reward) {
+    console.log(dgmnId + " is getting " + reward);
     reward === 'XP' ? _this.allDgmn[dgmnId].currentXP++ : _this.allDgmn[dgmnId].currentFP[reward]++;
   });
   _defineProperty(this, "giveDgmnXP", function (dgmnId, xp) {
@@ -1557,11 +1634,12 @@ var DgmnManager = function DgmnManager(systemAH) {
     return false;
   });
   _defineProperty(this, "levelUp", function (dgmnId) {
-    console.log(_this.allDgmn[dgmnId].nickname + " Leveled Up!");
     _this.allDgmn[dgmnId].currentXP = 0;
     _this.allDgmn[dgmnId].currentLevel++;
     _this.allDgmn[dgmnId].levelUpStats();
     _this.allDgmn[dgmnId].levelUpFP();
+    debugLog(_this.allDgmn[dgmnId].nickname + " Leveled Up!");
+    debugLog("  - New FP: ", _this.allDgmn[dgmnId].currentFP);
   });
   _defineProperty(this, "evolve", function (dgmnId, evoSpecies) {
     console.log(dgmnId + " is Evolving into " + evoSpecies);
@@ -1610,9 +1688,9 @@ var DgmnManager = function DgmnManager(systemAH) {
     return _this.isEnemy(dgmnId) ? _this.enemyDgmn[dgmnId].isDead : _this.allDgmn[dgmnId].isDead;
   });
   this.allDgmn = {
-    dId0: new Dgmn(0, "FLARE", "Bota"),
-    dId1: new Dgmn(1, "SPROUT", "Lala"),
-    dId2: new Dgmn(2, "GEAR", "Choro")
+    dId0: new Dgmn(0, "FLARE", "Bota", 'DR'),
+    dId1: new Dgmn(1, "SPROUT", "Lala", 'JT'),
+    dId2: new Dgmn(2, "GEAR", "Choro", 'ME')
   };
   this.dgmnAH = new DgmnAH({
     getDgmnDataCB: this.getDgmnData,
@@ -1639,7 +1717,8 @@ var DgmnManager = function DgmnManager(systemAH) {
     checkLevelUpCB: this.checkLevelUp,
     buildStatGrowthCB: this.buildStatGrowth,
     getTempDgmnCB: this.getTempDgmn,
-    evolveCB: this.evolve
+    evolveCB: this.evolve,
+    hatchEggCB: this.hatchEgg
   });
   this.systemAH = systemAH;
   this.enemyGenerator = new EnemyGenerator(this.dgmnAH);
@@ -1650,10 +1729,13 @@ var DgmnManager = function DgmnManager(systemAH) {
 }
 ;
 
-var DigiBeetleAH = function DigiBeetleAH(addItemToToolBoxCB) {
+var DigiBeetleAH = function DigiBeetleAH(cbObj) {
   _classCallCheck(this, DigiBeetleAH);
+  this.init = function () {
+    return cbObj.initCB();
+  };
   this.addItemToToolBox = function (item) {
-    addItemToToolBoxCB(item);
+    return cbObj.addItemToToolBoxCB(item);
   };
 };
 
@@ -1709,12 +1791,12 @@ var DigiBeetleCanvas = function (_GameCanvas) {
 
 var dungeonImages = ['Dungeon/startTile', 'Dungeon/endTile', 'Dungeon/enemyTile'];
 var digiBeetleImages = ['Dungeon/DigiBeetle/digiBeetleDown0', 'Dungeon/DigiBeetle/digiBeetleDown1', 'Dungeon/DigiBeetle/digiBeetleUp0', 'Dungeon/DigiBeetle/digiBeetleUp1', 'Dungeon/DigiBeetle/digiBeetleRight0', 'Dungeon/DigiBeetle/digiBeetleRight1', 'Dungeon/DigiBeetle/digiBeetleLeft0', 'Dungeon/DigiBeetle/digiBeetleLeft1'];
-var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative'];
+var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay'];
 var loadingImages = ['Loading/loading0', 'Loading/loading1', 'Loading/loading2', 'Loading/loading3', 'Loading/loading4', 'Loading/loading5', 'Loading/loading6', 'Loading/loading7', 'Loading/loading8', 'Loading/loading9', 'Loading/loading10'];
 var fontImages$1 = ['Fonts/fontsBlack', 'Fonts/fontsWhite', 'Fonts/fontsLightGreen', 'Fonts/fontsDarkGreen'];
 var typeIcons = ['Icons/Types/noneTypeIcon', 'Icons/Types/fireTypeIcon', 'Icons/Types/windTypeIcon', 'Icons/Types/plantTypeIcon', 'Icons/Types/elecTypeIcon', 'Icons/Types/evilTypeIcon', 'Icons/Types/metalTypeIcon'];
 var fieldIcons = ['Icons/Fields/fieldDRIcon', 'Icons/Fields/fieldNSIcon', 'Icons/Fields/fieldWGIcon', 'Icons/Fields/fieldVBIcon', 'Icons/Fields/fieldMEIcon', 'Icons/Fields/fieldJTIcon', 'Icons/Fields/fieldNAIcon', 'Icons/Fields/fieldDSIcon'];
-var battleImages = ['Attacks/blankAttack', 'Battle/battleBackground', 'Battle/Menus/attackDeselected', 'Battle/Menus/attackSelected', 'Battle/Menus/defendDeselected', 'Battle/Menus/defendSelected', 'Battle/Menus/statsDeselected', 'Battle/Menus/statsSelected', 'Icons/Battle/weak0', 'Icons/Battle/weak1', 'Icons/Battle/weak2', 'Icons/Battle/weak3', 'DGMN/dgmnDead', 'Battle/Menus/dgmnBarLightGreen', 'Battle/Menus/dgmnBarDarkGreen', 'Battle/Menus/battleOptionSelectBaseRight', 'Battle/Menus/battleVictoryOverlay', 'Icons/xpIconSmall', 'Icons/xpIconLarge', 'Battle/Menus/battleVictoryRewardsOverlay', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay'];
+var battleImages = ['Attacks/blankAttack', 'Battle/battleBackground', 'Battle/Menus/attackDeselected', 'Battle/Menus/attackSelected', 'Battle/Menus/defendDeselected', 'Battle/Menus/defendSelected', 'Battle/Menus/statsDeselected', 'Battle/Menus/statsSelected', 'Icons/Battle/weak0', 'Icons/Battle/weak1', 'Icons/Battle/weak2', 'Icons/Battle/weak3', 'DGMN/dgmnDead', 'Battle/Menus/dgmnBarLightGreen', 'Battle/Menus/dgmnBarDarkGreen', 'Battle/Menus/battleOptionSelectBaseRight', 'Battle/Menus/battleVictoryOverlay', 'Icons/xpIconSmall', 'Icons/xpIconLarge'];
 
 var DigiBeetle = function DigiBeetle(dungeonAH) {
   var _this = this;
@@ -1760,7 +1842,10 @@ var DigiBeetle = function DigiBeetle(dungeonAH) {
     _this.digiBeetleCanvas.animateBeetle('down');
   });
   _defineProperty(this, "onLoaded", function () {});
-  this.digiBeetleAH = new DigiBeetleAH(this.addItemToToolBox);
+  this.digiBeetleAH = new DigiBeetleAH({
+    initCB: this.init,
+    addItemToToolBoxCB: this.addItemToToolBox
+  });
   this.dungeonAH;
   this.gameAH;
   this.systemAH;
@@ -3868,8 +3953,8 @@ var Battle = function Battle() {
     _this.battleCanvas.paintCanvas(_this.dgmnStatusCanvas);
     if (_this.battleMenu) {
       for (var i = 0; i < 3; i++) {
-        _this.battleCanvas.drawDgmnCanvas(_this.dgmnAH.getCanvas(_this.yourParty[i]));
-        _this.battleCanvas.drawDgmnCanvas(_this.dgmnAH.getCanvas(_this.enemyParty[i]));
+        if (_this.dgmnAH.getCanvas(_this.yourParty[i])) _this.battleCanvas.drawDgmnCanvas(_this.dgmnAH.getCanvas(_this.yourParty[i]));
+        if (_this.dgmnAH.getCanvas(_this.enemyParty[i])) _this.battleCanvas.drawDgmnCanvas(_this.dgmnAH.getCanvas(_this.enemyParty[i]));
       }
       _this.battleCanvas.paintCanvas(_this.battleMenu.menuCanvas);
     } else if (_this.victoryMenu) {
@@ -4022,7 +4107,7 @@ var Battle = function Battle() {
   });
   _defineProperty(this, "giveCurrReward", function (dir) {
     var dgmnId;
-    var reward = _this.battleRewards[_this.victoryMenu.currRewardIndex];
+    var reward = _this.battleRewards[_this.victoryMenu.subMenus.rewards.currIndex];
     if (dir === 'left') {
       dgmnId = _this.yourParty[0];
     } else if (dir === 'up') {
@@ -4128,13 +4213,13 @@ var Battle = function Battle() {
 ;
 
 var dungeonFloorsDB = {
-  twoByTwo: [[[5, 6], [7, 8]]]
+  twoByTwo: [[[5, 6], [7, 8]], [[5, 6], [3, 3]]]
 };
 var dungeonRoomsDB = [[[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
-[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 2, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 3, 1, 1, 2, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
+[0, 1, 16, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 5, 1, 6, 1, 7, 1, 0], [0, 16, 1, 1, 1, 9, 10, 1], [0, 1, 1, 1, 6, 1, 1, 0], [0, 4, 1, 1, 5, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
-[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
+[0, 1, 6, 1, 6, 1, 1, 0], [0, 1, 1, 1, 1, 8, 1, 0], [0, 1, 7, 1, 1, 1, 1, 0], [0, 5, 1, 15, 1, 1, 4, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 5, 16, 5, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 16, 1, 1, 4, 1, 5, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 6, 1, 0], [0, 5, 1, 1, 1, 1, 10, 1], [0, 1, 1, 7, 1, 1, 1, 0], [0, 1, 8, 1, 1, 2, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
@@ -4166,7 +4251,7 @@ var MapUtility = function MapUtility() {
   });
   _defineProperty(this, "getFloorLayout", function (dimensions) {
     var floorOptions = dungeonFloorsDB[dimensions];
-    var selectedFloor = Math.floor(Math.random() * (floorOptions.length - 0));
+    var selectedFloor = Math.floor(Math.random() * floorOptions.length);
     var roomNumberMatrix = floorOptions[selectedFloor];
     return roomNumberMatrix;
   });
@@ -4327,14 +4412,21 @@ var Floor = function Floor(_floorNumber) {
   });
   _defineProperty(this, "generateEnemies", function () {
     var potentialSpots = _this.findAllTilesOnFloor([6, 8, 10, 11, 12, 14, 15]);
-    var enemyChance = _this.floorEventMod === 'enemy' ? 30 : 60;
-    var encounterId = 1;
-    for (var i = 0; i < potentialSpots.length; i++) {
-      var rando = Math.floor(Math.random() * 100);
-      if (rando <= enemyChance) {
-        _this.addEncounter(potentialSpots[i], encounterId);
-        encounterId++;
+    var enemyChance = _this.floorEventMod === 'enemy' ? 30 : 15;
+    var encounterCount = 1;
+    var maxEncounters = 4;
+    var minEncounters = 2;
+    for (var i = 0; i < maxEncounters; i++) {
+      var rando = Math.floor(Math.random() * potentialSpots.length);
+      if (potentialSpots.length === 0) break;
+      if (encounterCount <= minEncounters) {
+        _this.addEncounter(potentialSpots[rando], encounterCount);
+        encounterCount++;
+      } else if (Math.floor(Math.random() * 100) <= enemyChance) {
+        _this.addEncounter(potentialSpots[rando], encounterCount);
+        encounterCount++;
       }
+      potentialSpots.splice(rando, 1);
     }
     debugLog("ENCOUNTERS = ", _this.encounters);
   });
@@ -4421,11 +4513,27 @@ var Floor = function Floor(_floorNumber) {
       _this.dungeonAH.goUpFloor();
       return true;
     } else if (Math.floor(tile) === 105 || Math.floor(tile) === 106) {
-      room.changeTile([_this.currentTile.tile[0], _this.currentTile.tile[1]], 1);
+      _this.clearEncounter((tile + "").split(".")[1]);
       _this.dungeonAH.startBattle();
       return true;
     }
     return false;
+  });
+  _defineProperty(this, "clearEncounter", function (encounterNumber) {
+    var encounterTiles = _this.findAllTilesOnFloor([parseFloat("105." + encounterNumber), parseFloat("106." + encounterNumber)]);
+    var _iterator = _createForOfIteratorHelper(encounterTiles),
+        _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var tile = _step.value;
+        var room = _this.roomMatrix[tile.room[0]][tile.room[1]];
+        room.changeTile([tile.tile[0], tile.tile[1]], 1);
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
   });
   _defineProperty(this, "checkCollision", function () {
     var room = _this.roomMatrix[_this.currentTile.room[0]][_this.currentTile.room[1]];
@@ -4497,6 +4605,7 @@ var Floor = function Floor(_floorNumber) {
   });
   _defineProperty(this, "drawFloor", function () {
     _this.drawFloorBase();
+    console.log("? " + _this.end.room + " " + _this.end.tile);
     _this.floorCanvas.drawTile(_this.systemAH.fetchImage('endTile'), _this.end.room, _this.end.tile);
     _this.dungeonAH.paintFloorCanvas(_this.floorCanvas);
     _this.gameAH.refreshScreen();
@@ -4548,43 +4657,52 @@ var Floor = function Floor(_floorNumber) {
 }
 ;
 
-var DungeonAH = function DungeonAH(getCurrentDirectionCB, setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB, setCollisionCB, moveFloorCB, goUpFloorCB, startBattleCB, getCurrentFloorCB) {
+var DungeonAH = function DungeonAH(cbObj) {
   _classCallCheck(this, DungeonAH);
   this.getCurrentDirection = function () {
-    return getCurrentDirectionCB();
+    return cbObj.getCurrentDirectionCB();
   };
   this.setCurrentDirection = function (newValue) {
-    setCurrentDirectionCB(newValue);
+    cbObj.setCurrentDirectionCB(newValue);
+  };
+  this.drawDungeon = function () {
+    return cbObj.drawDungeonCB();
   };
   this.paintFloorCanvas = function (canvas) {
-    paintFloorCanvasCB(canvas);
+    cbObj.paintFloorCanvasCB(canvas);
   };
   this.getDungeonState = function () {
-    return getDungeonStateCB();
+    return cbObj.getDungeonStateCB();
   };
   this.getMoving = function () {
-    return getMovingCB();
+    return cbObj.getMovingCB();
   };
   this.setMoving = function (newValue) {
-    setMovingCB(newValue);
+    cbObj.setMovingCB(newValue);
   };
   this.getCollision = function () {
-    return getCollisionCB();
+    return cbObj.getCollisionCB();
   };
   this.setCollision = function (dir, newValue) {
-    setCollisionCB(dir, newValue);
+    cbObj.setCollisionCB(dir, newValue);
   };
   this.moveFloor = function (dir, upDown) {
-    moveFloorCB(dir, upDown);
+    cbObj.moveFloorCB(dir, upDown);
   };
   this.goUpFloor = function () {
-    goUpFloorCB();
+    cbObj.goUpFloorCB();
   };
   this.startBattle = function () {
-    startBattleCB();
+    cbObj.startBattleCB();
   };
   this.getCurrentFloor = function () {
-    return getCurrentFloorCB();
+    return cbObj.getCurrentFloorCB();
+  };
+  this.giveCurrReward = function (dir) {
+    return cbObj.giveCurrRewardCB(dir);
+  };
+  this.hatchEgg = function () {
+    return cbObj.hatchEggCB();
   };
 };
 
@@ -4598,16 +4716,30 @@ var DungeonIO = function (_IO) {
       args[_key - 1] = arguments[_key];
     }
     _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "setMenuAH", function (ah) {
+      _this.hatchMenuAH = ah;
+    });
     _defineProperty(_assertThisInitialized(_this), "cancelKeyHandler", function (upDown) {
       console.log("DOWN");
     });
+    _defineProperty(_assertThisInitialized(_this), "actionKeyHandler", function (upDown) {
+      if (_this.dungeonAH.getDungeonState() === 'hatch') {
+        if (_this.hatchMenuAH.getState() === 'hatch-choice') {
+          _this.dungeonAH.hatchEgg();
+        }
+      }
+    });
     _defineProperty(_assertThisInitialized(_this), "upKeyHandler", function (upDown) {
-      if (_this.dungeonAH.getDungeonState() === 'free') {
+      if (_this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down') {
+        if (_this.hatchMenuAH.getState() === 'rewards') _this.dungeonAH.giveCurrReward('up');
+      } else if (_this.dungeonAH.getDungeonState() === 'free') {
         _this.movingInDirection('up', upDown);
       }
     });
     _defineProperty(_assertThisInitialized(_this), "rightKeyHandler", function (upDown) {
-      if (_this.dungeonAH.getDungeonState() === 'free') {
+      if (_this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down') {
+        if (_this.hatchMenuAH.getState() === 'rewards') _this.dungeonAH.giveCurrReward('right');
+      } else if (_this.dungeonAH.getDungeonState() === 'free') {
         _this.movingInDirection('right', upDown);
       }
     });
@@ -4617,7 +4749,9 @@ var DungeonIO = function (_IO) {
       }
     });
     _defineProperty(_assertThisInitialized(_this), "leftKeyHandler", function (upDown) {
-      if (_this.dungeonAH.getDungeonState() === 'free') {
+      if (_this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down') {
+        if (_this.hatchMenuAH.getState() === 'rewards') _this.dungeonAH.giveCurrReward('left');
+      } else if (_this.dungeonAH.getDungeonState() === 'free') {
         _this.movingInDirection('left', upDown);
       }
     });
@@ -4647,34 +4781,273 @@ var DungeonIO = function (_IO) {
       }
     });
     _this.dungeonAH = dungeonAH;
+    _this.hatchMenuAH;
     return _this;
   }
   return DungeonIO;
 }(IO);
 
+var HatchingEggMenu = function (_IconMenu) {
+  _inherits(HatchingEggMenu, _IconMenu);
+  var _super = _createSuper(HatchingEggMenu);
+  function HatchingEggMenu() {
+    var _this;
+    _classCallCheck(this, HatchingEggMenu);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "buildHatchingScreen", function (eggData, redrawCB) {
+      var hatches = _this.dgmnUtility.getEggHatches(eggData.eggField);
+      _this.selectedDgmn = hatches[0];
+      _this.drawDgmnCanvas(hatches[0], redrawCB);
+      _this.drawDgmnStats(_this.dgmnUtility.buildInitialStats(hatches[0]));
+      _this.drawDgmnInfo(hatches[0]);
+      _this.redrawParentCB();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnInfo", function (species) {
+      _this.drawEvoPortrait(_this.fetchImgCB("".concat(species.toLowerCase(), "Portrait")));
+      _this.evoNameTxt.instantText(_this.menuCanvas.ctx, "".concat(species, ".MON"), 'white');
+      _this.evoAttributeTxt.instantText(_this.menuCanvas.ctx, _this.dgmnUtility.getAttribute(species), 'green');
+      _this.evoWeakTxt.instantText(_this.menuCanvas.ctx, 'WEAK', 'green');
+      _this.evoResTxt.instantText(_this.menuCanvas.ctx, 'RES', 'green');
+      for (var field in _this.dgmnUtility.getBaseFP(species)) {
+        _this.menuCanvas.paintImage(_this.fetchImgCB("field".concat(field, "Icon")), (5 + _this.dgmnUtility.getAttribute(species).length) * config.tileSize, 15 * config.tileSize);
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawEvoPortrait", function (portraitImg) {
+      _this.menuCanvas.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnStats", function (stats) {
+      for (var stat in stats) {
+        _this.statTxtAreas[stat].instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(stats[stat], 3), 'white');
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawHatchRequirements", function (species) {
+      var fpReqs = _this.dgmnUtility.getEvoFP(species);
+      var i = 0;
+      for (var req in fpReqs) {
+        var img = _this.fetchImgCB("field".concat(req, "Icon"));
+        _this.menuCanvas.paintImage(img, (1 + i) * config.tileSize, 10 * config.tileSize);
+        _this.evoReqsTxt[i].instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(fpReqs[req], 3), 'white');
+        i++;
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnCanvas", function (species, redrawCB) {
+      var coord = [4, 5];
+      _this.hatchCanvas = new DgmnCanvas(function () {
+        _this.redrawDgmn(_this.hatchCanvas, coord, redrawCB);
+      }, species, 'dgmn-canvas', 32, 32);
+      _this.hatchCanvas.x = coord[0] * config.tileSize;
+      _this.hatchCanvas.y = coord[1] * config.tileSize;
+      _this.hatchCanvas.frames = [_this.fetchImgCB("".concat(species.toLowerCase(), "Idle0")), _this.fetchImgCB("".concat(species.toLowerCase(), "Idle1"))];
+      _this.hatchCanvas.animate(500);
+    });
+    _defineProperty(_assertThisInitialized(_this), "redrawDgmn", function (canvas, coord, redrawCB) {
+      _this.menuCanvas.ctx.fillStyle = "#00131A";
+      _this.menuCanvas.ctx.fillRect(coord[0] * config.tileSize, coord[1] * config.tileSize, 32 * config.screenSize, 32 * config.screenSize);
+      _this.menuCanvas.paintCanvas(canvas);
+      redrawCB();
+    });
+    _this.fetchImgCB;
+    _this.redrawParentCB;
+    _this.selectedDgmn = '';
+    _this.menuCanvas = new GameCanvas("".concat(_this.label, "-menu"), 160, 144);
+    _this.menuCanvas.x = 0;
+    _this.menuCanvas.y = 0;
+    _this.hatchCanvas;
+    _this.statTxtAreas = {
+      HP: new TextArea(16, 3, 3, 1, _this.baseXPTxtColorize),
+      ATK: new TextArea(16, 4, 3, 1, _this.baseXPTxtColorize),
+      DEF: new TextArea(16, 5, 3, 1, _this.baseXPTxtColorize),
+      INT: new TextArea(16, 6, 3, 1, _this.baseXPTxtColorize),
+      RES: new TextArea(16, 7, 3, 1, _this.baseXPTxtColorize),
+      HIT: new TextArea(16, 8, 3, 1, _this.baseXPTxtColorize),
+      AVO: new TextArea(16, 9, 3, 1, _this.baseXPTxtColorize),
+      SPD: new TextArea(16, 10, 3, 1, _this.baseXPTxtColorize)
+    };
+    _this.evoNameTxt = new TextArea(4, 14, 12, 1, _this.baseXPTxtColorize);
+    _this.evoAttributeTxt = new TextArea(4, 15, 7, 1, _this.baseXPTxtColorize);
+    _this.evoWeakTxt = new TextArea(4, 16, 4, 1, _this.baseXPTxtColorize);
+    _this.evoResTxt = new TextArea(12, 16, 3, 1, _this.baseXPTxtColorize);
+    _this.dgmnUtility = new DgmnUtility();
+    return _this;
+  }
+  return HatchingEggMenu;
+}(IconMenu);
+
+var HatchMenuAH = function HatchMenuAH(cbObj) {
+  _classCallCheck(this, HatchMenuAH);
+  this.getState = function () {
+    return cbObj.getStateCB();
+  };
+};
+
+var HatchingMenu = function (_Menu) {
+  _inherits(HatchingMenu, _Menu);
+  var _super = _createSuper(HatchingMenu);
+  function HatchingMenu() {
+    var _this;
+    _classCallCheck(this, HatchingMenu);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "gotoRewards", function (rewards) {
+      _this.currState = 'loading';
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('battleVictoryRewardsOverlay'), 0, 0);
+      _this.actionTxt.timedText(_this.menuCanvas.ctx, 'Choose DigiTama to get Rewards!', _this.drawMenu);
+      _this.addSubMenu('rewards', new RewardsMenu('rewards'));
+      _this.subMenus.rewards.isVisible = true;
+      _this.subMenus.rewards.isActive = true;
+      _this.subMenus.rewards.fetchImageCB = function (img) {
+        return _this.systemAH.fetchImage(img);
+      };
+      _this.subMenus.rewards.redrawParentCB = function () {
+        _this.drawMenu();
+      };
+      _this.drawEggs();
+      _this.subMenus.rewards.drawRewardsList(rewards);
+      setTimeout(function () {
+        _this.currState = 'rewards';
+      }, 1500);
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      for (var key in _this.subMenus) {
+        if (_this.subMenus[key].isVisible) {
+          _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
+        }
+      }
+      _this.parentAH.drawDungeon();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawEggs", function () {
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggDR'), 2 * config.tileSize, 8 * config.tileSize);
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggJT'), 8 * config.tileSize, 8 * config.tileSize);
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggME'), 14 * config.tileSize, 8 * config.tileSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "updateRewardsList", function (rewards, callback) {
+      callback();
+    });
+    _defineProperty(_assertThisInitialized(_this), "gotoHatchEggs", function (eggData) {
+      _this.removeSubMenu('rewards');
+      _this.currState = 'loading';
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('hatchingEggOverlay'), 0, 0);
+      _this.menuCanvas.ctx.fillStyle = "#00131A";
+      _this.menuCanvas.ctx.fillRect(0, 14 * config.tileSize, 20 * config.tileSize, 4 * config.tileSize);
+      _this.addSubMenu('hatchEgg', new HatchingEggMenu([1, 13], [], 'hatching-egg'));
+      _this.subMenus.hatchEgg.isVisible = true;
+      _this.subMenus.hatchEgg.isActive = true;
+      _this.subMenus.hatchEgg.fetchImgCB = function (img) {
+        return _this.systemAH.fetchImage(img);
+      };
+      _this.subMenus.hatchEgg.redrawParentCB = function () {
+        _this.drawMenu();
+      };
+      _this.subMenus.hatchEgg.buildHatchingScreen(eggData, _this.parentAH.drawDungeon);
+      setTimeout(function () {
+        _this.drawContinueCursor(_this.systemAH.fetchImage('continueCursor'), _this.drawMenu);
+        _this.currState = 'hatch-choice';
+      }, 1000);
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "getState", function () {
+      return _this.currState;
+    });
+    _this.currState = '';
+    _this.hatchMenuAH = new HatchMenuAH({
+      getStateCB: function getStateCB() {
+        return _this.getState();
+      }
+    });
+    _this.hatchingIndex = 0;
+    _this.actionTxt = new TextArea(2, 14, 16, 4);
+    _this.menuCanvas = new MenuCanvas('hatching', 160, 144);
+    return _this;
+  }
+  return HatchingMenu;
+}(Menu);
+
 var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   var _this = this;
   _classCallCheck(this, Dungeon);
   _defineProperty(this, "init", function () {
-    _this.buildFloor();
+    _this.yourParty = _this.gameAH.getDgmnParty();
+    _this.systemAH.startLoading(function () {
+      _this.gameAH.addCanvasObject(_this.dungeonCanvas);
+      _this.hatchingMenu = new HatchingMenu(_this.systemAH, _this.gameAH, _this.dungeonAH);
+      _this.dungeonIO.setMenuAH(_this.hatchingMenu.hatchMenuAH);
+      _this.systemAH.loadImages(fieldIcons, function () {
+        _this.hatchingMenu.gotoRewards(['DR']);
+        _this.drawDungeon();
+        _this.systemAH.stopLoading();
+      });
+    });
   });
-  _defineProperty(this, "initDigiBeetleAH", function (actionHandler) {
-    _this.digiBeetleAH = actionHandler;
+  _defineProperty(this, "drawDungeon", function () {
+    if (_this.dungeonState === 'hatch') {
+      _this.dungeonCanvas.paintCanvas(_this.hatchingMenu.menuCanvas);
+    }
+    _this.gameAH.refreshScreen();
   });
-  _defineProperty(this, "initGameAH", function (actionHandler) {
-    _this.gameAH = actionHandler;
+  _defineProperty(this, "giveCurrReward", function (dir) {
+    var dgmnId;
+    var reward = ['DR'];
+    if (dir === 'left') {
+      dgmnId = _this.yourParty[0];
+    } else if (dir === 'up') {
+      dgmnId = _this.yourParty[1];
+    } else if (dir === 'right') {
+      dgmnId = _this.yourParty[2];
+    }
+    _this.dgmnAH.giveDgmnReward(dgmnId, reward);
+    _this.hatchingMenu.updateRewardsList(['DR'], _this.rewardWrapUp);
   });
-  _defineProperty(this, "initSystemAH", function (actionHandler) {
-    _this.systemAH = actionHandler;
+  _defineProperty(this, "rewardWrapUp", function () {
+    var currDgmn = _this.yourParty[_this.hatchingMenu.hatchingIndex];
+    var currDgmnData = _this.dgmnAH.getDgmnData(currDgmn, ['eggField', 'currentFP'], false);
+    currDgmnData.dgmnId = currDgmn;
+    var hatchImages = _this.dgmnUtility.getAllHatchImages(currDgmnData.eggField);
+    _this.systemAH.loadImages(hatchImages, function () {
+      _this.hatchingMenu.gotoHatchEggs(currDgmnData);
+    });
+  });
+  _defineProperty(this, "hatchEgg", function () {
+    var hatchDgmn = _this.hatchingMenu.subMenus.hatchEgg.selectedDgmn;
+    _this.dgmnAH.hatchEgg(_this.yourParty[_this.hatchingMenu.hatchingIndex], hatchDgmn);
+    if (_this.hatchingMenu.hatchingIndex == 2) {
+      _this.dungeonState = 'loading';
+      _this.systemAH.startLoading(function () {
+        _this.buildFloor();
+        _this.loadDungeonImages(_this.floor.roomMatrix);
+      });
+    } else {
+      _this.hatchingMenu.hatchingIndex++;
+      _this.rewardWrapUp();
+    }
+  });
+  _defineProperty(this, "initAH", function (system, game, beetle, dgmn) {
+    _this.systemAH = system;
+    _this.gameAH = game;
+    _this.digiBeetleAH = beetle;
+    _this.dgmnAH = dgmn;
   });
   _defineProperty(this, "buildFloor", function () {
     debugLog('Building Floor...');
     _this.floor = new Floor(_this.floorNumber);
     _this.floor.initAH(_this.systemAH, _this.gameAH, _this.dungeonAH);
     _this.floor.generateFloor();
-    _this.loadDungeonImages(_this.floor.roomMatrix);
   });
   _defineProperty(this, "loadDungeonImages", function (roomMatrix) {
+    var allImages = _this.getRoomImages(roomMatrix);
+    for (var img = 0; img < dungeonImages.length; img++) {
+      allImages.push(dungeonImages[img]);
+    }
+    _this.systemAH.loadImages(allImages, function () {
+      _this.onDungeonImagesLoaded();
+    });
+  });
+  _defineProperty(this, "getRoomImages", function (roomMatrix) {
     var rooms = [];
     var allImages = [];
     for (var r = 0; r < roomMatrix.length; r++) {
@@ -4684,18 +5057,19 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
         }
       }
     }
-    for (var img = 0; img < dungeonImages.length; img++) {
-      allImages.push(dungeonImages[img]);
-    }
-    _this.systemAH.loadImages(allImages, function () {
-      _this.onDungeonImagesLoaded();
-    });
+    return allImages;
   });
   _defineProperty(this, "onDungeonImagesLoaded", function () {
+    _this.hatchingMenu = null;
     _this.gameAH.addCanvasObject(_this.dungeonCanvas);
     _this.floor.drawFloor();
     _this.floor.checkCollision();
     _this.floor.setFloorToStart();
+    _this.digiBeetleAH.init();
+    setTimeout(function () {
+      _this.systemAH.stopLoading();
+      _this.dungeonState = 'free';
+    }, 1000);
     _this.onLoaded();
   });
   _defineProperty(this, "paintFloorCanvas", function (canvas) {
@@ -4710,6 +5084,21 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     debugLog("Ascending Floor...");
     _this.moving = 'none';
     _this.dungeonState = 'ascending';
+    _this.systemAH.startLoading(function () {
+      _this.floorNumber++;
+      _this.floor = null;
+      _this.buildFloor();
+      _this.systemAH.loadImages(_this.getRoomImages(_this.floor.roomMatrix), function () {
+        _this.floor.drawFloor();
+        _this.floor.checkCollision();
+        _this.floor.setFloorToStart();
+        setTimeout(function () {
+          _this.systemAH.stopLoading();
+          _this.dungeonState = 'free';
+        }, 1000);
+        _this.onLoaded();
+      });
+    });
   });
   _defineProperty(this, "startBattle", function () {
     debugLog("Starting Battle...");
@@ -4748,12 +5137,31 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   this.digiBeetleAH;
   this.gameAH;
   this.systemAH;
-  this.dungeonAH = new DungeonAH(this.getCurrentDirection, this.setCurrentDirection, this.paintFloorCanvas, this.getDungeonState, this.getMoving, this.setMoving, this.getCollision, this.setCollision, this.moveFloor, this.goUpFloor, this.startBattle, this.getCurrentFloor);
+  this.dgmnAH;
+  this.dungeonAH = new DungeonAH({
+    getCurrentDirectionCB: this.getCurrentDirection,
+    setCurrentDirectionCB: this.setCurrentDirection,
+    drawDungeonCB: this.drawDungeon,
+    paintFloorCanvasCB: this.paintFloorCanvas,
+    getDungeonStateCB: this.getDungeonState,
+    getMovingCB: this.getMoving,
+    setMovingCB: this.setMoving,
+    getCollisionCB: this.getCollision,
+    setCollisionCB: this.setCollision,
+    moveFloorCB: this.moveFloor,
+    goUpFloorCB: this.goUpFloor,
+    startBattleCB: this.startBattle,
+    getCurrentFloorCB: this.getCurrentFloor,
+    giveCurrRewardCB: this.giveCurrReward,
+    hatchEggCB: this.hatchEgg
+  });
   this.dungeonCanvas = new GameCanvas('dungeon-canvas', 160, 144);
   this.dungeonIO = new DungeonIO(this.dungeonAH);
+  this.dgmnUtility = new DgmnUtility();
+  this.yourParty = [];
   this.floor;
   this.floorNumber = isNewDungeon ? 1 : 0;
-  this.dungeonState = 'free';
+  this.dungeonState = 'hatch';
   this.facing = 'down';
   this.moving = 'none';
   this.collision = {
@@ -4762,6 +5170,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     down: false,
     left: false
   };
+  this.hatchingMenu;
   this.onLoaded = function () {
     loadedCallback();
   };
@@ -4832,7 +5241,7 @@ var Game = function Game(systemAH) {
     }
   });
   _defineProperty(this, "keyManager", function (key, upDown) {
-    var _this$battle, _this$dungeon;
+    var _this$battle, _this$dungeon, _this$dungeon2;
     _this.keyTimers[key]++;
     if ((_this$battle = _this.battle) !== null && _this$battle !== void 0 && _this$battle.battleActive) {
       if (_this.keyTimers[key] === 2) {
@@ -4844,13 +5253,17 @@ var Game = function Game(systemAH) {
     }
     if (((_this$dungeon = _this.dungeon) === null || _this$dungeon === void 0 ? void 0 : _this$dungeon.dungeonState) === 'free') {
       _this.dungeon.dungeonIO.keyTriage(key, upDown);
+    } else if (((_this$dungeon2 = _this.dungeon) === null || _this$dungeon2 === void 0 ? void 0 : _this$dungeon2.dungeonState) === 'hatch') {
+      if (_this.keyTimers[key] === 2) {
+        _this.dungeon.dungeonIO.keyTriage(key, upDown);
+      }
     }
   });
   _defineProperty(this, "startBattle", function () {
-    var _this$dungeon2;
+    var _this$dungeon3;
     debugLog("Starting Battle...");
     _this.battle = new Battle();
-    _this.battle.initAH(_this.systemAH, _this.gameAH, _this.yourDgmn.dgmnAH, (_this$dungeon2 = _this.dungeon) === null || _this$dungeon2 === void 0 ? void 0 : _this$dungeon2.dungeonAH, function () {});
+    _this.battle.initAH(_this.systemAH, _this.gameAH, _this.yourDgmn.dgmnAH, (_this$dungeon3 = _this.dungeon) === null || _this$dungeon3 === void 0 ? void 0 : _this$dungeon3.dungeonAH, function () {});
     _this.battle.init();
   });
   _defineProperty(this, "buildDungeon", function () {
@@ -4861,11 +5274,8 @@ var Game = function Game(systemAH) {
     _this.digiBeetle.initDungeonAH(_this.dungeon.dungeonAH);
     _this.digiBeetle.initGameAH(_this.gameAH);
     _this.digiBeetle.initSystemAH(_this.systemAH);
-    _this.dungeon.initDigiBeetleAH(_this.digiBeetle.digiBeetleAH);
-    _this.dungeon.initGameAH(_this.gameAH);
-    _this.dungeon.initSystemAH(_this.systemAH);
+    _this.dungeon.initAH(_this.systemAH, _this.gameAH, _this.digiBeetle.digiBeetleAH, _this.yourDgmn.dgmnAH);
     _this.dungeon.init();
-    _this.digiBeetle.init();
   });
   _defineProperty(this, "setupPartyDgmn", function () {
     _this.yourDgmn.buildPartyEggs();
@@ -5025,14 +5435,21 @@ var ImageHandler = function ImageHandler() {
     var totalImages = imageList.length;
     for (var i = 0; i < totalImages; i++) {
       var modName = _this.modImageName(imageList[i]);
-      loadedImages[modName] = new Image();
-      loadedImages[modName].src = "./sprites/".concat(config.pixelKidMode, "/").concat(imageList[i], ".png");
-      loadedImages[modName].onload = function () {
+      if (!_this.loadedImages[modName]) {
+        loadedImages[modName] = new Image();
+        loadedImages[modName].src = "./sprites/".concat(config.pixelKidMode, "/").concat(imageList[i], ".png");
+        loadedImages[modName].onload = function () {
+          if (++loadedCount >= totalImages) {
+            _this.loadedImages = Object.assign(_this.loadedImages, loadedImages);
+            callback();
+          }
+        };
+      } else {
         if (++loadedCount >= totalImages) {
           _this.loadedImages = Object.assign(_this.loadedImages, loadedImages);
           callback();
         }
-      };
+      }
     }
   });
   _defineProperty(this, "modImageName", function (fileName) {

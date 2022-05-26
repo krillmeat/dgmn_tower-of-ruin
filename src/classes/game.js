@@ -107,6 +107,10 @@ class Game{
     if(this.dungeon?.dungeonState === 'free'){ // TODO - Probably should be a more specific check
       // TODO - Logic that checks things like "held down" or "tapped" go here
       this.dungeon.dungeonIO.keyTriage(key,upDown);
+    } else if(this.dungeon?.dungeonState === 'hatch'){
+      if(this.keyTimers[key] === 2){
+        this.dungeon.dungeonIO.keyTriage(key,upDown);
+      }
     }
   }
 
@@ -144,13 +148,10 @@ class Game{
     this.digiBeetle.initDungeonAH(this.dungeon.dungeonAH);
     this.digiBeetle.initGameAH(this.gameAH);
     this.digiBeetle.initSystemAH(this.systemAH);
-    this.dungeon.initDigiBeetleAH(this.digiBeetle.digiBeetleAH);
-    this.dungeon.initGameAH(this.gameAH);
-    this.dungeon.initSystemAH(this.systemAH);
+    this.dungeon.initAH(this.systemAH,this.gameAH,this.digiBeetle.digiBeetleAH,this.yourDgmn.dgmnAH);
 
     // START EVERYTHING
     this.dungeon.init();
-    this.digiBeetle.init();
   }
 
   /**------------------------------------------------------------------------

@@ -161,7 +161,8 @@ class AttackManager{
       for(let target of this.attackActions[attacker].targets){
         if(this.dgmnAH.checkKO(target)){
           targetData = this.dgmnAH.getDgmnData(target,['speciesName','stage'],true);
-          this.battleAH.addRewards( targetData.speciesName ); // TODO - Double check isEnemy
+          this.battleAH.addRewards( targetData.speciesName ); // TODO - This causes an error
+          // Hitting all enemies will trigger the checkKO(target) check, which returns true when a DGMN was already dead
         }
       }
     } else{

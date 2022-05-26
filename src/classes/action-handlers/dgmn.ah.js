@@ -25,6 +25,7 @@ class DgmnAH{
     this.buildStatGrowth = (dgmnId,stats) => { return cbObj.buildStatGrowthCB(dgmnId,stats) }
     this.getTempDgmn = () => { return cbObj.getTempDgmnCB() }
     this.evolve = (dgmnId,speciesName) => cbObj.evolveCB(dgmnId,speciesName)
+    this.hatchEgg = (dgmnId,species) => cbObj.hatchEggCB(dgmnId,species)
   }
 }
 

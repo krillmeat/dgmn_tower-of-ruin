@@ -1,4 +1,5 @@
 import { dgmnDB } from '../../../data/dgmn.db';
+import { digiTamaDB } from '../../../data/digitama.db';
 
 class DgmnUtility{
   constructor(){
@@ -27,13 +28,30 @@ class DgmnUtility{
     return allImgs;
   }
 
+  getAllHatchImages = eggField => {
+    let allImgs = [];
+    
+    let hatches = this.getEggHatches(eggField);
+
+    for(let hatch of hatches){
+      allImgs.push(`DGMN/${hatch.toLowerCase()}Idle0`)
+      allImgs.push(`DGMN/${hatch.toLowerCase()}Idle1`)
+      allImgs.push(`DGMN/${hatch.toLowerCase()}Portrait`)
+    }
+
+    return allImgs;
+  }
+
   getTypeMod = (type,speciesName) => {
     return dgmnDB[speciesName].types[type] || 1;
   }
 
   getStage = speciesName => {
-    console.log("SN ? ",speciesName);
     return dgmnDB[speciesName].stage;
+  }
+
+  getAttribute = species => {
+    return dgmnDB[species].attr;
   }
 
   isEnemy = dgmnId => {
@@ -64,6 +82,16 @@ class DgmnUtility{
     return dgmnDB[speciesName].evoFields;
   }
 
+  buildInitialStats = species => {
+    let stats = {HP:10, ATK:1, DEF:1, INT:1, RES:1, HIT:1, AVO:1, SPD:1};
+
+    for(let stat in stats){
+      stats[stat] += this.getAllBaseStats(species)[stat]
+    }
+
+    return stats;
+  }
+
   checkEvolution = (dgmnData) => {
     let evolutions = dgmnDB[dgmnData.speciesName].evolutions;
 
@@ -90,6 +118,10 @@ class DgmnUtility{
     }
 
     return true;
+  }
+
+  getEggHatches = field => {
+    return digiTamaDB[field];
   }
 
 }

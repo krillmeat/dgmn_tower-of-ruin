@@ -16,6 +16,10 @@ class DgmnCanvas extends GameCanvas{
   animate = speed => {
     let counter = 0;
     let currentFrame = 0;
+
+    this.paintImage(this.frames[1]);
+    this.refreshScreen();
+
     this.idleInterval = setInterval( () => {
       if(this.isIdle){
         this.clearCanvas();

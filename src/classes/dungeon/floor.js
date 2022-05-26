@@ -162,14 +162,23 @@ class Floor{
    * ----------------------------------------------------------------------*/
     generateEnemies = () => {
       let potentialSpots = this.findAllTilesOnFloor([6,8,10,11,12,14,15]);
-      let enemyChance = this.floorEventMod === 'enemy' ? 30 : 60; // TODO - 30 : 15
-      let encounterId = 1;
-      for(let i = 0; i < potentialSpots.length; i++){
-        let rando = Math.floor( Math.random() * 100 );
-        if(rando <= enemyChance){ 
-          this.addEncounter(potentialSpots[i],encounterId)
-          encounterId++;
-        }
+      let enemyChance = this.floorEventMod === 'enemy' ? 30 : 15; // TODO - 30 : 15
+      let encounterCount = 1;
+      let maxEncounters = 4; // TODO - This needs to be determined through DungeonUtil by Floor Number
+      let minEncounters = 2; // TODO - This needs to be determined through DungeonUtil by Floor Number
+
+      for(let i = 0; i < maxEncounters; i++){ // Only create as many Encounters as possible
+        let rando = Math.floor(Math.random() * potentialSpots.length); // Pick out a Random Encounter
+        if(potentialSpots.length === 0) break;  // If you ever run out of encounters to build, stop
+        if(encounterCount <= minEncounters){ 
+          this.addEncounter(potentialSpots[rando],encounterCount); // Gaurentees minimum encounters
+          encounterCount++;
+        } else if(Math.floor(Math.random()*100) <= enemyChance){ 
+          this.addEncounter(potentialSpots[rando],encounterCount);
+          encounterCount++;
+        } // Chance to do some extra encounters
+
+        potentialSpots.splice(rando,1);
       }
 
       debugLog("ENCOUNTERS = ",this.encounters);
@@ -299,11 +308,27 @@ class Floor{
       this.dungeonAH.goUpFloor();
       return true;
     } else if(Math.floor(tile) === 105 || Math.floor(tile) === 106){
-      room.changeTile([this.currentTile.tile[0],this.currentTile.tile[1]],1);
+      this.clearEncounter((tile+"").split(".")[1]);
       this.dungeonAH.startBattle();
       return true;
     }
     return false;
+  }
+
+  /**------------------------------------------------------------------------
+   * CLEAR ENCOUNTER
+   * ------------------------------------------------------------------------
+   * After you trigger an Encounter, you need to take all of the trigger tiles
+   * off of the Floor
+   * ------------------------------------------------------------------------
+   * @param {String}  encounterNumber String'd Decimal Number
+   * ----------------------------------------------------------------------*/
+  clearEncounter = encounterNumber => {
+    let encounterTiles = this.findAllTilesOnFloor([parseFloat("105."+encounterNumber),parseFloat("106."+encounterNumber)]);
+    for(let tile of encounterTiles){
+      let room = this.roomMatrix[tile.room[0]][tile.room[1]];
+      room.changeTile([tile.tile[0],tile.tile[1]],1)
+    }
   }
 
   /**------------------------------------------------------------------------
@@ -407,6 +432,7 @@ class Floor{
    * ----------------------------------------------------------------------*/
     drawFloor = () => {
       this.drawFloorBase();
+      console.log("? "+this.end.room+" "+this.end.tile);
       this.floorCanvas.drawTile(this.systemAH.fetchImage('endTile'),this.end.room,this.end.tile);
       // TODO - Eventually, draw the event tiles that you can see
       this.dungeonAH.paintFloorCanvas(this.floorCanvas);

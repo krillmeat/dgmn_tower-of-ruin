@@ -6,7 +6,10 @@ import {digiBeetleImages} from "../data/images.db";
 class DigiBeetle{
   constructor(dungeonAH){
 
-    this.digiBeetleAH = new DigiBeetleAH(this.addItemToToolBox);
+    this.digiBeetleAH = new DigiBeetleAH({
+      initCB: this.init,
+      addItemToToolBoxCB: this.addItemToToolBox
+    });
     this.dungeonAH;
     this.gameAH;
     this.systemAH;

@@ -4,20 +4,37 @@ class DungeonIO extends IO{
   constructor(dungeonAH,...args){
     super(...args);
     this.dungeonAH = dungeonAH;
+    this.hatchMenuAH;
+  }
+
+  setMenuAH = ah => {
+    this.hatchMenuAH = ah;
   }
 
   cancelKeyHandler = upDown => {
     console.log("DOWN");
   }
 
+  actionKeyHandler = upDown => {
+    if(this.dungeonAH.getDungeonState() === 'hatch'){
+      if(this.hatchMenuAH.getState() === 'hatch-choice'){
+        this.dungeonAH.hatchEgg();
+      }
+    }
+  }
+
   upKeyHandler = upDown => {
-    if(this.dungeonAH.getDungeonState() === 'free'){
+    if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){
+      if(this.hatchMenuAH.getState() === 'rewards') this.dungeonAH.giveCurrReward('up');
+    } else if(this.dungeonAH.getDungeonState() === 'free'){
       this.movingInDirection('up',upDown);
     }
   }
 
   rightKeyHandler = upDown => {
-    if(this.dungeonAH.getDungeonState() === 'free'){
+    if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){
+      if(this.hatchMenuAH.getState() === 'rewards') this.dungeonAH.giveCurrReward('right');
+    } else if(this.dungeonAH.getDungeonState() === 'free'){
       this.movingInDirection('right',upDown);
     }
   }
@@ -29,7 +46,9 @@ class DungeonIO extends IO{
   }
 
   leftKeyHandler = upDown => {
-    if(this.dungeonAH.getDungeonState() === 'free'){
+    if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){
+      if(this.hatchMenuAH.getState() === 'rewards') this.dungeonAH.giveCurrReward('left');
+    } else if(this.dungeonAH.getDungeonState() === 'free'){
       this.movingInDirection('left',upDown);
     }
   }
