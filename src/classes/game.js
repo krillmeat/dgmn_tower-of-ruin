@@ -70,6 +70,9 @@ class Game{
     if(keyState[config.keyBindings.cancel]){ this.keyManager('cancel')
     } else { this.keyTimers.cancel = 0 }
 
+    if(keyState[config.keyBindings.start]){ this.keyManager('start')
+    } else { this.keyTimers.start = 0 }
+
     if(keyState[config.keyBindings.up]){ this.keyManager('up','down')
     } else { this.keyTimers.up = 0; this.keyManager('up','up') }
     
@@ -106,8 +109,12 @@ class Game{
 
     if(this.dungeon?.dungeonState === 'free'){ // TODO - Probably should be a more specific check
       // TODO - Logic that checks things like "held down" or "tapped" go here
-      this.dungeon.dungeonIO.keyTriage(key,upDown);
-    } else if(this.dungeon?.dungeonState === 'hatch'){
+      if(key === 'start' || key === 'select'){ // Start and Select shouldn't be able to be "held down"
+        if(this.keyTimers[key] === 2){ this.dungeon.dungeonIO.keyTriage(key,upDown) }
+      } else {
+        this.dungeon.dungeonIO.keyTriage(key,upDown);
+      }
+    } else if(this.dungeon?.dungeonState === 'hatch' || this.dungeon?.dungeonState === 'text-box-next'){
       if(this.keyTimers[key] === 2){
         this.dungeon.dungeonIO.keyTriage(key,upDown);
       }

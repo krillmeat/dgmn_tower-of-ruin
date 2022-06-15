@@ -1,7 +1,25 @@
 export const itemsDB = {
-    meat: {
-        smallMeat: 'this needs to be an object class (try extending, make things good)'
-    }
+  smallMeat: {
+    displayName: 'Meat S'
+  },
+  atkPluginC: {
+    displayName: 'ATK Plugin C'
+  },
+  boosterDRs: {
+    displayName: '1 DR FP'
+  }
+}
+
+export const itemChart = {
+  meat: {
+    common: ['smallMeat']
+  },
+  beetle: {
+    common: ['atkPluginC']
+  },
+  booster: {
+    common: ['boosterDRs']
+  }
 }
 
 export const treasureChartDB = {

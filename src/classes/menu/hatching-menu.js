@@ -12,7 +12,9 @@ class HatchingMenu extends Menu{
     this.currState = '';
 
     this.hatchMenuAH = new HatchMenuAH({
-      getStateCB: () => { return this.getState() }
+      getStateCB: () => { return this.getState() },
+      nextHatchCB: () => this.nextIcon(),
+      prevHatchCB: () => this.prevIcon()
     })
 
     this.hatchingIndex = 0;
@@ -29,7 +31,7 @@ class HatchingMenu extends Menu{
    gotoRewards = (rewards) => {
     this.currState = 'loading';
     this.menuCanvas.paintImage(this.systemAH.fetchImage('battleVictoryRewardsOverlay'),0,0);
-    this.actionTxt.timedText(this.menuCanvas.ctx,'Choose DigiTama to get Rewards!',this.drawMenu);
+    this.actionTxt.timedText(this.menuCanvas.ctx,'Choose DGMN Egg to get Rewards!',this.drawMenu);
 
     this.addSubMenu('rewards', new RewardsMenu('rewards'));
     this.subMenus.rewards.isVisible = true;
@@ -93,17 +95,13 @@ class HatchingMenu extends Menu{
     this.drawMenu();
   }
 
-  /*
+  nextIcon = () => {
+    this.subMenus.hatchEgg.nextHatch();
+  }
 
-  drawDgmnCanvas = (species,redrawCB) => {
-    this.dgmnCanvas = new DgmnCanvas(()=>{},species,'dgmn-canvas',32,32);
-    this.dgmnCanvas.x = 3*config.tileSize;
-    this.dgmnCanvas.y = 8*config.tileSize;
-    this.dgmnCanvas.frames = [this.fetchImgCB(`${species.toLowerCase()}Idle0`),
-                              this.fetchImgCB(`${species.toLowerCase()}Idle1`)];
-    this.dgmnCanvas.refreshScreen = () => this.redrawDgmn(redrawCB);
-    this.dgmnCanvas.animate(100);
-  }*/
+  prevIcon = () => {
+    this.subMenus.hatchEgg.prevHatch();
+  }
 
   getState = () => { return this.currState }
 

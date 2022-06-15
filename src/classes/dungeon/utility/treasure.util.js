@@ -1,4 +1,4 @@
-import {itemsDB, rarityChartDB} from '../../../data/items.db'
+import {itemChart, itemsDB, rarityChartDB} from '../../../data/items.db'
 
 /**------------------------------------------------------------------------
  * TREASURE UTILITY
@@ -94,30 +94,20 @@ class TreasureUtility{
         return itemType;
     }
 
-    /**------------------------------------------------------------------------
-    * GET BOOSTER ITEM TYPE
-    * ------------------------------------------------------------------------
-    * Determines which FP/XP Booster you get
-    * ------------------------------------------------------------------------
-    * @param {String} modifier  Adjusts the rates of which Booster
-    * @returns {String} Type of Booster Item Generated
-    * ----------------------------------------------------------------------*/
-    getBoosterItemType = (rarity, modifier = 'none') => {
-        let fpList = ['DR','NS','WG','DS','JT','ME','VB','NA','XP'];
-        let boosterType = 'Booster';
-        let size = '';
-
-        if(rarity === 'common'){ size = 'xs'; 
-        } else if(rarity === 'uncommon'){ size = 's'; 
-        } else if(rarity === 'rare'){ size = 'm'; 
-        } else if(rarity === 'extraRare'){ size = 'l'; }
-
-        let rando = Math.floor(Math.random() * fpList.length);
-        
-        boosterType = size + boosterType + fpList[rando];
-
-        return boosterType;
+    getItem = (rarity,type) => {
+      let itemOptions = itemChart[type][rarity];
+      let rando = Math.floor(Math.random() * itemOptions.length);
+      return itemOptions[rando];
     }
+
+    getTreasureById = (id,treasures) => {
+      for(let treasure of treasures){
+        if(treasure?.id === parseInt(id)) return treasure;
+      }
+      return {};
+    }
+
+    getTreasureName = treasure => { return itemsDB[treasure].displayName }
 }
 
 export default TreasureUtility;

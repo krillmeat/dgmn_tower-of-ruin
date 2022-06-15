@@ -40,7 +40,7 @@ class Dgmn {
     this.weak = 0;
 
     this.attackList = ["bubbles","babyFlame"];
-    this.attacks = [] // TODO - this needs to be "built"
+    this.attacks = [new Attack('bubbles')] // Every DGMN Starts with Bubbles
 
     this.isDead = false;
 
@@ -103,14 +103,20 @@ class Dgmn {
   hatch = species => {
     this.speciesName = species;
     this.currentHP = this.currentStats.HP;
-    this.currentStats = this.dgmnUtility.buildInitialStats(this.speciesName)
+    this.currentStats = this.dgmnUtility.buildInitialStats(this.speciesName);
+    this.setInitialFP();
   }
 
   setInitialFP = () => {
-    let baseFP = this.dgmnUtility.getBaseFP(this.speciesName);
-    for(let FP in baseFP){
-      this.currentFP[FP] = baseFP[FP]; // TODO - Also add permanent FP
-    }
+    debugLog("  - Egg Field : ",this.eggField);
+    // let baseFP = this.dgmnUtility.getBaseFP(this.speciesName);
+    // for(let FP in baseFP){
+    //   if(this.currentFP[FP]){
+    //     this.currentFP[FP] += baseFP[FP];
+    //   } else { this.currentFP[FP] = baseFP[FP] }
+    // }
+
+    this.currentFP[this.eggField] = 1;
   }
 
   getDgmnAttackByName = attackName => {
@@ -143,6 +149,11 @@ class Dgmn {
     for(let FP in baseFP){
       this.currentFP[FP] += baseFP[FP]; // TODO - Also add Perm FP
     }
+  }
+
+  learnAttack = () => {
+    let newAttack = this.dgmnUtility.getAttack(this.speciesName);
+    if(newAttack) this.attacks.unshift(new Attack(newAttack))
   }
 
   getAllAttacks = () => { return this.attacks }

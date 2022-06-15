@@ -37,7 +37,12 @@ export const dgmnEncounterChartDB = {
       dgmnList: ['Zuru']
     }
   },
-  2: {},
+  2: {
+    DR: {
+      pre10: 1,
+      dgmnList: ['Koro']
+    }
+  },
   3: {},
   4: {},
   5: {},
@@ -88,6 +93,12 @@ export const dgmnEncounterDB = {
     speciesName: 'Pitch',
     currentLevel: 2,
     currentStats: {HP: 5, ATK: 1, DEF: 2, INT: 1, RES: 2, HIT: 1, AVO: 2, SPD: 1},
+    attacks: [new Attack('bubbles')]
+  },
+  Koro: {
+    speciesName: 'Koro',
+    currentLevel: 3,
+    currentStats: {HP:8, ATK:3, DEF:2, INT:2, RES:2, HIT:3, AVO:2, SPD:2},
     attacks: [new Attack('bubbles')]
   }
 }

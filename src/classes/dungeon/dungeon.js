@@ -8,6 +8,8 @@ import DungeonAH from "../action-handlers/dungeon.ah";
 import DungeonIO from "../input-output/dungeon.io";
 import HatchingMenu from "../menu/hatching-menu";
 import DgmnUtility from "../dgmn/utility/dgmn.util";
+import TreasureUtility from "./utility/treasure.util";
+import DungeonTextCanvas from "./canvas/dungeon-text-canvas";
 
 class Dungeon{
   constructor(isNewDungeon,loadedCallback){
@@ -30,13 +32,17 @@ class Dungeon{
       startBattleCB: this.startBattle,
       getCurrentFloorCB: this.getCurrentFloor,
       giveCurrRewardCB: this.giveCurrReward,
-      hatchEggCB: this.hatchEgg
+      hatchEggCB: this.hatchEgg,
+      getTreasureCB: this.getTreasure,
+      closeTextBoxCB: this.closeTextBox,
+      bringUpMenuCB: this.bringUpMenu
     });
 
     this.dungeonCanvas = new GameCanvas('dungeon-canvas',160,144);  // Holds the Floor Canvas and is what gets painted to the screen
     this.dungeonIO = new DungeonIO(this.dungeonAH);                 // Key Manager
 
     this.dgmnUtility = new DgmnUtility();
+    this.treasureUtility = new TreasureUtility();
 
     this.yourParty = [];
 
@@ -52,6 +58,8 @@ class Dungeon{
       left: false
     };
     this.hatchingMenu;
+
+    this.textBoxCanvas = new DungeonTextCanvas('dungeon-text',160,144);
 
     this.onLoaded = () => {loadedCallback()}
   }
@@ -80,6 +88,8 @@ class Dungeon{
   drawDungeon = () => {
     if(this.dungeonState === 'hatch'){
       this.dungeonCanvas.paintCanvas(this.hatchingMenu.menuCanvas);
+    } else if(this.dungeonState === 'text-box' || this.dungeonState === 'text-box-next'){
+      this.dungeonCanvas.paintCanvas(this.textBoxCanvas);
     } else{
       // DRAW DUNGEON
     }
@@ -130,18 +140,20 @@ class Dungeon{
    * Takes a DGMN Egg and Hatches it
    * ----------------------------------------------------------------------*/
   hatchEgg = () => {
-    let hatchDgmn = this.hatchingMenu.subMenus.hatchEgg.selectedDgmn;
-    this.dgmnAH.hatchEgg(this.yourParty[this.hatchingMenu.hatchingIndex],hatchDgmn);
-
-    if(this.hatchingMenu.hatchingIndex == 2){
-      this.dungeonState = 'loading';
-      this.systemAH.startLoading(()=>{
-        this.buildFloor();
-        this.loadDungeonImages(this.floor.roomMatrix);
-      })
-    } else{
-      this.hatchingMenu.hatchingIndex++;
-      this.rewardWrapUp();
+    if(this.hatchingMenu.subMenus.hatchEgg.canHatch()){
+      let hatchDgmn = this.hatchingMenu.subMenus.hatchEgg.selectedDgmn;
+      this.dgmnAH.hatchEgg(this.yourParty[this.hatchingMenu.hatchingIndex],hatchDgmn);
+  
+      if(this.hatchingMenu.hatchingIndex == 2){
+        this.dungeonState = 'loading';
+        this.systemAH.startLoading(()=>{
+          this.buildFloor();
+          this.loadDungeonImages(this.floor.roomMatrix);
+        })
+      } else{
+        this.hatchingMenu.hatchingIndex++;
+        this.rewardWrapUp();
+      }
     }
   }
 
@@ -290,6 +302,38 @@ class Dungeon{
         this.gameAH.startBattle();
       })
     },500);
+  }
+
+  /**------------------------------------------------------------------------
+   * GET TREASURE                                               [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * Launches a Text Box to receive an Item
+   * ----------------------------------------------------------------------*/
+  getTreasure = treasure => {
+    debugLog("Getting Treasure : ",treasure);
+    this.moving = 'none';
+    this.dungeonState = 'text-box';
+    this.textBoxCanvas.paintImage(this.systemAH.fetchImage('textBox'));
+    // let message = isBoxFull ? 'Found '+treausre+'... But your Item Box is full.' : 'Found '+treasure+'!';
+    let message = 'Found '+this.treasureUtility.getTreasureName(treasure)+'!'; // TODO - Replace with above after figuring out Item Box
+    this.textBoxCanvas.dungeonTxt.instantText(this.textBoxCanvas.ctx,message,'white');
+    setTimeout(()=>{
+      this.digiBeetleAH.addItemToToolBox(treasure);
+      this.dungeonState = 'text-box-next';
+      this.textBoxCanvas.drawContinueCursor(this.systemAH.fetchImage('continueCursor'),()=>{});
+      this.drawDungeon();
+    },800);
+  }
+
+  closeTextBox = () => {
+    this.textBoxCanvas.clearCanvas();
+    this.dungeonState = 'free';
+    this.floor.redrawFloor();
+    this.drawDungeon();
+  }
+
+  bringUpMenu = () => {
+    console.log("MENU TIME");
   }
 
   /**------------------------------------------------------------------------

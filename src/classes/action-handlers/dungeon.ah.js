@@ -27,6 +27,9 @@
         this.getCurrentFloor = () => { return cbObj.getCurrentFloorCB() }
         this.giveCurrReward = dir => cbObj.giveCurrRewardCB(dir)
         this.hatchEgg = () => cbObj.hatchEggCB()
+        this.getTreasure = treasure => cbObj.getTreasureCB(treasure)
+        this.closeTextBox = () => cbObj.closeTextBoxCB()
+        this.bringUpMenu = () => cbObj.bringUpMenuCB()
     }
 }
 

@@ -20,20 +20,32 @@ class DungeonIO extends IO{
       if(this.hatchMenuAH.getState() === 'hatch-choice'){
         this.dungeonAH.hatchEgg();
       }
+    } else if(this.dungeonAH.getDungeonState() === 'text-box-next'){
+      this.dungeonAH.closeTextBox();
+    }
+  }
+
+  startKeyHandler = upDown => {
+    if(this.dungeonAH.getDungeonState() === 'free'){
+      this.dungeonAH.bringUpMenu();
     }
   }
 
   upKeyHandler = upDown => {
-    if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){
+    if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){ // Start Menu
       if(this.hatchMenuAH.getState() === 'rewards') this.dungeonAH.giveCurrReward('up');
-    } else if(this.dungeonAH.getDungeonState() === 'free'){
+    } else if(this.dungeonAH.getDungeonState() === 'free'){ // In Dungeon
       this.movingInDirection('up',upDown);
     }
   }
 
   rightKeyHandler = upDown => {
     if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){
-      if(this.hatchMenuAH.getState() === 'rewards') this.dungeonAH.giveCurrReward('right');
+      if(this.hatchMenuAH.getState() === 'rewards'){
+        this.dungeonAH.giveCurrReward('right');
+      } else if(this.hatchMenuAH.getState() === 'hatch-choice'){
+        this.hatchMenuAH.nextHatch();
+      }
     } else if(this.dungeonAH.getDungeonState() === 'free'){
       this.movingInDirection('right',upDown);
     }
@@ -47,7 +59,11 @@ class DungeonIO extends IO{
 
   leftKeyHandler = upDown => {
     if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){
-      if(this.hatchMenuAH.getState() === 'rewards') this.dungeonAH.giveCurrReward('left');
+      if(this.hatchMenuAH.getState() === 'rewards'){
+         this.dungeonAH.giveCurrReward('left');
+      } else if(this.hatchMenuAH.getState() === 'hatch-choice'){
+        this.hatchMenuAH.prevHatch();
+      }
     } else if(this.dungeonAH.getDungeonState() === 'free'){
       this.movingInDirection('left',upDown);
     }

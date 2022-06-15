@@ -62,6 +62,8 @@ class DgmnUtility{
     return 3 * (level);
   }
 
+  getAttack = species => { return dgmnDB[species].attack }
+
   getAllBaseStats = speciesName => {
     return dgmnDB[speciesName].stats;
   }
@@ -80,6 +82,10 @@ class DgmnUtility{
 
   getEvoFP = speciesName => {
     return dgmnDB[speciesName].evoFields;
+  }
+
+  getHatchFP = species => {
+    return dgmnDB[species].hatchFields;
   }
 
   buildInitialStats = species => {
@@ -115,9 +121,16 @@ class DgmnUtility{
       if(dgmnFP[FP] < evoFP[FP]){
         return false;
       }
-    }
+    } return true;
+  }
 
-    return true;
+  canHatchInto = (dgmnFP,hatchSpecies) => {
+    let hatchFP = this.getHatchFP(hatchSpecies);
+    for(let FP in hatchFP){
+      if(dgmnFP[FP] < hatchFP[FP]){
+        return false;
+      }
+    } return true;
   }
 
   getEggHatches = field => {

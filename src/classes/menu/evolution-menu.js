@@ -5,6 +5,8 @@ import DgmnUtility from "../dgmn/utility/dgmn.util";
 import TextArea from "../text-area";
 import DgmnCanvas from "../dgmn/canvas/dgmn-canvas";
 
+// TODO - So much is shared between this and Hatching Egg Menu, it feels like I should make a new Class for the shared elements
+
 class EvolutionMenu extends IconMenu{
   constructor(...args){
     super(...args);
@@ -63,7 +65,7 @@ class EvolutionMenu extends IconMenu{
   drawDgmnInfo = species => {
     this.drawEvoPortrait(this.fetchImgCB(`${species.toLowerCase()}Portrait`))
     this.evoNameTxt.instantText(this.menuCanvas.ctx,`${species}.MON`,'white')
-    this.evoAttributeTxt.instantText(this.menuCanvas.ctx,'Free','green')
+    this.evoAttributeTxt.instantText(this.menuCanvas.ctx,this.dgmnUtility.getAttribute(species),'green')
     this.evoWeakTxt.instantText(this.menuCanvas.ctx,'WEAK','green');
     this.evoResTxt.instantText(this.menuCanvas.ctx,'RES','green');
 

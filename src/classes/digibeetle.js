@@ -2,6 +2,7 @@ import DigiBeetleAH from "./action-handlers/digibeetle.ah"
 import DigiBeetleCanvas from "./digibeetle-canvas"
 
 import {digiBeetleImages} from "../data/images.db";
+import { debugLog } from "../utils/log-utils";
 
 class DigiBeetle{
   constructor(dungeonAH){
@@ -37,7 +38,8 @@ class DigiBeetle{
   }
 
   addItemToToolBox = item => {
-    this.toolBox.push(item);
+    this.toolBox.items.push(item);
+    debugLog("Toolbox : ",this.toolBox.items);
   }
 
   loadDigiBeetleImages = () => {

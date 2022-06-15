@@ -15,7 +15,7 @@ class DgmnManager{
     // TODO - In the future, dIdX should probably be generated. If I ever want to do a cool online thing, you might need very unique IDs
     this.allDgmn = {
       dId0: new Dgmn(0,"FLARE","Bota",'DR'),
-      dId1: new Dgmn(1,"SPROUT","Lala",'JT'),
+      dId1: new Dgmn(1,"SPROUT","Yura",'JT'),
       dId2: new Dgmn(2,"GEAR","Choro",'ME')
     }
 
@@ -67,7 +67,7 @@ class DgmnManager{
     // this.enemyDgmn.edId0.isEnemy = true; this.enemyDgmn.edId1.isEnemy = true; this.enemyDgmn.edId2.isEnemy = true;
     for(let i = 0; i < 3; i++){
       // this.allDgmn[`dId${i}`].currentLevel = partyMock[`dId${i}`].currentLevel;
-      this.allDgmn[`dId${i}`].attacks = partyMock[`dId${i}`].attacks;
+      // this.allDgmn[`dId${i}`].attacks = partyMock[`dId${i}`].attacks;
       // this.allDgmn[`dId${i}`].currentStats = partyMock[`dId${i}`].currentStats;
 
       // this.enemyDgmn[`eId${i}`].attacks = enemyPartyMock[`eId${i}`].attacks;
@@ -304,6 +304,7 @@ class DgmnManager{
     console.log(dgmnId+" is Evolving into "+evoSpecies);
     this.allDgmn[dgmnId].speciesName = evoSpecies;
     this.allDgmn[dgmnId].levelUpStats();
+    this.allDgmn[dgmnId].learnAttack();
   }
 
   buildStatGrowth = (dgmnId,stat) => {

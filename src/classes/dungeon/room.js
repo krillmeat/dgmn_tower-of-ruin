@@ -36,7 +36,15 @@ class Room{
    * Builds the Tile Matrix for the Room
    * ----------------------------------------------------------------------*/
   setupTiles = () => {
-    this.tileMatrix = this.mapUtility.getTileLayout(this.roomId);
+    let arrayRef = this.mapUtility.getTileLayout(this.roomId);
+    
+    for(let r = 0; r < arrayRef.length; r++){
+      let row = [];
+      for(let c = 0; c < arrayRef[r].length; c++){
+        row.push(arrayRef[r][c]);
+      }
+      this.tileMatrix.push(row);
+    }
   }
 
   /**------------------------------------------------------------------------

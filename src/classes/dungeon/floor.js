@@ -3,6 +3,7 @@ import MapUtility from './utility/map.util';
 import FloorCanvas from './canvas/floor-canvas';
 import config from '../../config';
 import {debugLog} from '../../utils/log-utils';
+import TreasureUtility from './utility/treasure.util';
 
 class Floor{
   constructor(floorNumber){
@@ -15,6 +16,7 @@ class Floor{
 
     // UTILITIES
     this.mapUtility = new MapUtility();
+    this.treasureUtility = new TreasureUtility();
 
     this.floorCanvas;
 
@@ -23,6 +25,7 @@ class Floor{
     this.start = {room: [], tile: []}   // Location of the Start of the Floor
     this.end = {room: [], tile: []}     // Location of the End of the Floor
     this.encounters = [null];
+    this.treasures = [null];
     this.activeEncounterIndex = 0;
 
     this.currentTile = {room: [], tile: []} // Current Location of the DigiBeetle
@@ -60,6 +63,7 @@ class Floor{
    * ----------------------------------------------------------------------*/
     generateFloor = () => {
       this.roomMatrix = this.buildRoomMatrix(this.number);
+
       this.start = this.generateStart();
       this.end = this.generateEnd();
 
@@ -134,7 +138,10 @@ class Floor{
       end.room = possibleTiles[randomChoice].room;
       end.tile = possibleTiles[randomChoice].tile;
 
+      console.log("END ? ",end);
       this.roomMatrix[end.room[0]][end.room[1]].changeTile([end.tile[0],end.tile[1]],102);
+
+      console.log("LOOK FOR END ? ",this.roomMatrix);
 
       return end;
     }
@@ -150,7 +157,7 @@ class Floor{
     for(let i = 0; i < eventOrder.length; i++){
       if(eventOrder[i] === 'enemy'){ this.generateEnemies()
       } else if(eventOrder[i] === 'trap'){ //this.generateTraps()
-      } else if(eventOrder[i] === 'treasure'){ /*this.generateTreasure()*/ }
+      } else if(eventOrder[i] === 'treasure'){ this.generateTreasure() }
     }
   }
 
@@ -185,6 +192,36 @@ class Floor{
     }
 
   /**------------------------------------------------------------------------
+   * GENERATE TREASURE
+   * ------------------------------------------------------------------------
+   * Goes through the rooms and determines what should be a Treasure tile.
+   *  Potential Tiles = 5,8,9,11,12,13,14,15,16
+   * ----------------------------------------------------------------------*/
+    generateTreasure = () => {
+      let potentialSpots = this.findAllTilesOnFloor([5,8,9,11,12,14,15,16]);
+      let treasureChance = this.floorEventMod === 'treasure' ? 20 : 5;
+      let treasureCount = 1;
+      let maxTreasure = 3; // TODO - This needs to be determined through DungeonUtil by Floor Number
+      let minTreasure = 1; // TODO - This needs to be determined through DungeonUtil by Floor Number
+
+      for(let i = 0; i < maxTreasure; i++){
+        let rando = Math.floor(Math.random() * potentialSpots.length);
+        if(potentialSpots.length === 0 ) break;
+        if(treasureCount <= minTreasure){
+          this.addTreasure(potentialSpots[rando],treasureCount);
+          treasureCount++;
+        } else if(Math.floor(Math.random()*100) <= treasureChance){
+          this.addTreasure(potentialSpots[rando],treasureCount);
+          treasureCount++;
+        }
+
+        potentialSpots.splice(rando,1);
+      }
+
+      debugLog("TREASURES = ",this.treasures);
+    }
+
+  /**------------------------------------------------------------------------
    * ADD ENEMY
    * ------------------------------------------------------------------------
    * Changes a tile to have an Enemy Encounter.
@@ -195,6 +232,22 @@ class Floor{
       this.roomMatrix[tile.room[0]][tile.room[1]].changeTile([tile.tile[0],tile.tile[1]],tileNumber);
       this.encounters.push({id:encounterId})
       this.createEncounterRange(tile,encounterId);
+    }
+
+  /**------------------------------------------------------------------------
+   * ADD TREASURE
+   * ------------------------------------------------------------------------
+   * Generates a Treasure and puts it on a tile
+   * ----------------------------------------------------------------------*/
+    addTreasure = (tile,treasureId) => {
+      let tileNumber = 103 + (treasureId/100);
+      this.roomMatrix[tile.room[0]][tile.room[1]].changeTile([tile.tile[0],tile.tile[1]],tileNumber);
+
+      let treasureRarity = this.treasureUtility.getRarity(this.number);
+      let treasureType = this.treasureUtility.getItemType();
+      let treasure = this.treasureUtility.getItem(treasureRarity,treasureType);
+
+      this.treasures.push({id:treasureId, tile: tile, itemName: treasure});
     }
 
   /**------------------------------------------------------------------------
@@ -304,12 +357,18 @@ class Floor{
   checkCurrentTile = () => {
     let room = this.roomMatrix[this.currentTile.room[0]][this.currentTile.room[1]];
     let tile = room.tileMatrix[this.currentTile.tile[0]][this.currentTile.tile[1]];
+    
     if(tile === 102){
       this.dungeonAH.goUpFloor();
       return true;
     } else if(Math.floor(tile) === 105 || Math.floor(tile) === 106){
       this.clearEncounter((tile+"").split(".")[1]);
       this.dungeonAH.startBattle();
+      return true;
+    } else if(Math.floor(tile) === 103){
+      this.clearTreasure((tile+"").split(".")[1]);
+      console.log(this.treasureUtility.getTreasureById((tile+"").split(".")[1],this.treasures))
+      this.dungeonAH.getTreasure(this.treasureUtility.getTreasureById((tile+"").split(".")[1],this.treasures).itemName);
       return true;
     }
     return false;
@@ -329,6 +388,21 @@ class Floor{
       let room = this.roomMatrix[tile.room[0]][tile.room[1]];
       room.changeTile([tile.tile[0],tile.tile[1]],1)
     }
+  }
+
+  /**------------------------------------------------------------------------
+   * CLEAR TREASURE
+   * ------------------------------------------------------------------------
+   * After you pick up a Treasure, you should clear the space and draw
+   * an empty Treasure Chest
+   * ------------------------------------------------------------------------
+   * @param {String}  treasureNumber String'd Decimal Number
+   * ----------------------------------------------------------------------*/
+  clearTreasure = treasureNumber => {
+    let treasureTile = this.findAllTilesOnFloor([parseFloat("103."+treasureNumber)])[0];
+    let room = this.roomMatrix[treasureTile.room[0]][treasureTile.room[1]];
+    room.changeTile[[treasureTile.tile[0],treasureTile.tile[1]],1];
+    this.floorCanvas.drawTile(this.systemAH.fetchImage('treasureTileOpen'),treasureTile.room,treasureTile.tile);
   }
 
   /**------------------------------------------------------------------------
@@ -432,9 +506,8 @@ class Floor{
    * ----------------------------------------------------------------------*/
     drawFloor = () => {
       this.drawFloorBase();
-      console.log("? "+this.end.room+" "+this.end.tile);
       this.floorCanvas.drawTile(this.systemAH.fetchImage('endTile'),this.end.room,this.end.tile);
-      // TODO - Eventually, draw the event tiles that you can see
+      this.drawTreasures();
       this.dungeonAH.paintFloorCanvas(this.floorCanvas);
       this.gameAH.refreshScreen();
     }
@@ -454,6 +527,17 @@ class Floor{
           let room = this.roomMatrix[r][c];
           this.floorCanvas.drawRoom(this.systemAH.fetchImage(`room${room.roomId}`),[room.position[0],room.position[1]]);
         }
+      }
+    }
+
+  /**------------------------------------------------------------------------
+   * DRAW TREASURES
+   * ------------------------------------------------------------------------
+   * Draws the treasure chests at a location
+   * ----------------------------------------------------------------------*/
+    drawTreasures = () => {
+      for(let treasure of this.treasures){
+        if(treasure) this.floorCanvas.drawTile(this.systemAH.fetchImage('treasureTile'),treasure.tile.room,treasure.tile.tile);
       }
     }
 
@@ -482,36 +566,3 @@ class Floor{
 }
 
 export default Floor;
-
-
-
-  // generateEvents = () => {
-  //   let tempEventOrder = ['treasure','enemy']; // TODO - This should be generated by the game, not decided in code
-
-  //   for(let e = 0; e < tempEventOrder.length; e++){
-  //     let spots = this.findAllTilesByNumber(this.roomMatrix, [5]);
-  //     for(let i = 0; i < spots.length; i++){
-  //       if(tempEventOrder[e] === 'treasure'){
-  //         this.generateTreasure(spots[i]);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // generateTreasure = tileCoord => {
-  //   let room = tileCoord.room;
-  //   let tile = tileCoord.tile;
-  //   let tempTreasureRate = 80; // TODO - this should be generated by the game
-
-  //   if(Math.floor(Math.random() * 100) <= tempTreasureRate){ // Generate Treasure
-  //     console.log("GENERATE TREASURE AT ",tileCoord);
-  //     this.roomMatrix[room[0]][room[1]].tileMatrix[tile[0]][tile[1]] = parseFloat(`103.${this.treasureList.length}`);
-  //     // this.treasureList.push('generatedTreasure') //TODO - Actually pick out a treasure
-  //     let rarity = this.treasureUtility.getRarity(this.floorNumber);
-  //     let itemType = this.treasureUtility.getItemType();
-  //     let item = '';
-  //     if(itemType === 'booster'){
-  //       item = this.treasureUtility.getBoosterItemType(rarity);
-  //     }
-  //   }
-  // }
