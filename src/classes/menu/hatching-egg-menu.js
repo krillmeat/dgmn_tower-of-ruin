@@ -123,7 +123,6 @@ class HatchingEggMenu extends IconMenu{
   }
 
   drawHatchRequirements = species => {
-    console.log("FP = ",this.eggData.currentFP);
     this.menuCanvas.ctx.fillStyle = "#00131A";
     this.menuCanvas.ctx.fillRect(1*config.tileSize,11*config.tileSize,10*config.tileSize,1*config.tileSize);
     let fpReqs = this.dgmnUtility.getHatchFP(species);

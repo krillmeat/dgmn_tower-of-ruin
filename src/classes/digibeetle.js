@@ -3,13 +3,18 @@ import DigiBeetleCanvas from "./digibeetle-canvas"
 
 import {digiBeetleImages} from "../data/images.db";
 import { debugLog } from "../utils/log-utils";
+import config from "../config";
 
 class DigiBeetle{
   constructor(dungeonAH){
 
     this.digiBeetleAH = new DigiBeetleAH({
       initCB: this.init,
-      addItemToToolBoxCB: this.addItemToToolBox
+      addItemToToolBoxCB: this.addItemToToolBox,
+      getToolBoxItemsCB: this.getToolBoxItems,
+      hideCanvasCB: this.hideCanvas,
+      showCanvasCB: this.showCanvas,
+      getToolBoxTypeCB: this. getToolBoxType
     });
     this.dungeonAH;
     this.gameAH;
@@ -19,7 +24,7 @@ class DigiBeetle{
 
     this.toolBox = {
       version: 'dodo',
-      items: []
+      items: ['smallMeat','smallMeat','boosterDRs']
     }
 
   }
@@ -35,6 +40,14 @@ class DigiBeetle{
 
   initCanvas = () => {
     this.digiBeetleCanvas = new DigiBeetleCanvas(this.dungeonAH.getCurrentDirection,'digibeetle-canvas',16,16,64,64, false, this.gameAH.refreshScreen);
+  }
+
+  hideCanvas = () => {
+    this.digiBeetleCanvas.x = -1000;
+  }
+
+  showCanvas = () => {
+    this.digiBeetleCanvas.x = 64 * config.screenSize;
   }
 
   addItemToToolBox = item => {
@@ -66,6 +79,9 @@ class DigiBeetle{
     this.digiBeetleCanvas.frames.left = [this.systemAH.fetchImage('digiBeetleLeft0'),this.systemAH.fetchImage('digiBeetleLeft1')];
     this.digiBeetleCanvas.animateBeetle('down');
   }
+
+  getToolBoxItems = () => { return this.toolBox.items }
+  getToolBoxType = () => { return this.toolBox.version }
 
   onLoaded = () => {
     

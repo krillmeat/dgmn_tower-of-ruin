@@ -10,6 +10,7 @@ import HatchingMenu from "../menu/hatching-menu";
 import DgmnUtility from "../dgmn/utility/dgmn.util";
 import TreasureUtility from "./utility/treasure.util";
 import DungeonTextCanvas from "./canvas/dungeon-text-canvas";
+import PauseMenu from "../menu/puase-menu";
 
 class Dungeon{
   constructor(isNewDungeon,loadedCallback){
@@ -35,7 +36,7 @@ class Dungeon{
       hatchEggCB: this.hatchEgg,
       getTreasureCB: this.getTreasure,
       closeTextBoxCB: this.closeTextBox,
-      bringUpMenuCB: this.bringUpMenu
+      bringUpMenuCB: this.handleMenu
     });
 
     this.dungeonCanvas = new GameCanvas('dungeon-canvas',160,144);  // Holds the Floor Canvas and is what gets painted to the screen
@@ -58,6 +59,7 @@ class Dungeon{
       left: false
     };
     this.hatchingMenu;
+    this.pauseMenu;
 
     this.textBoxCanvas = new DungeonTextCanvas('dungeon-text',160,144);
 
@@ -76,6 +78,7 @@ class Dungeon{
       this.gameAH.addCanvasObject(this.dungeonCanvas);
       this.hatchingMenu = new HatchingMenu(this.systemAH,this.gameAH,this.dungeonAH);
         this.dungeonIO.setMenuAH(this.hatchingMenu.hatchMenuAH);
+      this.pauseMenu = new PauseMenu(this.yourParty,this.dgmnAH,this.digiBeetleAH,this.systemAH,this.gameAH,this.dungeonAH);
 
       this.systemAH.loadImages(fieldIcons, ()=>{
         this.hatchingMenu.gotoRewards(['DR']); // TODO - temporary permanent Reward (needs to grab from game data)
@@ -90,7 +93,9 @@ class Dungeon{
       this.dungeonCanvas.paintCanvas(this.hatchingMenu.menuCanvas);
     } else if(this.dungeonState === 'text-box' || this.dungeonState === 'text-box-next'){
       this.dungeonCanvas.paintCanvas(this.textBoxCanvas);
-    } else{
+    } else if(this.dungeonState === 'main-menu'){
+      this.dungeonCanvas.paintCanvas(this.pauseMenu.menuCanvas);
+    }else{
       // DRAW DUNGEON
     }
 
@@ -332,8 +337,24 @@ class Dungeon{
     this.drawDungeon();
   }
 
-  bringUpMenu = () => {
-    console.log("MENU TIME");
+  handleMenu = () => {
+    this.dungeonState = this.dungeonState === 'main-menu' ? 'free' : 'main-menu';
+    
+    if(this.dungeonState === 'main-menu'){
+      this.launchMainMenu();
+    } else if(this.dungeonState === 'free'){
+      this.closeMainMenu();
+    }
+  }
+
+  launchMainMenu = () => {
+    this.pauseMenu.launchMenu();
+    this.dungeonIO.setMenuAH(this.pauseMenu.pauseMenuAH);
+  }
+
+  closeMainMenu = () => {
+    this.pauseMenu.closeMenu();
+    this.floor.redrawFloor();
   }
 
   /**------------------------------------------------------------------------

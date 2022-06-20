@@ -2,6 +2,7 @@ import config from "../../config";
 import SubMenu from "./sub-menu";
 import GameCanvas from "../canvas";
 import { warningLog } from "../../utils/log-utils";
+import TextArea from "../text-area";
 
 class ListMenu extends SubMenu{
   constructor(coord,itemAmount,listWidth,itemHeight=1,listItems=[],cursorImg,backImg,...args){
@@ -22,7 +23,12 @@ class ListMenu extends SubMenu{
   }
 
   
-  drawList = () => { warningLog(`WARNING - SubMenu ${this.label} is missing drawList Method`) }
+  drawList = () => { // Default
+    for(let i = 0; i < this.listItems.length; i++){
+      let listItemTxt = new TextArea(1,i,this.width-1,1);
+          listItemTxt.instantText(this.menuCanvas.ctx,this.listItems[i],'white');
+    }
+  }
   buildList = () => { warningLog(`WARNING - SubMenu ${this.label} is missing buildList Method`) }
 
 

@@ -1,12 +1,20 @@
 export const itemsDB = {
   smallMeat: {
-    displayName: 'Meat S'
+    displayName: 'Meat S',
+    usable: ['battle','dungeon'],
+    target: 'your-dgmn',
+    description: 'Heal HP of 1 DGMN by 10'
   },
   atkPluginC: {
-    displayName: 'ATK Plugin C'
+    displayName: 'ATK Plugin C',
+    usable: ['battle'],
+    target: 'your-dgmn'
   },
   boosterDRs: {
-    displayName: '1 DR FP'
+    displayName: '1 DR FP',
+    usable: ['dungeon'],
+    target: 'your-dgmn',
+    description: 'Give 1 DGMN 1 Dragon Roar Field Point'
   }
 }
 

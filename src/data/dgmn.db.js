@@ -26,7 +26,8 @@ export const dgmnDB = {
     evolutions: ['Bud'],
     types: {},
     fields: {JT: 1},
-    attack: 'bubbles'
+    attack: 'bubbles',
+    hatchFields: {JT:1}
   },
   Doki: {
     stage: 1, attr: 'Free',
@@ -58,7 +59,8 @@ export const dgmnDB = {
     evolutions: ['Capri'],
     types: {},
     fields: {ME: 1},
-    attack: 'bubbles'
+    attack: 'bubbles',
+    hatchFields: {ME:1}
   },
   Pitch: {
     stage: 1, attr: 'Free',

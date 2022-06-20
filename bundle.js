@@ -413,7 +413,10 @@ var dgmnDB = {
     fields: {
       JT: 1
     },
-    attack: 'bubbles'
+    attack: 'bubbles',
+    hatchFields: {
+      JT: 1
+    }
   },
   Doki: {
     stage: 1,
@@ -466,7 +469,10 @@ var dgmnDB = {
     fields: {
       ME: 1
     },
-    attack: 'bubbles'
+    attack: 'bubbles',
+    hatchFields: {
+      ME: 1
+    }
   },
   Pitch: {
     stage: 1,
@@ -1848,6 +1854,18 @@ var DigiBeetleAH = function DigiBeetleAH(cbObj) {
   this.addItemToToolBox = function (item) {
     return cbObj.addItemToToolBoxCB(item);
   };
+  this.getToolBoxItems = function () {
+    return cbObj.getToolBoxItemsCB();
+  };
+  this.getToolBoxType = function () {
+    return cbObj.getToolBoxTypeCB();
+  };
+  this.hideCanvas = function () {
+    return cbObj.hideCanvasCB();
+  };
+  this.showCanvas = function () {
+    return cbObj.showCanvasCB();
+  };
 };
 
 var DigiBeetleCanvas = function (_GameCanvas) {
@@ -1902,7 +1920,7 @@ var DigiBeetleCanvas = function (_GameCanvas) {
 
 var dungeonImages = ['Dungeon/startTile', 'Dungeon/endTile', 'Dungeon/enemyTile', 'Dungeon/treasureTile', 'Dungeon/treasureTileOpen', 'Menus/dungeonPauseOverlay'];
 var digiBeetleImages = ['Dungeon/DigiBeetle/digiBeetleDown0', 'Dungeon/DigiBeetle/digiBeetleDown1', 'Dungeon/DigiBeetle/digiBeetleUp0', 'Dungeon/DigiBeetle/digiBeetleUp1', 'Dungeon/DigiBeetle/digiBeetleRight0', 'Dungeon/DigiBeetle/digiBeetleRight1', 'Dungeon/DigiBeetle/digiBeetleLeft0', 'Dungeon/DigiBeetle/digiBeetleLeft1'];
-var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay', 'Menus/textBox'];
+var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay', 'Menus/textBox', 'Menus/basicMenu', 'Icons/Pause/itemsSelected', 'Icons/Pause/itemsDeselected', 'Icons/Pause/beetleDeselected', 'Icons/Pause/beetleSelected', 'Menus/itemsTargetOverlay'];
 var loadingImages = ['Loading/loading0', 'Loading/loading1', 'Loading/loading2', 'Loading/loading3', 'Loading/loading4', 'Loading/loading5', 'Loading/loading6', 'Loading/loading7', 'Loading/loading8', 'Loading/loading9', 'Loading/loading10'];
 var fontImages$1 = ['Fonts/fontsBlack', 'Fonts/fontsWhite', 'Fonts/fontsLightGreen', 'Fonts/fontsDarkGreen'];
 var typeIcons = ['Icons/Types/noneTypeIcon', 'Icons/Types/fireTypeIcon', 'Icons/Types/windTypeIcon', 'Icons/Types/plantTypeIcon', 'Icons/Types/elecTypeIcon', 'Icons/Types/evilTypeIcon', 'Icons/Types/metalTypeIcon'];
@@ -1927,6 +1945,12 @@ var DigiBeetle = function DigiBeetle(dungeonAH) {
   });
   _defineProperty(this, "initCanvas", function () {
     _this.digiBeetleCanvas = new DigiBeetleCanvas(_this.dungeonAH.getCurrentDirection, 'digibeetle-canvas', 16, 16, 64, 64, false, _this.gameAH.refreshScreen);
+  });
+  _defineProperty(this, "hideCanvas", function () {
+    _this.digiBeetleCanvas.x = -1000;
+  });
+  _defineProperty(this, "showCanvas", function () {
+    _this.digiBeetleCanvas.x = 64 * config.screenSize;
   });
   _defineProperty(this, "addItemToToolBox", function (item) {
     _this.toolBox.items.push(item);
@@ -1953,10 +1977,20 @@ var DigiBeetle = function DigiBeetle(dungeonAH) {
     _this.digiBeetleCanvas.frames.left = [_this.systemAH.fetchImage('digiBeetleLeft0'), _this.systemAH.fetchImage('digiBeetleLeft1')];
     _this.digiBeetleCanvas.animateBeetle('down');
   });
+  _defineProperty(this, "getToolBoxItems", function () {
+    return _this.toolBox.items;
+  });
+  _defineProperty(this, "getToolBoxType", function () {
+    return _this.toolBox.version;
+  });
   _defineProperty(this, "onLoaded", function () {});
   this.digiBeetleAH = new DigiBeetleAH({
     initCB: this.init,
-    addItemToToolBoxCB: this.addItemToToolBox
+    addItemToToolBoxCB: this.addItemToToolBox,
+    getToolBoxItemsCB: this.getToolBoxItems,
+    hideCanvasCB: this.hideCanvas,
+    showCanvasCB: this.showCanvas,
+    getToolBoxTypeCB: this.getToolBoxType
   });
   this.dungeonAH;
   this.gameAH;
@@ -1964,7 +1998,7 @@ var DigiBeetle = function DigiBeetle(dungeonAH) {
   this.digiBeetleCanvas;
   this.toolBox = {
     version: 'dodo',
-    items: []
+    items: ['smallMeat', 'smallMeat', 'boosterDRs']
   };
 };
 
@@ -2425,7 +2459,8 @@ var fontData = {
   8: [11, 4],
   9: [12, 4],
   exclamation: [13, 4],
-  period: [14, 4]
+  period: [14, 4],
+  dash: [8, 3]
 };
 var fontImages = [];
 
@@ -2435,13 +2470,25 @@ var TextArea = function TextArea(x, y, width) {
   var colorizeCB = arguments.length > 4 ? arguments[4] : undefined;
   _classCallCheck(this, TextArea);
   _defineProperty(this, "instantText", function (ctx, message, color) {
-    var charArray = _this.createCharArray(message);
-    var h = 0;
-    for (var w = 0; w < charArray.length; w++) {
-      var coord = _this.getCharCoordinates(charArray[w]);
-      var callbackColor = _this.colorizeCB(charArray[w], charArray, w);
-      callbackColor = callbackColor === "none" ? _this.colorImages[color] : _this.colorImages[callbackColor];
-      ctx.drawImage(callbackColor, coord[0] * 64, coord[1] * 64, 64, 64, (w + _this.x) * (8 * config.screenSize), (h + _this.y) * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
+    var wordArray = message.split(" ");
+    var row = 0;
+    var col = 0;
+    for (var w = 0; w < wordArray.length; w++) {
+      var charArray = _this.createCharArray(wordArray[w]);
+      for (var c = 0; c < charArray.length; c++) {
+        _this.drawChar(ctx, charArray[c], col, row, color);
+        row = col + 1 >= _this.width ? row + 1 : row;
+        col = col + 1 >= _this.width ? 0 : col + 1;
+      }
+      if (col !== 0) {
+        _this.drawChar(ctx, 'space', col, row, color);
+        col++;
+        if (col >= _this.width) row = 0;
+      }
+      if (wordArray[w] < wordArray.length && wordArray[w].length + col > _this.width) {
+        row++;
+        col = 0;
+      }
     }
   });
   _defineProperty(this, "timedText", function (ctx, message, drawCB) {
@@ -2475,8 +2522,9 @@ var TextArea = function TextArea(x, y, width) {
     }, config.textSpeed * 33);
   });
   _defineProperty(this, "drawChar", function (ctx, _char2, col, row) {
+    var color = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'white';
     var coord = _this.getCharCoordinates(_char2);
-    ctx.drawImage(_this.colorImages.white, coord[0] * 64, coord[1] * 64, 64, 64, (col + _this.x) * config.tileSize, (row + _this.y) * config.tileSize, config.tileSize, config.tileSize);
+    ctx.drawImage(_this.colorImages[color], coord[0] * 64, coord[1] * 64, 64, 64, (col + _this.x) * config.tileSize, (row + _this.y) * config.tileSize, config.tileSize, config.tileSize);
   });
   _defineProperty(this, "createCharArray", function (message) {
     return _this.returnSpecialCharacters(_this.splitMessage(_this.replaceSpecialCharacters(message)));
@@ -2509,6 +2557,8 @@ var TextArea = function TextArea(x, y, width) {
         modifiedCharArray[i] = "exclamation";
       } else if (_char3 === "£") {
         modifiedCharArray[i] = "period";
+      } else if (_char3 === "-") {
+        modifiedCharArray[i] = "dash";
       }
     }
     return modifiedCharArray;
@@ -2552,7 +2602,10 @@ var ListMenu = function (_SubMenu) {
     }
     _this = _super.call.apply(_super, [this].concat(args));
     _defineProperty(_assertThisInitialized(_this), "drawList", function () {
-      warningLog("WARNING - SubMenu ".concat(_this.label, " is missing drawList Method"));
+      for (var i = 0; i < _this.listItems.length; i++) {
+        var listItemTxt = new TextArea(1, i, _this.width - 1, 1);
+        listItemTxt.instantText(_this.menuCanvas.ctx, _this.listItems[i], 'white');
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "buildList", function () {
       warningLog("WARNING - SubMenu ".concat(_this.label, " is missing buildList Method"));
@@ -4459,13 +4512,21 @@ var FloorCanvas = function (_GameCanvas) {
 
 var itemsDB = {
   smallMeat: {
-    displayName: 'Meat S'
+    displayName: 'Meat S',
+    usable: ['battle', 'dungeon'],
+    target: 'your-dgmn',
+    description: 'Heal HP of 1 DGMN by 10'
   },
   atkPluginC: {
-    displayName: 'ATK Plugin C'
+    displayName: 'ATK Plugin C',
+    usable: ['battle'],
+    target: 'your-dgmn'
   },
   boosterDRs: {
-    displayName: '1 DR FP'
+    displayName: '1 DR FP',
+    usable: ['dungeon'],
+    target: 'your-dgmn',
+    description: 'Give 1 DGMN 1 Dragon Roar Field Point'
   }
 };
 var itemChart = {
@@ -4582,6 +4643,15 @@ var TreasureUtility = function TreasureUtility() {
   });
   _defineProperty(this, "getTreasureName", function (treasure) {
     return itemsDB[treasure].displayName;
+  });
+  _defineProperty(this, "isTreasureUsable", function (treasure, location) {
+    return itemsDB[treasure].usable.indexOf(location) !== -1;
+  });
+  _defineProperty(this, "getItemTarget", function (treasure) {
+    return itemsDB[treasure].target;
+  });
+  _defineProperty(this, "getItemDescription", function (treasure) {
+    return itemsDB[treasure].description;
   });
 }
 ;
@@ -5040,38 +5110,54 @@ var DungeonIO = function (_IO) {
     }
     _this = _super.call.apply(_super, [this].concat(args));
     _defineProperty(_assertThisInitialized(_this), "setMenuAH", function (ah) {
-      _this.hatchMenuAH = ah;
+      _this.menuAH = ah;
     });
     _defineProperty(_assertThisInitialized(_this), "cancelKeyHandler", function (upDown) {
       console.log("DOWN");
     });
     _defineProperty(_assertThisInitialized(_this), "actionKeyHandler", function (upDown) {
       if (_this.dungeonAH.getDungeonState() === 'hatch') {
-        if (_this.hatchMenuAH.getState() === 'hatch-choice') {
+        if (_this.menuAH.getState() === 'hatch-choice') {
           _this.dungeonAH.hatchEgg();
+        }
+      } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
+        if (_this.menuAH.getState() === 'main') {
+          _this.menuAH.selectIcon();
+        } else if (_this.menuAH.getState() === 'items') {
+          _this.menuAH.selectListItem();
         }
       } else if (_this.dungeonAH.getDungeonState() === 'text-box-next') {
         _this.dungeonAH.closeTextBox();
       }
     });
     _defineProperty(_assertThisInitialized(_this), "startKeyHandler", function (upDown) {
-      if (_this.dungeonAH.getDungeonState() === 'free') {
+      if (_this.dungeonAH.getDungeonState() === 'free' || _this.dungeonAH.getDungeonState() === 'main-menu') {
         _this.dungeonAH.bringUpMenu();
       }
     });
     _defineProperty(_assertThisInitialized(_this), "upKeyHandler", function (upDown) {
       if (_this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down') {
-        if (_this.hatchMenuAH.getState() === 'rewards') _this.dungeonAH.giveCurrReward('up');
+        if (_this.menuAH.getState() === 'rewards') _this.dungeonAH.giveCurrReward('up');
       } else if (_this.dungeonAH.getDungeonState() === 'free') {
         _this.movingInDirection('up', upDown);
+      } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
+        if (_this.menuAH.getState() === 'items') {
+          _this.menuAH.upListItem();
+        }
       }
     });
     _defineProperty(_assertThisInitialized(_this), "rightKeyHandler", function (upDown) {
       if (_this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down') {
-        if (_this.hatchMenuAH.getState() === 'rewards') {
+        if (_this.menuAH.getState() === 'rewards') {
           _this.dungeonAH.giveCurrReward('right');
-        } else if (_this.hatchMenuAH.getState() === 'hatch-choice') {
-          _this.hatchMenuAH.nextHatch();
+        } else if (_this.menuAH.getState() === 'hatch-choice') {
+          _this.menuAH.nextHatch();
+        }
+      } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
+        if (_this.menuAH.getState() === 'main') {
+          _this.menuAH.nextIcon();
+        } else if (_this.menuAH.getState() === 'items') {
+          _this.menuAH.rightListItem();
         }
       } else if (_this.dungeonAH.getDungeonState() === 'free') {
         _this.movingInDirection('right', upDown);
@@ -5080,14 +5166,24 @@ var DungeonIO = function (_IO) {
     _defineProperty(_assertThisInitialized(_this), "downKeyHandler", function (upDown) {
       if (_this.dungeonAH.getDungeonState() === 'free') {
         _this.movingInDirection('down', upDown);
+      } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
+        if (_this.menuAH.getState() === 'items') {
+          _this.menuAH.downListItem();
+        }
       }
     });
     _defineProperty(_assertThisInitialized(_this), "leftKeyHandler", function (upDown) {
       if (_this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down') {
-        if (_this.hatchMenuAH.getState() === 'rewards') {
+        if (_this.menuAH.getState() === 'rewards') {
           _this.dungeonAH.giveCurrReward('left');
-        } else if (_this.hatchMenuAH.getState() === 'hatch-choice') {
-          _this.hatchMenuAH.prevHatch();
+        } else if (_this.menuAH.getState() === 'hatch-choice') {
+          _this.menuAH.prevHatch();
+        }
+      } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
+        if (_this.menuAH.getState() === 'main') {
+          _this.menuAH.prevIcon();
+        } else if (_this.menuAH.getState() === 'items') {
+          _this.menuAH.leftListItem();
         }
       } else if (_this.dungeonAH.getDungeonState() === 'free') {
         _this.movingInDirection('left', upDown);
@@ -5119,7 +5215,7 @@ var DungeonIO = function (_IO) {
       }
     });
     _this.dungeonAH = dungeonAH;
-    _this.hatchMenuAH;
+    _this.menuAH;
     return _this;
   }
   return DungeonIO;
@@ -5175,7 +5271,6 @@ var HatchingEggMenu = function (_IconMenu) {
       }
     });
     _defineProperty(_assertThisInitialized(_this), "drawHatchRequirements", function (species) {
-      console.log("FP = ", _this.eggData.currentFP);
       _this.menuCanvas.ctx.fillStyle = "#00131A";
       _this.menuCanvas.ctx.fillRect(1 * config.tileSize, 11 * config.tileSize, 10 * config.tileSize, 1 * config.tileSize);
       var fpReqs = _this.dgmnUtility.getHatchFP(species);
@@ -5405,6 +5500,284 @@ var DungeonTextCanvas = function (_GameCanvas) {
   return DungeonTextCanvas;
 }(GameCanvas);
 
+var PauseMenuAH = function PauseMenuAH(cbObj) {
+  _classCallCheck(this, PauseMenuAH);
+  this.getState = function () {
+    return cbObj.getStateCB();
+  };
+  this.nextIcon = function () {
+    return cbObj.nextIconCB();
+  };
+  this.prevIcon = function () {
+    return cbObj.prevIconCB();
+  };
+  this.selectIcon = function () {
+    return cbObj.selectIconCB();
+  };
+  this.upListItem = function () {
+    return cbObj.upListItemCB();
+  };
+  this.rightListItem = function () {
+    return cbObj.rightListItemCB();
+  };
+  this.downListItem = function () {
+    return cbObj.downListItemCB();
+  };
+  this.leftListItem = function () {
+    return cbObj.leftListItemCB();
+  };
+  this.selectListItem = function () {
+    return cbObj.selectListItemCB();
+  };
+};
+
+var toolBoxDB = {
+  dodo: {
+    size: 4
+  }
+};
+
+var DigiBeetleUtility = function DigiBeetleUtility() {
+  _classCallCheck(this, DigiBeetleUtility);
+  _defineProperty(this, "getToolBoxMax", function (box) {
+    return toolBoxDB[box].size;
+  });
+};
+
+var ItemsMenu = function (_ListMenu) {
+  _inherits(ItemsMenu, _ListMenu);
+  var _super = _createSuper(ItemsMenu);
+  function ItemsMenu(drawTopText, drawBottomSection, digiBeetleBox) {
+    var _this;
+    _classCallCheck(this, ItemsMenu);
+    for (var _len = arguments.length, args = new Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+      args[_key - 3] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "drawList", function () {
+      var boxSize = _this.digiBeetleUtility.getToolBoxMax(_this.digiBeetleBoxType);
+      for (var i = 0; i < boxSize; i++) {
+        var columnOffset = (i + 1) % 2 === 0 ? 9 : 0;
+        var item = i < _this.listItems.length ? _this.treasureUtility.getTreasureName(_this.listItems[i]) : '---';
+        var color = item === '---' ? 'darkGreen' : 'white';
+        var itemNameTxt = new TextArea(1 + columnOffset, Math.floor(i / 2), 8, 1);
+        itemNameTxt.instantText(_this.menuCanvas.ctx, item, color);
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      _this.menuCanvas.blackFill();
+      _this.drawList();
+      _this.drawCursor();
+      _this.drawBottomSection('item', {
+        itemName: _this.listItems[_this.currIndex]
+      });
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawCursor", function (index) {
+      var spotIndex = index ? index : _this.currIndex;
+      var columnOffset = (spotIndex + 1) % 2 === 0 ? 9 : 0;
+      _this.menuCanvas.paintImage(_this.cursorImg, columnOffset * config.tileSize, Math.floor(spotIndex / 2) % _this.itemAmount * (8 * _this.itemHeight) * config.screenSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "upListItem", function () {
+      if (_this.currIndex - 2 >= 0) {
+        _this.currIndex -= 2;
+        _this.drawMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "rightListItem", function () {
+      if ((_this.currIndex + 1) % 2 !== 0 && _this.currIndex + 1 < _this.listItems.length) {
+        _this.currIndex++;
+        _this.drawMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "downListItem", function () {
+      if (_this.currIndex + 2 < _this.listItems.length) {
+        _this.currIndex += 2;
+        _this.drawMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "leftListItem", function () {
+      if ((_this.currIndex + 1) % 2 === 0) {
+        _this.currIndex--;
+        _this.drawMenu();
+      }
+    });
+    _this.digiBeetleBoxType = digiBeetleBox;
+    _this.treasureUtility = new TreasureUtility();
+    _this.digiBeetleUtility = new DigiBeetleUtility();
+    _this.drawTopText = drawTopText;
+    _this.drawBottomSection = drawBottomSection;
+    return _this;
+  }
+  return ItemsMenu;
+}(ListMenu);
+
+var PauseMenu = function (_Menu) {
+  _inherits(PauseMenu, _Menu);
+  var _super = _createSuper(PauseMenu);
+  function PauseMenu(party, dgmnAH, digiBeetleAH) {
+    var _this;
+    _classCallCheck(this, PauseMenu);
+    for (var _len = arguments.length, args = new Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+      args[_key - 3] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "launchMenu", function () {
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('dungeonPauseOverlay'), 0, 0);
+      _this.addSubMenu('main', new IconMenu([16, 16], ['items', 'beetle'], 'pause-main'));
+      _this.currSubMenu = 'main';
+      _this.subMenus.main.isVisible = true;
+      _this.subMenus.main.images = _this.buildIconImages(_this.subMenus.main.iconList);
+      _this.subMenus.main.drawIcons(0);
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "closeMenu", function () {
+      _this.removeSubMenu('main');
+      _this.currSubMenu = '';
+      _this.menuCanvas.clearCanvas();
+      _this.digiBeetleAH.showCanvas();
+    });
+    _defineProperty(_assertThisInitialized(_this), "nextIcon", function () {
+      _this.subMenus[_this.currSubMenu].nextIcon();
+      _this.subMenus[_this.currSubMenu].getCurrLabel();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "prevIcon", function () {
+      _this.subMenus[_this.currSubMenu].prevIcon();
+      _this.subMenus[_this.currSubMenu].getCurrLabel();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "selectIcon", function () {
+      var selected = _this.subMenus[_this.currSubMenu].getCurrLabel();
+      _this.subMenus[_this.currSubMenu].selectIcon();
+      if (selected === 'items') {
+        _this.launchItemMenu();
+      } else if (selected === 'beetle') {
+        warningLog('DigiBeetle Menu is not ready yet...');
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "launchItemMenu", function () {
+      debugLog('Launch Item Menu');
+      _this.removeSubMenu('main');
+      _this.digiBeetleAH.hideCanvas();
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('basicMenu'), 0, 0);
+      _this.topTxt.instantText(_this.menuCanvas.ctx, 'Select an Item', 'white');
+      _this.addSubMenu('items', new ItemsMenu(_this.drawTopText, _this.drawBottomSection, _this.digiBeetleAH.getToolBoxType(), [0, 1], 12, 20, 1, _this.digiBeetleAH.getToolBoxItems(), _this.systemAH.fetchImage('miniCursor'), null, 'item'));
+      _this.currState = 'items';
+      _this.subMenus.items.isVisible = true;
+      _this.subMenus.items.drawMenu();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "launchItemTargetSelect", function () {
+      console.log("Party = ", _this.party);
+      var dgmnData = _this.buildDgmnData();
+      _this.currState = 'items-target';
+      _this.drawTopText('Select a Target');
+      _this.addSubMenu('itemTarget', new ListMenu([5, 5], 3, 10, 1, [dgmnData[0].nickname, 'SPROUT', 'GEAR'], _this.systemAH.fetchImage('miniCursor'), null, 'item-target'));
+      _this.subMenus.itemTarget.isVisible = true;
+      _this.subMenus.itemTarget.drawMenu();
+      _this.drawBottomSection('dgmn', dgmnData[0]);
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "buildDgmnData", function () {
+      var data = [];
+      for (var i = 0; i < _this.party.length; i++) {
+        data.push(_this.dgmnAH.getDgmnData(_this.party[i], ['nickname', 'speciesName', 'currentHP', 'currentEN', 'currentLevel', 'currentStats'], false));
+      }
+      return data;
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawTopText", function (message) {
+      _this.menuCanvas.ctx.fillStyle = "#00131A";
+      _this.menuCanvas.ctx.fillRect(0, 0, 20 * config.tileSize, 7 * config.screenSize);
+      _this.topTxt.instantText(_this.menuCanvas.ctx, message, 'white');
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawBottomSection", function (type, data) {
+      _this.menuCanvas.ctx.fillStyle = "#00131A";
+      _this.menuCanvas.ctx.fillRect(0, 14 * config.tileSize, 20 * config.tileSize, 4 * config.tileSize);
+      if (type === 'item') {
+        _this.itemDescriptionTxt.instantText(_this.menuCanvas.ctx, _this.treasureUtility.getItemDescription(data.itemName), 'white');
+      } else if (type === 'dgmn') {
+        var nicknameTxt = new TextArea(4, 14, 10, 1);
+        nicknameTxt.instantText(_this.menuCanvas.ctx, data.nickname, 'white');
+        var speciesTxt = new TextArea(4, 15, 16, 1);
+        speciesTxt.instantText(_this.menuCanvas.ctx, data.speciesName + ".MON", 'green');
+        var dgmnHPTxt = new TextArea(4, 16, 10, 1);
+        dgmnHPTxt.instantText(_this.menuCanvas.ctx, ".hp" + _this.menuUtility.prependZeros(data.currentHP, 3) + "-" + data.currentStats.HP, "white");
+        var dgmnENTxt = new TextArea(4, 17, 10, 1);
+        dgmnENTxt.instantText(_this.menuCanvas.ctx, ".en" + _this.menuUtility.prependZeros(data.currentEN, 3) + "-100", "white");
+        var dgmnLVTxt = new TextArea(16, 14, 4, 1);
+        dgmnLVTxt.instantText(_this.menuCanvas.ctx, ".lv" + _this.menuUtility.prependZeros(data.currentLevel, 3), "white");
+        _this.menuCanvas.paintImage(_this.systemAH.fetchImage("".concat(data.speciesName.toLowerCase(), "Portrait")), 0, 14 * config.tileSize);
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      for (var key in _this.subMenus) {
+        if (_this.subMenus[key].isVisible) {
+          if (key === 'itemTarget') {
+            _this.menuCanvas.paintImage(_this.systemAH.fetchImage('itemsTargetOverlay'), 0, 0);
+          }
+          _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
+        }
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "selectListItem", function () {
+      if (_this.currState === 'items') {
+        var item = _this.subMenus.items.listItems[_this.subMenus.items.currIndex];
+        console.log("Selecting Item = ", item);
+        if (_this.treasureUtility.isTreasureUsable(item, 'dungeon')) {
+          var target = _this.treasureUtility.getItemTarget(item);
+          if (target === 'your-dgmn') {
+            _this.launchItemTargetSelect();
+          } else if (target === 'your-dgmn-all') {
+            console.log("USE ITEM ON ALL DGMN");
+          } else if (target === 'beetle') {
+            console.log("USE ITEM ON BEETLE");
+          }
+        }
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "upListItem", function () {
+      _this.subMenus.items.upListItem();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "rightListItem", function () {
+      _this.subMenus.items.rightListItem();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "downListItem", function () {
+      _this.subMenus.items.downListItem();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "leftListItem", function () {
+      _this.subMenus.items.leftListItem();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "getState", function () {
+      return _this.currState;
+    });
+    _this.currState = 'main';
+    _this.dgmnAH = dgmnAH;
+    _this.digiBeetleAH = digiBeetleAH;
+    _this.treasureUtility = new TreasureUtility();
+    _this.party = party;
+    _this.pauseMenuAH = new PauseMenuAH({
+      getStateCB: _this.getState,
+      nextIconCB: _this.nextIcon,
+      prevIconCB: _this.prevIcon,
+      selectIconCB: _this.selectIcon,
+      upListItemCB: _this.upListItem,
+      rightListItemCB: _this.rightListItem,
+      downListItemCB: _this.downListItem,
+      leftListItemCB: _this.leftListItem,
+      selectListItemCB: _this.selectListItem
+    });
+    _this.menuCanvas = new MenuCanvas('main-menu', 160, 144);
+    _this.topTxt = new TextArea(0, 0, 20, 1);
+    _this.itemDescriptionTxt = new TextArea(0, 14, 20, 4);
+    return _this;
+  }
+  return PauseMenu;
+}(Menu);
+
 var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   var _this = this;
   _classCallCheck(this, Dungeon);
@@ -5414,6 +5787,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
       _this.gameAH.addCanvasObject(_this.dungeonCanvas);
       _this.hatchingMenu = new HatchingMenu(_this.systemAH, _this.gameAH, _this.dungeonAH);
       _this.dungeonIO.setMenuAH(_this.hatchingMenu.hatchMenuAH);
+      _this.pauseMenu = new PauseMenu(_this.yourParty, _this.dgmnAH, _this.digiBeetleAH, _this.systemAH, _this.gameAH, _this.dungeonAH);
       _this.systemAH.loadImages(fieldIcons, function () {
         _this.hatchingMenu.gotoRewards(['DR']);
         _this.drawDungeon();
@@ -5426,6 +5800,8 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
       _this.dungeonCanvas.paintCanvas(_this.hatchingMenu.menuCanvas);
     } else if (_this.dungeonState === 'text-box' || _this.dungeonState === 'text-box-next') {
       _this.dungeonCanvas.paintCanvas(_this.textBoxCanvas);
+    } else if (_this.dungeonState === 'main-menu') {
+      _this.dungeonCanvas.paintCanvas(_this.pauseMenu.menuCanvas);
     } else ;
     _this.gameAH.refreshScreen();
   });
@@ -5571,8 +5947,21 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     _this.floor.redrawFloor();
     _this.drawDungeon();
   });
-  _defineProperty(this, "bringUpMenu", function () {
-    console.log("MENU TIME");
+  _defineProperty(this, "handleMenu", function () {
+    _this.dungeonState = _this.dungeonState === 'main-menu' ? 'free' : 'main-menu';
+    if (_this.dungeonState === 'main-menu') {
+      _this.launchMainMenu();
+    } else if (_this.dungeonState === 'free') {
+      _this.closeMainMenu();
+    }
+  });
+  _defineProperty(this, "launchMainMenu", function () {
+    _this.pauseMenu.launchMenu();
+    _this.dungeonIO.setMenuAH(_this.pauseMenu.pauseMenuAH);
+  });
+  _defineProperty(this, "closeMainMenu", function () {
+    _this.pauseMenu.closeMenu();
+    _this.floor.redrawFloor();
   });
   _defineProperty(this, "getCurrentFloor", function () {
     return _this.floorNumber;
@@ -5620,7 +6009,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     hatchEggCB: this.hatchEgg,
     getTreasureCB: this.getTreasure,
     closeTextBoxCB: this.closeTextBox,
-    bringUpMenuCB: this.bringUpMenu
+    bringUpMenuCB: this.handleMenu
   });
   this.dungeonCanvas = new GameCanvas('dungeon-canvas', 160, 144);
   this.dungeonIO = new DungeonIO(this.dungeonAH);
@@ -5639,6 +6028,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     left: false
   };
   this.hatchingMenu;
+  this.pauseMenu;
   this.textBoxCanvas = new DungeonTextCanvas('dungeon-text', 160, 144);
   this.onLoaded = function () {
     loadedCallback();
@@ -5715,7 +6105,7 @@ var Game = function Game(systemAH) {
     }
   });
   _defineProperty(this, "keyManager", function (key, upDown) {
-    var _this$battle, _this$dungeon, _this$dungeon2, _this$dungeon3;
+    var _this$battle, _this$dungeon, _this$dungeon2, _this$dungeon3, _this$dungeon4;
     _this.keyTimers[key]++;
     if ((_this$battle = _this.battle) !== null && _this$battle !== void 0 && _this$battle.battleActive) {
       if (_this.keyTimers[key] === 2) {
@@ -5726,24 +6116,24 @@ var Game = function Game(systemAH) {
       }
     }
     if (((_this$dungeon = _this.dungeon) === null || _this$dungeon === void 0 ? void 0 : _this$dungeon.dungeonState) === 'free') {
-      if (key === 'start') {
+      if (key === 'start' || key === 'select') {
         if (_this.keyTimers[key] === 2) {
           _this.dungeon.dungeonIO.keyTriage(key, upDown);
         }
       } else {
         _this.dungeon.dungeonIO.keyTriage(key, upDown);
       }
-    } else if (((_this$dungeon2 = _this.dungeon) === null || _this$dungeon2 === void 0 ? void 0 : _this$dungeon2.dungeonState) === 'hatch' || ((_this$dungeon3 = _this.dungeon) === null || _this$dungeon3 === void 0 ? void 0 : _this$dungeon3.dungeonState) === 'text-box-next') {
+    } else if (((_this$dungeon2 = _this.dungeon) === null || _this$dungeon2 === void 0 ? void 0 : _this$dungeon2.dungeonState) === 'hatch' || ((_this$dungeon3 = _this.dungeon) === null || _this$dungeon3 === void 0 ? void 0 : _this$dungeon3.dungeonState) === 'text-box-next' || ((_this$dungeon4 = _this.dungeon) === null || _this$dungeon4 === void 0 ? void 0 : _this$dungeon4.dungeonState) === 'main-menu') {
       if (_this.keyTimers[key] === 2) {
         _this.dungeon.dungeonIO.keyTriage(key, upDown);
       }
     }
   });
   _defineProperty(this, "startBattle", function () {
-    var _this$dungeon4;
+    var _this$dungeon5;
     debugLog("Starting Battle...");
     _this.battle = new Battle();
-    _this.battle.initAH(_this.systemAH, _this.gameAH, _this.yourDgmn.dgmnAH, (_this$dungeon4 = _this.dungeon) === null || _this$dungeon4 === void 0 ? void 0 : _this$dungeon4.dungeonAH, function () {});
+    _this.battle.initAH(_this.systemAH, _this.gameAH, _this.yourDgmn.dgmnAH, (_this$dungeon5 = _this.dungeon) === null || _this$dungeon5 === void 0 ? void 0 : _this$dungeon5.dungeonAH, function () {});
     _this.battle.init();
   });
   _defineProperty(this, "buildDungeon", function () {

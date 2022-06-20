@@ -114,7 +114,7 @@ class Game{
       } else {
         this.dungeon.dungeonIO.keyTriage(key,upDown);
       }
-    } else if(this.dungeon?.dungeonState === 'hatch' || this.dungeon?.dungeonState === 'text-box-next'){
+    } else if(this.dungeon?.dungeonState === 'hatch' || this.dungeon?.dungeonState === 'text-box-next' || this.dungeon?.dungeonState === 'main-menu'){
       if(this.keyTimers[key] === 2){
         this.dungeon.dungeonIO.keyTriage(key,upDown);
       }
