@@ -20,6 +20,7 @@ class PauseMenu extends Menu{
     this.digiBeetleAH = digiBeetleAH;
     this.treasureUtility = new TreasureUtility();
     this.party = party;
+    this.dgmnData;
 
     this.pauseMenuAH = new PauseMenuAH({
       getStateCB: this.getState,
@@ -104,24 +105,26 @@ class PauseMenu extends Menu{
     this.removeSubMenu('main');
     this.digiBeetleAH.hideCanvas();
     this.menuCanvas.paintImage(this.systemAH.fetchImage('basicMenu'),0,0);
-    this.topTxt.instantText(this.menuCanvas.ctx,'Select an Item','white')
     this.addSubMenu('items',new ItemsMenu(this.drawTopText,this.drawBottomSection,this.digiBeetleAH.getToolBoxType(),[0,1],12,20,1,this.digiBeetleAH.getToolBoxItems(),this.systemAH.fetchImage('miniCursor'),null,'item'));
     this.currState = 'items';
     this.subMenus.items.isVisible = true;
-    // this.subMenus.items.drawList();
+    this.refreshItemMenu();
+  }
+
+  refreshItemMenu = () => {
+    this.drawTopText('Select an Item');
     this.subMenus.items.drawMenu();
     this.drawMenu();
   }
 
   launchItemTargetSelect = () => {
-    console.log("Party = ",this.party);
-    let dgmnData = this.buildDgmnData();
+    this.dgmnData = this.buildDgmnData();
     this.currState = 'items-target';
     this.drawTopText('Select a Target');
-    this.addSubMenu('itemTarget',new ListMenu([5,5],3,10,1,[dgmnData[0].nickname,'SPROUT','GEAR'],this.systemAH.fetchImage('miniCursor'),null,'item-target'));
+    this.addSubMenu('itemTarget',new ListMenu([5,5],3,10,1,[this.dgmnData[0].nickname,'SPROUT','GEAR'],this.systemAH.fetchImage('miniCursor'),null,'item-target'));
     this.subMenus.itemTarget.isVisible = true;
     this.subMenus.itemTarget.drawMenu();
-    this.drawBottomSection('dgmn',dgmnData[0]);
+    this.drawBottomSection('dgmn',this.dgmnData[0]);
     this.drawMenu();
   }
 
@@ -136,7 +139,7 @@ class PauseMenu extends Menu{
   drawTopText = message => { 
     this.menuCanvas.ctx.fillStyle = "#00131A";
     this.menuCanvas.ctx.fillRect(0,0,20*config.tileSize,7*config.screenSize); 
-    this.topTxt.instantText(this.menuCanvas.ctx,message,'white') 
+    this.topTxt.instantText(this.menuCanvas.ctx,message,'white');
   }
 
   /**------------------------------------------------------------------------
@@ -162,6 +165,12 @@ class PauseMenu extends Menu{
       let dgmnLVTxt = new TextArea(16,14,4,1);
           dgmnLVTxt.instantText(this.menuCanvas.ctx,".lv"+this.menuUtility.prependZeros(data.currentLevel,3),"white");
       this.menuCanvas.paintImage(this.systemAH.fetchImage(`${data.speciesName.toLowerCase()}Portrait`),0,14*config.tileSize);
+    } else if(type === 'message'){
+      this.itemDescriptionTxt.timedText(this.menuCanvas.ctx,data.message,this.drawMenu);
+      setTimeout(()=>{
+        // Continue cursor
+        this.currState = 'items-done';
+      },500);
     }
   }
 
@@ -179,6 +188,7 @@ class PauseMenu extends Menu{
           this.menuCanvas.paintCanvas(this.subMenus[key].menuCanvas);
         } 
       }
+      this.parentAH.drawDungeon();
     }
 
   /**------------------------------------------------------------------------
@@ -202,13 +212,40 @@ class PauseMenu extends Menu{
             console.log("USE ITEM ON BEETLE");
           }
         }
+      } else if(this.currState === 'items-target'){
+        this.dgmnAH.useItemOn(this.party[this.subMenus.items.currIndex],this.subMenus.items.listItems[this.subMenus.itemTarget.currIndex]);
+        let message = `Used ${this.treasureUtility.getTreasureName(this.subMenus.items.listItems[this.subMenus.items.currIndex])} on DGMN`;
+        this.drawBottomSection('message',{message: message});
+      } else if(this.currState === 'items-done'){
+        this.currState = 'items';
+        this.removeSubMenu('itemTarget');
+        this.drawBottomSection('items',{ itemName: this.subMenus.items.listItems[this.subMenus.items.currIndex] });
+        this.refreshItemMenu();
+        this.drawMenu();
+      }
+    }
+
+    upListItem = () => { 
+      if(this.currState === 'items') { this.subMenus.items.upListItem(); this.drawMenu()
+      } else if(this.currState === 'items-target'){ 
+        this.subMenus.itemTarget.prevListItem();
+        this.drawBottomSection('dgmn',this.dgmnData[this.subMenus.itemTarget.currIndex]);
+        this.drawMenu(); 
+      }
+    }
+
+
+    downListItem = () => { 
+      if(this.currState === 'items') { this.subMenus.items.downListItem(); this.drawMenu()
+      } else if(this.currState === 'items-target'){ 
+        this.subMenus.itemTarget.nextListItem(); 
+        this.drawBottomSection('dgmn',this.dgmnData[this.subMenus.itemTarget.currIndex]);
+        this.drawMenu(); 
       }
     }
 
     // PASSTHROUGH
-    upListItem = () => { this.subMenus.items.upListItem(); this.drawMenu() }
     rightListItem = () => { this.subMenus.items.rightListItem(); this.drawMenu() }
-    downListItem = () => { this.subMenus.items.downListItem(); this.drawMenu() }
     leftListItem = () => { this.subMenus.items.leftListItem(); this.drawMenu() }
 
     getState = () => { return this.currState }

@@ -28,7 +28,7 @@ class ItemsMenu extends ListMenu{
       let columnOffset = (i+1) % 2 === 0 ? 9 : 0;
       let item = i < this.listItems.length ? this.treasureUtility.getTreasureName(this.listItems[i]) : '---';
       let color = item === '---' ? 'darkGreen' : 'white';
-      let itemNameTxt = new TextArea(1+columnOffset,Math.floor(i/2),8,1);
+    let itemNameTxt = new TextArea(1+columnOffset,Math.floor(i/2),8,1);
           itemNameTxt.instantText(this.menuCanvas.ctx,item,color);
     }
  }
@@ -74,21 +74,6 @@ class ItemsMenu extends ListMenu{
       this.drawMenu();
     }
   }
-
-  // selectListItem = () => {
-  //   let item = this.listItems[this.currIndex];
-  //   console.log("Selecting Item = ",item);
-  //   if(this.treasureUtility.isTreasureUsable(item,'dungeon')){ // TODO - This needs to not be hard-coded to dungeon
-  //     let target = this.treasureUtility.getItemTarget(item);
-  //     if(target === 'your-dgmn'){
-  //       console.log("LAUNCH PARTY SELECT");
-  //     } else if(target === 'your-dgmn-all'){
-  //       console.log("USE ITEM ON ALL DGMN");
-  //     }else if(target === 'beetle'){
-  //       console.log("USE ITEM ON BEETLE");
-  //     }
-  //   }
-  // }
 }
 
 export default ItemsMenu;

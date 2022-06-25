@@ -23,7 +23,7 @@ class DungeonIO extends IO{
     } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
       if(this.menuAH.getState() === 'main'){
         this.menuAH.selectIcon();
-      } else if(this.menuAH.getState() === 'items'){
+      } else if(this.menuAH.getState() === 'items' || this.menuAH.getState() === 'items-target' || this.menuAH.getState() === 'items-done'){
         this.menuAH.selectListItem();
       }
     } else if(this.dungeonAH.getDungeonState() === 'text-box-next'){
@@ -43,7 +43,7 @@ class DungeonIO extends IO{
     } else if(this.dungeonAH.getDungeonState() === 'free'){ // In Dungeon
       this.movingInDirection('up',upDown);
     } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
-      if(this.menuAH.getState() === 'items'){
+      if(this.menuAH.getState() === 'items' || this.menuAH.getState() === 'items-target'){
         this.menuAH.upListItem();
       }
     }
@@ -71,7 +71,7 @@ class DungeonIO extends IO{
     if(this.dungeonAH.getDungeonState() === 'free'){
       this.movingInDirection('down',upDown);
     } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
-      if(this.menuAH.getState() === 'items'){
+      if(this.menuAH.getState() === 'items' || this.menuAH.getState() === 'items-target'){
         this.menuAH.downListItem();
       }
     }

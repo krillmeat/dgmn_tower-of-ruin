@@ -107,6 +107,8 @@ class TreasureUtility{
       return {};
     }
 
+    getItemEffect = item => { return itemsDB[item].effect }
+
     getTreasureName = treasure => { return itemsDB[treasure].displayName }
     isTreasureUsable = (treasure,location) => { return itemsDB[treasure].usable.indexOf(location) !== -1 }
     getItemTarget = treasure => { return itemsDB[treasure].target }

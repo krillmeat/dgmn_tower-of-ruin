@@ -78,7 +78,8 @@ class BattleMenu extends Menu{
     let currDgmnAttackData = this.battleAH.getDgmnAttackData(this.currDgmnIndex,['displayName','currCost','maxCost','type','power','hits','targets']);
     debugLog("++ Build Attack List | Data = ",currDgmnAttackData);
     this.addSubMenu('attack',new AttackMenu(this.systemAH.fetchImage,[4,2],6,16,2,currDgmnAttackData,this.systemAH.fetchImage('miniCursor'),this.systemAH.fetchImage('battleOptionSelectBaseRight'),'attack'));
-    this.subMenus.attack.drawList();
+    this.subMenus.attack.drawMenu();
+    // this.subMenus.attack.drawList();
   }
 
   /**------------------------------------------------------------------------

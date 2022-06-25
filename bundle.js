@@ -304,6 +304,9 @@ var DgmnAH = function DgmnAH(cbObj) {
   this.hatchEgg = function (dgmnId, species) {
     return cbObj.hatchEggCB(dgmnId, species);
   };
+  this.useItemOn = function (dgmnId, item) {
+    return cbObj.useItemOnCB(dgmnId, item);
+  };
 };
 
 var evolutions = {
@@ -1238,8 +1241,8 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   });
   _defineProperty(this, "hatch", function (species) {
     _this.speciesName = species;
-    _this.currentHP = _this.currentStats.HP;
     _this.currentStats = _this.dgmnUtility.buildInitialStats(_this.speciesName);
+    _this.currentHP = _this.currentStats.HP;
     _this.setInitialFP();
   });
   _defineProperty(this, "setInitialFP", function () {
@@ -1629,6 +1632,160 @@ var EnemyGenerator = function EnemyGenerator(dgmnAH) {
   this.dgmnAH = dgmnAH;
 };
 
+var itemsDB = {
+  smallMeat: {
+    displayName: 'Meat S',
+    usable: ['battle', 'dungeon'],
+    target: 'your-dgmn',
+    description: 'Heal HP of 1 DGMN by 10',
+    effect: {
+      type: 'heal',
+      stat: 'HP',
+      amount: 10
+    }
+  },
+  atkPluginC: {
+    displayName: 'ATK Plugin C',
+    usable: ['battle'],
+    target: 'your-dgmn'
+  },
+  boosterDRs: {
+    displayName: '1 DR FP',
+    usable: ['dungeon'],
+    target: 'your-dgmn',
+    description: 'Give 1 DGMN 1 Dragon Roar Field Point'
+  }
+};
+var itemChart = {
+  meat: {
+    common: ['smallMeat']
+  },
+  beetle: {
+    common: ['atkPluginC']
+  },
+  booster: {
+    common: ['boosterDRs']
+  }
+};
+var rarityChartDB = ['common', 'uncommon', 'rare', 'extraRare'];
+
+var TreasureUtility = function TreasureUtility() {
+  var _this = this;
+  _classCallCheck(this, TreasureUtility);
+  _defineProperty(this, "getRarity", function (floorNumber) {
+    var isRarityBoosted = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var rarity = 'common';
+    if (floorNumber > 5) {
+      if (floorNumber > 50) {
+        var rando = Math.floor(Math.random() * 100);
+        if (rando >= 85) {
+          rarity = 'extraRare';
+        } else if (rando >= 60) {
+          rarity = 'rare';
+        } else if (rando >= 20) {
+          rarity = 'uncommon';
+        }
+      } else if (floorNumber > 40) {
+        var _rando = Math.floor(Math.random() * 100);
+        if (_rando >= 90) {
+          rarity = 'extraRare';
+        } else if (_rando >= 70) {
+          rarity = 'rare';
+        } else if (_rando >= 40) {
+          rarity = 'uncommon';
+        }
+      } else if (floorNumber > 30) {
+        var _rando2 = Math.floor(Math.random() * 100);
+        if (_rando2 >= 95) {
+          rarity = 'extraRare';
+        } else if (_rando2 >= 85) {
+          rarity = 'rare';
+        } else if (_rando2 >= 60) {
+          rarity = 'uncommon';
+        }
+      } else if (floorNumber > 20) {
+        var _rando3 = Math.floor(Math.random() * 100);
+        if (_rando3 >= 90) {
+          rarity = 'rare';
+        } else if (_rando3 >= 70) {
+          rarity = 'uncommon';
+        }
+      } else if (floorNumber > 10) {
+        var _rando4 = Math.floor(Math.random() * 100);
+        if (_rando4 >= 95) {
+          rarity = 'rare';
+        } else if (_rando4 >= 80) {
+          rarity = 'uncommon';
+        }
+      } else {
+        if (Math.floor(Math.random() * 10) === 9) {
+          rarity = 'uncommon';
+        }
+      }
+    }
+    rarity = isRarityBoosted ? _this.boostRarity(rarity) : rarity;
+    return rarity;
+  });
+  _defineProperty(this, "boostRarity", function (rarity) {
+    if (Math.floor(Math.random() * 2) === 1 && rarity !== 'extraRare') {
+      return rarityChartDB[rarityChartDB.indexOf(rarity) + 1];
+    }
+    return rarity;
+  });
+  _defineProperty(this, "getItemType", function () {
+    var modifier = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'none';
+    var itemType = 'none';
+    var rando = Math.floor(Math.random() * 100);
+    if (modifier !== 'none' && Math.floor(Math.random() * 10) > 6) {
+      return modifier;
+    }
+    if (rando >= 90) {
+      itemType = 'booster';
+    } else if (rando >= 45) {
+      itemType = 'beetle';
+    } else if (rando < 45) {
+      itemType = 'meat';
+    }
+    return itemType;
+  });
+  _defineProperty(this, "getItem", function (rarity, type) {
+    var itemOptions = itemChart[type][rarity];
+    var rando = Math.floor(Math.random() * itemOptions.length);
+    return itemOptions[rando];
+  });
+  _defineProperty(this, "getTreasureById", function (id, treasures) {
+    var _iterator = _createForOfIteratorHelper(treasures),
+        _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var treasure = _step.value;
+        if ((treasure === null || treasure === void 0 ? void 0 : treasure.id) === parseInt(id)) return treasure;
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+    return {};
+  });
+  _defineProperty(this, "getItemEffect", function (item) {
+    return itemsDB[item].effect;
+  });
+  _defineProperty(this, "getTreasureName", function (treasure) {
+    return itemsDB[treasure].displayName;
+  });
+  _defineProperty(this, "isTreasureUsable", function (treasure, location) {
+    return itemsDB[treasure].usable.indexOf(location) !== -1;
+  });
+  _defineProperty(this, "getItemTarget", function (treasure) {
+    return itemsDB[treasure].target;
+  });
+  _defineProperty(this, "getItemDescription", function (treasure) {
+    return itemsDB[treasure].description;
+  });
+}
+;
+
 var DgmnManager = function DgmnManager(systemAH) {
   var _this = this;
   _classCallCheck(this, DgmnManager);
@@ -1777,6 +1934,16 @@ var DgmnManager = function DgmnManager(systemAH) {
   _defineProperty(this, "initDgmnCanvas", function (dgmnId, drawCB, imageList, battleLocation) {
     !_this.isEnemy(dgmnId) ? _this.allDgmn[dgmnId].initCanvas(drawCB, imageList, battleLocation) : _this.enemyDgmn[dgmnId].initCanvas(drawCB, imageList, battleLocation);
   });
+  _defineProperty(this, "useItemOn", function (dgmnId, item) {
+    debugLog('Using ' + item + ' on ' + dgmnId);
+    var itemEffect = _this.itemUtility.getItemEffect(item);
+    if (itemEffect.type === 'heal') {
+      if (itemEffect.stat === 'HP') {
+        debugLog('  - Healing ' + dgmnId + ' by ' + itemEffect.amount);
+        _this.allDgmn[dgmnId].heal(itemEffect.amount);
+      }
+    }
+  });
   _defineProperty(this, "animateDgmn", function (dgmnId) {
     !_this.isEnemy(dgmnId) ? _this.allDgmn[dgmnId].startIdleAnimation() : _this.enemyDgmn[dgmnId].startIdleAnimation();
   });
@@ -1835,7 +2002,8 @@ var DgmnManager = function DgmnManager(systemAH) {
     buildStatGrowthCB: this.buildStatGrowth,
     getTempDgmnCB: this.getTempDgmn,
     evolveCB: this.evolve,
-    hatchEggCB: this.hatchEgg
+    hatchEggCB: this.hatchEgg,
+    useItemOnCB: this.useItemOn
   });
   this.systemAH = systemAH;
   this.enemyGenerator = new EnemyGenerator(this.dgmnAH);
@@ -1843,6 +2011,7 @@ var DgmnManager = function DgmnManager(systemAH) {
   this.party = this.mockParty();
   this.tempDgmn = new Dgmn(0, 'EVO', 'Bota');
   this.dgmnUtility = new DgmnUtility();
+  this.itemUtility = new TreasureUtility();
 }
 ;
 
@@ -2621,6 +2790,8 @@ var ListMenu = function (_SubMenu) {
     });
     _defineProperty(_assertThisInitialized(_this), "drawCursor", function (index) {
       var spotIndex = index ? index : _this.currIndex;
+      _this.menuCanvas.ctx.fillStyle = "#00131A";
+      _this.menuCanvas.ctx.fillRect(0, 0, config.tileSize, _this.itemAmount * config.tileSize);
       _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * config.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
@@ -2668,7 +2839,6 @@ var ListMenu = function (_SubMenu) {
     _this.menuCanvas = new GameCanvas("".concat(_this.label, "-menu"), listWidth * 8, itemAmount * (itemHeight * 8));
     _this.menuCanvas.x = coord[0] * 8 * config.screenSize;
     _this.menuCanvas.y = coord[1] * 8 * config.screenSize;
-    _this.drawMenu();
     return _this;
   }
   return ListMenu;
@@ -3360,7 +3530,7 @@ var BattleMenu = function (_Menu) {
       var currDgmnAttackData = _this.battleAH.getDgmnAttackData(_this.currDgmnIndex, ['displayName', 'currCost', 'maxCost', 'type', 'power', 'hits', 'targets']);
       debugLog("++ Build Attack List | Data = ", currDgmnAttackData);
       _this.addSubMenu('attack', new AttackMenu(_this.systemAH.fetchImage, [4, 2], 6, 16, 2, currDgmnAttackData, _this.systemAH.fetchImage('miniCursor'), _this.systemAH.fetchImage('battleOptionSelectBaseRight'), 'attack'));
-      _this.subMenus.attack.drawList();
+      _this.subMenus.attack.drawMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "buildTargetSelect", function () {
       debugLog("++ Selecting Target...");
@@ -4510,152 +4680,6 @@ var FloorCanvas = function (_GameCanvas) {
   return FloorCanvas;
 }(GameCanvas);
 
-var itemsDB = {
-  smallMeat: {
-    displayName: 'Meat S',
-    usable: ['battle', 'dungeon'],
-    target: 'your-dgmn',
-    description: 'Heal HP of 1 DGMN by 10'
-  },
-  atkPluginC: {
-    displayName: 'ATK Plugin C',
-    usable: ['battle'],
-    target: 'your-dgmn'
-  },
-  boosterDRs: {
-    displayName: '1 DR FP',
-    usable: ['dungeon'],
-    target: 'your-dgmn',
-    description: 'Give 1 DGMN 1 Dragon Roar Field Point'
-  }
-};
-var itemChart = {
-  meat: {
-    common: ['smallMeat']
-  },
-  beetle: {
-    common: ['atkPluginC']
-  },
-  booster: {
-    common: ['boosterDRs']
-  }
-};
-var rarityChartDB = ['common', 'uncommon', 'rare', 'extraRare'];
-
-var TreasureUtility = function TreasureUtility() {
-  var _this = this;
-  _classCallCheck(this, TreasureUtility);
-  _defineProperty(this, "getRarity", function (floorNumber) {
-    var isRarityBoosted = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    var rarity = 'common';
-    if (floorNumber > 5) {
-      if (floorNumber > 50) {
-        var rando = Math.floor(Math.random() * 100);
-        if (rando >= 85) {
-          rarity = 'extraRare';
-        } else if (rando >= 60) {
-          rarity = 'rare';
-        } else if (rando >= 20) {
-          rarity = 'uncommon';
-        }
-      } else if (floorNumber > 40) {
-        var _rando = Math.floor(Math.random() * 100);
-        if (_rando >= 90) {
-          rarity = 'extraRare';
-        } else if (_rando >= 70) {
-          rarity = 'rare';
-        } else if (_rando >= 40) {
-          rarity = 'uncommon';
-        }
-      } else if (floorNumber > 30) {
-        var _rando2 = Math.floor(Math.random() * 100);
-        if (_rando2 >= 95) {
-          rarity = 'extraRare';
-        } else if (_rando2 >= 85) {
-          rarity = 'rare';
-        } else if (_rando2 >= 60) {
-          rarity = 'uncommon';
-        }
-      } else if (floorNumber > 20) {
-        var _rando3 = Math.floor(Math.random() * 100);
-        if (_rando3 >= 90) {
-          rarity = 'rare';
-        } else if (_rando3 >= 70) {
-          rarity = 'uncommon';
-        }
-      } else if (floorNumber > 10) {
-        var _rando4 = Math.floor(Math.random() * 100);
-        if (_rando4 >= 95) {
-          rarity = 'rare';
-        } else if (_rando4 >= 80) {
-          rarity = 'uncommon';
-        }
-      } else {
-        if (Math.floor(Math.random() * 10) === 9) {
-          rarity = 'uncommon';
-        }
-      }
-    }
-    rarity = isRarityBoosted ? _this.boostRarity(rarity) : rarity;
-    return rarity;
-  });
-  _defineProperty(this, "boostRarity", function (rarity) {
-    if (Math.floor(Math.random() * 2) === 1 && rarity !== 'extraRare') {
-      return rarityChartDB[rarityChartDB.indexOf(rarity) + 1];
-    }
-    return rarity;
-  });
-  _defineProperty(this, "getItemType", function () {
-    var modifier = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'none';
-    var itemType = 'none';
-    var rando = Math.floor(Math.random() * 100);
-    if (modifier !== 'none' && Math.floor(Math.random() * 10) > 6) {
-      return modifier;
-    }
-    if (rando >= 90) {
-      itemType = 'booster';
-    } else if (rando >= 45) {
-      itemType = 'beetle';
-    } else if (rando < 45) {
-      itemType = 'meat';
-    }
-    return itemType;
-  });
-  _defineProperty(this, "getItem", function (rarity, type) {
-    var itemOptions = itemChart[type][rarity];
-    var rando = Math.floor(Math.random() * itemOptions.length);
-    return itemOptions[rando];
-  });
-  _defineProperty(this, "getTreasureById", function (id, treasures) {
-    var _iterator = _createForOfIteratorHelper(treasures),
-        _step;
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var treasure = _step.value;
-        if ((treasure === null || treasure === void 0 ? void 0 : treasure.id) === parseInt(id)) return treasure;
-      }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
-    }
-    return {};
-  });
-  _defineProperty(this, "getTreasureName", function (treasure) {
-    return itemsDB[treasure].displayName;
-  });
-  _defineProperty(this, "isTreasureUsable", function (treasure, location) {
-    return itemsDB[treasure].usable.indexOf(location) !== -1;
-  });
-  _defineProperty(this, "getItemTarget", function (treasure) {
-    return itemsDB[treasure].target;
-  });
-  _defineProperty(this, "getItemDescription", function (treasure) {
-    return itemsDB[treasure].description;
-  });
-}
-;
-
 var Floor = function Floor(_floorNumber) {
   var _this = this;
   _classCallCheck(this, Floor);
@@ -5123,7 +5147,7 @@ var DungeonIO = function (_IO) {
       } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
         if (_this.menuAH.getState() === 'main') {
           _this.menuAH.selectIcon();
-        } else if (_this.menuAH.getState() === 'items') {
+        } else if (_this.menuAH.getState() === 'items' || _this.menuAH.getState() === 'items-target' || _this.menuAH.getState() === 'items-done') {
           _this.menuAH.selectListItem();
         }
       } else if (_this.dungeonAH.getDungeonState() === 'text-box-next') {
@@ -5141,7 +5165,7 @@ var DungeonIO = function (_IO) {
       } else if (_this.dungeonAH.getDungeonState() === 'free') {
         _this.movingInDirection('up', upDown);
       } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
-        if (_this.menuAH.getState() === 'items') {
+        if (_this.menuAH.getState() === 'items' || _this.menuAH.getState() === 'items-target') {
           _this.menuAH.upListItem();
         }
       }
@@ -5167,7 +5191,7 @@ var DungeonIO = function (_IO) {
       if (_this.dungeonAH.getDungeonState() === 'free') {
         _this.movingInDirection('down', upDown);
       } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
-        if (_this.menuAH.getState() === 'items') {
+        if (_this.menuAH.getState() === 'items' || _this.menuAH.getState() === 'items-target') {
           _this.menuAH.downListItem();
         }
       }
@@ -5660,22 +5684,24 @@ var PauseMenu = function (_Menu) {
       _this.removeSubMenu('main');
       _this.digiBeetleAH.hideCanvas();
       _this.menuCanvas.paintImage(_this.systemAH.fetchImage('basicMenu'), 0, 0);
-      _this.topTxt.instantText(_this.menuCanvas.ctx, 'Select an Item', 'white');
       _this.addSubMenu('items', new ItemsMenu(_this.drawTopText, _this.drawBottomSection, _this.digiBeetleAH.getToolBoxType(), [0, 1], 12, 20, 1, _this.digiBeetleAH.getToolBoxItems(), _this.systemAH.fetchImage('miniCursor'), null, 'item'));
       _this.currState = 'items';
       _this.subMenus.items.isVisible = true;
+      _this.refreshItemMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "refreshItemMenu", function () {
+      _this.drawTopText('Select an Item');
       _this.subMenus.items.drawMenu();
       _this.drawMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "launchItemTargetSelect", function () {
-      console.log("Party = ", _this.party);
-      var dgmnData = _this.buildDgmnData();
+      _this.dgmnData = _this.buildDgmnData();
       _this.currState = 'items-target';
       _this.drawTopText('Select a Target');
-      _this.addSubMenu('itemTarget', new ListMenu([5, 5], 3, 10, 1, [dgmnData[0].nickname, 'SPROUT', 'GEAR'], _this.systemAH.fetchImage('miniCursor'), null, 'item-target'));
+      _this.addSubMenu('itemTarget', new ListMenu([5, 5], 3, 10, 1, [_this.dgmnData[0].nickname, 'SPROUT', 'GEAR'], _this.systemAH.fetchImage('miniCursor'), null, 'item-target'));
       _this.subMenus.itemTarget.isVisible = true;
       _this.subMenus.itemTarget.drawMenu();
-      _this.drawBottomSection('dgmn', dgmnData[0]);
+      _this.drawBottomSection('dgmn', _this.dgmnData[0]);
       _this.drawMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "buildDgmnData", function () {
@@ -5707,6 +5733,11 @@ var PauseMenu = function (_Menu) {
         var dgmnLVTxt = new TextArea(16, 14, 4, 1);
         dgmnLVTxt.instantText(_this.menuCanvas.ctx, ".lv" + _this.menuUtility.prependZeros(data.currentLevel, 3), "white");
         _this.menuCanvas.paintImage(_this.systemAH.fetchImage("".concat(data.speciesName.toLowerCase(), "Portrait")), 0, 14 * config.tileSize);
+      } else if (type === 'message') {
+        _this.itemDescriptionTxt.timedText(_this.menuCanvas.ctx, data.message, _this.drawMenu);
+        setTimeout(function () {
+          _this.currState = 'items-done';
+        }, 500);
       }
     });
     _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
@@ -5718,6 +5749,7 @@ var PauseMenu = function (_Menu) {
           _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
         }
       }
+      _this.parentAH.drawDungeon();
     });
     _defineProperty(_assertThisInitialized(_this), "selectListItem", function () {
       if (_this.currState === 'items') {
@@ -5733,18 +5765,44 @@ var PauseMenu = function (_Menu) {
             console.log("USE ITEM ON BEETLE");
           }
         }
+      } else if (_this.currState === 'items-target') {
+        _this.dgmnAH.useItemOn(_this.party[_this.subMenus.items.currIndex], _this.subMenus.items.listItems[_this.subMenus.itemTarget.currIndex]);
+        var message = "Used ".concat(_this.treasureUtility.getTreasureName(_this.subMenus.items.listItems[_this.subMenus.items.currIndex]), " on DGMN");
+        _this.drawBottomSection('message', {
+          message: message
+        });
+      } else if (_this.currState === 'items-done') {
+        _this.currState = 'items';
+        _this.removeSubMenu('itemTarget');
+        _this.drawBottomSection('items', {
+          itemName: _this.subMenus.items.listItems[0]
+        });
+        _this.refreshItemMenu();
+        _this.drawMenu();
       }
     });
     _defineProperty(_assertThisInitialized(_this), "upListItem", function () {
-      _this.subMenus.items.upListItem();
-      _this.drawMenu();
+      if (_this.currState === 'items') {
+        _this.subMenus.items.upListItem();
+        _this.drawMenu();
+      } else if (_this.currState === 'items-target') {
+        _this.subMenus.itemTarget.prevListItem();
+        _this.drawBottomSection('dgmn', _this.dgmnData[_this.subMenus.itemTarget.currIndex]);
+        _this.drawMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "downListItem", function () {
+      if (_this.currState === 'items') {
+        _this.subMenus.items.downListItem();
+        _this.drawMenu();
+      } else if (_this.currState === 'items-target') {
+        _this.subMenus.itemTarget.nextListItem();
+        _this.drawBottomSection('dgmn', _this.dgmnData[_this.subMenus.itemTarget.currIndex]);
+        _this.drawMenu();
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "rightListItem", function () {
       _this.subMenus.items.rightListItem();
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "downListItem", function () {
-      _this.subMenus.items.downListItem();
       _this.drawMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "leftListItem", function () {
@@ -5759,6 +5817,7 @@ var PauseMenu = function (_Menu) {
     _this.digiBeetleAH = digiBeetleAH;
     _this.treasureUtility = new TreasureUtility();
     _this.party = party;
+    _this.dgmnData;
     _this.pauseMenuAH = new PauseMenuAH({
       getStateCB: _this.getState,
       nextIconCB: _this.nextIcon,

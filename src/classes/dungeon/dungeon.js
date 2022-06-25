@@ -10,7 +10,7 @@ import HatchingMenu from "../menu/hatching-menu";
 import DgmnUtility from "../dgmn/utility/dgmn.util";
 import TreasureUtility from "./utility/treasure.util";
 import DungeonTextCanvas from "./canvas/dungeon-text-canvas";
-import PauseMenu from "../menu/puase-menu";
+import PauseMenu from "../menu/pause-menu";
 
 class Dungeon{
   constructor(isNewDungeon,loadedCallback){

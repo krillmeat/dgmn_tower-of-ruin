@@ -102,8 +102,8 @@ class Dgmn {
 
   hatch = species => {
     this.speciesName = species;
-    this.currentHP = this.currentStats.HP;
     this.currentStats = this.dgmnUtility.buildInitialStats(this.speciesName);
+    this.currentHP = this.currentStats.HP;
     this.setInitialFP();
   }
 

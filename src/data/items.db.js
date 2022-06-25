@@ -3,7 +3,12 @@ export const itemsDB = {
     displayName: 'Meat S',
     usable: ['battle','dungeon'],
     target: 'your-dgmn',
-    description: 'Heal HP of 1 DGMN by 10'
+    description: 'Heal HP of 1 DGMN by 10',
+    effect: {
+      type: 'heal',
+      stat: 'HP',
+      amount: 10
+    }
   },
   atkPluginC: {
     displayName: 'ATK Plugin C',

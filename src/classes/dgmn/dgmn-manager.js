@@ -7,6 +7,7 @@ import { partyMock, enemyPartyMock } from "../../mock/dgmn.mock";
 import EnemyGenerator from "./enemy-generator";
 import DgmnUtility from "./utility/dgmn.util";
 import { debugLog } from "../../utils/log-utils";
+import TreasureUtility from "../dungeon/utility/treasure.util";
 
 // TODO - THIS CLASS WILL NEVER WORK LIKE THIS. IT WILL INTERACT HEAVILY WITH THE SAVE DATA TO BUILD OUT THE allDgmn OBJECT
 // TODO - RENAME TO ALL DGMN
@@ -46,7 +47,8 @@ class DgmnManager{
       buildStatGrowthCB: this.buildStatGrowth,
       getTempDgmnCB: this.getTempDgmn,
       evolveCB: this.evolve,
-      hatchEggCB: this.hatchEgg
+      hatchEggCB: this.hatchEgg,
+      useItemOnCB: this.useItemOn
     });
 
     this.systemAH = systemAH;
@@ -60,6 +62,7 @@ class DgmnManager{
     this.tempDgmn = new Dgmn(0,'EVO','Bota'); // Used in various Menus to show a DGMN that doesn't exist (evos, database, etc.)
 
     this.dgmnUtility = new DgmnUtility;
+    this.itemUtility = new TreasureUtility(); // I need to rename this Class...
   }
 
   // FOR NOW
@@ -337,6 +340,17 @@ class DgmnManager{
    * ----------------------------------------------------------------------*/
   initDgmnCanvas = (dgmnId,drawCB,imageList,battleLocation) => {
     !this.isEnemy(dgmnId) ? this.allDgmn[dgmnId].initCanvas(drawCB,imageList,battleLocation) : this.enemyDgmn[dgmnId].initCanvas(drawCB,imageList,battleLocation);
+  }
+
+  useItemOn = (dgmnId,item) => {
+    debugLog('Using '+item+' on '+dgmnId);
+    let itemEffect = this.itemUtility.getItemEffect(item);
+    if(itemEffect.type === 'heal'){
+      if(itemEffect.stat === 'HP'){
+        debugLog('  - Healing '+dgmnId+' by '+itemEffect.amount);
+        this.allDgmn[dgmnId].heal(itemEffect.amount);
+      }
+    }
   }
 
   /**------------------------------------------------------------------------
