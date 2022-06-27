@@ -5,6 +5,13 @@
 ### 0.0.0
 Setting up all of the basic structure for the system, until the game is in any way testable with other users
 
+### v0.0.0-alpha.10
+* Item Menu
+* Leveling Up
+* Evolving DGMN
+* Hatching DGMN
+* Treasure / Items (Out of Battle)
+
 ### v0.0.0-alpha.9
 * Iterate on the Battle System until it's (roughly) polished
   * Multi-hit Moves
