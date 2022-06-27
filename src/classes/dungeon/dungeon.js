@@ -184,6 +184,9 @@ class Dungeon{
     this.floor = new Floor(this.floorNumber);
     this.floor.initAH(this.systemAH,this.gameAH,this.dungeonAH);
     this.floor.generateFloor();
+    this.pauseMenu.floorRedraw = () => {
+      this.floor.redrawFloor();
+    }
   }
 
   /**------------------------------------------------------------------------

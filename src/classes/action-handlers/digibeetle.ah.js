@@ -17,6 +17,7 @@ class DigiBeetleAH{
     constructor(cbObj){
       this.init = () => cbObj.initCB()
       this.addItemToToolBox = item => cbObj.addItemToToolBoxCB(item)
+      this.removeItemFromToolBox = index => cbObj.removeItemFromToolBoxCB(index)
       this.getToolBoxItems = () => { return cbObj.getToolBoxItemsCB() }
       this.getToolBoxType = () => { return cbObj.getToolBoxTypeCB() }
       this.hideCanvas = () => cbObj.hideCanvasCB()

@@ -151,6 +151,10 @@ class Dgmn {
     }
   }
 
+  addFP = (field,amount) => {
+    this.currentFP[field] += amount;
+  }
+
   learnAttack = () => {
     let newAttack = this.dgmnUtility.getAttack(this.speciesName);
     if(newAttack) this.attacks.unshift(new Attack(newAttack))

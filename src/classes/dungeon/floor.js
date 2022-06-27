@@ -138,10 +138,7 @@ class Floor{
       end.room = possibleTiles[randomChoice].room;
       end.tile = possibleTiles[randomChoice].tile;
 
-      console.log("END ? ",end);
       this.roomMatrix[end.room[0]][end.room[1]].changeTile([end.tile[0],end.tile[1]],102);
-
-      console.log("LOOK FOR END ? ",this.roomMatrix);
 
       return end;
     }

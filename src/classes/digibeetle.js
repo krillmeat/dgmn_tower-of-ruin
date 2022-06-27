@@ -14,7 +14,8 @@ class DigiBeetle{
       getToolBoxItemsCB: this.getToolBoxItems,
       hideCanvasCB: this.hideCanvas,
       showCanvasCB: this.showCanvas,
-      getToolBoxTypeCB: this. getToolBoxType
+      getToolBoxTypeCB: this. getToolBoxType,
+      removeItemFromToolBoxCB: this.removeItemFromToolBox
     });
     this.dungeonAH;
     this.gameAH;
@@ -52,6 +53,12 @@ class DigiBeetle{
 
   addItemToToolBox = item => {
     this.toolBox.items.push(item);
+    debugLog("Toolbox : ",this.toolBox.items);
+  }
+
+  removeItemFromToolBox = index => {
+    console.log("INDEX = ",index);
+    this.toolBox.items.splice(index,1);
     debugLog("Toolbox : ",this.toolBox.items);
   }
 

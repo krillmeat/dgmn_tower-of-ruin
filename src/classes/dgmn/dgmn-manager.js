@@ -269,7 +269,6 @@ class DgmnManager{
    * @param {String} reward FP or XP Boost to be rewarded
    * ----------------------------------------------------------------------*/
   giveDgmnReward = (dgmnId,reward) => {
-    console.log(dgmnId+" is getting "+reward);
     reward === 'XP' ? this.allDgmn[dgmnId].currentXP++ : this.allDgmn[dgmnId].currentFP[reward]++; // TODO - XXP
   }
 
@@ -350,6 +349,8 @@ class DgmnManager{
         debugLog('  - Healing '+dgmnId+' by '+itemEffect.amount);
         this.allDgmn[dgmnId].heal(itemEffect.amount);
       }
+    } else if(itemEffect.type === 'booster'){
+      this.allDgmn[dgmnId].addFP(itemEffect.field,itemEffect.amount);
     }
   }
 

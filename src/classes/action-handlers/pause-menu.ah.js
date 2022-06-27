@@ -9,6 +9,7 @@ class PauseMenuAH{
     this.downListItem = () => cbObj.downListItemCB()
     this.leftListItem = () => cbObj.leftListItemCB()
     this.selectListItem = () => cbObj.selectListItemCB()
+    this.backMenu = () => cbObj.backMenuCB()
   }
 }
 

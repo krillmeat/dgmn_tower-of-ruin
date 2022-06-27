@@ -1273,6 +1273,9 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
       _this.currentFP[FP] += baseFP[FP];
     }
   });
+  _defineProperty(this, "addFP", function (field, amount) {
+    _this.currentFP[field] += amount;
+  });
   _defineProperty(this, "learnAttack", function () {
     var newAttack = _this.dgmnUtility.getAttack(_this.speciesName);
     if (newAttack) _this.attacks.unshift(new Attack(newAttack));
@@ -1653,7 +1656,12 @@ var itemsDB = {
     displayName: '1 DR FP',
     usable: ['dungeon'],
     target: 'your-dgmn',
-    description: 'Give 1 DGMN 1 Dragon Roar Field Point'
+    description: 'Give 1 DGMN 1 Dragon Roar Field Point',
+    effect: {
+      type: 'booster',
+      field: 'DR',
+      amount: 1
+    }
   }
 };
 var itemChart = {
@@ -1893,7 +1901,6 @@ var DgmnManager = function DgmnManager(systemAH) {
     return leveledUp;
   });
   _defineProperty(this, "giveDgmnReward", function (dgmnId, reward) {
-    console.log(dgmnId + " is getting " + reward);
     reward === 'XP' ? _this.allDgmn[dgmnId].currentXP++ : _this.allDgmn[dgmnId].currentFP[reward]++;
   });
   _defineProperty(this, "giveDgmnXP", function (dgmnId, xp) {
@@ -1942,6 +1949,8 @@ var DgmnManager = function DgmnManager(systemAH) {
         debugLog('  - Healing ' + dgmnId + ' by ' + itemEffect.amount);
         _this.allDgmn[dgmnId].heal(itemEffect.amount);
       }
+    } else if (itemEffect.type === 'booster') {
+      _this.allDgmn[dgmnId].addFP(itemEffect.field, itemEffect.amount);
     }
   });
   _defineProperty(this, "animateDgmn", function (dgmnId) {
@@ -2022,6 +2031,9 @@ var DigiBeetleAH = function DigiBeetleAH(cbObj) {
   };
   this.addItemToToolBox = function (item) {
     return cbObj.addItemToToolBoxCB(item);
+  };
+  this.removeItemFromToolBox = function (index) {
+    return cbObj.removeItemFromToolBoxCB(index);
   };
   this.getToolBoxItems = function () {
     return cbObj.getToolBoxItemsCB();
@@ -2125,6 +2137,11 @@ var DigiBeetle = function DigiBeetle(dungeonAH) {
     _this.toolBox.items.push(item);
     debugLog("Toolbox : ", _this.toolBox.items);
   });
+  _defineProperty(this, "removeItemFromToolBox", function (index) {
+    console.log("INDEX = ", index);
+    _this.toolBox.items.splice(index, 1);
+    debugLog("Toolbox : ", _this.toolBox.items);
+  });
   _defineProperty(this, "loadDigiBeetleImages", function () {
     var allImages = [];
     for (var img = 0; img < digiBeetleImages.length; img++) {
@@ -2159,7 +2176,8 @@ var DigiBeetle = function DigiBeetle(dungeonAH) {
     getToolBoxItemsCB: this.getToolBoxItems,
     hideCanvasCB: this.hideCanvas,
     showCanvasCB: this.showCanvas,
-    getToolBoxTypeCB: this.getToolBoxType
+    getToolBoxTypeCB: this.getToolBoxType,
+    removeItemFromToolBoxCB: this.removeItemFromToolBox
   });
   this.dungeonAH;
   this.gameAH;
@@ -4744,9 +4762,7 @@ var Floor = function Floor(_floorNumber) {
     var randomChoice = Math.floor(Math.random() * possibleTiles.length);
     end.room = possibleTiles[randomChoice].room;
     end.tile = possibleTiles[randomChoice].tile;
-    console.log("END ? ", end);
     _this.roomMatrix[end.room[0]][end.room[1]].changeTile([end.tile[0], end.tile[1]], 102);
-    console.log("LOOK FOR END ? ", _this.roomMatrix);
     return end;
   });
   _defineProperty(this, "generateEvents", function () {
@@ -5137,7 +5153,12 @@ var DungeonIO = function (_IO) {
       _this.menuAH = ah;
     });
     _defineProperty(_assertThisInitialized(_this), "cancelKeyHandler", function (upDown) {
-      console.log("DOWN");
+      var cancelStates = ['items', 'items-target', 'items-done'];
+      if (_this.dungeonAH.getDungeonState() === 'main-menu' && cancelStates.indexOf(_this.menuAH.getState()) !== -1) {
+        _this.menuAH.backMenu();
+      } else if (_this.dungeonAH.getDungeonState() === 'main-menu' && _this.menuAH.getState() === 'main') {
+        _this.dungeonAH.bringUpMenu();
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "actionKeyHandler", function (upDown) {
       if (_this.dungeonAH.getDungeonState() === 'hatch') {
@@ -5553,6 +5574,9 @@ var PauseMenuAH = function PauseMenuAH(cbObj) {
   this.selectListItem = function () {
     return cbObj.selectListItemCB();
   };
+  this.backMenu = function () {
+    return cbObj.backMenuCB();
+  };
 };
 
 var toolBoxDB = {
@@ -5691,8 +5715,17 @@ var PauseMenu = function (_Menu) {
     });
     _defineProperty(_assertThisInitialized(_this), "refreshItemMenu", function () {
       _this.drawTopText('Select an Item');
+      _this.subMenus.items.currIndex = 0;
       _this.subMenus.items.drawMenu();
       _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "closeItemMenu", function () {
+      _this.removeSubMenu('items');
+      _this.currState = 'main';
+      _this.menuCanvas.clearCanvas();
+      _this.floorRedraw();
+      _this.digiBeetleAH.showCanvas();
+      _this.launchMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "launchItemTargetSelect", function () {
       _this.dgmnData = _this.buildDgmnData();
@@ -5702,6 +5735,15 @@ var PauseMenu = function (_Menu) {
       _this.subMenus.itemTarget.isVisible = true;
       _this.subMenus.itemTarget.drawMenu();
       _this.drawBottomSection('dgmn', _this.dgmnData[0]);
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "closeItemTargetSelect", function () {
+      _this.currState = 'items';
+      _this.drawTopText('Select an Item');
+      _this.removeSubMenu('itemTarget');
+      _this.drawBottomSection('item', {
+        itemName: _this.subMenus.items.listItems[_this.subMenus.items.currIndex]
+      });
       _this.drawMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "buildDgmnData", function () {
@@ -5766,19 +5808,28 @@ var PauseMenu = function (_Menu) {
           }
         }
       } else if (_this.currState === 'items-target') {
-        _this.dgmnAH.useItemOn(_this.party[_this.subMenus.items.currIndex], _this.subMenus.items.listItems[_this.subMenus.itemTarget.currIndex]);
+        _this.dgmnAH.useItemOn(_this.party[_this.subMenus.itemTarget.currIndex], _this.subMenus.items.listItems[_this.subMenus.items.currIndex]);
         var message = "Used ".concat(_this.treasureUtility.getTreasureName(_this.subMenus.items.listItems[_this.subMenus.items.currIndex]), " on DGMN");
         _this.drawBottomSection('message', {
           message: message
         });
+        _this.digiBeetleAH.removeItemFromToolBox(_this.subMenus.items.currIndex);
       } else if (_this.currState === 'items-done') {
         _this.currState = 'items';
         _this.removeSubMenu('itemTarget');
         _this.drawBottomSection('items', {
-          itemName: _this.subMenus.items.listItems[0]
+          itemName: _this.subMenus.items.listItems[_this.subMenus.items.currIndex]
         });
         _this.refreshItemMenu();
         _this.drawMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "backMenu", function () {
+      console.log("Going Back from ", _this.currState);
+      if (_this.currState === 'items') {
+        _this.closeItemMenu();
+      } else if (_this.currState === 'items-target') {
+        _this.closeItemTargetSelect();
       }
     });
     _defineProperty(_assertThisInitialized(_this), "upListItem", function () {
@@ -5818,6 +5869,7 @@ var PauseMenu = function (_Menu) {
     _this.treasureUtility = new TreasureUtility();
     _this.party = party;
     _this.dgmnData;
+    _this.floorRedraw;
     _this.pauseMenuAH = new PauseMenuAH({
       getStateCB: _this.getState,
       nextIconCB: _this.nextIcon,
@@ -5827,7 +5879,8 @@ var PauseMenu = function (_Menu) {
       rightListItemCB: _this.rightListItem,
       downListItemCB: _this.downListItem,
       leftListItemCB: _this.leftListItem,
-      selectListItemCB: _this.selectListItem
+      selectListItemCB: _this.selectListItem,
+      backMenuCB: _this.backMenu
     });
     _this.menuCanvas = new MenuCanvas('main-menu', 160, 144);
     _this.topTxt = new TextArea(0, 0, 20, 1);
@@ -5913,6 +5966,9 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     _this.floor = new Floor(_this.floorNumber);
     _this.floor.initAH(_this.systemAH, _this.gameAH, _this.dungeonAH);
     _this.floor.generateFloor();
+    _this.pauseMenu.floorRedraw = function () {
+      _this.floor.redrawFloor();
+    };
   });
   _defineProperty(this, "loadDungeonImages", function (roomMatrix) {
     var allImages = _this.getRoomImages(roomMatrix);

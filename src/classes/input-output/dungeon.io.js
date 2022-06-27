@@ -12,7 +12,11 @@ class DungeonIO extends IO{
   }
 
   cancelKeyHandler = upDown => {
-    console.log("DOWN");
+    let cancelStates = ['items','items-target','items-done'];
+    if(this.dungeonAH.getDungeonState() === 'main-menu' && cancelStates.indexOf(this.menuAH.getState()) !== -1){
+      this.menuAH.backMenu();
+    } else if(this.dungeonAH.getDungeonState() === 'main-menu' && this.menuAH.getState() === 'main'){ this.dungeonAH.bringUpMenu()
+    }
   }
 
   actionKeyHandler = upDown => {

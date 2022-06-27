@@ -21,6 +21,7 @@ class PauseMenu extends Menu{
     this.treasureUtility = new TreasureUtility();
     this.party = party;
     this.dgmnData;
+    this.floorRedraw;
 
     this.pauseMenuAH = new PauseMenuAH({
       getStateCB: this.getState,
@@ -31,7 +32,8 @@ class PauseMenu extends Menu{
       rightListItemCB: this.rightListItem,
       downListItemCB: this.downListItem,
       leftListItemCB: this.leftListItem,
-      selectListItemCB: this.selectListItem
+      selectListItemCB: this.selectListItem,
+      backMenuCB: this.backMenu
     });
     this.menuCanvas = new MenuCanvas('main-menu',160,144); 
 
@@ -113,10 +115,25 @@ class PauseMenu extends Menu{
 
   refreshItemMenu = () => {
     this.drawTopText('Select an Item');
+    this.subMenus.items.currIndex = 0;
     this.subMenus.items.drawMenu();
     this.drawMenu();
   }
 
+  closeItemMenu = () => {
+    this.removeSubMenu('items');
+    this.currState = 'main';
+    this.menuCanvas.clearCanvas();
+    this.floorRedraw();
+    this.digiBeetleAH.showCanvas();
+    this.launchMenu();
+  }
+
+  /**------------------------------------------------------------------------
+   * LAUNCH ITEM TARGET SELECT
+   * ------------------------------------------------------------------------
+   * Sets up and opens the Menu that handles selecting a DGMN from your team
+   * ----------------------------------------------------------------------*/
   launchItemTargetSelect = () => {
     this.dgmnData = this.buildDgmnData();
     this.currState = 'items-target';
@@ -125,6 +142,19 @@ class PauseMenu extends Menu{
     this.subMenus.itemTarget.isVisible = true;
     this.subMenus.itemTarget.drawMenu();
     this.drawBottomSection('dgmn',this.dgmnData[0]);
+    this.drawMenu();
+  }
+
+  /**------------------------------------------------------------------------
+   * CLOSE ITEM TARGET SELECT
+   * ------------------------------------------------------------------------
+   * Closes the Item Target Menu, and goes back to Item Select
+   * ----------------------------------------------------------------------*/
+  closeItemTargetSelect = () => {
+    this.currState = 'items';
+    this.drawTopText('Select an Item');
+    this.removeSubMenu('itemTarget');
+    this.drawBottomSection('item',{ itemName: this.subMenus.items.listItems[this.subMenus.items.currIndex] });
     this.drawMenu();
   }
 
@@ -213,9 +243,10 @@ class PauseMenu extends Menu{
           }
         }
       } else if(this.currState === 'items-target'){
-        this.dgmnAH.useItemOn(this.party[this.subMenus.items.currIndex],this.subMenus.items.listItems[this.subMenus.itemTarget.currIndex]);
+        this.dgmnAH.useItemOn(this.party[this.subMenus.itemTarget.currIndex],this.subMenus.items.listItems[this.subMenus.items.currIndex]);
         let message = `Used ${this.treasureUtility.getTreasureName(this.subMenus.items.listItems[this.subMenus.items.currIndex])} on DGMN`;
         this.drawBottomSection('message',{message: message});
+        this.digiBeetleAH.removeItemFromToolBox(this.subMenus.items.currIndex);
       } else if(this.currState === 'items-done'){
         this.currState = 'items';
         this.removeSubMenu('itemTarget');
@@ -225,6 +256,20 @@ class PauseMenu extends Menu{
       }
     }
 
+  backMenu = () => {
+    console.log("Going Back from ",this.currState);
+    if(this.currState === 'items'){
+      this.closeItemMenu();
+    } else if(this.currState === 'items-target'){
+      this.closeItemTargetSelect();      
+    }
+  }
+
+  /**------------------------------------------------------------------------
+   * UP LIST ITEM
+   * ------------------------------------------------------------------------
+   * -
+   * ----------------------------------------------------------------------*/
     upListItem = () => { 
       if(this.currState === 'items') { this.subMenus.items.upListItem(); this.drawMenu()
       } else if(this.currState === 'items-target'){ 
@@ -234,7 +279,11 @@ class PauseMenu extends Menu{
       }
     }
 
-
+  /**------------------------------------------------------------------------
+   * DOWN LIST ITEM
+   * ------------------------------------------------------------------------
+   * -
+   * ----------------------------------------------------------------------*/
     downListItem = () => { 
       if(this.currState === 'items') { this.subMenus.items.downListItem(); this.drawMenu()
       } else if(this.currState === 'items-target'){ 

@@ -19,7 +19,12 @@ export const itemsDB = {
     displayName: '1 DR FP',
     usable: ['dungeon'],
     target: 'your-dgmn',
-    description: 'Give 1 DGMN 1 Dragon Roar Field Point'
+    description: 'Give 1 DGMN 1 Dragon Roar Field Point',
+    effect: {
+      type: 'booster',
+      field: 'DR',
+      amount: 1
+    }
   }
 }
 
