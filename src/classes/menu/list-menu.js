@@ -2,6 +2,7 @@ import config from "../../config";
 import SubMenu from "./sub-menu";
 import GameCanvas from "../canvas";
 import { warningLog } from "../../utils/log-utils";
+import TextArea from "../text-area";
 
 class ListMenu extends SubMenu{
   constructor(coord,itemAmount,listWidth,itemHeight=1,listItems=[],cursorImg,backImg,...args){
@@ -17,12 +18,15 @@ class ListMenu extends SubMenu{
     this.menuCanvas = new GameCanvas(`${this.label}-menu`,listWidth*8 ,itemAmount * (itemHeight * 8) )
     this.menuCanvas.x = coord[0] * 8 * config.screenSize;
     this.menuCanvas.y = coord[1] * 8 * config.screenSize;
-
-    this.drawMenu();  // TODO - Constructors shouldn't be calling their own methods
   }
 
   
-  drawList = () => { warningLog(`WARNING - SubMenu ${this.label} is missing drawList Method`) }
+  drawList = () => { // Default
+    for(let i = 0; i < this.listItems.length; i++){
+      let listItemTxt = new TextArea(1,i,this.width-1,1);
+          listItemTxt.instantText(this.menuCanvas.ctx,this.listItems[i],'white');
+    }
+  }
   buildList = () => { warningLog(`WARNING - SubMenu ${this.label} is missing buildList Method`) }
 
 
@@ -40,6 +44,8 @@ class ListMenu extends SubMenu{
 
   drawCursor = index => {
     let spotIndex = index ? index : this.currIndex;
+    this.menuCanvas.ctx.fillStyle = "#00131A";
+    this.menuCanvas.ctx.fillRect(0,0,config.tileSize,this.itemAmount*config.tileSize);
     this.menuCanvas.paintImage(this.cursorImg,0,(spotIndex % this.itemAmount) * (8 * this.itemHeight) * config.screenSize);
   }
 

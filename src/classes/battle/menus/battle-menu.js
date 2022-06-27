@@ -7,6 +7,8 @@ import BattleMenuAH from "../battle-menu.ah";
 import BattleMenuCanvas from "../canvas/battle-menu-canvas";
 import TargetSelect from "./target-select";
 import TextArea from "../../text-area";
+import ContinueCursor from "../../menu/continue-cursor";
+import VictoryMenu from "./victory-menu";
 
 class BattleMenu extends Menu{
   constructor(...args){
@@ -18,6 +20,8 @@ class BattleMenu extends Menu{
     this.currDgmnIndex = 0;
     this.currAttackAction = {};
 
+    this.currState = 'default';
+
     this.battleMenuAH = new BattleMenuAH({
       nextIconCB: this.nextIcon,
       prevIconCB: this.prevIcon,
@@ -26,7 +30,9 @@ class BattleMenu extends Menu{
       nextListItemCB: this.nextListItem,
       prevListItemCB: this.prevListItem,
       selectListItemCB: this.selectListItem,
-      setTopMessageCB: message => { this.menuCanvas.setTopMessage(message) }
+      setTopMessageCB: message => { this.menuCanvas.setTopMessage(message) },
+      getStateCB: this.getState,
+      levelUpNextCB: this.levelUpNext
     });
   }
 
@@ -72,7 +78,8 @@ class BattleMenu extends Menu{
     let currDgmnAttackData = this.battleAH.getDgmnAttackData(this.currDgmnIndex,['displayName','currCost','maxCost','type','power','hits','targets']);
     debugLog("++ Build Attack List | Data = ",currDgmnAttackData);
     this.addSubMenu('attack',new AttackMenu(this.systemAH.fetchImage,[4,2],6,16,2,currDgmnAttackData,this.systemAH.fetchImage('miniCursor'),this.systemAH.fetchImage('battleOptionSelectBaseRight'),'attack'));
-    this.subMenus.attack.drawList();
+    this.subMenus.attack.drawMenu();
+    // this.subMenus.attack.drawList();
   }
 
   /**------------------------------------------------------------------------
@@ -83,7 +90,9 @@ class BattleMenu extends Menu{
   buildTargetSelect = () => {
     debugLog("++ Selecting Target...");
     let hitsAll = this.currAttackAction.targets === 'all';
-    this.addSubMenu('target',new TargetSelect(hitsAll,this.menuCanvas.ctx,[8,2],3,3,4,['one','two','three'],this.systemAH.fetchImage('cursorLeft'),null,'target'));
+    this.addSubMenu('target',new TargetSelect(hitsAll,
+      index => { return this.battleAH.getDgmnDataByIndex(index,['isDead'],true).isDead },
+      this.menuCanvas.ctx,[8,2],3,3,4,['one','two','three'],this.systemAH.fetchImage('cursorLeft'),null,'target'));
     this.subMenus.target.currIndex = this.getStartingTarget();
     this.subMenus.target.drawMenu(this.getStartingTarget());
   }
@@ -202,6 +211,9 @@ class BattleMenu extends Menu{
     this.subMenus[this.currSubMenu].selectIcon();
     if(selected === 'attack'){
       this.launchAttackList();
+    } else if(selected === 'defend'){
+      this.battleAH.addAction(this.currDgmnIndex,false,{isDefend: true}); // TODO - Need to switch the isEnemy to the beginning
+      this.gotoNextChoice();
     }
   }
 
@@ -248,15 +260,16 @@ class BattleMenu extends Menu{
    * SET CURRENT ATTACK
    * ------------------------------------------------------------------------
    * Adds Data to the current Attack Options
-   * TODO - Probably should just call these things in other methods
+   * TODO - This seems pointless, I need to just get the data from the source
+   *        and store the Name Only
    * ----------------------------------------------------------------------*/
   setCurrentAttack = () => {
     const attackData = this.subMenus.attack.listItems[this.subMenus.attack.currIndex];
     this.currAttackAction.attackName = attackData.attackName;
-    this.currAttackAction.attacker = this.currDgmnIndex;
+    this.currAttackAction.hits = attackData.hits;
     this.currAttackAction.targets = attackData.targets;
     this.currAttackAction.power = attackData.power;
-    this.currAttackAction.isEnemy = false;
+    this.currAttackAction.type = attackData.type;
   }
 
   /**------------------------------------------------------------------------
@@ -265,11 +278,16 @@ class BattleMenu extends Menu{
    * Adds Target Data to the current Attack Options
    * ----------------------------------------------------------------------*/
   setCurrentTargets = targets => {
-    this.currAttackAction.targetIndex = targets;
     this.removeSubMenu(this.currSubMenu);
+
     debugLog("++ Action = ",this.currAttackAction);
-    this.battleAH.addAction(this.currDgmnIndex,this.currAttackAction.attackName,this.currAttackAction.targetIndex,this.currAttackAction.power,this.currAttackAction.isEnemy);
-    this.gotoNextChoice();  // TODO - should be switched for something like "wrap up turn"
+    let tempAction = { }
+        for(let key in this.currAttackAction){ tempAction[key] = this.currAttackAction[key] } // Build an identical Object, to avoid Referencing
+        tempAction.attacker = this.currDgmnIndex;
+        tempAction.targetIndex = targets;
+    this.battleAH.addAction(this.currDgmnIndex,false,tempAction);
+
+    this.gotoNextChoice();  // TODO - name should be switched for something like "wrap up turn"
   }
 
   /**------------------------------------------------------------------------
@@ -284,13 +302,21 @@ class BattleMenu extends Menu{
     this.currDgmnIndex++;
     if(this.currDgmnIndex < 3) {
       this.setCurrentDgmn(this.currDgmnIndex);
-      this.buildDgmnMenu();
-      this.currSubMenu = 'dgmn';
+      if(this.currSubMenu !== 'dgmn'){
+        this.buildDgmnMenu();
+        this.currSubMenu = 'dgmn';
+      } else { this.subMenus.dgmn.drawIcons(0); this.drawMenu() }
+      
     } else {
       this.beginCombat();
     }
   }
 
+  /**------------------------------------------------------------------------
+   * BEGIN COMBAT
+   * ------------------------------------------------------------------------
+   * Trigger for Action Choices being done and starting the Combat Animations
+   * ----------------------------------------------------------------------*/
   beginCombat = () => {
     debugLog("+ BEGIN COMBAT!");
     this.menuCanvas.ctx.clearRect(10*config.tileSize,2*config.tileSize,2*config.tileSize,12*config.tileSize);
@@ -302,10 +328,87 @@ class BattleMenu extends Menu{
     this.battleAH.beginCombat();
   }
 
-  endBattle = () => {
-    this.menuCanvas.clearBottomSection();
-    // TODO - This needs to actually launch into the Victory stuff
+  onVictoryDisplay = () => {
+    this.currState = 'victory';
+    this.drawContinueCursor(this.systemAH.fetchImage('continueCursor'),this.drawMenu);
   }
+
+  gotoRewards = (rewards) => {
+    this.currState = 'rewards';
+    
+    this.menuCanvas.continueCursor.remove();
+    this.menuCanvas.clearBottomSection();
+    this.actionTxt.timedText(this.menuCanvas.ctx,'Assign Rewards to your DGMN!',this.drawMenu);
+
+    this.victoryMenu.gotoRewardsScreen(rewards,this.systemAH.fetchImage);
+    this.drawMenu();
+  }
+
+  gotoLevelUp = levelUps => {
+    this.currState = 'levelUp';
+
+    this.levelUps = levelUps;
+
+    this.menuCanvas.clearBottomSection();
+    this.actionTxt.x = 5;
+    this.actionTxt.timedText(this.menuCanvas.ctx,`${levelUps[0].nickname} leveled up!`,this.drawMenu);
+
+    this.victoryMenu.gotoLevelUpScreen(levelUps,this.systemAH.fetchImage,this.menuCanvas.drawDgmnPortrait);
+    this.drawMenu();
+
+    setTimeout(()=>{
+      this.drawContinueCursor(this.systemAH.fetchImage('continueCursor'),this.drawMenu);
+      this.currState = 'levelUp-next';
+    })
+    
+  }
+
+  gotoEvolution = dgmnData => {
+    console.log("Evolving ",dgmnData.dgmnId);
+    this.victoryMenu.gotoEvolution(dgmnData,this.systemAH.fetchImage);
+  }
+
+  levelUpNext = () => { 
+    this.currState = 'levelUp';
+    this.victoryMenu.levelUpNext();
+    this.menuCanvas.continueCursor.remove();
+  }
+
+  endBattle = (rewards,baseXP) => {
+    this.menuCanvas.clearBottomSection();
+
+    this.menuCanvas.paintImage(this.systemAH.fetchImage('battleVictoryOverlay'),0,0);
+    this.drawBaseXP(baseXP);
+    this.drawVictoryRewards(rewards,this.onVictoryDisplay);
+
+    this.drawMenu();
+  }
+
+  drawVictoryMessage = () => {
+    this.actionTxt.x = 2;
+    this.actionTxt.y = 15;
+    this.actionTxt.timedText(this.menuCanvas.ctx,'You won!',this.drawMenu);
+  }
+
+  drawVictoryRewards = (rewards,callback) => {
+    let i = 0;
+    let rewardInterval = setInterval(()=>{
+      let image = rewards[i] === 'XP' ? 'xpIconSmall' : `field${rewards[i]}Icon`;
+      this.menuCanvas.paintImage(this.systemAH.fetchImage(image),(2+i)*config.tileSize,5*config.tileSize);
+      if(i >= rewards.length-1){
+        clearInterval(rewardInterval);
+        setTimeout(()=>{callback()},500)
+      } 
+      i++;
+    },66);
+  }
+
+  drawBaseXP = xpTotal => {
+    let baseXPTxt = new TextArea(6,11,3,1,(char,wholeString,index) => { return this.baseXPTxtColorize(char,wholeString,index) });
+        baseXPTxt.instantText(this.menuCanvas.ctx,this.menuUtility.prependZeros(xpTotal,3),'white');
+  }
+
+  getState = () => { return this.currState }
 
   /**------------------------------------------------------------------------
    * DRAW MENU
@@ -320,6 +423,17 @@ class BattleMenu extends Menu{
     }
 
     this.battleAH.drawBattleCanvas();
+  }
+
+  // TEXT AREA COLORIZERS
+
+  // TODO - This isn't working, figure it out
+  baseXPTxtColorize = (char,wholeString,index) => {
+    let color = 'none';
+    if(index === 0 && char === 0){
+      color = 'darkGreen'
+    } else if(index === 1 && char === 0 && wholeString[0] === 0){ color = 'darkGreen' }
+    return color;
   }
   
 }

@@ -14,10 +14,11 @@
  * I'm thinking there should be no methods. Just callbacks in the constructors
  * ----------------------------------------------------------------------*/
  class SystemAH{
-    constructor(loadImagesCB,fetchImageCB){
-
+    constructor(loadImagesCB,fetchImageCB,startLoadingCB,stopLoadingCB){
         this.loadImages = (images, callback) => { loadImagesCB(images,callback) }
         this.fetchImage = image => { return fetchImageCB(image) }
+        this.startLoading = callback => startLoadingCB(callback)
+        this.stopLoading = () => stopLoadingCB()
     }
 }
 

@@ -19,6 +19,7 @@ class AttackCanvas extends GameCanvas{
    * @param {Func}    callback      Callback to run after the animation is done
    * ----------------------------------------------------------------------*/
   animateAttack = (targetSpot,isTargetEnemy,images,callback) => {
+    if(!isTargetEnemy) this.flip();
     let targets = targetSpot === 'all' ? [0,1,2] : [targetSpot];
 
     let i = 1;  // Index for current Frame of Attack
@@ -35,12 +36,12 @@ class AttackCanvas extends GameCanvas{
       }
       if(i >= images.length){ // Last frame
         if(t === targets.length - 1){ // At last target wrap up
+          if(!isTargetEnemy) this.flip();
           clearInterval(animationInterval);
           callback();
         } else { t++; f = 0; i = 0 } // Go up 1 target, reset frames
       }
     },66);
-
   }
 
   /**------------------------------------------------------------------------

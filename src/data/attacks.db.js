@@ -7,8 +7,8 @@ export const attacksDB = {
     stat: 'physical',
     targets: 'single',
     hits: 1,
-    animationFrames: [['bubbles1',1],['bubbles2',4],['bubbles1',1]],
-    animationFrameCount: 2,
+    animationFrames: [['bubbles1',1],['bubbles2',1],['bubbles3',1],['bubbles4',1],['bubbles5',1],['bubbles6',1]],
+    animationFrameCount: 6,
     effect: ['buff',1,1,100]
   },
   babyFlame: {

@@ -12,22 +12,23 @@
  * ----------------------------------------------------------------------*/
  class BattleAH{
    constructor(cbObj){
+    this.getBattleState = () => { return cbObj.getBattleStateCB() }
     this.drawBattleCanvas = () => { cbObj.drawBattleCanvasCB() }
-    this.paintToBattleCanvas = (image,x,y) => { cbObj.paintToBattleCanvasCB(image,x,y) }
     this.getDgmnDataByIndex = (dgmnIndex,data,isEnemy) => { return cbObj.getDgmnDataByIndexCB(dgmnIndex,data,isEnemy) }
     this.getDgmnAttackData = (dgmnIndex,data) => { return cbObj.getDgmnAttackDataCB(dgmnIndex,data) }
-    this.selectAttack = () => { cbObj.selectAttackCB() }
-    this.setCurrentAttackTarget = dir => { cbObj.setCurrentAttackTargetCB(dir) }
-    this.addAction = (dgmnIndex,attackName,targetIndex,attackTargets,attackPower) => { cbObj.addActionCB(dgmnIndex,attackName,targetIndex,attackTargets,attackPower) }
+    this.addAction = (dgmnIndex,isEnemy,actionData) => cbObj.addActionCB(dgmnIndex,isEnemy,actionData)
     this.beginCombat = () => { cbObj.beginCombatCB() }
-    this.getCurrDgmnChoice = () => { return cbObj.getCurrDgmnChoiceCB() }
     this.drawActionText = (species,message) => { cbObj.drawActionTextCB(species,message) }
-    this.drawDgmnStatusMeter = (isEnemy,index,stat) => cbObj.drawDgmnStatusMeterCB(isEnemy,index,stat)
     this.drawAllStatuses = () => cbObj.drawAllStatusesCB()
     this.newTurn = () => cbObj.newTurnCB()
     this.checkBattleCondition = () => cbObj.checkBattleConditionCB()
     this.battleWin = () => cbObj.battleWinCB()
     this.battleLose = () => cbObj.battleLoseCB()
+    this.addRewards = target => cbObj.addRewardsCB(target)
+    this.gotoRewards = () => cbObj.gotoRewardsCB()
+    this.giveCurrReward = dir => cbObj.giveCurrRewardCB(dir)
+    this.levelUpNext = () => cbObj.levelUpNextCB()
+    this.evolveCurrDgmn = () => cbObj.evolveCurrDgmnCB()
    }
  }
 

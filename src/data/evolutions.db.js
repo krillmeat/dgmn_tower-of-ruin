@@ -1,26 +1,10 @@
-/* 
-  ATK - Courage - Fire / Dragons (Dragon's Roar)
-  SPD - Friendship - Beast (Nature Spirits)
-  HP  - Love - Sky / Plants (Wind Guardians)
-  INT - Knowledge - Metal / Bugs (Metal Empire)
-  RES - Purity - Plants / Bugs (Jungle Trooper)
-  DEF - Honesty - Water / Metal (Deep Savers)
-  HIT - Hope - Light (Holy Warriors)
-  SP  - Light - Light (Holy Beasts)
-  AVO - Kindness - Dark (Nightmare Soldiers)
-*/
-
 export const evolutions = {
-  agu: [{
-      grey: {
-        crests: [10,0,0,0,0,0,0,0,0],
-        bond: 0
-      }
-    },
-    {
-      geoGrey: {
-        crests: [8,0,0,0,0,0,0,2,0],
-        bond: 0
-      }
-    }]
+  Bota: ['Koro'],
+  Yura: ['Bud'],
+  Doki: [{ dgmnName: 'Bibi', fields: {NS:3} }],
+  Zuru: [{ dgmnName: 'Pagu', fields: {NA:3} }],
+  Pururu: [{ dgmnName: 'Poro', fields: {WG:3} }],
+  Choro: [{ dgmnName: 'Capri', fields: {ME:3} }],
+  Pitch: [{ dgmnName: 'Puka', fields: {DS:3} }],
+  Poyo: [{ dgmnName: 'Toko', fields: {VB:3} }]
 }

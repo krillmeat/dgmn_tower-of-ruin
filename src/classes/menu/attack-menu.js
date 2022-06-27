@@ -12,7 +12,7 @@ class AttackMenu extends ListMenu{
   /**------------------------------------------------------------------------
    * DRAW ATTACK LIST
    * ------------------------------------------------------------------------
-   * Paints the Elements needed for the Attac List
+   * Paints the Elements needed for the Attack List
    * ----------------------------------------------------------------------*/
   drawList = () => {
     for(let i = 0; i < this.itemAmount; i++){

@@ -5,45 +5,73 @@ import DgmnParty from "./dgmn-party";
 import Attack from "./attack";
 import { partyMock, enemyPartyMock } from "../../mock/dgmn.mock";
 import EnemyGenerator from "./enemy-generator";
+import DgmnUtility from "./utility/dgmn.util";
+import { debugLog } from "../../utils/log-utils";
+import TreasureUtility from "../dungeon/utility/treasure.util";
 
 // TODO - THIS CLASS WILL NEVER WORK LIKE THIS. IT WILL INTERACT HEAVILY WITH THE SAVE DATA TO BUILD OUT THE allDgmn OBJECT
 // TODO - RENAME TO ALL DGMN
 class DgmnManager{
-  constructor(){
+  constructor(systemAH){
     // TODO - In the future, dIdX should probably be generated. If I ever want to do a cool online thing, you might need very unique IDs
     this.allDgmn = {
-      dId0: new Dgmn(0,"FLARE","Agu"),
-      dId1: new Dgmn(1,"SPROUT","Lala"),
-      dId2: new Dgmn(2,"GEAR","Haguru")
+      dId0: new Dgmn(0,"FLARE","Bota",'DR'),
+      dId1: new Dgmn(1,"SPROUT","Yura",'JT'),
+      dId2: new Dgmn(2,"GEAR","Choro",'ME')
     }
 
+    // TODO - I need to clean this up BIG TIME
     this.dgmnAH = new DgmnAH({
       getDgmnDataCB: this.getDgmnData,
       getDgmnAttackDataCB: this.getDgmnAttackData,
       initDgmnCanvasCB: this.initDgmnCanvas,
       getCanvasCB: this.getCanvas,
       animateDgmnCB: this.animateDgmn,
+      useAttackCB: this.useAttack,
       dealDMGCB: this.dealDMG,
       checkKOCB: this.checkKO,
       checkAllDeadCB: this.checkAllDead,
       createDgmnCB: this.createDgmn,
-      generateEnemiesCB: this.generateEnemies
+      generateEnemiesCB: this.generateEnemies,
+      modifyComboCB: this.modifyCombo,
+      modifyWeakCB: this.modifyWeak,
+      showDgmnFrameCB: this.showDgmnFrame,
+      idleDgmnCB: this.idleDgmn,
+      getIsDeadCB: this.getIsDead,
+      battleWrapUpCB: this.battleWrapUp,
+      moveDgmnCanvasCB: this.moveDgmnCanvas,
+      stopDgmnCanvasCB: this.stopDgmnCanvas,
+      giveDgmnRewardCB: this.giveDgmnReward,
+      giveDgmnXPCB: this.giveDgmnXP,
+      checkLevelUpCB: this.checkLevelUp,
+      buildStatGrowthCB: this.buildStatGrowth,
+      getTempDgmnCB: this.getTempDgmn,
+      evolveCB: this.evolve,
+      hatchEggCB: this.hatchEgg,
+      useItemOnCB: this.useItemOn
     });
+
+    this.systemAH = systemAH;
 
     this.enemyGenerator = new EnemyGenerator(this.dgmnAH);
 
     this.enemyDgmn = { };
 
     this.party = this.mockParty();
+
+    this.tempDgmn = new Dgmn(0,'EVO','Bota'); // Used in various Menus to show a DGMN that doesn't exist (evos, database, etc.)
+
+    this.dgmnUtility = new DgmnUtility;
+    this.itemUtility = new TreasureUtility(); // I need to rename this Class...
   }
 
   // FOR NOW
   mockParty = () => {
     // this.enemyDgmn.edId0.isEnemy = true; this.enemyDgmn.edId1.isEnemy = true; this.enemyDgmn.edId2.isEnemy = true;
     for(let i = 0; i < 3; i++){
-      this.allDgmn[`dId${i}`].currentLevel = partyMock[`dId${i}`].currentLevel;
-      this.allDgmn[`dId${i}`].attacks = partyMock[`dId${i}`].attacks;
-      this.allDgmn[`dId${i}`].currentStats = partyMock[`dId${i}`].currentStats;
+      // this.allDgmn[`dId${i}`].currentLevel = partyMock[`dId${i}`].currentLevel;
+      // this.allDgmn[`dId${i}`].attacks = partyMock[`dId${i}`].attacks;
+      // this.allDgmn[`dId${i}`].currentStats = partyMock[`dId${i}`].currentStats;
 
       // this.enemyDgmn[`eId${i}`].attacks = enemyPartyMock[`eId${i}`].attacks;
       // this.enemyDgmn[`edId${i}`].currentStats = enemyPartyMock[`edId${i}`].currentStats;
@@ -64,8 +92,20 @@ class DgmnManager{
     if(isEnemy){ // Generating a new Enemy
       this.enemyDgmn[`edId${index}`] = new Dgmn(index,"ENEMY",data.speciesName);
       this.enemyDgmn[`edId${index}`].isEnemy = true;
-      this.enemyDgmn[`edId${index}`].currentHP = this.enemyDgmn[`edId${index}`].currentStats.HP
+      this.enemyDgmn[`edId${index}`].currentStats = data.currentStats;
+      this.enemyDgmn[`edId${index}`].currentHP = this.enemyDgmn[`edId${index}`].currentStats.HP;
+      this.enemyDgmn[`edId${index}`].attacks = data.attacks;
     }
+  }
+
+  buildPartyEggs = () => {
+    for(let dgmn of this.party){
+      this.allDgmn[dgmn].hatchSetup();
+    }
+  }
+
+  hatchEgg = (dgmnId,species) => {
+    this.allDgmn[dgmnId].hatch(species);
   }
 
   /**------------------------------------------------------------------------
@@ -84,8 +124,8 @@ class DgmnManager{
    * Description
    * ------------------------------------------------------------------------
    * ----------------------------------------------------------------------*/
-  generateEnemies = data => {
-    this.enemyGenerator.generate(data);
+  generateEnemies = (currFloor,maxFloor) => {
+    this.enemyGenerator.generate(currFloor,maxFloor);
   }
 
   /**------------------------------------------------------------------------
@@ -135,18 +175,18 @@ class DgmnManager{
     return objList;
   }
 
-  /**------------------------------------------------------------------------
-   * TITLE
-   * ------------------------------------------------------------------------
-   * Description
-   * ------------------------------------------------------------------------
-   * ----------------------------------------------------------------------*/
-  dealDMG = (target,dmg) => {
-    if(target.charAt(0) === 'e'){
-      this.enemyDgmn[target].currentHP -= dmg;
-    } else{
-      // TODO - Deal DMG to you
-    }
+  // TODO - Move to Utility
+  getParty = dgmnId => {
+    return this.isEnemy(dgmnId) ? "enemyDgmn" : "allDgmn";
+  }
+
+  useAttack = (dgmn,energyCost,attackName) => {
+    this[this.getParty(dgmn)][dgmn].reduceDgmnAttackCost(attackName);
+    this.reduceEnergy(dgmn,energyCost);
+  }
+
+  reduceEnergy = (dgmn,amount) => {
+    this[this.getParty(dgmn)][dgmn].currentEN -= amount;
   }
 
   /**------------------------------------------------------------------------
@@ -155,15 +195,124 @@ class DgmnManager{
    * Description
    * ------------------------------------------------------------------------
    * ----------------------------------------------------------------------*/
+  dealDMG = (target,dmg) => {
+    let party = this.getParty(target);
+    this[party][target].currentHP -= dmg;
+    this[party][target].currentHP = this[party][target].currentHP < 0 ? 0 : this[party][target].currentHP;
+  }
+
+  /**------------------------------------------------------------------------
+   * MODIFY COMBO
+   * ------------------------------------------------------------------------
+   * Changes a DGMN's Combo Value
+   * ------------------------------------------------------------------------
+   * @param {String}  target      DGMN ID to be changed
+   * @param {Number}  comboDelta  Amount to change the Combo Value
+   * ----------------------------------------------------------------------*/
+  modifyCombo = (target,comboDelta) => {
+    let party = this.getParty(target);
+    this[party][target].combo += comboDelta;
+    this[party][target].combo = this[party][target].combo < 0 ? 0 : this[party][target].combo;
+  }
+
+  /**------------------------------------------------------------------------
+   * MODIFY WEAK
+   * ------------------------------------------------------------------------
+   * Changes a DGMN's WEAK Value
+   * ------------------------------------------------------------------------
+   * @param {String}  target    DGMN ID to be changed
+   * @param {Number}  weakDelta Amount to change the WEAK Value
+   * ----------------------------------------------------------------------*/
+  modifyWeak = (target,weakDelta) => {
+    let party = this.getParty(target);
+    this[party][target].weak += weakDelta;
+    this[party][target].weak = this[party][target].weak > 3 ? 3 : this[party][target].weak;
+    this[party][target].weak = this[party][target].weak < 0 ? 0 : this[party][target].weak;
+  }
+
+  /**------------------------------------------------------------------------
+   * TITLE
+   * ------------------------------------------------------------------------
+   * TODO - I don't like how this does stuff AND returns stuff
+   * ------------------------------------------------------------------------
+   * ----------------------------------------------------------------------*/
   checkKO = target => {
-    if(this.isEnemy(target)){
-      if(this.enemyDgmn[target].isDead) return true;
-      if(this.enemyDgmn[target].currentHP <= 0){
-        this.enemyDgmn[target].isDead = true;
-        return true;
+    let party = this.getParty(target);
+    if(!this[party][target].isDead){ // Did this to prevent already dead DGMN from KO'ing
+      if(this.isEnemy(target)){ // TODO - Not sure I need this
+        if(this[party][target].currentHP <= 0){ // If they're Dead...
+          // SPLIT OUT INTO ITS OWN FUNCTION
+          this.showDgmnFrame(target,'dead');
+          this[party][target].isDead = true;
+          this[party][target].currentHP = 0;
+          this[party][target].currentEN = 0;
+          this[party][target].combo = 0;
+          this[party][target].weak = 0;
+          return true;
+        }
       }
     }
     return false
+  }
+
+  battleWrapUp = dgmnId => {
+    let leveledUp = this.checkLevelUp(dgmnId);
+    return leveledUp;
+  }
+
+  /**------------------------------------------------------------------------
+   * GIVE DGMN REWARD
+   * ------------------------------------------------------------------------
+   * Gives a DGMN a reward from a Battle
+   * ------------------------------------------------------------------------
+   * @param {String} dgmnId ID for the DGMN to give Reward to
+   * @param {String} reward FP or XP Boost to be rewarded
+   * ----------------------------------------------------------------------*/
+  giveDgmnReward = (dgmnId,reward) => {
+    reward === 'XP' ? this.allDgmn[dgmnId].currentXP++ : this.allDgmn[dgmnId].currentFP[reward]++; // TODO - XXP
+  }
+
+  /**------------------------------------------------------------------------
+   * GIVE DGMN XP
+   * ------------------------------------------------------------------------
+   * Gives a DGMN a certain XP amount, usually the Battle XP Total
+   * ------------------------------------------------------------------------
+   * @param {String} dgmnId ID for the DGMN to give Reward to
+   * @param {Number} reward Amount of XP to give
+   * ----------------------------------------------------------------------*/
+  giveDgmnXP = (dgmnId,xp) => {
+    this.allDgmn[dgmnId].currentXP += xp;
+  }
+
+  checkLevelUp = dgmnId => {
+    if(this.allDgmn[dgmnId].currentXP >= this.dgmnUtility.checkLevelReq(this.allDgmn[dgmnId].currentLevel)){
+      this.levelUp(dgmnId);
+      return true;
+    }
+
+    return false;
+  }
+
+  levelUp = dgmnId => {
+    this.allDgmn[dgmnId].currentXP = 0;
+    this.allDgmn[dgmnId].currentLevel++;
+    this.allDgmn[dgmnId].levelUpStats();
+    this.allDgmn[dgmnId].levelUpFP();
+    debugLog(this.allDgmn[dgmnId].nickname+" Leveled Up!");
+    debugLog("  - New FP: ",this.allDgmn[dgmnId].currentFP);
+  }
+
+  evolve = (dgmnId,evoSpecies) => {
+    console.log(dgmnId+" is Evolving into "+evoSpecies);
+    this.allDgmn[dgmnId].speciesName = evoSpecies;
+    this.allDgmn[dgmnId].levelUpStats();
+    this.allDgmn[dgmnId].learnAttack();
+  }
+
+  buildStatGrowth = (dgmnId,stat) => {
+    let baseGrowth = this.dgmnUtility.getBaseStat(this.allDgmn[dgmnId].speciesName,stat);
+
+    return baseGrowth + 0; // TODO - Look into FP bonus
   }
 
   /**------------------------------------------------------------------------
@@ -192,6 +341,19 @@ class DgmnManager{
     !this.isEnemy(dgmnId) ? this.allDgmn[dgmnId].initCanvas(drawCB,imageList,battleLocation) : this.enemyDgmn[dgmnId].initCanvas(drawCB,imageList,battleLocation);
   }
 
+  useItemOn = (dgmnId,item) => {
+    debugLog('Using '+item+' on '+dgmnId);
+    let itemEffect = this.itemUtility.getItemEffect(item);
+    if(itemEffect.type === 'heal'){
+      if(itemEffect.stat === 'HP'){
+        debugLog('  - Healing '+dgmnId+' by '+itemEffect.amount);
+        this.allDgmn[dgmnId].heal(itemEffect.amount);
+      }
+    } else if(itemEffect.type === 'booster'){
+      this.allDgmn[dgmnId].addFP(itemEffect.field,itemEffect.amount);
+    }
+  }
+
   /**------------------------------------------------------------------------
    * TITLE
    * ------------------------------------------------------------------------
@@ -200,6 +362,26 @@ class DgmnManager{
    * ----------------------------------------------------------------------*/
   animateDgmn = dgmnId => { !this.isEnemy(dgmnId) ? this.allDgmn[dgmnId].startIdleAnimation() : this.enemyDgmn[dgmnId].startIdleAnimation() }
 
+  showDgmnFrame = (dgmnId,frame) => {
+    let dgmnSpecies = this.isEnemy(dgmnId) ? this.enemyDgmn[dgmnId].speciesName.toLowerCase() : this.allDgmn[dgmnId].speciesName.toLowerCase();
+    let frameImage = frame === 'dead' ? this.systemAH.fetchImage('dgmnDead') : this.systemAH.fetchImage(dgmnSpecies+frame);
+
+    this.isEnemy(dgmnId) ? this.enemyDgmn[dgmnId].showFrame(frameImage) : this.allDgmn[dgmnId].showFrame(frameImage);
+  }
+
+  idleDgmn = dgmnId => { !this.isEnemy(dgmnId) ? this.allDgmn[dgmnId].idle() : this.enemyDgmn[dgmnId].idle() }
+
+  moveDgmnCanvas = (dgmnId,newX,newY) => {
+    this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.x = newX;
+    this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.y = newY;
+  }
+
+  stopDgmnCanvas = dgmnId => {
+    this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.stop();
+  }
+
+  getTempDgmn = () => { return this.tempDgmn }
+
   /**------------------------------------------------------------------------
    * TITLE
    * ------------------------------------------------------------------------
@@ -207,6 +389,8 @@ class DgmnManager{
    * ------------------------------------------------------------------------
    * ----------------------------------------------------------------------*/
   getCanvas = dgmnId => { return !this.isEnemy(dgmnId) ? this.allDgmn[dgmnId].dgmnCanvas : this.enemyDgmn[dgmnId].dgmnCanvas }
+
+  getIsDead = dgmnId => { return this.isEnemy(dgmnId) ? this.enemyDgmn[dgmnId].isDead : this.allDgmn[dgmnId].isDead }
 }
 
 export default DgmnManager;

@@ -4,20 +4,69 @@ class DungeonIO extends IO{
   constructor(dungeonAH,...args){
     super(...args);
     this.dungeonAH = dungeonAH;
+    this.menuAH;
+  }
+
+  setMenuAH = ah => {
+    this.menuAH = ah;
   }
 
   cancelKeyHandler = upDown => {
-    console.log("DOWN");
+    let cancelStates = ['items','items-target','items-done'];
+    if(this.dungeonAH.getDungeonState() === 'main-menu' && cancelStates.indexOf(this.menuAH.getState()) !== -1){
+      this.menuAH.backMenu();
+    } else if(this.dungeonAH.getDungeonState() === 'main-menu' && this.menuAH.getState() === 'main'){ this.dungeonAH.bringUpMenu()
+    }
+  }
+
+  actionKeyHandler = upDown => {
+    if(this.dungeonAH.getDungeonState() === 'hatch'){
+      if(this.menuAH.getState() === 'hatch-choice'){
+        this.dungeonAH.hatchEgg();
+      }
+    } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
+      if(this.menuAH.getState() === 'main'){
+        this.menuAH.selectIcon();
+      } else if(this.menuAH.getState() === 'items' || this.menuAH.getState() === 'items-target' || this.menuAH.getState() === 'items-done'){
+        this.menuAH.selectListItem();
+      }
+    } else if(this.dungeonAH.getDungeonState() === 'text-box-next'){
+      this.dungeonAH.closeTextBox();
+    }
+  }
+
+  startKeyHandler = upDown => {
+    if(this.dungeonAH.getDungeonState() === 'free' || this.dungeonAH.getDungeonState() === 'main-menu'){
+      this.dungeonAH.bringUpMenu();
+    }
   }
 
   upKeyHandler = upDown => {
-    if(this.dungeonAH.getDungeonState() === 'free'){
+    if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){ // Start Menu
+      if(this.menuAH.getState() === 'rewards') this.dungeonAH.giveCurrReward('up');
+    } else if(this.dungeonAH.getDungeonState() === 'free'){ // In Dungeon
       this.movingInDirection('up',upDown);
+    } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
+      if(this.menuAH.getState() === 'items' || this.menuAH.getState() === 'items-target'){
+        this.menuAH.upListItem();
+      }
     }
   }
 
   rightKeyHandler = upDown => {
-    if(this.dungeonAH.getDungeonState() === 'free'){
+    if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){
+      if(this.menuAH.getState() === 'rewards'){
+        this.dungeonAH.giveCurrReward('right');
+      } else if(this.menuAH.getState() === 'hatch-choice'){
+        this.menuAH.nextHatch();
+      }
+    } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
+      if(this.menuAH.getState() === 'main'){
+        this.menuAH.nextIcon();
+      } else if(this.menuAH.getState() === 'items'){
+        this.menuAH.rightListItem();
+      }
+    } else if(this.dungeonAH.getDungeonState() === 'free'){
       this.movingInDirection('right',upDown);
     }
   }
@@ -25,11 +74,27 @@ class DungeonIO extends IO{
   downKeyHandler = upDown => {
     if(this.dungeonAH.getDungeonState() === 'free'){
       this.movingInDirection('down',upDown);
+    } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
+      if(this.menuAH.getState() === 'items' || this.menuAH.getState() === 'items-target'){
+        this.menuAH.downListItem();
+      }
     }
   }
 
   leftKeyHandler = upDown => {
-    if(this.dungeonAH.getDungeonState() === 'free'){
+    if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){
+      if(this.menuAH.getState() === 'rewards'){
+         this.dungeonAH.giveCurrReward('left');
+      } else if(this.menuAH.getState() === 'hatch-choice'){
+        this.menuAH.prevHatch();
+      }
+    } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
+      if(this.menuAH.getState() === 'main'){
+        this.menuAH.prevIcon();
+      } else if(this.menuAH.getState() === 'items'){
+        this.menuAH.leftListItem();
+      }
+    } else if(this.dungeonAH.getDungeonState() === 'free'){
       this.movingInDirection('left',upDown);
     }
   }

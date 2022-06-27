@@ -9,6 +9,7 @@ class IconMenu extends SubMenu{
     this.menuChart;
     this.iconList = iconList;
     this.images;
+    this.coord = coord; // Allow extenders to access
 
     this.menuCanvas = new GameCanvas(`${this.label}-menu`,this.iconList.length * 16 ,16 )
     this.menuCanvas.x = coord[0] * 8 * config.screenSize;

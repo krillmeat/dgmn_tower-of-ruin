@@ -37,7 +37,7 @@ class MapUtility{
 
   getFloorLayout = dimensions => {
     let floorOptions = dungeonFloorsDB[dimensions];
-    let selectedFloor = Math.floor(Math.random() * (floorOptions.length - 0));
+    let selectedFloor = Math.floor(Math.random() * (floorOptions.length));
 
     let roomNumberMatrix = floorOptions[selectedFloor];
 

@@ -33,22 +33,42 @@ class TextArea{
    * @param {String}      message Text to paint
    * @param {String}      color   Which Color to write in
    * ----------------------------------------------------------------------*/
-  instantText = (ctx,message,color) => {
-    let charArray = this.createCharArray(message);
-    let h = 0;
-    for(let w = 0; w < charArray.length; w++){
-      let coord = this.getCharCoordinates(charArray[w]);
+  // instantText = (ctx,message,color) => {
+  //   let charArray = this.createCharArray(message);
+  //   let h = 0;
+  //   for(let w = 0; w < charArray.length; w++){
+  //     let coord = this.getCharCoordinates(charArray[w]);
 
-      // Colorizing - Pass in the character to see if there are special conditions
-      //              If not, just use the original color
-      let callbackColor = this.colorizeCB(charArray[w],charArray,w);
-          callbackColor = callbackColor === "none" ? this.colorImages[color] : this.colorImages[callbackColor];
+  //     // Colorizing - Pass in the character to see if there are special conditions
+  //     //              If not, just use the original color
+  //     let callbackColor = this.colorizeCB(charArray[w],charArray,w);
+  //         callbackColor = callbackColor === "none" ? this.colorImages[color] : this.colorImages[callbackColor];
       
-      // image, sX, sY, sW, sH, dX, dY, dW, dH || s = source | d = destination
-      ctx.drawImage(callbackColor,
-                    coord[0] * 64,coord[1] * 64,64,64,  // Original Font Image has Chars at 64px x 64px
-                    ((w + this.x) * (8 * config.screenSize)),((h + this.y) * (8 * config.screenSize)),
-                    8 * config.screenSize, 8 * config.screenSize);
+  //     // image, sX, sY, sW, sH, dX, dY, dW, dH || s = source | d = destination
+  //     ctx.drawImage(callbackColor,
+  //                   coord[0] * 64,coord[1] * 64,64,64,  // Original Font Image has Chars at 64px x 64px
+  //                   ((w + this.x) * (8 * config.screenSize)),((h + this.y) * (8 * config.screenSize)),
+  //                   8 * config.screenSize, 8 * config.screenSize);
+  //   }
+  // }
+
+  instantText = (ctx,message,color) => {
+    let wordArray = message.split(" ");
+    let row = 0; let col = 0;
+
+    for(let w = 0; w < wordArray.length; w++){
+      let charArray = this.createCharArray(wordArray[w]);
+      for(let c = 0; c < charArray.length; c++){
+        this.drawChar(ctx,charArray[c],col,row,color);
+        row = col + 1 >= this.width ? row + 1 : row;
+        col = col + 1 >= this.width ? 0 : col + 1;
+      }
+      if(col !== 0){
+        this.drawChar(ctx,'space',col,row,color);
+        col++;
+        if(col >= this.width) row = 0;
+      }
+      if(wordArray[w] < wordArray.length && wordArray[w].length + col > this.width){ row++; col = 0 }
     }
   }
 
@@ -56,7 +76,6 @@ class TextArea{
    * TIMED TEXT
    * ------------------------------------------------------------------------
    * Sets up the message to be paintable
-   *  TODO - Need to handle multi-line stuff
    * ------------------------------------------------------------------------
    * @param {Canvas.ctx}  ctx     Canvas ctx to draw on
    * @param {String}      message Text to paint
@@ -99,10 +118,11 @@ class TextArea{
    * @param {String}      char  Character to Draw
    * @param {Number}      col   Column to draw at
    * @param {Number}      row   Row to draw at
+   * @param {String}      color Color of text to draw
    * ----------------------------------------------------------------------*/
-  drawChar = (ctx,char,col,row) => {
+  drawChar = (ctx,char,col,row,color='white') => {
     let coord = this.getCharCoordinates(char);
-    ctx.drawImage(this.colorImages.white,
+    ctx.drawImage(this.colorImages[color],
                   coord[0] * 64, coord[1] * 64, 64,64,
                   (col+this.x)*config.tileSize,(row+this.y)*config.tileSize,config.tileSize,config.tileSize);
   }
@@ -135,6 +155,7 @@ class TextArea{
         modifiedMessage = modifiedMessage.replace(/\.en/g,'$');
         modifiedMessage = modifiedMessage.replace(/\.lv/g,'@');
         modifiedMessage = modifiedMessage.replace(/\!/g,'#');
+        modifiedMessage = modifiedMessage.replace(/\./g,'£');
 
     return modifiedMessage;
   }
@@ -158,7 +179,9 @@ class TextArea{
       } else if(char === "%"){ modifiedCharArray[i] = "hp"
       } else if(char === "$"){ modifiedCharArray[i] = "en" 
       } else if(char === "@"){ modifiedCharArray[i] = "lv" 
-      } else if(char === "#"){ modifiedCharArray[i] = "exclamation" }
+      } else if(char === "#"){ modifiedCharArray[i] = "exclamation" 
+      } else if(char === "£"){ modifiedCharArray[i] = "period" 
+      } else if(char === "-"){ modifiedCharArray[i] = "dash" }
     }
 
     return modifiedCharArray;

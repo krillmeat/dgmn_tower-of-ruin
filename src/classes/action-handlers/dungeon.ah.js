@@ -11,18 +11,25 @@
  * NO METHODS ONLY CONSTRUCTOR
  * ----------------------------------------------------------------------*/
  class DungeonAH{
-    constructor(getCurrentDirectionCB,setCurrentDirectionCB, paintFloorCanvasCB, getDungeonStateCB, getMovingCB, setMovingCB, getCollisionCB,setCollisionCB, moveFloorCB, goUpFloorCB, startBattleCB){
-        this.getCurrentDirection = () => { return getCurrentDirectionCB() }
-        this.setCurrentDirection = newValue => { setCurrentDirectionCB(newValue) }
-        this.paintFloorCanvas = canvas => { paintFloorCanvasCB(canvas) }
-        this.getDungeonState = () => { return getDungeonStateCB() }
-        this.getMoving = () => { return getMovingCB() }
-        this.setMoving = newValue => { setMovingCB(newValue) }
-        this.getCollision = () => { return getCollisionCB() }
-        this.setCollision = (dir,newValue) => { setCollisionCB(dir,newValue) }
-        this.moveFloor = (dir,upDown) => { moveFloorCB(dir,upDown) }
-        this.goUpFloor = () => { goUpFloorCB() }
-        this.startBattle = () => { startBattleCB() }
+    constructor(cbObj){
+        this.getCurrentDirection = () => { return cbObj.getCurrentDirectionCB() }
+        this.setCurrentDirection = newValue => { cbObj.setCurrentDirectionCB(newValue) }
+        this.drawDungeon = () => cbObj.drawDungeonCB()
+        this.paintFloorCanvas = canvas => { cbObj.paintFloorCanvasCB(canvas) }
+        this.getDungeonState = () => { return cbObj.getDungeonStateCB() }
+        this.getMoving = () => { return cbObj.getMovingCB() }
+        this.setMoving = newValue => { cbObj.setMovingCB(newValue) }
+        this.getCollision = () => { return cbObj.getCollisionCB() }
+        this.setCollision = (dir,newValue) => { cbObj.setCollisionCB(dir,newValue) }
+        this.moveFloor = (dir,upDown) => { cbObj.moveFloorCB(dir,upDown) }
+        this.goUpFloor = () => { cbObj.goUpFloorCB() }
+        this.startBattle = () => { cbObj.startBattleCB() }
+        this.getCurrentFloor = () => { return cbObj.getCurrentFloorCB() }
+        this.giveCurrReward = dir => cbObj.giveCurrRewardCB(dir)
+        this.hatchEgg = () => cbObj.hatchEggCB()
+        this.getTreasure = treasure => cbObj.getTreasureCB(treasure)
+        this.closeTextBox = () => cbObj.closeTextBoxCB()
+        this.bringUpMenu = () => cbObj.bringUpMenuCB()
     }
 }
 

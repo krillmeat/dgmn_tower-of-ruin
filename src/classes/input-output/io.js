@@ -6,7 +6,9 @@ class IO{
       this.actionKeyHandler();
     } else if(key === 'cancel'){
       this.cancelKeyHandler();
-    } else if(key === 'up'){
+    } else if(key === 'start'){
+      this.startKeyHandler();
+    }else if(key === 'up'){
       this.upKeyHandler(upDown);
     } else if(key === 'right'){
       this.rightKeyHandler(upDown);
@@ -20,6 +22,7 @@ class IO{
   // ALL SHOULD BE OVERWRITTEN
   actionKeyHandler = upDown => {}
   cancelKeyHandler = upDown => {}
+  startKeyHandler = upDown => {}
   upKeyHandler = upDown => {}
   rightKeyHandler = upDown => {}
   downKeyHandler = upDown => {}

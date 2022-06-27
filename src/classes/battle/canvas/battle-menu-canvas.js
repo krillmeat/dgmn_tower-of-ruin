@@ -3,12 +3,17 @@ import GameCanvas from "../../canvas";
 import TextArea from "../../text-area";
 
 import MenuUtility from "../../menu/menu.util";
+import ContinueCursor from "../../menu/continue-cursor";
+
+// TODO - Switch this over to a MenuCanvas implementation, and move a lot of the reusable stuff over (top text, draw portrait, etc.)
 
 class BattleMenuCanvas extends GameCanvas{
   constructor(...args){
     super(...args);
 
     this.menuUtility = new MenuUtility();
+
+    this.continueCursor;
 
     this.topTxt = new TextArea(0,1,20);
     this.dgmnNicknameTxt = new TextArea(4,14,10);
@@ -46,7 +51,7 @@ class BattleMenuCanvas extends GameCanvas{
     this.drawNickname(this.dgmnNicknameTxt,dgmnData.nickname);
     this.dgmnSpeciesNameTxt.instantText(this.ctx,dgmnData.speciesName+".MON","green");
     this.dgmnHPTxt.instantText(this.ctx,".hp"+this.menuUtility.prependZeros(dgmnData.currentHP,3),"white");
-    this.dgmnENTxt.instantText(this.ctx,".en"+dgmnData.currentEN,"white");
+    this.dgmnENTxt.instantText(this.ctx,".en"+this.menuUtility.prependZeros(dgmnData.currentEN,3),"white");
     this.drawLevel(this.dgmnLVTxt,dgmnData.currentLevel);
     this.drawDgmnPortrait(dgmnData.portrait);
   }
@@ -141,6 +146,8 @@ class BattleMenuCanvas extends GameCanvas{
     } else if( (char === '0' && index === 1) || (char === '0' && index === 2 && wholeString[1] === '0') ){ color = 'darkGreen'}
     return color;
   }
+
+
 }
 
 export default BattleMenuCanvas;
