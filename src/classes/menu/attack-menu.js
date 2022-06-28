@@ -19,7 +19,7 @@ class AttackMenu extends ListMenu{
       let pageOffset = i+(this.currPage * this.itemAmount);
       if(pageOffset >= this.listItems.length) break;
       let attack = this.listItems[pageOffset];
-      attack.textArea = new TextArea(1,(i*2),8,1);
+      attack.textArea = new TextArea(1,(i*2),14,1);
       attack.textArea.instantText(this.menuCanvas.ctx,attack.displayName,"white");
       this.drawCostMeter(i,attack.maxCost,attack.currCost);
       this.drawTypeIcon(i,attack.type);
@@ -28,6 +28,12 @@ class AttackMenu extends ListMenu{
       this.drawHitsIcon(i,attack.hits);
     }
     this.drawScrollBar();
+  }
+
+  // Overwrite to avoid black box behind cursor
+  drawCursor = index => {
+    let spotIndex = index ? index : this.currIndex;
+    this.menuCanvas.paintImage(this.cursorImg,0,(spotIndex % this.itemAmount) * (8 * this.itemHeight) * config.screenSize);
   }
 
   drawTypeIcon = (listIndex,type) => {

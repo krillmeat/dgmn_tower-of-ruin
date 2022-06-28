@@ -96,7 +96,7 @@ class AttackManager{
           } else{ this.battleAH.newTurn() }
         },2000);
       }
-    }, 1000);
+    }, 200);
   }
 
   /**------------------------------------------------------------------------
@@ -167,8 +167,14 @@ class AttackManager{
       }
     } else{
       if(this.dgmnAH.checkKO(this.attackActions[attacker].targets[0])){
-        targetData = this.dgmnAH.getDgmnData(this.attackActions[attacker].targets[0],['speciesName','stage'],true);
-        this.battleAH.addRewards( targetData.speciesName );
+        let isTargetEnemy = this.dgmnUtility.isEnemy(this.attackActions[attacker].targets[0]);
+        if(isTargetEnemy){ 
+          targetData = this.dgmnAH.getDgmnData(this.attackActions[attacker].targets[0],['speciesName','stage'],isTargetEnemy);
+          this.battleAH.addRewards( targetData.speciesName );
+        } else{
+          debugLog("Your DGMN Died");
+        }
+        
       }
     }
     this.battleAH.drawAllStatuses();

@@ -61,7 +61,7 @@ class BattleMenu extends Menu{
   newTurn = () => {
     this.menuCanvas.setTopMessage("Attack");
 
-    this.currDgmnIndex = 0;
+    this.currDgmnIndex = this.getInitialDgmn();
     this.setCurrentDgmn(this.currDgmnIndex);
     this.buildDgmnMenu();
     this.currSubMenu = 'dgmn';
@@ -298,15 +298,16 @@ class BattleMenu extends Menu{
    * TODO - Getting too big, needs to be split out
    * ----------------------------------------------------------------------*/
   gotoNextChoice = () => {
-    debugLog("+ Next Dgmn...");
+    debugLog("  - Next Dgmn...");
     this.currDgmnIndex++;
     if(this.currDgmnIndex < 3) {
-      this.setCurrentDgmn(this.currDgmnIndex);
-      if(this.currSubMenu !== 'dgmn'){
-        this.buildDgmnMenu();
-        this.currSubMenu = 'dgmn';
-      } else { this.subMenus.dgmn.drawIcons(0); this.drawMenu() }
-      
+      if(this.battleAH.getDgmnDataByIndex(this.currDgmnIndex,['currentHP'],false).currentHP > 0){
+        this.setCurrentDgmn(this.currDgmnIndex);
+        if(this.currSubMenu !== 'dgmn'){
+          this.buildDgmnMenu();
+          this.currSubMenu = 'dgmn';
+        } else { this.subMenus.dgmn.drawIcons(0); this.drawMenu() }
+      } else{ this.gotoNextChoice() }
     } else {
       this.beginCombat();
     }
@@ -434,6 +435,16 @@ class BattleMenu extends Menu{
       color = 'darkGreen'
     } else if(index === 1 && char === 0 && wholeString[0] === 0){ color = 'darkGreen' }
     return color;
+  }
+
+  // Grabs the first non KO'd DGMN
+  getInitialDgmn = () => {
+    for(let i = 0; i < 3; i++){
+      let dgmnHP = this.battleAH.getDgmnDataByIndex(i,['currentHP',false]).currentHP;
+      if(dgmnHP > 0) return i;
+    }
+
+    return -1; // This should never happen, you have lost at this point
   }
   
 }

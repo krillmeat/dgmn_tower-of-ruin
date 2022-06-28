@@ -1882,19 +1882,20 @@ var DgmnManager = function DgmnManager(systemAH) {
   _defineProperty(this, "checkKO", function (target) {
     var party = _this.getParty(target);
     if (!_this[party][target].isDead) {
-      if (_this.isEnemy(target)) {
-        if (_this[party][target].currentHP <= 0) {
-          _this.showDgmnFrame(target, 'dead');
-          _this[party][target].isDead = true;
-          _this[party][target].currentHP = 0;
-          _this[party][target].currentEN = 0;
-          _this[party][target].combo = 0;
-          _this[party][target].weak = 0;
-          return true;
-        }
+      if (_this[party][target].currentHP <= 0) {
+        _this.killDgmn(party, target);
+        return true;
       }
     }
     return false;
+  });
+  _defineProperty(this, "killDgmn", function (party, target) {
+    _this.showDgmnFrame(target, 'dead');
+    _this[party][target].isDead = true;
+    _this[party][target].currentHP = 0;
+    _this[party][target].currentEN = 0;
+    _this[party][target].combo = 0;
+    _this[party][target].weak = 0;
   });
   _defineProperty(this, "battleWrapUp", function (dgmnId) {
     var leveledUp = _this.checkLevelUp(dgmnId);
@@ -2887,6 +2888,10 @@ var AttackMenu = function (_ListMenu) {
       }
       _this.drawScrollBar();
     });
+    _defineProperty(_assertThisInitialized(_this), "drawCursor", function (index) {
+      var spotIndex = index ? index : _this.currIndex;
+      _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * config.screenSize);
+    });
     _defineProperty(_assertThisInitialized(_this), "drawTypeIcon", function (listIndex, type) {
       _this.menuCanvas.paintImage(_this.fetchImage("".concat(type, "TypeIcon")), 88 * config.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * config.screenSize);
     });
@@ -3538,7 +3543,7 @@ var BattleMenu = function (_Menu) {
     });
     _defineProperty(_assertThisInitialized(_this), "newTurn", function () {
       _this.menuCanvas.setTopMessage("Attack");
-      _this.currDgmnIndex = 0;
+      _this.currDgmnIndex = _this.getInitialDgmn();
       _this.setCurrentDgmn(_this.currDgmnIndex);
       _this.buildDgmnMenu();
       _this.currSubMenu = 'dgmn';
@@ -3669,16 +3674,20 @@ var BattleMenu = function (_Menu) {
       _this.gotoNextChoice();
     });
     _defineProperty(_assertThisInitialized(_this), "gotoNextChoice", function () {
-      debugLog("+ Next Dgmn...");
+      debugLog("  - Next Dgmn...");
       _this.currDgmnIndex++;
       if (_this.currDgmnIndex < 3) {
-        _this.setCurrentDgmn(_this.currDgmnIndex);
-        if (_this.currSubMenu !== 'dgmn') {
-          _this.buildDgmnMenu();
-          _this.currSubMenu = 'dgmn';
+        if (_this.battleAH.getDgmnDataByIndex(_this.currDgmnIndex, ['currentHP'], false).currentHP > 0) {
+          _this.setCurrentDgmn(_this.currDgmnIndex);
+          if (_this.currSubMenu !== 'dgmn') {
+            _this.buildDgmnMenu();
+            _this.currSubMenu = 'dgmn';
+          } else {
+            _this.subMenus.dgmn.drawIcons(0);
+            _this.drawMenu();
+          }
         } else {
-          _this.subMenus.dgmn.drawIcons(0);
-          _this.drawMenu();
+          _this.gotoNextChoice();
         }
       } else {
         _this.beginCombat();
@@ -3779,6 +3788,13 @@ var BattleMenu = function (_Menu) {
         color = 'darkGreen';
       }
       return color;
+    });
+    _defineProperty(_assertThisInitialized(_this), "getInitialDgmn", function () {
+      for (var i = 0; i < 3; i++) {
+        var dgmnHP = _this.battleAH.getDgmnDataByIndex(i, ['currentHP', false]).currentHP;
+        if (dgmnHP > 0) return i;
+      }
+      return -1;
     });
     _this.battleAH = _this.parentAH;
     _this.menuCanvas = new BattleMenuCanvas('battle-menu-canvas', 160, 144);
@@ -3903,7 +3919,7 @@ var AttackManager = function AttackManager() {
           }
         }, 2000);
       }
-    }, 1000);
+    }, 200);
   });
   _defineProperty(this, "buildAttackImageList", function (attackName) {
     var images = [];
@@ -3961,8 +3977,13 @@ var AttackManager = function AttackManager() {
       }
     } else {
       if (_this.dgmnAH.checkKO(_this.attackActions[attacker].targets[0])) {
-        targetData = _this.dgmnAH.getDgmnData(_this.attackActions[attacker].targets[0], ['speciesName', 'stage'], true);
-        _this.battleAH.addRewards(targetData.speciesName);
+        var isTargetEnemy = _this.dgmnUtility.isEnemy(_this.attackActions[attacker].targets[0]);
+        if (isTargetEnemy) {
+          targetData = _this.dgmnAH.getDgmnData(_this.attackActions[attacker].targets[0], ['speciesName', 'stage'], isTargetEnemy);
+          _this.battleAH.addRewards(targetData.speciesName);
+        } else {
+          debugLog("Your DGMN Died");
+        }
       }
     }
     _this.battleAH.drawAllStatuses();
@@ -4343,28 +4364,8 @@ var Battle = function Battle() {
   });
   _defineProperty(this, "battleWin", function () {
     debugLog("BATTLE WON!");
-    _this.giveDgmnRewards();
     _this.battleMenu.drawVictoryMessage();
     _this.battleMenu.endBattle(_this.battleRewards, _this.battleBaseXP);
-  });
-  _defineProperty(this, "giveDgmnRewards", function () {
-    var levelUps = [];
-    var _iterator4 = _createForOfIteratorHelper(_this.yourParty),
-        _step4;
-    try {
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var dgmn = _step4.value;
-        var leveledUp = _this.dgmnAH.battleWrapUp(dgmn, _this.battleRewards);
-        if (leveledUp) levelUps.push(dgmn);
-      }
-    } catch (err) {
-      _iterator4.e(err);
-    } finally {
-      _iterator4.f();
-    }
-    if (levelUps.length > 0) {
-      console.log("SOMEONE LEVELD UP!");
-    }
   });
   _defineProperty(this, "rewardWrapUp", function () {
     var levelUps = [];
@@ -4383,7 +4384,9 @@ var Battle = function Battle() {
   _defineProperty(this, "giveDgmnBaseXP", function () {
     console.log("Battle Base XP = ", _this.battleBaseXP);
     for (var i = 0; i < 3; i++) {
-      _this.dgmnAH.giveDgmnXP(_this.yourParty[i], _this.battleBaseXP);
+      if (!_this.getDgmnDataByIndex(i, ['isDead'], false).isDead) {
+        _this.dgmnAH.giveDgmnXP(_this.yourParty[i], _this.battleBaseXP);
+      }
     }
   });
   _defineProperty(this, "battleLose", function () {
@@ -4414,19 +4417,19 @@ var Battle = function Battle() {
   });
   _defineProperty(this, "gotoLevelUp", function (levelUps) {
     var dgmnData = [];
-    var _iterator5 = _createForOfIteratorHelper(levelUps),
-        _step5;
+    var _iterator4 = _createForOfIteratorHelper(levelUps),
+        _step4;
     try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var dgmn = _step5.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var dgmn = _step4.value;
         var data = _this.dgmnAH.getDgmnData(dgmn, ['nickname', 'currentStats', 'speciesName', 'currentLevel'], false);
         data.dgmnId = dgmn;
         dgmnData.push(data);
       }
     } catch (err) {
-      _iterator5.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator5.f();
+      _iterator4.f();
     }
     _this.stopDgmnBattleCanvas();
     _this.victoryMenu.removeSubMenu('rewards');
@@ -4471,8 +4474,12 @@ var Battle = function Battle() {
     } else if (dir === 'right') {
       dgmnId = _this.yourParty[2];
     }
-    _this.dgmnAH.giveDgmnReward(dgmnId, reward);
-    _this.victoryMenu.updateRewardsList(_this.battleRewards, _this.rewardWrapUp);
+    if (!_this.dgmnAH.getDgmnData(dgmnId, ['isDead'], false).isDead) {
+      _this.dgmnAH.giveDgmnReward(dgmnId, reward);
+      _this.victoryMenu.updateRewardsList(_this.battleRewards, _this.rewardWrapUp);
+    } else {
+      debugLog("Cannot give to them, they died!");
+    }
   });
   _defineProperty(this, "getDgmnValueByIndex", function (isEnemy, dgmnIndex, value) {
     var returnValue;
@@ -4569,18 +4576,24 @@ var Battle = function Battle() {
 ;
 
 var dungeonFloorsDB = {
-  twoByTwo: [[[5, 6], [7, 8]], [[5, 6], [3, 3]]]
+  twoByTwo: [[[5, 6], [7, 8]], [[5, 6], [3, 3]], [[1, 6], [1, 8]], [[5, 13], [7, 2]], [[14, 2], [10, 2]]]
 };
 var dungeonRoomsDB = [[[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 1, 16, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 5, 1, 6, 1, 7, 1, 0], [0, 16, 1, 1, 1, 9, 10, 1], [0, 1, 1, 1, 6, 1, 1, 0], [0, 4, 1, 1, 5, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
-[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
+[0, 5, 4, 1, 1, 1, 16, 0], [0, 10, 11, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 5, 1, 0], [1, 1, 1, 7, 1, 1, 16, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 5, 1, 2, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
 [0, 1, 6, 1, 6, 1, 1, 0], [0, 1, 1, 1, 1, 8, 1, 0], [0, 1, 7, 1, 1, 1, 1, 0], [0, 5, 1, 15, 1, 1, 4, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 5, 16, 5, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 16, 1, 1, 4, 1, 5, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 6, 1, 0], [0, 5, 1, 1, 1, 1, 10, 1], [0, 1, 1, 7, 1, 1, 1, 0], [0, 1, 8, 1, 1, 2, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
-[0, 1, 1, 1, 1, 1, 3, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
+[0, 16, 1, 2, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 15, 0], [0, 1, 1, 1, 9, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 6, 1, 1, 1, 1, 0], [0, 1, 1, 1, 10, 5, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
 [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 3, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 5, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 2, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
-[0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 3, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
+[0, 8, 1, 1, 1, 1, 1, 0], [0, 1, 1, 7, 1, 1, 11, 0], [0, 1, 1, 1, 1, 1, 11, 0], [1, 1, 1, 5, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 8, 1, 15, 1, 1, 4, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
+[0, 8, 1, 1, 1, 1, 1, 0], [0, 1, 1, 7, 1, 1, 11, 0], [0, 1, 1, 1, 1, 1, 11, 0], [1, 1, 1, 5, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 8, 1, 15, 1, 1, 4, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
+[0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
+[0, 8, 1, 1, 1, 1, 1, 0], [0, 1, 1, 7, 1, 1, 11, 0], [0, 1, 1, 1, 1, 1, 11, 0], [1, 1, 1, 5, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 8, 1, 15, 1, 1, 4, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
+[0, 8, 1, 1, 1, 1, 1, 0], [0, 1, 1, 7, 1, 1, 11, 0], [0, 1, 1, 1, 1, 1, 11, 0], [1, 1, 1, 5, 1, 1, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 8, 1, 15, 1, 1, 4, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1, 5, 16], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 11, 1, 1, 1, 1], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0]], [[0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0]]];
 
 var MapUtility = function MapUtility() {
