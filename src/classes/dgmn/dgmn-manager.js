@@ -233,26 +233,29 @@ class DgmnManager{
   /**------------------------------------------------------------------------
    * TITLE
    * ------------------------------------------------------------------------
-   * TODO - I don't like how this does stuff AND returns stuff
+   * Checks if a DGMN is KOd and if they are, takes care of killing them
    * ------------------------------------------------------------------------
+   * @param {String} target dgmnId of target
+   * @returns True if DGMN is KO'd
    * ----------------------------------------------------------------------*/
   checkKO = target => {
     let party = this.getParty(target);
     if(!this[party][target].isDead){ // Did this to prevent already dead DGMN from KO'ing
-      if(this.isEnemy(target)){ // TODO - Not sure I need this
-        if(this[party][target].currentHP <= 0){ // If they're Dead...
-          // SPLIT OUT INTO ITS OWN FUNCTION
-          this.showDgmnFrame(target,'dead');
-          this[party][target].isDead = true;
-          this[party][target].currentHP = 0;
-          this[party][target].currentEN = 0;
-          this[party][target].combo = 0;
-          this[party][target].weak = 0;
-          return true;
-        }
+      if(this[party][target].currentHP <= 0){ // If they're Dead...
+        this.killDgmn(party,target);
+        return true;
       }
     }
     return false
+  }
+
+  killDgmn = (party,target) => {
+    this.showDgmnFrame(target,'dead');
+    this[party][target].isDead = true;
+    this[party][target].currentHP = 0;
+    this[party][target].currentEN = 0;
+    this[party][target].combo = 0;
+    this[party][target].weak = 0;
   }
 
   battleWrapUp = dgmnId => {

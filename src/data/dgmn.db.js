@@ -122,13 +122,13 @@ export const dgmnDB = {
     attack: 'babyFlame'
   },
   Gabu: {
-    stage: 3, class: 'data',
+    stage: 3, class: 'Data',
     stats: [5,5,5,5,5,5,5,6],
     evolutions: evolutions['agu'],
     types: {water: .75, plant: 1.5, fire: 1.125}
   },
   Piyo: {
-    stage: 3, class: 'vaccine',
+    stage: 3, class: 'Vaccine',
     stats: [5,5,5,5,5,5,5,6],
     evolutions: evolutions['agu'],
   },
@@ -139,13 +139,13 @@ export const dgmnDB = {
     types: {evil: 1.5, metal: 2} // TEMP : MEtal should not be here
   },
   Pulse: {
-    stage: 3, class: 'vaccine',
+    stage: 3, class: 'Vaccine',
     stats: [5,6,4,4,4,5,5,6],
     evolutions: evolutions['agu'],
     types: {earth: 2, water: .5}
   },
   Lala: {
-    stage: 3, attr: 'data',
+    stage: 3, attr: 'Data',
     stats: {HP:5, ATK:4, DEF:3, INT: 5, RES: 4, HIT: 4, AVO: 4, SPD: 3},
     evolutions: [],
     types: {fire: 2, water: .5},
@@ -154,7 +154,7 @@ export const dgmnDB = {
     attack: 'nutsShoot'
   },
   Haguru: {
-    stage: 3, attr: 'virus',
+    stage: 3, attr: 'Virus',
     stats: {HP:5, ATK:5, DEF:7, INT: 5, RES: 6, HIT: 5, AVO: 5, SPD: 3},
     evolutions: [],
     types: {},
@@ -163,7 +163,7 @@ export const dgmnDB = {
     attack: 'darknessGear'
   },
   PicoDevi: {
-    stage: 3, class: 'virus',
+    stage: 3, class: 'Virus',
     stats: [5,5,5,5,5,5,5,8],
     evolutions: evolutions['agu'],
     types: {holy: 2, fire: 1.5}

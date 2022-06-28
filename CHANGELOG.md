@@ -5,6 +5,26 @@
 ### 0.0.0
 Setting up all of the basic structure for the system, until the game is in any way testable with other users
 
+### v0.0.0-alpha.11
+* Your DGMN KO
+* 8 Floor Layouts
+* Boss Floor
+  * Boss Fight Generation
+* Boss Victory Screen
+* Battle - DigiBeetle
+  * DGMN Option
+  * Cannon Option ?
+  * Run
+* Town
+  * Tower Screen
+  * Loop after boss
+* DGMN
+  * 9 Baby I
+  * 8 Baby II
+  * 8 Child
+  * 3 Adult
+* Cancel Button in Battle Menus
+
 ### v0.0.0-alpha.10
 * Item Menu
 * Leveling Up

@@ -375,32 +375,33 @@ class Battle {
    * ----------------------------------------------------------------------*/
   battleWin = () => {
     debugLog("BATTLE WON!");
-    this.giveDgmnRewards();
+    // this.giveDgmnRewards();
     this.battleMenu.drawVictoryMessage();
     this.battleMenu.endBattle(this.battleRewards,this.battleBaseXP);
     // this.battleMenu = null;
   }
 
-  // TODO - Change to interactive
-  giveDgmnRewards = () => {
-    let levelUps = [];
-    for(let dgmn of this.yourParty){
-      let leveledUp = this.dgmnAH.battleWrapUp(dgmn,this.battleRewards);
+  // TODO - Gone?
+  // giveDgmnRewards = () => {
+  //   let levelUps = [];
+  //   for(let dgmn of this.yourParty){
+  //     console.log("DGMN = ",dgmn);
+  //     let leveledUp = this.dgmnAH.battleWrapUp(dgmn,this.battleRewards);
 
-      if(leveledUp) levelUps.push(dgmn);
-    }
+  //     if(leveledUp){ levelUps.push(dgmn); console.log("DO I EVER SEE THIS?"); }
+  //   }
 
-    if(levelUps.length > 0){
-      console.log("SOMEONE LEVELD UP!")
-    }
-  }
+  //   if(levelUps.length > 0){
+  //     console.log("SOMEONE LEVELD UP!")
+  //   }
+  // }
 
   rewardWrapUp = () => {
     let levelUps = [];
     this.giveDgmnBaseXP();
     for(let i = 0; i < 3; i++){
       if(this.dgmnAH.checkLevelUp(this.yourParty[i])){
-        levelUps.push(this.yourParty[i])
+        levelUps.push(this.yourParty[i]);
       }
     }
 
@@ -412,7 +413,9 @@ class Battle {
   giveDgmnBaseXP = () => {
     console.log("Battle Base XP = ",this.battleBaseXP);
     for(let i = 0; i < 3; i++){
-      this.dgmnAH.giveDgmnXP(this.yourParty[i],this.battleBaseXP);
+      if(!this.getDgmnDataByIndex(i,['isDead'],false).isDead){ // If DGMN is Dead, do not reward
+        this.dgmnAH.giveDgmnXP(this.yourParty[i],this.battleBaseXP);
+      }
     }
   }
 
@@ -528,9 +531,10 @@ class Battle {
     } else if(dir === 'up'){ dgmnId = this.yourParty[1]
     } else if(dir === 'right'){ dgmnId = this.yourParty[2] }
 
-    this.dgmnAH.giveDgmnReward(dgmnId,reward);
-
-    this.victoryMenu.updateRewardsList(this.battleRewards,this.rewardWrapUp);
+    if(!this.dgmnAH.getDgmnData(dgmnId,['isDead'],false).isDead){
+      this.dgmnAH.giveDgmnReward(dgmnId,reward);
+      this.victoryMenu.updateRewardsList(this.battleRewards,this.rewardWrapUp);
+    } else{ debugLog("Cannot give to them, they died!") }
   }
 
   /**------------------------------------------------------------------------
