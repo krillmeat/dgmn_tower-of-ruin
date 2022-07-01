@@ -1,8 +1,11 @@
-import {dgmnEncounterChartDB, dgmnEncounterDB, dgmnEncounterFieldsDB} from '../../data/encounters.db';
+import {bossEncountersDB, bossEncountersChartDB, bossEncoutnersMapDB, dgmnEncounterChartDB, dgmnEncounterDB, dgmnEncounterFieldsDB} from '../../data/encounters.db';
+import MapUtility from '../dungeon/utility/map.util';
 
 class EnemyGenerator{
   constructor(dgmnAH){
     this.dgmnAH = dgmnAH;
+
+    this.mapUtility = new MapUtility();
   }
 
   generate = (currFloor,maxFloor) => {
@@ -18,8 +21,8 @@ class EnemyGenerator{
       // };
       let stage = this.calcDgmnStage(currFloor);
       let field = this.calcDgmnField(); // TODO - Pass in mods
-      let dgmnName = this.calcDgmnName(stage,field);
-      let dgmnData = dgmnEncounterDB[dgmnName];
+      let dgmnName = this.mapUtility.isBossFloor(currFloor) ? bossEncountersChartDB[bossEncoutnersMapDB.indexOf(currFloor)][i] : this.calcDgmnName(stage,field);
+      let dgmnData = this.mapUtility.isBossFloor(currFloor) ?  bossEncountersDB[dgmnName] : dgmnEncounterDB[dgmnName];
       this.dgmnAH.createDgmn(i,dgmnData,true);
     }
 
@@ -28,6 +31,7 @@ class EnemyGenerator{
 
   calcDgmnStage = currFloor => {
     let rando;
+
     // TODO - There should be a lot of logic here, but for now, it's simple
     if(currFloor < 2){ return 1
     } else if(currFloor === 2 || currFloor === 3){

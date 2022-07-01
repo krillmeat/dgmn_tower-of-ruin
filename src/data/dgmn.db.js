@@ -114,7 +114,7 @@ export const dgmnDB = {
   // CHILD
   Agu: {
     stage: 3, attr: 'vaccine',
-    stats: {HP:5, ATK:5, DEF:4, INT: 3, RES: 4, HIT: 4, AVO: 4, SPD: 3},
+    stats: {HP:6, ATK:3, DEF:2, INT: 2, RES: 2, HIT: 3, AVO: 2, SPD: 3},
     evolutions: [],
     types: {fire: .5, water: 1.5, plant: .75, evil: 2},
     fields: {DR: 3},

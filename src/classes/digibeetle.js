@@ -4,6 +4,7 @@ import DigiBeetleCanvas from "./digibeetle-canvas"
 import {digiBeetleImages} from "../data/images.db";
 import { debugLog } from "../utils/log-utils";
 import config from "../config";
+import DigiBeetleUtility from "./digibeetle.util";
 
 class DigiBeetle{
   constructor(dungeonAH){
@@ -15,17 +16,19 @@ class DigiBeetle{
       hideCanvasCB: this.hideCanvas,
       showCanvasCB: this.showCanvas,
       getToolBoxTypeCB: this. getToolBoxType,
-      removeItemFromToolBoxCB: this.removeItemFromToolBox
+      removeItemFromToolBoxCB: this.removeItemFromToolBox,
+      isToolBoxFullCB: this.isToolBoxFull
     });
     this.dungeonAH;
     this.gameAH;
     this.systemAH;
 
     this.digiBeetleCanvas;
+    this.digiBeetleUtility = new DigiBeetleUtility();
 
     this.toolBox = {
       version: 'dodo',
-      items: ['smallMeat','smallMeat','boosterDRs']
+      items: ['smallMeat']
     }
 
   }
@@ -60,6 +63,11 @@ class DigiBeetle{
     console.log("INDEX = ",index);
     this.toolBox.items.splice(index,1);
     debugLog("Toolbox : ",this.toolBox.items);
+  }
+
+  isToolBoxFull = () => {
+    let maxItems = this.digiBeetleUtility.getToolBoxMax(this.toolBox.version);
+    return this.toolBox.items.length >= maxItems
   }
 
   loadDigiBeetleImages = () => {

@@ -11,6 +11,7 @@ import RewardsMenu from "../../menu/rewards-menu";
 import SubMenu from "../../menu/sub-menu";
 import LevelUpMenu from "../../menu/levelup-menu";
 import EvolutionMenu from "../../menu/evolution-menu";
+import BossVictoryMenu from "../../menu/boss-victory-menu";
 
 /**------------------------------------------------------------------------
  * VICTORY MENU
@@ -19,9 +20,10 @@ import EvolutionMenu from "../../menu/evolution-menu";
  * to handle things like Rewards, Level Up, and Evolution
  * ----------------------------------------------------------------------*/
 class VictoryMenu extends Menu{
-  constructor(battleXP,battleRewards,...args){
+  constructor(isBoss,battleXP,battleRewards,...args){
     super(...args);
     this.currState = '';
+    this.topTxt = new TextArea(0,0,20,1);     // Text Area at the Top of the Screen
     this.actionTxt = new TextArea(4,14,16,4); // Text Area at the Bottom of the Screen
 
     this.battleRewards = battleRewards;       // Rewards earned from the launching Battle
@@ -30,6 +32,7 @@ class VictoryMenu extends Menu{
     this.currRewardIndex = 0;
     this.levelUpIndex = 0;
     this.levelUpDgmn = [];
+    this.isBoss = isBoss;
 
     this.victoryMenuAH = new VictoryMenuAH({
       getCurrStateCB: this.getCurrState,
@@ -134,6 +137,23 @@ class VictoryMenu extends Menu{
     },1000);
   }
 
+  /**------------------------------------------------------------------------
+   * GO TO BOSS REWARDS
+   * ------------------------------------------------------------------------
+   * Sets up a DGMN's Rewards Screen After Beating a Boss
+   * ----------------------------------------------------------------------*/ /* istanbul ignore next */
+  gotoBossRewards = floorNumber => {
+    this.continueCursor.remove();
+    this.removeSubMenu('evolution');
+    
+    this.currState = 'boss-reward';
+    this.menuCanvas.paintImage(this.systemAH.fetchImage('bossRewardMenu'),0,0);
+    this.drawTopText('Choose a Reward!');
+    this.addSubMenu('boss',new BossVictoryMenu(floorNumber,[0,0],12,12,[],this.systemAH.fetchImage('miniCursor'),null,'bossReward'));
+    this.subMenus.boss.isVisible = true;
+    this.subMenus.boss.isActive = true;
+  }
+
   
   /**------------------------------------------------------------------------
    * NEXT EVOLUTION
@@ -190,6 +210,12 @@ class VictoryMenu extends Menu{
    drawDgmnPortrait = portraitImg => {
     this.menuCanvas.ctx.drawImage(portraitImg,0,0,256,248,
                                   0, 112 * config.screenSize,32*config.screenSize,(32-1)*config.screenSize);
+  }
+
+  drawTopText = message => { 
+    this.menuCanvas.ctx.fillStyle = "#00131A";
+    this.menuCanvas.ctx.fillRect(0,0,20*config.tileSize,7*config.screenSize); 
+    this.topTxt.instantText(this.menuCanvas.ctx,message,'white');
   }
 
   /**------------------------------------------------------------------------

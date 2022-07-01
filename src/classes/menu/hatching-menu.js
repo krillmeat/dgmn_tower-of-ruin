@@ -90,7 +90,7 @@ class HatchingMenu extends Menu{
     setTimeout(()=>{
       this.drawContinueCursor(this.systemAH.fetchImage('continueCursor'),this.drawMenu);
       this.currState = 'hatch-choice';
-    },1000);
+    },500);
 
     this.drawMenu();
   }

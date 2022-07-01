@@ -27,6 +27,7 @@ class Floor{
     this.encounters = [null];
     this.treasures = [null];
     this.activeEncounterIndex = 0;
+    this.isBossFloor = this.mapUtility.isBossFloor(floorNumber);
 
     this.currentTile = {room: [], tile: []} // Current Location of the DigiBeetle
   }
@@ -83,8 +84,8 @@ class Floor{
    * ----------------------------------------------------------------------*/
     buildRoomMatrix = floorNumber => {
       let buildMatrix = [];
-      let floorDimensions = this.mapUtility.calculateDungeonDimensions(floorNumber);
-      let roomNumbers = this.mapUtility.getFloorLayout(floorDimensions);
+      let floorDimensions = this.mapUtility.isBossFloor(floorNumber) ? 'boss' : this.mapUtility.calculateDungeonDimensions(floorNumber);
+      let roomNumbers = this.mapUtility.getFloorLayout(floorDimensions,floorNumber);
 
       for(let r = 0; r < roomNumbers.length; r++){
         let row = [];
@@ -168,8 +169,8 @@ class Floor{
       let potentialSpots = this.findAllTilesOnFloor([6,8,10,11,12,14,15]);
       let enemyChance = this.floorEventMod === 'enemy' ? 30 : 15; // TODO - 30 : 15
       let encounterCount = 1;
-      let maxEncounters = 4; // TODO - This needs to be determined through DungeonUtil by Floor Number
-      let minEncounters = 2; // TODO - This needs to be determined through DungeonUtil by Floor Number
+      let maxEncounters = this.mapUtility.isBossFloor(this.number) ? 1 : 4; // TODO - This needs to be determined through DungeonUtil by Floor Number
+      let minEncounters = this.mapUtility.isBossFloor(this.number) ? 1 : 2; // TODO - This needs to be determined through DungeonUtil by Floor Number
 
       for(let i = 0; i < maxEncounters; i++){ // Only create as many Encounters as possible
         let rando = Math.floor(Math.random() * potentialSpots.length); // Pick out a Random Encounter
@@ -185,7 +186,7 @@ class Floor{
         potentialSpots.splice(rando,1);
       }
 
-      debugLog("ENCOUNTERS = ",this.encounters);
+      debugLog("  - Encounters : ",this.encounters);
     }
 
   /**------------------------------------------------------------------------
@@ -215,7 +216,7 @@ class Floor{
         potentialSpots.splice(rando,1);
       }
 
-      debugLog("TREASURES = ",this.treasures);
+      debugLog("  - Treasures : ",this.treasures);
     }
 
   /**------------------------------------------------------------------------
@@ -364,7 +365,6 @@ class Floor{
       return true;
     } else if(Math.floor(tile) === 103){
       this.clearTreasure((tile+"").split(".")[1]);
-      console.log(this.treasureUtility.getTreasureById((tile+"").split(".")[1],this.treasures))
       this.dungeonAH.getTreasure(this.treasureUtility.getTreasureById((tile+"").split(".")[1],this.treasures).itemName);
       return true;
     }
@@ -397,8 +397,9 @@ class Floor{
    * ----------------------------------------------------------------------*/
   clearTreasure = treasureNumber => {
     let treasureTile = this.findAllTilesOnFloor([parseFloat("103."+treasureNumber)])[0];
+    console.log("TREASURE TILE ? ",treasureTile);
     let room = this.roomMatrix[treasureTile.room[0]][treasureTile.room[1]];
-    room.changeTile[[treasureTile.tile[0],treasureTile.tile[1]],1];
+    room.changeTile[[treasureTile.tile[0],treasureTile.tile[1]],1]; // TODO - This isn't working, for some reason
     this.floorCanvas.drawTile(this.systemAH.fetchImage('treasureTileOpen'),treasureTile.room,treasureTile.tile);
   }
 

@@ -58,6 +58,7 @@ class Dungeon{
       down: false,
       left: false
     };
+
     this.hatchingMenu;
     this.pauseMenu;
 
@@ -180,7 +181,7 @@ class Dungeon{
    * Sets up the Floor Object
    * ----------------------------------------------------------------------*/
   buildFloor = () => {
-    debugLog('Building Floor...')
+    debugLog('Building Floor : ',this.floorNumber);
     this.floor = new Floor(this.floorNumber);
     this.floor.initAH(this.systemAH,this.gameAH,this.dungeonAH);
     this.floor.generateFloor();
@@ -322,11 +323,11 @@ class Dungeon{
     this.moving = 'none';
     this.dungeonState = 'text-box';
     this.textBoxCanvas.paintImage(this.systemAH.fetchImage('textBox'));
-    // let message = isBoxFull ? 'Found '+treausre+'... But your Item Box is full.' : 'Found '+treasure+'!';
-    let message = 'Found '+this.treasureUtility.getTreasureName(treasure)+'!'; // TODO - Replace with above after figuring out Item Box
+    let isToolBoxFull =this.digiBeetleAH.isToolBoxFull()
+    let message = isToolBoxFull ? 'Found '+this.treasureUtility.getTreasureName(treasure)+'... But your Item Box is full.' : 'Found '+this.treasureUtility.getTreasureName(treasure)+'!';
     this.textBoxCanvas.dungeonTxt.instantText(this.textBoxCanvas.ctx,message,'white');
     setTimeout(()=>{
-      this.digiBeetleAH.addItemToToolBox(treasure);
+      if(isToolBoxFull) this.digiBeetleAH.addItemToToolBox(treasure);
       this.dungeonState = 'text-box-next';
       this.textBoxCanvas.drawContinueCursor(this.systemAH.fetchImage('continueCursor'),()=>{});
       this.drawDungeon();

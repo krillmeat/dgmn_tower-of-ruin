@@ -15,11 +15,12 @@ import VictoryMenu from "./menus/victory-menu";
 // TODO - Do I have too many "pass-throughs"? Functions in here that only serve to call a Child Class function
 
 class Battle {
-  constructor(){ // TODO - Needs floor and mods to determine enemies
+  constructor(isBoss,floorNumber){ // TODO - Needs floor and mods to determine enemies
     this.battleActive = true;
     this.turn = 0;                               // Which Turn it currently is
     this.yourParty;                              // Your Dgmn : TODO - gameAH Reference to fetch this
     this.enemyParty = ['edId0','edId1','edId2']; // Enemies for the Battle (Always these three IDs)
+    this.isBoss = isBoss;
 
     this.battleState = 'loading';
     this.battleRewards = [];
@@ -275,7 +276,7 @@ class Battle {
    * Draws the Combo in the Status Bar for a Dgmn
    * ----------------------------------------------------------------------*/
   drawDgmnStatusCombo = (isEnemy,dgmnIndex,combo) => {
-    let comboLetter = this.attackUtility.getComboLetter(combo)
+    let comboLetter = this.attackUtility.getComboLetter(combo);
     let comboImg = comboLetter === 'F' ? this.systemAH.fetchImage('comboFIcon') : this.systemAH.fetchImage(`pwr${comboLetter}Icon`);
     let partyOffset = isEnemy ? 0 : 17;
     let coord = [1+partyOffset,(4+(dgmnIndex * 4))];
@@ -452,7 +453,7 @@ class Battle {
     this.battleMenu.menuCanvas.clearCanvas();
     this.battleMenu = null;
 
-    this.victoryMenu = new VictoryMenu(this.battleBaseXP,this.battleRewards,this.systemAH,this.gameAH,this.battleAH);
+    this.victoryMenu = new VictoryMenu(this.isBoss,this.battleBaseXP,this.battleRewards,this.systemAH,this.gameAH,this.battleAH);
     this.battleIO.setMenuAH(this.victoryMenu.victoryMenuAH);
     this.victoryMenu.gotoRewards(this.battleRewards);
 
@@ -482,7 +483,6 @@ class Battle {
     let currDgmn = this.victoryMenu.levelUpDgmn[this.victoryMenu.levelUpIndex].dgmnId;
     let currDgmnData = this.dgmnAH.getDgmnData(currDgmn,['speciesName','currentFP'],false);
         currDgmnData.dgmnId = currDgmn;
-    
     if(this.dgmnUtility.checkEvolution(currDgmnData)){
       let evoImages = this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
 
@@ -499,6 +499,7 @@ class Battle {
   }
 
   evolveCurrDgmn = () => {
+    debugger;
     let currDgmn = this.victoryMenu.levelUpDgmn[this.victoryMenu.levelUpIndex];
     let evoChoice = this.victoryMenu.subMenus.evolution.selectedDgmn;
     this.dgmnAH.evolve(currDgmn.dgmnId,evoChoice);
@@ -507,7 +508,10 @@ class Battle {
     // If there's more than 1 DGMN, and you're not at the end yet...
     if(this.victoryMenu.levelUpDgmn.length > 1 && this.victoryMenu.levelUpIndex < this.victoryMenu.levelUpDgmn.length-1){
       this.victoryMenu.removeSubMenu('evolution'); // Clear out the old Menu
-      this.victoryMenu.gotoNextLevelUp();
+      if(this.isBoss){ // If this was a Boss Batttle, you need to go to the Boss Rewards Screen after Evo
+        this.victoryMenu.gotoBossRewards(this.floorNumber);
+      } else{ this.victoryMenu.gotoNextLevelUp() } 
+      
     } else { // Otherwise, end the Battle
       this.end();
     }
@@ -570,10 +574,14 @@ class Battle {
   // TODO - MIX THIS WITH PARTY CHOICE SHOULD CALL FROM DATA (And move to Utility)
   buildEnemyActions = () => {
     for(let enemy in this.enemyParty){
-      let action = this.attackUtility.getAttackData('bubbles',['type','hits','targets','power','type','maxCost']);
-          action.attackName = 'bubbles';
-          action.targetIndex = [Math.floor(Math.random() * 3)];
-          action.attacker = enemy;
+      // Randomly Select an Attack the Enemy Has
+      let possibleAttacks = this.dgmnAH.getDgmnData(this.enemyParty[enemy],['attacks'],true).attacks;
+      let attackChoice = possibleAttacks[Math.floor(Math.random() * possibleAttacks.length)].attackName;
+      
+      let action = this.attackUtility.getAttackData(attackChoice,['type','hits','targets','power','type','maxCost']);
+        action.attackName = attackChoice;
+        action.targetIndex = [Math.floor(Math.random() * 3)];
+        action.attacker = enemy;
       
       this.addAction(enemy,true,action);
     }

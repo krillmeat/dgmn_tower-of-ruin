@@ -130,7 +130,7 @@ class Game{
    * ----------------------------------------------------------------------*/
   startBattle = () => {
     debugLog("Starting Battle...");
-    this.battle = new Battle();
+    this.battle = new Battle(this.dungeon.floor.isBossFloor,this.dungeon.floor.number);
     this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,this.dungeon?.dungeonAH,()=>{}); // The other two AH's aren't generated, because there's no dungeon/beetle yet
     this.battle.init();
   }

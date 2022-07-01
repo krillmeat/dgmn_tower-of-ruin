@@ -1,5 +1,6 @@
 import config from '../../../config';
-import {dungeonFloorsDB,dungeonRoomsDB} from '../../../data/dungeon.db';
+import {dungeonFloorsBossMapDB, dungeonFloorsDB,dungeonRoomsDB} from '../../../data/dungeon.db';
+import { bossEncountersDB, bossEncoutnersMapDB } from '../../../data/encounters.db';
 import {debugLog} from '../../../utils/log-utils';
 
 /**------------------------------------------------------------------------
@@ -35,9 +36,9 @@ class MapUtility{
     return dimensions;
   }
 
-  getFloorLayout = dimensions => {
-    let floorOptions = dungeonFloorsDB[dimensions];
-    let selectedFloor = Math.floor(Math.random() * (floorOptions.length));
+  getFloorLayout = (dimensions,floorNumber = 1) => {
+    let floorOptions = dimensions === 'boss' ? dungeonFloorsDB.boss : dungeonFloorsDB[dimensions];
+    let selectedFloor = dimensions === 'boss' ? dungeonFloorsBossMapDB.indexOf(floorNumber) : Math.floor(Math.random() * (floorOptions.length));
 
     let roomNumberMatrix = floorOptions[selectedFloor];
 
@@ -86,6 +87,11 @@ class MapUtility{
   isOpenTile = tileValue => {
     let possibleValues = [1]
     return (possibleValues.indexOf(tileValue) !== -1)
+  }
+
+  // TODO - Add more floors
+  isBossFloor = floorNumber => {
+    return floorNumber === 5;
   }
 }
 
