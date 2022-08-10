@@ -67,7 +67,7 @@ class DigiBeetle{
 
   isToolBoxFull = () => {
     let maxItems = this.digiBeetleUtility.getToolBoxMax(this.toolBox.version);
-    return this.toolBox.items.length >= maxItems
+    return this.toolBox.items.length >= maxItems;
   }
 
   loadDigiBeetleImages = () => {

@@ -93,6 +93,24 @@ class MapUtility{
   isBossFloor = floorNumber => {
     return floorNumber === 5;
   }
+
+  getBossRewardLevel = floorNumber =>{
+    if(floorNumber === 10){
+      return 1;
+    }
+    return 0;
+  }
+
+  getBossAttackLevel = floorNumber => {
+    switch(floorNumber){
+      case 5:
+        return 3;
+      case 10:
+        return 4;
+      default:
+        return 1;
+    }
+  }
 }
 
 export default MapUtility;

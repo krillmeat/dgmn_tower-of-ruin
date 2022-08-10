@@ -275,26 +275,31 @@ class Dungeon{
    * TODO - Unfinished
    * ----------------------------------------------------------------------*/
   goUpFloor = () => {
-    debugLog("Ascending Floor...");
-    this.moving = 'none';
-    this.dungeonState = 'ascending';
-    this.systemAH.startLoading(()=>{
-      this.floorNumber++;
-      this.floor = null;
-      this.buildFloor();
-      // TODO - This is duplicate code, find a way to take the Callback out of the original function
-      this.systemAH.loadImages(this.getRoomImages(this.floor.roomMatrix), ()=>{
-        this.floor.drawFloor();
-        this.floor.checkCollision(); // Otherwise, if you start on an edge, you'll ignore it
-        this.floor.setFloorToStart();
-        setTimeout(()=>{
-          this.systemAH.stopLoading();
-          this.dungeonState = 'free';
-        },1000);
-        
-        this.onLoaded();
-      });
-    })
+    if(this.floorNumber === 5){ // TODO - This number should change
+      debugLog("Dungeon Clear!");
+    } else{
+      debugLog("Ascending Floor...");
+      this.moving = 'none';
+      this.dungeonState = 'ascending';
+      this.systemAH.startLoading(()=>{
+        this.floorNumber++;
+        this.floor = null;
+        this.buildFloor();
+        // TODO - This is duplicate code, find a way to take the Callback out of the original function
+        this.systemAH.loadImages(this.getRoomImages(this.floor.roomMatrix), ()=>{
+          this.floor.drawFloor();
+          this.floor.checkCollision(); // Otherwise, if you start on an edge, you'll ignore it
+          this.floor.setFloorToStart();
+          setTimeout(()=>{
+            this.systemAH.stopLoading();
+            this.dungeonState = 'free';
+          },1000);
+          
+          this.onLoaded();
+        });
+      })
+    }
+    
   }
 
   /**------------------------------------------------------------------------
@@ -323,11 +328,11 @@ class Dungeon{
     this.moving = 'none';
     this.dungeonState = 'text-box';
     this.textBoxCanvas.paintImage(this.systemAH.fetchImage('textBox'));
-    let isToolBoxFull =this.digiBeetleAH.isToolBoxFull()
+    let isToolBoxFull = this.digiBeetleAH.isToolBoxFull()
     let message = isToolBoxFull ? 'Found '+this.treasureUtility.getTreasureName(treasure)+'... But your Item Box is full.' : 'Found '+this.treasureUtility.getTreasureName(treasure)+'!';
     this.textBoxCanvas.dungeonTxt.instantText(this.textBoxCanvas.ctx,message,'white');
     setTimeout(()=>{
-      if(isToolBoxFull) this.digiBeetleAH.addItemToToolBox(treasure);
+      if(!isToolBoxFull) this.digiBeetleAH.addItemToToolBox(treasure);
       this.dungeonState = 'text-box-next';
       this.textBoxCanvas.drawContinueCursor(this.systemAH.fetchImage('continueCursor'),()=>{});
       this.drawDungeon();

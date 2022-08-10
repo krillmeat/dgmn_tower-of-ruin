@@ -29,6 +29,7 @@
     this.giveCurrReward = dir => cbObj.giveCurrRewardCB(dir)
     this.levelUpNext = () => cbObj.levelUpNextCB()
     this.evolveCurrDgmn = () => cbObj.evolveCurrDgmnCB()
+    this.selectBossReward = () => cbObj.selectBossRewardCB()
    }
  }
 

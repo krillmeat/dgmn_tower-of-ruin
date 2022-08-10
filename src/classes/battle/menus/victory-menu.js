@@ -8,10 +8,12 @@ import MenuCanvas from "../../menu/menu-canvas";
 import TextArea from "../../text-area";
 import VictoryMenuAH from "./victory-menu.ah";
 import RewardsMenu from "../../menu/rewards-menu";
-import SubMenu from "../../menu/sub-menu";
 import LevelUpMenu from "../../menu/levelup-menu";
 import EvolutionMenu from "../../menu/evolution-menu";
 import BossVictoryMenu from "../../menu/boss-victory-menu";
+import ListMenu from "../../menu/list-menu";
+import AttackUtility from "../../dgmn/utility/attack.util";
+import MapUtility from "../../dungeon/utility/map.util";
 
 /**------------------------------------------------------------------------
  * VICTORY MENU
@@ -31,20 +33,28 @@ class VictoryMenu extends Menu{
 
     this.currRewardIndex = 0;
     this.levelUpIndex = 0;
+    this.bossRewardIndex = 0;
     this.levelUpDgmn = [];
+    this.bossRewardsDgmn = [];                // Only used when there are no Level Ups
     this.isBoss = isBoss;
 
     this.victoryMenuAH = new VictoryMenuAH({
       getCurrStateCB: this.getCurrState,
       getCurrMenuTypeCB: this.getCurrMenuType,
       nextEvolutionCB: this.nextEvolution,
-      prevEvolutionCB: this.prevEvolution
+      prevEvolutionCB: this.prevEvolution,
+      navDownCB: this.navDown,
+      navUpCB: this.navUp,
+      selectBossRewardCB: this.selectBossReward
     });
 
     this.menuUtility = new MenuUtility();
     this.dgmnUtility = new DgmnUtility();
+    this.attackUtility = new AttackUtility(); // Used to get the Display Name for the learned Attack
+    this.mapUtility = new MapUtility();       // Used to check the Level of Attack to Learn
 
     this.menuCanvas = new MenuCanvas('victory',160,144); 
+    this.descriptionTxt = new TextArea(4,14,16,4);
   }
 
   /**------------------------------------------------------------------------
@@ -75,6 +85,9 @@ class VictoryMenu extends Menu{
    * Sets up a DGMN's Level Up Screen
    * ----------------------------------------------------------------------*/ /* istanbul ignore next */
   gotoLevelUp = () => {
+    this.removeSubMenu('rewards');
+    this.removeSubMenu('boss');
+    this.removeSubMenu('rewardFP');
     this.currState = 'level';
     this.menuCanvas.paintImage(this.systemAH.fetchImage('battleLevelUpOverlay'),0,0);
     this.menuCanvas.clearBottomSection();
@@ -97,6 +110,16 @@ class VictoryMenu extends Menu{
       this.currState = 'level-next';
     },1000);
 
+    this.drawMenu();
+  }
+
+  launchBossRewardFPSelection = () => {
+    this.subMenus.boss.inFPSelection = true;
+    this.addSubMenu('rewardFP',new ListMenu([7,3],8,10,1,['DR','NS','DS','JT','NA','ME','WG','VB'],this.systemAH.fetchImage('miniCursor'),null,'rewardFP'));
+    this.subMenus.rewardFP.cursorOffset = 2;
+    this.subMenus.rewardFP.isVisible = true;
+    this.subMenus.rewardFP.isActive = true;
+    this.subMenus.rewardFP.drawMenu();
     this.drawMenu();
   }
 
@@ -142,18 +165,79 @@ class VictoryMenu extends Menu{
    * ------------------------------------------------------------------------
    * Sets up a DGMN's Rewards Screen After Beating a Boss
    * ----------------------------------------------------------------------*/ /* istanbul ignore next */
-  gotoBossRewards = floorNumber => {
-    this.continueCursor.remove();
-    this.removeSubMenu('evolution');
-    
+  gotoBossRewards = (floorNumber,onDone) => { // TODO - onDone breaks the AH model   
+    this.continueCursor?.remove();
+    this.removeSubMenu('rewards');
     this.currState = 'boss-reward';
     this.menuCanvas.paintImage(this.systemAH.fetchImage('bossRewardMenu'),0,0);
-    this.drawTopText('Choose a Reward!');
-    this.addSubMenu('boss',new BossVictoryMenu(floorNumber,[0,0],12,12,[],this.systemAH.fetchImage('miniCursor'),null,'bossReward'));
+    this.drawTopText('Choose an Upgrade!');
+    this.addSubMenu('boss',new BossVictoryMenu(floorNumber,[1,2],3,18,2,['FP','EN','XP'],this.systemAH.fetchImage('miniCursor'),null,'bossReward'));
+    
+    // TODO - WAY too many direct Callbacks to not just send in an AH (which exists...)
+    this.subMenus.boss.onDone = () => onDone();
+    this.subMenus.boss.fetchImageCB = img => { return this.systemAH.fetchImage(img) }
+    this.subMenus.boss.redrawParentCB = () => { this.drawMenu() }
+    this.subMenus.boss.drawMenu();
     this.subMenus.boss.isVisible = true;
-    this.subMenus.boss.isActive = true;
+    this.subMenus.boss.isActive = true; // TODO - I'm not entirely sure I'm using this
+    let dgmnList = this.levelUpDgmn.length > 0 ? this.levelUpDgmn : this.bossRewardsDgmn;
+    this.drawBossRewardBottomSection(dgmnList[this.bossRewardIndex].speciesName);
+    this.drawAttackLearned(dgmnList[this.bossRewardIndex].speciesName,floorNumber,dgmnList[this.bossRewardIndex].permAttacks);
+    this.drawMenu();
   }
 
+  /**------------------------------------------------------------------------
+   * NEXT BOSS REWARD
+   * ------------------------------------------------------------------------
+   * This is ONLY used when there are no Level Ups and you need to go directly
+   * to the next Boss Reward
+   * ----------------------------------------------------------------------*/ /* istanbul ignore next */
+  nextBossReward = floorNumber => {
+    this.subMenus.boss.inFPSelection = false;
+    this.removeSubMenu('rewardFP');
+    this.menuCanvas.paintImage(this.systemAH.fetchImage('bossRewardMenu'),0,0);
+    this.bossRewardIndex++;
+    this.subMenus.boss.currIndex = 0;
+    let dgmnList = this.levelUpDgmn.length > 0 ? this.levelUpDgmn : this.bossRewardsDgmn;
+    this.drawBossRewardBottomSection(dgmnList[this.bossRewardIndex].speciesName);
+    this.drawAttackLearned(dgmnList[this.bossRewardIndex].speciesName,floorNumber,dgmnList[this.bossRewardIndex].permAttacks);
+    this.subMenus.boss.drawMenu();
+    this.drawMenu();
+  }
+
+  drawBossRewardBottomSection = speciesName => {
+    this.menuCanvas.paintImage(this.systemAH.fetchImage(speciesName.toLowerCase()+'Portrait'),0,14*config.tileSize);
+    this.drawUpgradeDescription();
+    this.drawMenu();
+  }
+
+  drawUpgradeDescription = () => {
+    this.menuCanvas.ctx.fillStyle = "#00131A";
+    this.menuCanvas.ctx.fillRect(4*config.tileSize,14*config.tileSize,16*config.tileSize,4*config.tileSize);
+    let messages = ['Increase 1 FP','Gain 1 XP on each Level Up','Raise your Max   EN by 5'];
+    this.descriptionTxt.instantText(this.menuCanvas.ctx,messages[this.subMenus.boss.currIndex],'white');
+    this.drawMenu();
+  }
+
+  /**------------------------------------------------------------------------
+   * DRAW ATTACK LEARNED
+   * ------------------------------------------------------------------------
+   * When a DGMN learns an Attack after winning a Battle, draw the message
+   * TODO - This doesn't check against the Attack learned at the correct Stage
+   *        only the Attack of the Current DGMN (I need to store each learned
+   *        Attack during a run so I can grab THAT instead of the current one)
+   * ------------------------------------------------------------------------
+   * @param {String}        speciesName Name of the DGMN
+   * @param {Number}        floorNumber Current Floor of the Boss Battle
+   * @param {Array:String}  permAttacks List of Attacks already known
+   * ----------------------------------------------------------------------*/
+  drawAttackLearned = (speciesName,floorNumber,permAttacks = []) => {
+    let stage = this.dgmnUtility.getStage(speciesName);
+    if(stage > 2 && stage === this.mapUtility.getBossAttackLevel(floorNumber)){ // Check if Reward CAN be given, based on Stage and Floor
+      let attackName = this.attackUtility.getDisplayName(this.dgmnUtility.getAttack(speciesName));
+      if(permAttacks.indexOf(attackName) === -1) this.subMenus.boss.learnedAttackTxt.instantText(this.menuCanvas.ctx,`ATK+ ${attackName}`,'white');
+    }
+  }
   
   /**------------------------------------------------------------------------
    * NEXT EVOLUTION
@@ -193,6 +277,10 @@ class VictoryMenu extends Menu{
    drawMenu = () => {
     for(let key in this.subMenus){
       if(this.subMenus[key].isVisible){
+        if(this.subMenus.boss?.inFPSelection){
+          this.menuCanvas.paintImage(this.systemAH.fetchImage('bossRewardFieldChoice'),0,0);
+        }
+
         this.menuCanvas.paintCanvas(this.subMenus[key].menuCanvas);
       } 
     }
@@ -224,6 +312,42 @@ class VictoryMenu extends Menu{
    * Instigates the Rewards Menu's update
    * ----------------------------------------------------------------------*/
   updateRewardsList = (rewards,onDone) => { this.subMenus.rewards.updateRewardsList(rewards,onDone) }
+
+  navUp = () => {
+    if(this.currState === 'boss-reward'){
+      if(this.subMenus.boss.inFPSelection){
+        this.subMenus.rewardFP.prevListItem();
+      } else{
+        this.subMenus.boss.moveUp();
+        this.drawUpgradeDescription();
+      }
+    }
+    this.drawMenu();
+  }
+
+  navRight = () => {
+
+  }
+
+  navDown = () => {
+    if(this.currState === 'boss-reward'){
+      if(this.subMenus.boss.inFPSelection){
+        this.subMenus.rewardFP.nextListItem();
+      } else{
+        this.subMenus.boss.moveDown();
+        this.drawUpgradeDescription();
+      }
+    }
+    this.drawMenu();
+  }
+
+  navLeft = () => {
+
+  }
+
+  selectBossReward = () => {
+    // TODO - Send on to Level Up
+  }
 
   /**------------------------------------------------------------------------
    * ------------------------------------------------------------------------

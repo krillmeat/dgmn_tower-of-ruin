@@ -181,7 +181,8 @@ class TextArea{
       } else if(char === "@"){ modifiedCharArray[i] = "lv" 
       } else if(char === "#"){ modifiedCharArray[i] = "exclamation" 
       } else if(char === "£"){ modifiedCharArray[i] = "period" 
-      } else if(char === "-"){ modifiedCharArray[i] = "dash" }
+      } else if(char === "-"){ modifiedCharArray[i] = "dash"
+      } else if(char === '+'){ modifiedCharArray[i] = "plus" }
     }
 
     return modifiedCharArray;

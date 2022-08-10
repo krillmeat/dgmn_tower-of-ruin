@@ -11,9 +11,10 @@ export const itemsDB = {
     }
   },
   atkPluginC: {
-    displayName: 'ATK Plugin C',
+    displayName: 'ATK+ C',
     usable: ['battle'],
-    target: 'your-dgmn'
+    target: 'your-dgmn',
+    description: 'Boost 1 DGMN ATK by 1 in Battle'
   },
   boosterDRs: {
     displayName: '1 DR FP',

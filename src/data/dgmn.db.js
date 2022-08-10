@@ -64,7 +64,7 @@ export const dgmnDB = {
   },
   Pitch: {
     stage: 1, attr: 'Free',
-    stats: [2,0,1,0,1,0,1,0],
+    stats: {HP:2, ATK:0, DEF:1, INT: 0, RES: 1, HIT: 0, AVO: 1, SPD: 0},
     evolutions: [],
     types: {},
     fields: {DS: 1},
@@ -72,7 +72,7 @@ export const dgmnDB = {
   },
   Poyo: {
     stage: 1, attr: 'Free',
-    stats: [2,1,0,1,1,0,0,0],
+    stats: {HP:2, ATK:1, DEF:0, INT: 1, RES: 1, HIT: 0, AVO: 0, SPD: 0},
     evolutions: [],
     types: {},
     fields: {VB: 1},

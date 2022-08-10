@@ -48,7 +48,8 @@ class DgmnManager{
       getTempDgmnCB: this.getTempDgmn,
       evolveCB: this.evolve,
       hatchEggCB: this.hatchEgg,
-      useItemOnCB: this.useItemOn
+      useItemOnCB: this.useItemOn,
+      giveUpgradeCB: this.giveUpgrade
     });
 
     this.systemAH = systemAH;
@@ -92,6 +93,7 @@ class DgmnManager{
     if(isEnemy){ // Generating a new Enemy
       this.enemyDgmn[`edId${index}`] = new Dgmn(index,"ENEMY",data.speciesName);
       this.enemyDgmn[`edId${index}`].isEnemy = true;
+      this.enemyDgmn[`edId${index}`].currentLevel = data.currentLevel;
       this.enemyDgmn[`edId${index}`].currentStats = data.currentStats;
       this.enemyDgmn[`edId${index}`].currentHP = this.enemyDgmn[`edId${index}`].currentStats.HP;
       this.enemyDgmn[`edId${index}`].attacks = data.attacks;
@@ -355,6 +357,49 @@ class DgmnManager{
     } else if(itemEffect.type === 'booster'){
       this.allDgmn[dgmnId].addFP(itemEffect.field,itemEffect.amount);
     }
+  }
+
+  giveUpgrade = (dgmnId,upgrade,FP='') => {
+    this['upgrade'+upgrade](dgmnId,FP);
+  }
+
+  /**------------------------------------------------------------------------
+   * UPGRADE FP
+   * ------------------------------------------------------------------------
+   * Permenantly Increases a DGMN's FP
+   * ------------------------------------------------------------------------
+   * @param {String}  dgmnId  ID for the DGMN in your Party
+   * @param {String}  FP      The FP to be upgraded
+   * ----------------------------------------------------------------------*/
+   upgradeFP = (dgmnId, FP) => {
+    debugLog("  Upgrade FP: ",FP);
+    this.allDgmn[dgmnId].upgrades.FP++;
+    this.allDgmn[dgmnId].permFP[FP]++;
+  }
+  
+  /**------------------------------------------------------------------------
+   * UPGRADE XP
+   * ------------------------------------------------------------------------
+   * Permenantly Increases a DGMN's Energy (EN)
+   * ------------------------------------------------------------------------
+   * @param {String}  dgmnId  ID for the DGMN in your Party
+   * ----------------------------------------------------------------------*/
+   upgradeXP = dgmnId => {
+    debugLog("  Upgrading XP")
+    this.allDgmn[dgmnId].upgrades.XP++;
+  }
+  
+  /**------------------------------------------------------------------------
+   * UPGRADE ENERGY
+   * ------------------------------------------------------------------------
+   * Permenantly Increases a DGMN's Energy (EN)
+   * ------------------------------------------------------------------------
+   * @param {String}  dgmnId  ID for the DGMN in your Party
+   * ----------------------------------------------------------------------*/
+  upgradeEN = dgmnId => {
+    debugLog("  Upgrading EN");
+    this.allDgmn[dgmnId].upgrades.EN++;
+    this.allDgmn[dgmnId].maxEnergy += 5;
   }
 
   /**------------------------------------------------------------------------

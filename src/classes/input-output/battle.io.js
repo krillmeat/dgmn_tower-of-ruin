@@ -29,9 +29,10 @@ class BattleIO extends IO{
         this.battleAH.levelUpNext();
       } else if(this.battleMenuAH.getState() === 'evolution-choice'){
         this.battleAH.evolveCurrDgmn();
+      } else if(this.battleMenuAH.getState() === 'boss-reward'){
+        this.battleAH.selectBossReward();
       }
     }
-    
   }
 
   upKeyHandler = upDown => {
@@ -41,7 +42,9 @@ class BattleIO extends IO{
             this.battleMenuAH.prevListItem();
           }  
         } else if(this.battleAH.getBattleState() === 'victory'){
-          if(this.battleMenuAH.getState() === 'rewards') this.battleAH.giveCurrReward('up');
+          if(this.battleMenuAH.getState() === 'rewards'){
+            this.battleAH.giveCurrReward('up');
+          } else if(this.battleMenuAH.getState() === 'boss-reward'){ this.battleMenuAH.navUp() }
         }
       }
   }
@@ -64,6 +67,8 @@ class BattleIO extends IO{
         if(this.battleMenuAH.getCurrMenuType() === 'list'){
           this.battleMenuAH.nextListItem();
         }
+      } else if(this.battleAH.getBattleState() === 'victory'){
+        if(this.battleMenuAH.getState() === 'boss-reward') this.battleMenuAH.navDown()
       }
     }
   }

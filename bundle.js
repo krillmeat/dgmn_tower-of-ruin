@@ -307,6 +307,9 @@ var DgmnAH = function DgmnAH(cbObj) {
   this.useItemOn = function (dgmnId, item) {
     return cbObj.useItemOnCB(dgmnId, item);
   };
+  this.giveUpgrade = function (dgmnId, upgrade, FP) {
+    return cbObj.giveUpgradeCB(dgmnId, upgrade, FP);
+  };
 };
 
 var evolutions = {
@@ -480,7 +483,16 @@ var dgmnDB = {
   Pitch: {
     stage: 1,
     attr: 'Free',
-    stats: [2, 0, 1, 0, 1, 0, 1, 0],
+    stats: {
+      HP: 2,
+      ATK: 0,
+      DEF: 1,
+      INT: 0,
+      RES: 1,
+      HIT: 0,
+      AVO: 1,
+      SPD: 0
+    },
     evolutions: [],
     types: {},
     fields: {
@@ -491,7 +503,16 @@ var dgmnDB = {
   Poyo: {
     stage: 1,
     attr: 'Free',
-    stats: [2, 1, 0, 1, 1, 0, 0, 0],
+    stats: {
+      HP: 2,
+      ATK: 1,
+      DEF: 0,
+      INT: 1,
+      RES: 1,
+      HIT: 0,
+      AVO: 0,
+      SPD: 0
+    },
     evolutions: [],
     types: {},
     fields: {
@@ -1304,9 +1325,15 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
     NA: 0
   };
   this.permAttacks = [];
+  this.upgrades = {
+    FP: 0,
+    EN: 0,
+    XP: 0
+  };
+  this.maxEnergy = 100;
   this.currentLevel = 1;
   this.currentHP = 23;
-  this.currentEN = 100;
+  this.currentEN = this.maxEnergy;
   this.currentStats = {
     HP: 13,
     ATK: 0,
@@ -1458,7 +1485,7 @@ var dgmnEncounterChartDB = {
     },
     VB: {
       pre10: 1,
-      dgmnList: ['Yura']
+      dgmnList: ['Poyo']
     },
     NA: {
       pre10: 1,
@@ -1485,7 +1512,7 @@ var dgmnEncounterDB = {
     speciesName: 'Bota',
     currentLevel: 2,
     currentStats: {
-      HP: 5,
+      HP: 2,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1500,7 +1527,7 @@ var dgmnEncounterDB = {
     speciesName: 'Yura',
     currentLevel: 2,
     currentStats: {
-      HP: 5,
+      HP: 2,
       ATK: 2,
       DEF: 1,
       INT: 2,
@@ -1515,7 +1542,7 @@ var dgmnEncounterDB = {
     speciesName: 'Zuru',
     currentLevel: 2,
     currentStats: {
-      HP: 5,
+      HP: 2,
       ATK: 2,
       DEF: 1,
       INT: 2,
@@ -1530,7 +1557,7 @@ var dgmnEncounterDB = {
     speciesName: 'Doki',
     currentLevel: 2,
     currentStats: {
-      HP: 5,
+      HP: 2,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1545,7 +1572,7 @@ var dgmnEncounterDB = {
     speciesName: 'Pururu',
     currentLevel: 2,
     currentStats: {
-      HP: 5,
+      HP: 2,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1560,7 +1587,7 @@ var dgmnEncounterDB = {
     speciesName: 'Choro',
     currentLevel: 2,
     currentStats: {
-      HP: 5,
+      HP: 2,
       ATK: 2,
       DEF: 2,
       INT: 1,
@@ -1575,13 +1602,28 @@ var dgmnEncounterDB = {
     speciesName: 'Pitch',
     currentLevel: 2,
     currentStats: {
-      HP: 5,
+      HP: 2,
       ATK: 1,
       DEF: 2,
       INT: 1,
       RES: 2,
       HIT: 1,
       AVO: 2,
+      SPD: 1
+    },
+    attacks: [new Attack('bubbles')]
+  },
+  Poyo: {
+    speciesName: 'Poyo',
+    currentLevel: 2,
+    currentStats: {
+      HP: 2,
+      ATK: 2,
+      DEF: 1,
+      INT: 2,
+      RES: 2,
+      HIT: 1,
+      AVO: 1,
       SPD: 1
     },
     attacks: [new Attack('bubbles')]
@@ -1741,6 +1783,22 @@ var MapUtility = function MapUtility() {
   _defineProperty(this, "isBossFloor", function (floorNumber) {
     return floorNumber === 5;
   });
+  _defineProperty(this, "getBossRewardLevel", function (floorNumber) {
+    if (floorNumber === 10) {
+      return 1;
+    }
+    return 0;
+  });
+  _defineProperty(this, "getBossAttackLevel", function (floorNumber) {
+    switch (floorNumber) {
+      case 5:
+        return 3;
+      case 10:
+        return 4;
+      default:
+        return 1;
+    }
+  });
 };
 
 var EnemyGenerator = function EnemyGenerator(dgmnAH) {
@@ -1791,9 +1849,10 @@ var itemsDB = {
     }
   },
   atkPluginC: {
-    displayName: 'ATK Plugin C',
+    displayName: 'ATK+ C',
     usable: ['battle'],
-    target: 'your-dgmn'
+    target: 'your-dgmn',
+    description: 'Boost 1 DGMN ATK by 1 in Battle'
   },
   boosterDRs: {
     displayName: '1 DR FP',
@@ -1947,6 +2006,7 @@ var DgmnManager = function DgmnManager(systemAH) {
     if (isEnemy) {
       _this.enemyDgmn["edId".concat(index)] = new Dgmn(index, "ENEMY", data.speciesName);
       _this.enemyDgmn["edId".concat(index)].isEnemy = true;
+      _this.enemyDgmn["edId".concat(index)].currentLevel = data.currentLevel;
       _this.enemyDgmn["edId".concat(index)].currentStats = data.currentStats;
       _this.enemyDgmn["edId".concat(index)].currentHP = _this.enemyDgmn["edId".concat(index)].currentStats.HP;
       _this.enemyDgmn["edId".concat(index)].attacks = data.attacks;
@@ -2097,6 +2157,24 @@ var DgmnManager = function DgmnManager(systemAH) {
       _this.allDgmn[dgmnId].addFP(itemEffect.field, itemEffect.amount);
     }
   });
+  _defineProperty(this, "giveUpgrade", function (dgmnId, upgrade) {
+    var FP = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+    _this['upgrade' + upgrade](dgmnId, FP);
+  });
+  _defineProperty(this, "upgradeFP", function (dgmnId, FP) {
+    debugLog("  Upgrade FP: ", FP);
+    _this.allDgmn[dgmnId].upgrades.FP++;
+    _this.allDgmn[dgmnId].permFP[FP]++;
+  });
+  _defineProperty(this, "upgradeXP", function (dgmnId) {
+    debugLog("  Upgrading XP");
+    _this.allDgmn[dgmnId].upgrades.XP++;
+  });
+  _defineProperty(this, "upgradeEN", function (dgmnId) {
+    debugLog("  Upgrading EN");
+    _this.allDgmn[dgmnId].upgrades.EN++;
+    _this.allDgmn[dgmnId].maxEnergy += 5;
+  });
   _defineProperty(this, "animateDgmn", function (dgmnId) {
     !_this.isEnemy(dgmnId) ? _this.allDgmn[dgmnId].startIdleAnimation() : _this.enemyDgmn[dgmnId].startIdleAnimation();
   });
@@ -2156,7 +2234,8 @@ var DgmnManager = function DgmnManager(systemAH) {
     getTempDgmnCB: this.getTempDgmn,
     evolveCB: this.evolve,
     hatchEggCB: this.hatchEgg,
-    useItemOnCB: this.useItemOn
+    useItemOnCB: this.useItemOn,
+    giveUpgradeCB: this.giveUpgrade
   });
   this.systemAH = systemAH;
   this.enemyGenerator = new EnemyGenerator(this.dgmnAH);
@@ -2248,7 +2327,7 @@ var DigiBeetleCanvas = function (_GameCanvas) {
 
 var dungeonImages = ['Dungeon/startTile', 'Dungeon/endTile', 'Dungeon/enemyTile', 'Dungeon/treasureTile', 'Dungeon/treasureTileOpen', 'Menus/dungeonPauseOverlay'];
 var digiBeetleImages = ['Dungeon/DigiBeetle/digiBeetleDown0', 'Dungeon/DigiBeetle/digiBeetleDown1', 'Dungeon/DigiBeetle/digiBeetleUp0', 'Dungeon/DigiBeetle/digiBeetleUp1', 'Dungeon/DigiBeetle/digiBeetleRight0', 'Dungeon/DigiBeetle/digiBeetleRight1', 'Dungeon/DigiBeetle/digiBeetleLeft0', 'Dungeon/DigiBeetle/digiBeetleLeft1'];
-var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/pwrDIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay', 'Menus/textBox', 'Menus/basicMenu', 'Icons/Pause/itemsSelected', 'Icons/Pause/itemsDeselected', 'Icons/Pause/beetleDeselected', 'Icons/Pause/beetleSelected', 'Menus/itemsTargetOverlay'];
+var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/pwrDIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay', 'Menus/textBox', 'Menus/basicMenu', 'Icons/Pause/itemsSelected', 'Icons/Pause/itemsDeselected', 'Icons/Pause/beetleDeselected', 'Icons/Pause/beetleSelected', 'Menus/itemsTargetOverlay', 'Icons/rewardIconDeselected', 'Icons/rewardIconSelected', 'Icons/rewardIconNull', 'Icons/rewardIconFull', 'Menus/bossRewardFieldChoice'];
 var loadingImages = ['Loading/loading0', 'Loading/loading1', 'Loading/loading2', 'Loading/loading3', 'Loading/loading4', 'Loading/loading5', 'Loading/loading6', 'Loading/loading7', 'Loading/loading8', 'Loading/loading9', 'Loading/loading10'];
 var fontImages$1 = ['Fonts/fontsBlack', 'Fonts/fontsWhite', 'Fonts/fontsLightGreen', 'Fonts/fontsDarkGreen'];
 var typeIcons = ['Icons/Types/noneTypeIcon', 'Icons/Types/fireTypeIcon', 'Icons/Types/windTypeIcon', 'Icons/Types/plantTypeIcon', 'Icons/Types/elecTypeIcon', 'Icons/Types/evilTypeIcon', 'Icons/Types/metalTypeIcon'];
@@ -2408,6 +2487,9 @@ var BattleAH = function BattleAH(cbObj) {
   this.evolveCurrDgmn = function () {
     return cbObj.evolveCurrDgmnCB();
   };
+  this.selectBossReward = function () {
+    return cbObj.selectBossRewardCB();
+  };
 };
 
 var BattleUtility = function BattleUtility() {
@@ -2530,6 +2612,8 @@ var BattleIO = function (_IO) {
           _this.battleAH.levelUpNext();
         } else if (_this.battleMenuAH.getState() === 'evolution-choice') {
           _this.battleAH.evolveCurrDgmn();
+        } else if (_this.battleMenuAH.getState() === 'boss-reward') {
+          _this.battleAH.selectBossReward();
         }
       }
     });
@@ -2540,7 +2624,11 @@ var BattleIO = function (_IO) {
             _this.battleMenuAH.prevListItem();
           }
         } else if (_this.battleAH.getBattleState() === 'victory') {
-          if (_this.battleMenuAH.getState() === 'rewards') _this.battleAH.giveCurrReward('up');
+          if (_this.battleMenuAH.getState() === 'rewards') {
+            _this.battleAH.giveCurrReward('up');
+          } else if (_this.battleMenuAH.getState() === 'boss-reward') {
+            _this.battleMenuAH.navUp();
+          }
         }
       }
     });
@@ -2561,6 +2649,8 @@ var BattleIO = function (_IO) {
           if (_this.battleMenuAH.getCurrMenuType() === 'list') {
             _this.battleMenuAH.nextListItem();
           }
+        } else if (_this.battleAH.getBattleState() === 'victory') {
+          if (_this.battleMenuAH.getState() === 'boss-reward') _this.battleMenuAH.navDown();
         }
       }
     });
@@ -2651,7 +2741,7 @@ var Menu = function Menu(systemAH, gameAH, parentAH) {
     _this.subMenus[label] = menu;
   });
   _defineProperty(this, "removeSubMenu", function (label) {
-    delete _this.subMenus[label];
+    if (_this.subMenus[label]) delete _this.subMenus[label];
   });
   _defineProperty(this, "buildIconImages", function (labels) {
     var images = {};
@@ -2813,7 +2903,8 @@ var fontData = {
   9: [12, 4],
   exclamation: [13, 4],
   period: [14, 4],
-  dash: [8, 3]
+  dash: [8, 3],
+  plus: [10, 3]
 };
 var fontImages = [];
 
@@ -2912,6 +3003,8 @@ var TextArea = function TextArea(x, y, width) {
         modifiedCharArray[i] = "period";
       } else if (_char3 === "-") {
         modifiedCharArray[i] = "dash";
+      } else if (_char3 === '+') {
+        modifiedCharArray[i] = "plus";
       }
     }
     return modifiedCharArray;
@@ -2956,7 +3049,7 @@ var ListMenu = function (_SubMenu) {
     _this = _super.call.apply(_super, [this].concat(args));
     _defineProperty(_assertThisInitialized(_this), "drawList", function () {
       for (var i = 0; i < _this.listItems.length; i++) {
-        var listItemTxt = new TextArea(1, i, _this.width - 1, 1);
+        var listItemTxt = new TextArea(1 + _this.cursorOffset, i, _this.width - 1, 1);
         listItemTxt.instantText(_this.menuCanvas.ctx, _this.listItems[i], 'white');
       }
     });
@@ -2975,7 +3068,7 @@ var ListMenu = function (_SubMenu) {
     _defineProperty(_assertThisInitialized(_this), "drawCursor", function (index) {
       var spotIndex = index ? index : _this.currIndex;
       _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(0, 0, config.tileSize, _this.itemAmount * config.tileSize);
+      _this.menuCanvas.ctx.fillRect(0, 0, config.tileSize, _this.itemAmount * _this.itemHeight * config.tileSize);
       _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * config.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
@@ -3020,6 +3113,7 @@ var ListMenu = function (_SubMenu) {
     _this.currPage = 0;
     _this.backImg = backImg;
     _this.cursorImg = cursorImg;
+    _this.cursorOffset = 0;
     _this.menuCanvas = new GameCanvas("".concat(_this.label, "-menu"), listWidth * 8, itemAmount * (itemHeight * 8));
     _this.menuCanvas.x = coord[0] * 8 * config.screenSize;
     _this.menuCanvas.y = coord[1] * 8 * config.screenSize;
@@ -3223,6 +3317,10 @@ var TargetSelect = function (_ListMenu) {
       args[_key - 3] = arguments[_key];
     }
     _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "drawCursor", function (index) {
+      var spotIndex = index ? index : _this.currIndex;
+      _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * config.screenSize);
+    });
     _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
       var startingIndex = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
       _this.menuCanvas.clearCanvas();
@@ -3317,6 +3415,15 @@ var VictoryMenuAH = function VictoryMenuAH(cbObj) {
   };
   this.prevIcon = function () {
     return cbObj.prevEvolutionCB();
+  };
+  this.navDown = function () {
+    return cbObj.navDownCB();
+  };
+  this.navUp = function () {
+    return cbObj.navUpCB();
+  };
+  this.selectBossReward = function () {
+    return cbObj.selectBossRewardCB();
   };
 };
 
@@ -3464,7 +3571,9 @@ var EvolutionMenu = function (_IconMenu) {
       _this.evoAttributeTxt.instantText(_this.menuCanvas.ctx, _this.dgmnUtility.getAttribute(species), 'green');
       _this.evoWeakTxt.instantText(_this.menuCanvas.ctx, 'WEAK', 'green');
       _this.evoResTxt.instantText(_this.menuCanvas.ctx, 'RES', 'green');
-      _this.menuCanvas.paintImage(_this.fetchImgCB("fieldDRIcon"), (5 + 4) * config.tileSize, 15 * config.tileSize);
+      for (var field in _this.dgmnUtility.getBaseFP(species)) {
+        _this.menuCanvas.paintImage(_this.fetchImgCB("field".concat(field, "Icon")), (_this.dgmnUtility.getAttribute(species).length + 5) * config.tileSize, 15 * config.tileSize);
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnStats", function (stats) {
       for (var stat in stats) {
@@ -3557,7 +3666,51 @@ var BossVictoryMenu = function (_ListMenu) {
       args[_key - 1] = arguments[_key];
     }
     _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "drawList", function () {
+      for (var i = 0; i < _this.listItems.length; i++) {
+        for (var r = 0; r < 8; r++) {
+          var image = 'rewardIconDeselected';
+          if (r > _this.mapUtility.getBossRewardLevel(_this.currFloor)) image = 'rewardIconNull';
+          _this.drawIcon(i, r, image);
+        }
+      }
+      _this.drawIcon(_this.currIndex, _this.currUpgradeIndex, 'rewardIconSelected');
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawCurrIcon", function () {});
+    _defineProperty(_assertThisInitialized(_this), "drawIcon", function (row, col, image) {
+      _this.menuCanvas.paintImage(_this.fetchImageCB(image), (col + 9) * config.tileSize, 2 * row * config.tileSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "moveUp", function () {
+      if (!_this.inFPSelection) {
+        if (_this.currIndex > 0) {
+          _this.currIndex--;
+          _this.drawMenu();
+          _this.redrawParentCB();
+        }
+      } else {
+        console.log("MOVE UP FP CHOICE");
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "moveDown", function () {
+      if (!_this.inFPSelection) {
+        if (_this.currIndex < 2) {
+          _this.currIndex++;
+          _this.drawMenu();
+          _this.redrawParentCB();
+        }
+      } else {
+        console.log("MOVE DOWN FP CHOICE");
+      }
+    });
     _this.currFloor = currFloor;
+    _this.dgmnIndex = 0;
+    _this.currUpgradeIndex = 0;
+    _this.mapUtility = new MapUtility();
+    _this.inFPSelection = false;
+    _this.learnedAttackTxt = new TextArea(1, 12, 18, 1);
+    _this.fetchImageCB;
+    _this.redrawParentCB;
+    _this.onDone;
     return _this;
   }
   return BossVictoryMenu;
@@ -3593,6 +3746,9 @@ var VictoryMenu = function (_Menu) {
       _this.drawMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "gotoLevelUp", function () {
+      _this.removeSubMenu('rewards');
+      _this.removeSubMenu('boss');
+      _this.removeSubMenu('rewardFP');
       _this.currState = 'level';
       _this.menuCanvas.paintImage(_this.systemAH.fetchImage('battleLevelUpOverlay'), 0, 0);
       _this.menuCanvas.clearBottomSection();
@@ -3611,6 +3767,15 @@ var VictoryMenu = function (_Menu) {
         _this.drawContinueCursor(_this.systemAH.fetchImage('continueCursor'), _this.drawMenu);
         _this.currState = 'level-next';
       }, 1000);
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "launchBossRewardFPSelection", function () {
+      _this.subMenus.boss.inFPSelection = true;
+      _this.addSubMenu('rewardFP', new ListMenu([7, 3], 8, 10, 1, ['DR', 'NS', 'DS', 'JT', 'NA', 'ME', 'WG', 'VB'], _this.systemAH.fetchImage('miniCursor'), null, 'rewardFP'));
+      _this.subMenus.rewardFP.cursorOffset = 2;
+      _this.subMenus.rewardFP.isVisible = true;
+      _this.subMenus.rewardFP.isActive = true;
+      _this.subMenus.rewardFP.drawMenu();
       _this.drawMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "gotoNextLevelUp", function () {
@@ -3652,15 +3817,62 @@ var VictoryMenu = function (_Menu) {
         _this.currState = 'evolution-choice';
       }, 1000);
     });
-    _defineProperty(_assertThisInitialized(_this), "gotoBossRewards", function (floorNumber) {
-      _this.continueCursor.remove();
-      _this.removeSubMenu('evolution');
+    _defineProperty(_assertThisInitialized(_this), "gotoBossRewards", function (floorNumber, onDone) {
+      var _this$continueCursor;
+      (_this$continueCursor = _this.continueCursor) === null || _this$continueCursor === void 0 ? void 0 : _this$continueCursor.remove();
+      _this.removeSubMenu('rewards');
       _this.currState = 'boss-reward';
       _this.menuCanvas.paintImage(_this.systemAH.fetchImage('bossRewardMenu'), 0, 0);
-      _this.drawTopText('Choose a Reward!');
-      _this.addSubMenu('boss', new BossVictoryMenu(floorNumber, [0, 0], 12, 12, [], _this.systemAH.fetchImage('miniCursor'), null, 'bossReward'));
+      _this.drawTopText('Choose an Upgrade!');
+      _this.addSubMenu('boss', new BossVictoryMenu(floorNumber, [1, 2], 3, 18, 2, ['FP', 'EN', 'XP'], _this.systemAH.fetchImage('miniCursor'), null, 'bossReward'));
+      _this.subMenus.boss.onDone = function () {
+        return onDone();
+      };
+      _this.subMenus.boss.fetchImageCB = function (img) {
+        return _this.systemAH.fetchImage(img);
+      };
+      _this.subMenus.boss.redrawParentCB = function () {
+        _this.drawMenu();
+      };
+      _this.subMenus.boss.drawMenu();
       _this.subMenus.boss.isVisible = true;
       _this.subMenus.boss.isActive = true;
+      var dgmnList = _this.levelUpDgmn.length > 0 ? _this.levelUpDgmn : _this.bossRewardsDgmn;
+      _this.drawBossRewardBottomSection(dgmnList[_this.bossRewardIndex].speciesName);
+      _this.drawAttackLearned(dgmnList[_this.bossRewardIndex].speciesName, floorNumber, dgmnList[_this.bossRewardIndex].permAttacks);
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "nextBossReward", function (floorNumber) {
+      _this.subMenus.boss.inFPSelection = false;
+      _this.removeSubMenu('rewardFP');
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('bossRewardMenu'), 0, 0);
+      _this.bossRewardIndex++;
+      _this.subMenus.boss.currIndex = 0;
+      var dgmnList = _this.levelUpDgmn.length > 0 ? _this.levelUpDgmn : _this.bossRewardsDgmn;
+      _this.drawBossRewardBottomSection(dgmnList[_this.bossRewardIndex].speciesName);
+      _this.drawAttackLearned(dgmnList[_this.bossRewardIndex].speciesName, floorNumber, dgmnList[_this.bossRewardIndex].permAttacks);
+      _this.subMenus.boss.drawMenu();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawBossRewardBottomSection", function (speciesName) {
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage(speciesName.toLowerCase() + 'Portrait'), 0, 14 * config.tileSize);
+      _this.drawUpgradeDescription();
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawUpgradeDescription", function () {
+      _this.menuCanvas.ctx.fillStyle = "#00131A";
+      _this.menuCanvas.ctx.fillRect(4 * config.tileSize, 14 * config.tileSize, 16 * config.tileSize, 4 * config.tileSize);
+      var messages = ['Increase 1 FP', 'Gain 1 XP on each Level Up', 'Raise your Max   EN by 5'];
+      _this.descriptionTxt.instantText(_this.menuCanvas.ctx, messages[_this.subMenus.boss.currIndex], 'white');
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawAttackLearned", function (speciesName, floorNumber) {
+      var permAttacks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+      var stage = _this.dgmnUtility.getStage(speciesName);
+      if (stage > 2 && stage === _this.mapUtility.getBossAttackLevel(floorNumber)) {
+        var attackName = _this.attackUtility.getDisplayName(_this.dgmnUtility.getAttack(speciesName));
+        if (permAttacks.indexOf(attackName) === -1) _this.subMenus.boss.learnedAttackTxt.instantText(_this.menuCanvas.ctx, "ATK+ ".concat(attackName), 'white');
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "nextEvolution", function () {
       console.log("NEXT ICON");
@@ -3674,6 +3886,10 @@ var VictoryMenu = function (_Menu) {
     _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
       for (var key in _this.subMenus) {
         if (_this.subMenus[key].isVisible) {
+          var _this$subMenus$boss;
+          if ((_this$subMenus$boss = _this.subMenus.boss) !== null && _this$subMenus$boss !== void 0 && _this$subMenus$boss.inFPSelection) {
+            _this.menuCanvas.paintImage(_this.systemAH.fetchImage('bossRewardFieldChoice'), 0, 0);
+          }
           _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
         }
       }
@@ -3690,6 +3906,32 @@ var VictoryMenu = function (_Menu) {
     _defineProperty(_assertThisInitialized(_this), "updateRewardsList", function (rewards, onDone) {
       _this.subMenus.rewards.updateRewardsList(rewards, onDone);
     });
+    _defineProperty(_assertThisInitialized(_this), "navUp", function () {
+      if (_this.currState === 'boss-reward') {
+        if (_this.subMenus.boss.inFPSelection) {
+          _this.subMenus.rewardFP.prevListItem();
+        } else {
+          _this.subMenus.boss.moveUp();
+          _this.drawUpgradeDescription();
+        }
+      }
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "navRight", function () {});
+    _defineProperty(_assertThisInitialized(_this), "navDown", function () {
+      if (_this.currState === 'boss-reward') {
+        if (_this.subMenus.boss.inFPSelection) {
+          _this.subMenus.rewardFP.nextListItem();
+        } else {
+          _this.subMenus.boss.moveDown();
+          _this.drawUpgradeDescription();
+        }
+      }
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "navLeft", function () {});
+    _defineProperty(_assertThisInitialized(_this), "selectBossReward", function () {
+    });
     _defineProperty(_assertThisInitialized(_this), "getCurrState", function () {
       return _this.currState;
     });
@@ -3703,17 +3945,25 @@ var VictoryMenu = function (_Menu) {
     _this.battleXP = battleXP;
     _this.currRewardIndex = 0;
     _this.levelUpIndex = 0;
+    _this.bossRewardIndex = 0;
     _this.levelUpDgmn = [];
+    _this.bossRewardsDgmn = [];
     _this.isBoss = isBoss;
     _this.victoryMenuAH = new VictoryMenuAH({
       getCurrStateCB: _this.getCurrState,
       getCurrMenuTypeCB: _this.getCurrMenuType,
       nextEvolutionCB: _this.nextEvolution,
-      prevEvolutionCB: _this.prevEvolution
+      prevEvolutionCB: _this.prevEvolution,
+      navDownCB: _this.navDown,
+      navUpCB: _this.navUp,
+      selectBossRewardCB: _this.selectBossReward
     });
     _this.menuUtility = new MenuUtility();
     _this.dgmnUtility = new DgmnUtility();
+    _this.attackUtility = new AttackUtility();
+    _this.mapUtility = new MapUtility();
     _this.menuCanvas = new MenuCanvas('victory', 160, 144);
+    _this.descriptionTxt = new TextArea(4, 14, 16, 4);
     return _this;
   }
   return VictoryMenu;
@@ -4565,22 +4815,7 @@ var Battle = function Battle(isBoss, floorNumber) {
     _this.battleMenu.drawVictoryMessage();
     _this.battleMenu.endBattle(_this.battleRewards, _this.battleBaseXP);
   });
-  _defineProperty(this, "rewardWrapUp", function () {
-    var levelUps = [];
-    _this.giveDgmnBaseXP();
-    for (var i = 0; i < 3; i++) {
-      if (_this.dgmnAH.checkLevelUp(_this.yourParty[i])) {
-        levelUps.push(_this.yourParty[i]);
-      }
-    }
-    if (levelUps.length > 0) {
-      _this.gotoLevelUp(levelUps);
-    } else {
-      _this.end();
-    }
-  });
   _defineProperty(this, "giveDgmnBaseXP", function () {
-    console.log("Battle Base XP = ", _this.battleBaseXP);
     for (var i = 0; i < 3; i++) {
       if (!_this.getDgmnDataByIndex(i, ['isDead'], false).isDead) {
         _this.dgmnAH.giveDgmnXP(_this.yourParty[i], _this.battleBaseXP);
@@ -4613,60 +4848,6 @@ var Battle = function Battle(isBoss, floorNumber) {
       _this.dgmnAH.moveDgmnCanvas(_this.yourParty[i], (6 * i + 2) * 8 * config.screenSize, 72 * config.screenSize);
     }
   });
-  _defineProperty(this, "gotoLevelUp", function (levelUps) {
-    var dgmnData = [];
-    var _iterator4 = _createForOfIteratorHelper(levelUps),
-        _step4;
-    try {
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var dgmn = _step4.value;
-        var data = _this.dgmnAH.getDgmnData(dgmn, ['nickname', 'currentStats', 'speciesName', 'currentLevel'], false);
-        data.dgmnId = dgmn;
-        dgmnData.push(data);
-      }
-    } catch (err) {
-      _iterator4.e(err);
-    } finally {
-      _iterator4.f();
-    }
-    _this.stopDgmnBattleCanvas();
-    _this.victoryMenu.removeSubMenu('rewards');
-    _this.victoryMenu.setLevelUpList(dgmnData);
-    _this.victoryMenu.gotoLevelUp();
-  });
-  _defineProperty(this, "levelUpNext", function () {
-    var currDgmn = _this.victoryMenu.levelUpDgmn[_this.victoryMenu.levelUpIndex].dgmnId;
-    var currDgmnData = _this.dgmnAH.getDgmnData(currDgmn, ['speciesName', 'currentFP'], false);
-    currDgmnData.dgmnId = currDgmn;
-    if (_this.dgmnUtility.checkEvolution(currDgmnData)) {
-      var evoImages = _this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
-      _this.systemAH.loadImages(evoImages, function () {
-        _this.victoryMenu.gotoEvolution(currDgmnData);
-      });
-    } else if (_this.victoryMenu.levelUpDgmn.length > 1 && _this.victoryMenu.levelUpIndex < _this.victoryMenu.levelUpDgmn.length - 1) {
-      _this.victoryMenu.removeSubMenu('level');
-      _this.victoryMenu.gotoNextLevelUp();
-    } else {
-      _this.end();
-    }
-  });
-  _defineProperty(this, "evolveCurrDgmn", function () {
-    debugger;
-    var currDgmn = _this.victoryMenu.levelUpDgmn[_this.victoryMenu.levelUpIndex];
-    var evoChoice = _this.victoryMenu.subMenus.evolution.selectedDgmn;
-    _this.dgmnAH.evolve(currDgmn.dgmnId, evoChoice);
-    _this.victoryMenu.selectIcon();
-    if (_this.victoryMenu.levelUpDgmn.length > 1 && _this.victoryMenu.levelUpIndex < _this.victoryMenu.levelUpDgmn.length - 1) {
-      _this.victoryMenu.removeSubMenu('evolution');
-      if (_this.isBoss) {
-        _this.victoryMenu.gotoBossRewards(_this.floorNumber);
-      } else {
-        _this.victoryMenu.gotoNextLevelUp();
-      }
-    } else {
-      _this.end();
-    }
-  });
   _defineProperty(this, "giveCurrReward", function (dir) {
     var dgmnId;
     var reward = _this.battleRewards[_this.victoryMenu.subMenus.rewards.currIndex];
@@ -4682,6 +4863,115 @@ var Battle = function Battle(isBoss, floorNumber) {
       _this.victoryMenu.updateRewardsList(_this.battleRewards, _this.rewardWrapUp);
     } else {
       debugLog("Cannot give to them, they died!");
+    }
+  });
+  _defineProperty(this, "rewardWrapUp", function () {
+    _this.stopDgmnBattleCanvas();
+    var levelUps = [];
+    _this.giveDgmnBaseXP();
+    for (var i = 0; i < 3; i++) {
+      if (_this.dgmnAH.checkLevelUp(_this.yourParty[i])) {
+        levelUps.push(_this.yourParty[i]);
+      }
+    }
+    if (levelUps.length > 0) {
+      var dgmnData = [];
+      var _iterator4 = _createForOfIteratorHelper(levelUps),
+          _step4;
+      try {
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var dgmn = _step4.value;
+          var data = _this.dgmnAH.getDgmnData(dgmn, ['nickname', 'currentStats', 'speciesName', 'currentLevel', 'permAttacks'], false);
+          data.dgmnId = dgmn;
+          dgmnData.push(data);
+        }
+      } catch (err) {
+        _iterator4.e(err);
+      } finally {
+        _iterator4.f();
+      }
+      _this.victoryMenu.setLevelUpList(dgmnData);
+      _this.isBoss ? _this.victoryMenu.gotoBossRewards(_this.dungeonAH.getCurrentFloor()) : _this.victoryMenu.gotoLevelUp();
+    } else if (_this.isBoss) {
+      var _dgmnData = [];
+      var _iterator5 = _createForOfIteratorHelper(_this.yourParty),
+          _step5;
+      try {
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var _dgmn = _step5.value;
+          var _data = _this.dgmnAH.getDgmnData(_dgmn, ['speciesName', 'upgrades', 'permAttacks'], false);
+          _data.dgmnId = _dgmn;
+          _dgmnData.push(_data);
+        }
+      } catch (err) {
+        _iterator5.e(err);
+      } finally {
+        _iterator5.f();
+      }
+      _this.victoryMenu.bossRewardsDgmn = _dgmnData;
+      _this.victoryMenu.gotoBossRewards(_this.dungeonAH.getCurrentFloor());
+    } else {
+      _this.end();
+    }
+  });
+  _defineProperty(this, "selectBossReward", function () {
+    var upgrades = ['FP', 'XP', 'EN'];
+    var FPList = ['DR', 'NS', 'DS', 'JT', 'NA', 'ME', 'WG', 'VB'];
+    if (_this.victoryMenu.bossRewardIndex === 2 && _this.victoryMenu.levelUpDgmn.length === 0) {
+      _this.end();
+    } else {
+      if (_this.victoryMenu.subMenus.boss.currIndex !== 0 || _this.victoryMenu.subMenus.boss.currIndex === 0 && _this.victoryMenu.subMenus.boss.inFPSelection) {
+        var FP = _this.victoryMenu.subMenus.boss.inFPSelection ? FPList[_this.victoryMenu.subMenus.rewardFP.currIndex] : undefined;
+        _this.dgmnAH.giveUpgrade(_this.yourParty[_this.victoryMenu.bossRewardIndex], upgrades[_this.victoryMenu.subMenus.boss.currIndex], FP);
+        if (_this.victoryMenu.levelUpDgmn.length !== 0) {
+          if (_this.victoryMenu.bossRewardIndex === 0) {
+            _this.victoryMenu.gotoLevelUp();
+          } else {
+            _this.victoryMenu.gotoNextLevelUp();
+          }
+          _this.victoryMenu.bossRewardIndex++;
+        } else {
+          _this.victoryMenu.nextBossReward(_this.dungeonAH.getCurrentFloor());
+        }
+      } else {
+        _this.victoryMenu.launchBossRewardFPSelection();
+      }
+    }
+  });
+  _defineProperty(this, "levelUpNext", function () {
+    var currDgmn = _this.victoryMenu.levelUpDgmn[_this.victoryMenu.levelUpIndex].dgmnId;
+    var currDgmnData = _this.dgmnAH.getDgmnData(currDgmn, ['speciesName', 'currentFP'], false);
+    currDgmnData.dgmnId = currDgmn;
+    if (_this.dgmnUtility.checkEvolution(currDgmnData)) {
+      var evoImages = _this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
+      _this.systemAH.loadImages(evoImages, function () {
+        _this.victoryMenu.gotoEvolution(currDgmnData);
+      });
+    } else if (_this.victoryMenu.levelUpDgmn.length > 1 && _this.victoryMenu.levelUpIndex < _this.victoryMenu.levelUpDgmn.length - 1) {
+      if (_this.isBoss) {
+        _this.victoryMenu.gotoBossRewards(_this.dungeonAH.getCurrentFloor());
+      } else {
+        _this.victoryMenu.removeSubMenu('level');
+        _this.victoryMenu.gotoNextLevelUp();
+      }
+    } else {
+      _this.end();
+    }
+  });
+  _defineProperty(this, "evolveCurrDgmn", function () {
+    var currDgmn = _this.victoryMenu.levelUpDgmn[_this.victoryMenu.levelUpIndex];
+    var evoChoice = _this.victoryMenu.subMenus.evolution.selectedDgmn;
+    _this.dgmnAH.evolve(currDgmn.dgmnId, evoChoice);
+    _this.victoryMenu.selectIcon();
+    if (_this.victoryMenu.levelUpDgmn.length > 1 && _this.victoryMenu.levelUpIndex < _this.victoryMenu.levelUpDgmn.length - 1) {
+      _this.victoryMenu.removeSubMenu('evolution');
+      if (_this.isBoss) {
+        _this.victoryMenu.gotoBossRewards(_this.dungeonAH.getCurrentFloor());
+      } else {
+        _this.victoryMenu.gotoNextLevelUp();
+      }
+    } else {
+      _this.end();
     }
   });
   _defineProperty(this, "getDgmnValueByIndex", function (isEnemy, dgmnIndex, value) {
@@ -4767,7 +5057,8 @@ var Battle = function Battle(isBoss, floorNumber) {
     gotoRewardsCB: this.gotoRewards,
     giveCurrRewardCB: this.giveCurrReward,
     levelUpNextCB: this.levelUpNext,
-    evolveCurrDgmnCB: this.evolveCurrDgmn
+    evolveCurrDgmnCB: this.evolveCurrDgmn,
+    selectBossRewardCB: this.selectBossReward
   });
   this.battleIO = new BattleIO(this.battleAH);
   this.battleUtility = new BattleUtility();
@@ -5138,7 +5429,6 @@ var Floor = function Floor(_floorNumber) {
       }
     } else if (dir === 'left') {
       if (_this.currentTile.tile[1] === -1 && _this.currentTile.room[1] > 0) {
-        console.log("MOVE LEFT ROOM");
         return true;
       }
     }
@@ -6149,24 +6439,28 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     _this.floor.move(dir, upDown);
   });
   _defineProperty(this, "goUpFloor", function () {
-    debugLog("Ascending Floor...");
-    _this.moving = 'none';
-    _this.dungeonState = 'ascending';
-    _this.systemAH.startLoading(function () {
-      _this.floorNumber++;
-      _this.floor = null;
-      _this.buildFloor();
-      _this.systemAH.loadImages(_this.getRoomImages(_this.floor.roomMatrix), function () {
-        _this.floor.drawFloor();
-        _this.floor.checkCollision();
-        _this.floor.setFloorToStart();
-        setTimeout(function () {
-          _this.systemAH.stopLoading();
-          _this.dungeonState = 'free';
-        }, 1000);
-        _this.onLoaded();
+    if (_this.floorNumber === 5) {
+      debugLog("Dungeon Clear!");
+    } else {
+      debugLog("Ascending Floor...");
+      _this.moving = 'none';
+      _this.dungeonState = 'ascending';
+      _this.systemAH.startLoading(function () {
+        _this.floorNumber++;
+        _this.floor = null;
+        _this.buildFloor();
+        _this.systemAH.loadImages(_this.getRoomImages(_this.floor.roomMatrix), function () {
+          _this.floor.drawFloor();
+          _this.floor.checkCollision();
+          _this.floor.setFloorToStart();
+          setTimeout(function () {
+            _this.systemAH.stopLoading();
+            _this.dungeonState = 'free';
+          }, 1000);
+          _this.onLoaded();
+        });
       });
-    });
+    }
   });
   _defineProperty(this, "startBattle", function () {
     debugLog("Starting Battle...");
@@ -6187,7 +6481,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     var message = isToolBoxFull ? 'Found ' + _this.treasureUtility.getTreasureName(treasure) + '... But your Item Box is full.' : 'Found ' + _this.treasureUtility.getTreasureName(treasure) + '!';
     _this.textBoxCanvas.dungeonTxt.instantText(_this.textBoxCanvas.ctx, message, 'white');
     setTimeout(function () {
-      if (isToolBoxFull) _this.digiBeetleAH.addItemToToolBox(treasure);
+      if (!isToolBoxFull) _this.digiBeetleAH.addItemToToolBox(treasure);
       _this.dungeonState = 'text-box-next';
       _this.textBoxCanvas.drawContinueCursor(_this.systemAH.fetchImage('continueCursor'), function () {});
       _this.drawDungeon();

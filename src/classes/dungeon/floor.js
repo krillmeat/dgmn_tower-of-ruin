@@ -464,7 +464,6 @@ class Floor{
         }
       } else if(dir === 'left'){
         if(this.currentTile.tile[1] === -1 && this.currentTile.room[1] > 0){
-          console.log("MOVE LEFT ROOM")
           return true;
         }
       }

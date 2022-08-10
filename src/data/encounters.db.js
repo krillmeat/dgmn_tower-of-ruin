@@ -29,8 +29,7 @@ export const dgmnEncounterChartDB = {
     },
     VB: {
       pre10: 1,
-      // dgmnList: ['Poyo']
-      dgmnList: ['Yura']
+      dgmnList: ['Poyo']
     },
     NA: {
       pre10: 1,
@@ -41,13 +40,41 @@ export const dgmnEncounterChartDB = {
     DR: {
       pre10: 1,
       dgmnList: ['Koro']
+    },
+    NS: {
+      pre10: 1,
+      dgmnList: ['Bibi']
+    },
+    WG: {
+      pre10: 1,
+      dgmnList: ['Poro']
+    },
+    DS: {
+      pre10: 1,
+      dgmnList: ['Puka']
+    },
+    JT: {
+      pre10: 1,
+      dgmnList: ['Bud']
+    },
+    ME: {
+      pre10: 1,
+      dgmnList: ['Capri']
+    },
+    VB: {
+      pre10: 1,
+      dgmnList: ['Toko']
+    },
+    NA: {
+      pre10: 1,
+      dgmnList: ['Pagu']
     }
   },
   3: {},
   4: {},
   5: {},
   6: {},
-  7: {} // Is 7 even going to happen naturally? Maybe is super hard modes or something...
+  7: {} // Is 7 even going to happen naturally? Maybe in super hard modes or something...
 }
 
 export const bossEncoutnersMapDB = [5]
@@ -62,43 +89,49 @@ export const dgmnEncounterDB = {
   Bota: {
     speciesName: 'Bota',
     currentLevel: 2,
-    currentStats: {HP: 5, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 1},
+    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 1},
     attacks: [new Attack('bubbles')]
   },
   Yura: {
     speciesName: 'Yura',
     currentLevel: 2,
-    currentStats: {HP: 5, ATK: 2, DEF: 1, INT: 2, RES: 2, HIT: 1, AVO: 1, SPD: 1},
+    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 2, RES: 2, HIT: 1, AVO: 1, SPD: 1},
     attacks: [new Attack('bubbles')]
   },
   Zuru: {
     speciesName: 'Zuru',
     currentLevel: 2,
-    currentStats: {HP: 5, ATK: 2, DEF: 1, INT: 2, RES: 1, HIT: 1, AVO: 2, SPD: 1},
+    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 2, RES: 1, HIT: 1, AVO: 2, SPD: 1},
     attacks: [new Attack('bubbles')]
   },
   Doki: {
     speciesName: 'Doki',
     currentLevel: 2,
-    currentStats: {HP: 5, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 1, AVO: 2, SPD: 2},
+    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 1, AVO: 2, SPD: 2},
     attacks: [new Attack('bubbles')]
   },
   Pururu: {
     speciesName: 'Pururu',
     currentLevel: 2,
-    currentStats: {HP: 5, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 2},
+    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 2},
     attacks: [new Attack('bubbles')]
   },
   Choro: {
     speciesName: 'Choro',
     currentLevel: 2,
-    currentStats: {HP: 5, ATK: 2, DEF: 2, INT: 1, RES: 2, HIT: 1, AVO: 1, SPD: 1},
+    currentStats: {HP:5, ATK: 2, DEF: 2, INT: 1, RES: 2, HIT: 1, AVO: 1, SPD: 1},
     attacks: [new Attack('bubbles')]
   },
   Pitch: {
     speciesName: 'Pitch',
     currentLevel: 2,
-    currentStats: {HP: 5, ATK: 1, DEF: 2, INT: 1, RES: 2, HIT: 1, AVO: 2, SPD: 1},
+    currentStats: {HP:5, ATK: 1, DEF: 2, INT: 1, RES: 2, HIT: 1, AVO: 2, SPD: 1},
+    attacks: [new Attack('bubbles')]
+  },
+  Poyo: {
+    speciesName: 'Poyo',
+    currentLevel: 2,
+    currentStats: {HP:5, ATK:2, DEF:1, INT:2, RES:2, HIT:1, AVO:1, SPD:1 },
     attacks: [new Attack('bubbles')]
   },
   Koro: {
@@ -106,7 +139,48 @@ export const dgmnEncounterDB = {
     currentLevel: 3,
     currentStats: {HP:12, ATK:7, DEF:3, INT:3, RES:3, HIT:7, AVO:3, SPD:7},
     attacks: [new Attack('bubbles')],
-    attacks: [new Attack('babyFlame'), new Attack('bubbles')]
+  },
+  Capri:{
+    speciesName: 'Capri',
+    currentLevel: 3,
+    currentStats: {HP:12, ATK:7, DEF:7, INT:3, RES:7, HIT:3, AVO:3, SPD:3},
+    attacks: [new Attack('bubbles')]
+  },
+  Bud:{
+    speciesName: 'Bud',
+    currentLevel: 3,
+    currentStats: {HP:12, ATK:7, DEF:3, INT:7, RES:7, HIT:3, AVO:3, SPD:3},
+    attacks: [new Attack('bubbles')]
+  },
+  Puka:{
+    speciesName: 'Puka',
+    currentLevel: 3,
+    currentStats: {HP:12, ATK:3, DEF:7, INT:3, RES:7, HIT:3, AVO:7, SPD:3},
+    attacks: [new Attack('bubbles')]
+  },
+  Bibi:{
+    speciesName: 'Bibi',
+    currentLevel: 3,
+    currentStats: {HP:12, ATK:7, DEF:3, INT:3, RES:3, HIT:3, AVO:7, SPD:7},
+    attacks: [new Attack('bubbles')]
+  },
+  Poro:{
+    speciesName: 'Poro',
+    currentLevel: 3,
+    currentStats: {HP:12, ATK:7, DEF:3, INT:3, RES:3, HIT:7, AVO:3, SPD:7},
+    attacks: [new Attack('bubbles')]
+  },
+  Toko:{
+    speciesName: 'Toko',
+    currentLevel: 3,
+    currentStats: {HP:12, ATK:7, DEF:3, INT:7, RES:7, HIT:3, AVO:3, SPD:3},
+    attacks: [new Attack('bubbles')]
+  },
+  Pagu:{
+    speciesName: 'Pagu',
+    currentLevel: 3,
+    currentStats: {HP:12, ATK:7, DEF:3, INT:7, RES:3, HIT:3, AVO:7, SPD:3},
+    attacks: [new Attack('bubbles')]
   },
   Agu: {
     speciesName: 'Agu',
@@ -125,7 +199,7 @@ export const bossEncountersDB = {
   Koro: {
     speciesName: 'Koro',
     currentLevel: 4,
-    currentStats: {HP:26, ATK:9, DEF:4, INT:4, RES:4, HIT:9, AVO:4, SPD:9},
+    currentStats: {HP:56, ATK:9, DEF:4, INT:4, RES:4, HIT:9, AVO:4, SPD:9},
     attacks: [new Attack('bubbles')]
   },
   Agu: {

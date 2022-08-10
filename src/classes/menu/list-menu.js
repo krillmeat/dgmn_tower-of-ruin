@@ -14,6 +14,7 @@ class ListMenu extends SubMenu{
     this.currPage = 0;
     this.backImg = backImg;
     this.cursorImg = cursorImg;
+    this.cursorOffset = 0;
 
     this.menuCanvas = new GameCanvas(`${this.label}-menu`,listWidth*8 ,itemAmount * (itemHeight * 8) )
     this.menuCanvas.x = coord[0] * 8 * config.screenSize;
@@ -23,7 +24,7 @@ class ListMenu extends SubMenu{
   
   drawList = () => { // Default
     for(let i = 0; i < this.listItems.length; i++){
-      let listItemTxt = new TextArea(1,i,this.width-1,1);
+      let listItemTxt = new TextArea(1+this.cursorOffset,i,this.width-1,1);
           listItemTxt.instantText(this.menuCanvas.ctx,this.listItems[i],'white');
     }
   }
@@ -45,7 +46,7 @@ class ListMenu extends SubMenu{
   drawCursor = index => {
     let spotIndex = index ? index : this.currIndex;
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(0,0,config.tileSize,this.itemAmount*config.tileSize);
+    this.menuCanvas.ctx.fillRect(0,0,config.tileSize,(this.itemAmount*this.itemHeight)*config.tileSize);
     this.menuCanvas.paintImage(this.cursorImg,0,(spotIndex % this.itemAmount) * (8 * this.itemHeight) * config.screenSize);
   }
 
