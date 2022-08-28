@@ -64,7 +64,7 @@ export const dgmnDB = {
   },
   Pitch: {
     stage: 1, attr: 'Free',
-    stats: [2,0,1,0,1,0,1,0],
+    stats: {HP:2, ATK:0, DEF:1, INT: 0, RES: 1, HIT: 0, AVO: 1, SPD: 0},
     evolutions: [],
     types: {},
     fields: {DS: 1},
@@ -72,7 +72,7 @@ export const dgmnDB = {
   },
   Poyo: {
     stage: 1, attr: 'Free',
-    stats: [2,1,0,1,1,0,0,0],
+    stats: {HP:2, ATK:1, DEF:0, INT: 1, RES: 1, HIT: 0, AVO: 0, SPD: 0},
     evolutions: [],
     types: {},
     fields: {VB: 1},
@@ -97,9 +97,23 @@ export const dgmnDB = {
     evoFields: {JT: 2}
   },
   Tane: {},
-  Bibi: {},
+  Bibi: {
+    stage: 2, attr: 'Free',
+    stats: {HP:4, ATK:2, DEF:1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 2},
+    evolutions: ['Pulse'],
+    types: {},
+    fields: {NS: 2},
+    evoFields: {NS: 2}
+  },
   Pagu: {},
-  Poro: {},
+  Poro: {
+    stage: 2, attr: 'Free',
+    stats: {HP:4, ATK:2, DEF:1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 2},
+    evolutions: ['Hawk'],
+    types: {},
+    fields: {WG: 2},
+    evoFields: {WG: 2}
+  },
   Capri: {
     stage: 2, attr: 'Free',
     stats: {HP:4, ATK:2, DEF:2, INT: 1, RES: 2, HIT: 1, AVO: 1, SPD: 1},
@@ -108,13 +122,27 @@ export const dgmnDB = {
     fields: {ME: 2},
     evoFields: {ME: 2}
   },
-  Puka: {},
-  Toko: {},
+  Puka: {
+    stage: 2, attr: 'Free',
+    stats: {HP:4, ATK:2, DEF:2, INT: 1, RES: 2, HIT: 1, AVO: 1, SPD: 1},
+    evolutions: ['Gani'],
+    types:{},
+    fields: {DS: 2},
+    evoFields: {DS: 2}
+  },
+  Toko: {
+    stage: 2, attr: 'Free',
+    stats: {HP:4, ATK:2, DEF:2, INT: 1, RES: 2, HIT: 1, AVO: 1, SPD: 1},
+    evolutions: ['Pata'],
+    types:{},
+    fields: {VB: 2},
+    evoFields: {VB: 2}
+  },
 
   // CHILD
   Agu: {
-    stage: 3, attr: 'vaccine',
-    stats: {HP:5, ATK:5, DEF:4, INT: 3, RES: 4, HIT: 4, AVO: 4, SPD: 3},
+    stage: 3, attr: 'Vaccine',
+    stats: {HP:6, ATK:3, DEF:2, INT: 2, RES: 2, HIT: 3, AVO: 2, SPD: 3},
     evolutions: [],
     types: {fire: .5, water: 1.5, plant: .75, evil: 2},
     fields: {DR: 3},

@@ -18,7 +18,7 @@ class Menu{
   }
 
   removeSubMenu = label => {
-    delete this.subMenus[label];
+    if(this.subMenus[label]) delete this.subMenus[label];
   }
 
   buildIconImages = labels => {

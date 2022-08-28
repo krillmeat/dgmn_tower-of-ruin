@@ -22,6 +22,7 @@ class DigiBeetleAH{
       this.getToolBoxType = () => { return cbObj.getToolBoxTypeCB() }
       this.hideCanvas = () => cbObj.hideCanvasCB()
       this.showCanvas = () => cbObj.showCanvasCB()
+      this.isToolBoxFull = () => { return cbObj.isToolBoxFullCB() }
     }
 }
 

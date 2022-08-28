@@ -36,7 +36,8 @@ export const fontData = {
   8: [11,4],9: [12,4],
   exclamation: [13,4],
   period: [14,4],
-  dash: [8,3]
+  dash: [8,3],
+  plus: [10,3]
 }
 
 export var fontImages = [];

@@ -69,7 +69,9 @@ class EvolutionMenu extends IconMenu{
     this.evoWeakTxt.instantText(this.menuCanvas.ctx,'WEAK','green');
     this.evoResTxt.instantText(this.menuCanvas.ctx,'RES','green');
 
-    this.menuCanvas.paintImage(this.fetchImgCB(`fieldDRIcon`),(5+4)*config.tileSize,15*config.tileSize); // TODO - Set X to length of Attribute
+    for(let field in this.dgmnUtility.getBaseFP(species)){
+      this.menuCanvas.paintImage(this.fetchImgCB(`field${field}Icon`),(this.dgmnUtility.getAttribute(species).length+5)*config.tileSize,15*config.tileSize);
+    }
   }
 
   drawDgmnStats = stats => {

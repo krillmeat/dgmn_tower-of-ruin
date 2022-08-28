@@ -11,6 +11,11 @@ class TargetSelect extends ListMenu{
     // this.drawMenu(startingIndex); // TODO - Constructors shouldn't be calling their own methods
   }
 
+  drawCursor = index => {
+    let spotIndex = index ? index : this.currIndex;
+    this.menuCanvas.paintImage(this.cursorImg,0,(spotIndex % this.itemAmount) * (8 * this.itemHeight) * config.screenSize);
+  }
+
   drawMenu = (startingIndex = 0) => {
     this.menuCanvas.clearCanvas();
     if(this.hitsAll){

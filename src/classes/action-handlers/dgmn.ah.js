@@ -27,6 +27,7 @@ class DgmnAH{
     this.evolve = (dgmnId,speciesName) => cbObj.evolveCB(dgmnId,speciesName)
     this.hatchEgg = (dgmnId,species) => cbObj.hatchEggCB(dgmnId,species)
     this.useItemOn = (dgmnId,item) => cbObj.useItemOnCB(dgmnId,item)
+    this.giveUpgrade = (dgmnId,upgrade,FP) => cbObj.giveUpgradeCB(dgmnId,upgrade,FP)
   }
 }
 

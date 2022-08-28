@@ -28,10 +28,12 @@ class Dgmn {
 
     this.permFP = { DR:0, NS:0, WG:0, ME:0, DS:0, JT:0, VB:0, NA:0 }
     this.permAttacks = [];
+    this.upgrades = { FP:0, EN:0, XP:0 }
+    this.maxEnergy = 100;
 
     this.currentLevel = 1;
     this.currentHP = 23;
-    this.currentEN = 100;
+    this.currentEN = this.maxEnergy;
     this.currentStats = { HP: 13, ATK: 0, DEF: 0, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 0 }
     this.currentFP = { DR:0, NS:0, WG:0, ME:0, DS:0, JT:0, VB:0, NA:0 }
     this.currentXP = 0;

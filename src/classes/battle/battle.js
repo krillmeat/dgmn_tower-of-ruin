@@ -15,11 +15,12 @@ import VictoryMenu from "./menus/victory-menu";
 // TODO - Do I have too many "pass-throughs"? Functions in here that only serve to call a Child Class function
 
 class Battle {
-  constructor(){ // TODO - Needs floor and mods to determine enemies
+  constructor(isBoss,floorNumber){ // TODO - Needs floor and mods to determine enemies
     this.battleActive = true;
     this.turn = 0;                               // Which Turn it currently is
     this.yourParty;                              // Your Dgmn : TODO - gameAH Reference to fetch this
     this.enemyParty = ['edId0','edId1','edId2']; // Enemies for the Battle (Always these three IDs)
+    this.isBoss = isBoss;
 
     this.battleState = 'loading';
     this.battleRewards = [];
@@ -47,7 +48,8 @@ class Battle {
       gotoRewardsCB: this.gotoRewards,
       giveCurrRewardCB: this.giveCurrReward,
       levelUpNextCB: this.levelUpNext,
-      evolveCurrDgmnCB: this.evolveCurrDgmn
+      evolveCurrDgmnCB: this.evolveCurrDgmn,
+      selectBossRewardCB: this.selectBossReward
     });
 
     this.battleIO = new BattleIO(this.battleAH);  // Key Manager
@@ -82,6 +84,8 @@ class Battle {
     this.generateEnemyParty(); // TODO - Mocked for now, needs actual params for calculations
     this.initCanvas();
     this.loadBattleImages();
+
+    // debugger; // TODO - Here to make battle Boss to test menus
   }
 
   /**------------------------------------------------------------------------
@@ -275,7 +279,7 @@ class Battle {
    * Draws the Combo in the Status Bar for a Dgmn
    * ----------------------------------------------------------------------*/
   drawDgmnStatusCombo = (isEnemy,dgmnIndex,combo) => {
-    let comboLetter = this.attackUtility.getComboLetter(combo)
+    let comboLetter = this.attackUtility.getComboLetter(combo);
     let comboImg = comboLetter === 'F' ? this.systemAH.fetchImage('comboFIcon') : this.systemAH.fetchImage(`pwr${comboLetter}Icon`);
     let partyOffset = isEnemy ? 0 : 17;
     let coord = [1+partyOffset,(4+(dgmnIndex * 4))];
@@ -380,38 +384,14 @@ class Battle {
     this.battleMenu.endBattle(this.battleRewards,this.battleBaseXP);
     // this.battleMenu = null;
   }
-
-  // TODO - Gone?
-  // giveDgmnRewards = () => {
-  //   let levelUps = [];
-  //   for(let dgmn of this.yourParty){
-  //     console.log("DGMN = ",dgmn);
-  //     let leveledUp = this.dgmnAH.battleWrapUp(dgmn,this.battleRewards);
-
-  //     if(leveledUp){ levelUps.push(dgmn); console.log("DO I EVER SEE THIS?"); }
-  //   }
-
-  //   if(levelUps.length > 0){
-  //     console.log("SOMEONE LEVELD UP!")
-  //   }
-  // }
-
-  rewardWrapUp = () => {
-    let levelUps = [];
-    this.giveDgmnBaseXP();
-    for(let i = 0; i < 3; i++){
-      if(this.dgmnAH.checkLevelUp(this.yourParty[i])){
-        levelUps.push(this.yourParty[i]);
-      }
-    }
-
-    if(levelUps.length > 0){
-      this.gotoLevelUp(levelUps);
-    } else{ this.end() }
-  }
-
+  
+  /**------------------------------------------------------------------------
+   * GIVE DGMN BASE XP                                  
+   * ------------------------------------------------------------------------
+   * Gives all of the DGMN in your Party (still alive) the XP earned from the
+   * Battle
+   * ----------------------------------------------------------------------*/
   giveDgmnBaseXP = () => {
-    console.log("Battle Base XP = ",this.battleBaseXP);
     for(let i = 0; i < 3; i++){
       if(!this.getDgmnDataByIndex(i,['isDead'],false).isDead){ // If DGMN is Dead, do not reward
         this.dgmnAH.giveDgmnXP(this.yourParty[i],this.battleBaseXP);
@@ -452,64 +432,13 @@ class Battle {
     this.battleMenu.menuCanvas.clearCanvas();
     this.battleMenu = null;
 
-    this.victoryMenu = new VictoryMenu(this.battleBaseXP,this.battleRewards,this.systemAH,this.gameAH,this.battleAH);
+    this.victoryMenu = new VictoryMenu(this.isBoss,this.battleBaseXP,this.battleRewards,this.systemAH,this.gameAH,this.battleAH);
     this.battleIO.setMenuAH(this.victoryMenu.victoryMenuAH);
     this.victoryMenu.gotoRewards(this.battleRewards);
 
     // Move DGMN Canvases to new Spots
     for(let i = 0; i < 3; i++){
       this.dgmnAH.moveDgmnCanvas(this.yourParty[i],((6*i)+2)*8*config.screenSize,72*config.screenSize);
-    }
-  }
-
-  gotoLevelUp = levelUps => {
-    // DGMN Data = Curr Stats -> Base Stats (FP eventually) -> Species
-    let dgmnData = [];
-    for(let dgmn of levelUps){
-      let data = this.dgmnAH.getDgmnData(dgmn,['nickname','currentStats','speciesName','currentLevel'],false);
-          data.dgmnId = dgmn;
-      dgmnData.push(data);
-    }
-
-    this.stopDgmnBattleCanvas(); // TODO - this needs to happen before Rewards, not Level Up
-    this.victoryMenu.removeSubMenu('rewards'); // Clear out the old Menu
-    this.victoryMenu.setLevelUpList(dgmnData);
-    this.victoryMenu.gotoLevelUp();
-  }
-
-  // TODO - I really need to have a better name for this...
-  levelUpNext = () => {
-    let currDgmn = this.victoryMenu.levelUpDgmn[this.victoryMenu.levelUpIndex].dgmnId;
-    let currDgmnData = this.dgmnAH.getDgmnData(currDgmn,['speciesName','currentFP'],false);
-        currDgmnData.dgmnId = currDgmn;
-    
-    if(this.dgmnUtility.checkEvolution(currDgmnData)){
-      let evoImages = this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
-
-      this.systemAH.loadImages(evoImages, ()=>{
-        this.victoryMenu.gotoEvolution(currDgmnData);
-      });
-
-    } else if(this.victoryMenu.levelUpDgmn.length > 1 && this.victoryMenu.levelUpIndex < this.victoryMenu.levelUpDgmn.length-1) { // If no Evos and only one Level Up
-      this.victoryMenu.removeSubMenu('level'); // Clear out the old Menu
-      this.victoryMenu.gotoNextLevelUp();
-    } else{ this.end() }
-
-    // this.victoryMenu.levelUpNext();
-  }
-
-  evolveCurrDgmn = () => {
-    let currDgmn = this.victoryMenu.levelUpDgmn[this.victoryMenu.levelUpIndex];
-    let evoChoice = this.victoryMenu.subMenus.evolution.selectedDgmn;
-    this.dgmnAH.evolve(currDgmn.dgmnId,evoChoice);
-    this.victoryMenu.selectIcon();
-
-    // If there's more than 1 DGMN, and you're not at the end yet...
-    if(this.victoryMenu.levelUpDgmn.length > 1 && this.victoryMenu.levelUpIndex < this.victoryMenu.levelUpDgmn.length-1){
-      this.victoryMenu.removeSubMenu('evolution'); // Clear out the old Menu
-      this.victoryMenu.gotoNextLevelUp();
-    } else { // Otherwise, end the Battle
-      this.end();
     }
   }
 
@@ -521,20 +450,137 @@ class Battle {
    * ------------------------------------------------------------------------
    * @param {String}  dir Direction of Input [left|up|right]
    * ----------------------------------------------------------------------*/
-  giveCurrReward = dir => {
-    let dgmnId;
+     giveCurrReward = dir => {
+      let dgmnId;
+  
+      let reward = this.battleRewards[this.victoryMenu.subMenus.rewards.currIndex];
+  
+      // TODO - This conversion should move to the Utility
+      //        dgmnId = this.yourParty[this.battleUtility.getDirection(dir)]
+      if(dir === 'left'){ dgmnId = this.yourParty[0]
+      } else if(dir === 'up'){ dgmnId = this.yourParty[1]
+      } else if(dir === 'right'){ dgmnId = this.yourParty[2] }
+  
+      if(!this.dgmnAH.getDgmnData(dgmnId,['isDead'],false).isDead){
+        this.dgmnAH.giveDgmnReward(dgmnId,reward);
+        this.victoryMenu.updateRewardsList(this.battleRewards,this.rewardWrapUp); // TODO - I don't really like this Pattern
+      } else{ debugLog("Cannot give to them, they died!") }
+    }
 
-    let reward = this.battleRewards[this.victoryMenu.subMenus.rewards.currIndex];
+  /**------------------------------------------------------------------------
+   * REWARD WRAP UP                                    
+   * ------------------------------------------------------------------------
+   * After the last reward is given, this gets things ready for the rest
+   * of the Victory Menu (Boss Reward, Level Up, Evolution, etc.)
+   * ----------------------------------------------------------------------*/
+   rewardWrapUp = () => {
+    this.stopDgmnBattleCanvas();  // Get rid of the Animating DGMN Party
 
-    // TODO - This conversion should move to the Utility
-    if(dir === 'left'){ dgmnId = this.yourParty[0]
-    } else if(dir === 'up'){ dgmnId = this.yourParty[1]
-    } else if(dir === 'right'){ dgmnId = this.yourParty[2] }
+    // Give Each DGMN their XP and Check for Level Ups
+    let levelUps = [];
+    this.giveDgmnBaseXP();
+    for(let i = 0; i < 3; i++){
+      if(this.dgmnAH.checkLevelUp(this.yourParty[i])){
+        levelUps.push(this.yourParty[i]);
+      }
+    }
 
-    if(!this.dgmnAH.getDgmnData(dgmnId,['isDead'],false).isDead){
-      this.dgmnAH.giveDgmnReward(dgmnId,reward);
-      this.victoryMenu.updateRewardsList(this.battleRewards,this.rewardWrapUp);
-    } else{ debugLog("Cannot give to them, they died!") }
+    // If there are any DGMN that Leveled Up, send their Data to the Victory Menu
+    if(levelUps.length > 0){
+      let dgmnData = [];
+      for(let dgmn of levelUps){
+        let data = this.dgmnAH.getDgmnData(dgmn,['nickname','currentStats','speciesName','currentLevel','permAttacks'],false);
+            data.dgmnId = dgmn;
+        dgmnData.push(data);
+      }
+
+      this.victoryMenu.setLevelUpList(dgmnData);
+      this.isBoss ? this.victoryMenu.gotoBossRewards(this.dungeonAH.getCurrentFloor()) : this.victoryMenu.gotoLevelUp();
+    } else if(this.isBoss){
+      let dgmnData = [];
+      for(let dgmn of this.yourParty){
+        let data = this.dgmnAH.getDgmnData(dgmn,['speciesName','upgrades','permAttacks'],false);
+            data.dgmnId = dgmn;
+        dgmnData.push(data);
+      }
+      this.victoryMenu.bossRewardsDgmn = dgmnData;
+      this.victoryMenu.gotoBossRewards(this.dungeonAH.getCurrentFloor());
+    } else{ this.end() }
+  }
+
+  /**------------------------------------------------------------------------
+   * SELECT BOSS REWARD                              
+   * ------------------------------------------------------------------------
+   * When you press Action on a Boss Reward, this handles the action of 
+   * giving the Reward to the DGMN and determining where to go next
+   * ----------------------------------------------------------------------*/
+  selectBossReward = () => {
+    // TODO - Move to a Const File
+    let upgrades = ['FP','XP','EN'];
+    let FPList = ['DR','NS','DS','JT','NA','ME','WG','VB']; // TODO - I need this list order normalized
+
+    if(this.victoryMenu.bossRewardIndex === 2 && this.victoryMenu.levelUpDgmn.length === 0){ this.end()  // If you're on the last Reward, and there's no Level Ups, end the Battle
+    } else{
+      // If the Boss Reward is not FP OR if it is FP, the FP Selection Menu is Open...
+      if(this.victoryMenu.subMenus.boss.currIndex !== 0 || (this.victoryMenu.subMenus.boss.currIndex === 0 && this.victoryMenu.subMenus.boss.inFPSelection)){
+        let FP = this.victoryMenu.subMenus.boss.inFPSelection ? FPList[this.victoryMenu.subMenus.rewardFP.currIndex] : undefined;
+        this.dgmnAH.giveUpgrade(this.yourParty[this.victoryMenu.bossRewardIndex],upgrades[this.victoryMenu.subMenus.boss.currIndex],FP);
+
+        // Figure out where to go next: Boss Reward, First Level Up, Next Level Up
+        if(this.victoryMenu.levelUpDgmn.length !== 0){
+          if(this.victoryMenu.bossRewardIndex === 0){
+            this.victoryMenu.gotoLevelUp();
+          } else{ this.victoryMenu.gotoNextLevelUp(); }
+          this.victoryMenu.bossRewardIndex++;
+        } else { this.victoryMenu.nextBossReward(this.dungeonAH.getCurrentFloor()) }
+      } else{ this.victoryMenu.launchBossRewardFPSelection() } // If the Boss Reward is FP, and the FP Selection Menu is NOT open
+    }
+  }
+
+  /**------------------------------------------------------------------------
+   * LEVEL UP NEXT                              
+   * ------------------------------------------------------------------------
+   * After Leveling Up, determines where to go next. Either to the next DGMN,
+   * Evolution, or End of Battle
+   * TODO - This name sucks
+   * ----------------------------------------------------------------------*/
+  levelUpNext = () => {
+    let currDgmn = this.victoryMenu.levelUpDgmn[this.victoryMenu.levelUpIndex].dgmnId;
+    let currDgmnData = this.dgmnAH.getDgmnData(currDgmn,['speciesName','currentFP'],false);
+        currDgmnData.dgmnId = currDgmn;
+    if(this.dgmnUtility.checkEvolution(currDgmnData)){
+      let evoImages = this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
+
+      this.systemAH.loadImages(evoImages, ()=>{
+        this.victoryMenu.gotoEvolution(currDgmnData);
+      });
+
+    } else if(this.victoryMenu.levelUpDgmn.length > 1 && this.victoryMenu.levelUpIndex < this.victoryMenu.levelUpDgmn.length-1) { // If no Evos and only one Level Up
+      if(this.isBoss){
+        this.victoryMenu.gotoBossRewards(this.dungeonAH.getCurrentFloor())
+      } else{
+        this.victoryMenu.removeSubMenu('level'); // TODO - Move this into the Victory Menu
+        this.victoryMenu.gotoNextLevelUp();
+      }
+    } else{ this.end() }
+  }
+
+  evolveCurrDgmn = () => {
+    let currDgmn = this.victoryMenu.levelUpDgmn[this.victoryMenu.levelUpIndex];
+    let evoChoice = this.victoryMenu.subMenus.evolution.selectedDgmn;
+    this.dgmnAH.evolve(currDgmn.dgmnId,evoChoice);
+    this.victoryMenu.selectIcon();
+
+    // If there's more than 1 DGMN, and you're not at the end yet...
+    if(this.victoryMenu.levelUpDgmn.length > 1 && this.victoryMenu.levelUpIndex < this.victoryMenu.levelUpDgmn.length-1){
+      this.victoryMenu.removeSubMenu('evolution'); // Clear out the old Menu
+      if(this.isBoss){
+        this.victoryMenu.gotoBossRewards(this.dungeonAH.getCurrentFloor());
+      } else{ this.victoryMenu.gotoNextLevelUp() }
+      
+    } else { // Otherwise, end the Battle
+      this.end();
+    }
   }
 
   /**------------------------------------------------------------------------
@@ -570,10 +616,14 @@ class Battle {
   // TODO - MIX THIS WITH PARTY CHOICE SHOULD CALL FROM DATA (And move to Utility)
   buildEnemyActions = () => {
     for(let enemy in this.enemyParty){
-      let action = this.attackUtility.getAttackData('bubbles',['type','hits','targets','power','type','maxCost']);
-          action.attackName = 'bubbles';
-          action.targetIndex = [Math.floor(Math.random() * 3)];
-          action.attacker = enemy;
+      // Randomly Select an Attack the Enemy Has
+      let possibleAttacks = this.dgmnAH.getDgmnData(this.enemyParty[enemy],['attacks'],true).attacks;
+      let attackChoice = possibleAttacks[Math.floor(Math.random() * possibleAttacks.length)].attackName;
+      
+      let action = this.attackUtility.getAttackData(attackChoice,['type','hits','targets','power','type','maxCost']);
+        action.attackName = attackChoice;
+        action.targetIndex = [Math.floor(Math.random() * 3)];
+        action.attacker = enemy;
       
       this.addAction(enemy,true,action);
     }
