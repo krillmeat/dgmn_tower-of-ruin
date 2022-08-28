@@ -565,9 +565,51 @@ var dgmnDB = {
     }
   },
   Tane: {},
-  Bibi: {},
+  Bibi: {
+    stage: 2,
+    attr: 'Free',
+    stats: {
+      HP: 4,
+      ATK: 2,
+      DEF: 1,
+      INT: 1,
+      RES: 1,
+      HIT: 2,
+      AVO: 1,
+      SPD: 2
+    },
+    evolutions: ['Pulse'],
+    types: {},
+    fields: {
+      NS: 2
+    },
+    evoFields: {
+      NS: 2
+    }
+  },
   Pagu: {},
-  Poro: {},
+  Poro: {
+    stage: 2,
+    attr: 'Free',
+    stats: {
+      HP: 4,
+      ATK: 2,
+      DEF: 1,
+      INT: 1,
+      RES: 1,
+      HIT: 2,
+      AVO: 1,
+      SPD: 2
+    },
+    evolutions: ['Hawk'],
+    types: {},
+    fields: {
+      WG: 2
+    },
+    evoFields: {
+      WG: 2
+    }
+  },
   Capri: {
     stage: 2,
     attr: 'Free',
@@ -590,8 +632,50 @@ var dgmnDB = {
       ME: 2
     }
   },
-  Puka: {},
-  Toko: {},
+  Puka: {
+    stage: 2,
+    attr: 'Free',
+    stats: {
+      HP: 4,
+      ATK: 2,
+      DEF: 2,
+      INT: 1,
+      RES: 2,
+      HIT: 1,
+      AVO: 1,
+      SPD: 1
+    },
+    evolutions: ['Gani'],
+    types: {},
+    fields: {
+      DS: 2
+    },
+    evoFields: {
+      DS: 2
+    }
+  },
+  Toko: {
+    stage: 2,
+    attr: 'Free',
+    stats: {
+      HP: 4,
+      ATK: 2,
+      DEF: 2,
+      INT: 1,
+      RES: 2,
+      HIT: 1,
+      AVO: 1,
+      SPD: 1
+    },
+    evolutions: ['Pata'],
+    types: {},
+    fields: {
+      VB: 2
+    },
+    evoFields: {
+      VB: 2
+    }
+  },
   Agu: {
     stage: 3,
     attr: 'vaccine',
@@ -1496,6 +1580,34 @@ var dgmnEncounterChartDB = {
     DR: {
       pre10: 1,
       dgmnList: ['Koro']
+    },
+    NS: {
+      pre10: 1,
+      dgmnList: ['Bibi']
+    },
+    WG: {
+      pre10: 1,
+      dgmnList: ['Poro']
+    },
+    DS: {
+      pre10: 1,
+      dgmnList: ['Puka']
+    },
+    JT: {
+      pre10: 1,
+      dgmnList: ['Bud']
+    },
+    ME: {
+      pre10: 1,
+      dgmnList: ['Capri']
+    },
+    VB: {
+      pre10: 1,
+      dgmnList: ['Toko']
+    },
+    NA: {
+      pre10: 1,
+      dgmnList: ['Koro']
     }
   },
   3: {},
@@ -1512,7 +1624,7 @@ var dgmnEncounterDB = {
     speciesName: 'Bota',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1527,7 +1639,7 @@ var dgmnEncounterDB = {
     speciesName: 'Yura',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 2,
@@ -1542,7 +1654,7 @@ var dgmnEncounterDB = {
     speciesName: 'Zuru',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 2,
@@ -1557,7 +1669,7 @@ var dgmnEncounterDB = {
     speciesName: 'Doki',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1572,7 +1684,7 @@ var dgmnEncounterDB = {
     speciesName: 'Pururu',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1587,7 +1699,7 @@ var dgmnEncounterDB = {
     speciesName: 'Choro',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 2,
       INT: 1,
@@ -1602,7 +1714,7 @@ var dgmnEncounterDB = {
     speciesName: 'Pitch',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 1,
       DEF: 2,
       INT: 1,
@@ -1617,7 +1729,7 @@ var dgmnEncounterDB = {
     speciesName: 'Poyo',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 2,
@@ -1628,7 +1740,7 @@ var dgmnEncounterDB = {
     },
     attacks: [new Attack('bubbles')]
   },
-  Koro: _defineProperty({
+  Koro: {
     speciesName: 'Koro',
     currentLevel: 3,
     currentStats: {
@@ -1642,7 +1754,112 @@ var dgmnEncounterDB = {
       SPD: 7
     },
     attacks: [new Attack('bubbles')]
-  }, "attacks", [new Attack('babyFlame'), new Attack('bubbles')]),
+  },
+  Capri: {
+    speciesName: 'Capri',
+    currentLevel: 3,
+    currentStats: {
+      HP: 12,
+      ATK: 7,
+      DEF: 7,
+      INT: 3,
+      RES: 7,
+      HIT: 3,
+      AVO: 3,
+      SPD: 3
+    },
+    attacks: [new Attack('bubbles')]
+  },
+  Bud: {
+    speciesName: 'Bud',
+    currentLevel: 3,
+    currentStats: {
+      HP: 12,
+      ATK: 7,
+      DEF: 3,
+      INT: 7,
+      RES: 7,
+      HIT: 3,
+      AVO: 3,
+      SPD: 3
+    },
+    attacks: [new Attack('bubbles')]
+  },
+  Puka: {
+    speciesName: 'Puka',
+    currentLevel: 3,
+    currentStats: {
+      HP: 12,
+      ATK: 3,
+      DEF: 7,
+      INT: 3,
+      RES: 7,
+      HIT: 3,
+      AVO: 7,
+      SPD: 3
+    },
+    attacks: [new Attack('bubbles')]
+  },
+  Bibi: {
+    speciesName: 'Bibi',
+    currentLevel: 3,
+    currentStats: {
+      HP: 12,
+      ATK: 7,
+      DEF: 3,
+      INT: 3,
+      RES: 3,
+      HIT: 3,
+      AVO: 7,
+      SPD: 7
+    },
+    attacks: [new Attack('bubbles')]
+  },
+  Poro: {
+    speciesName: 'Poro',
+    currentLevel: 3,
+    currentStats: {
+      HP: 12,
+      ATK: 7,
+      DEF: 3,
+      INT: 3,
+      RES: 3,
+      HIT: 7,
+      AVO: 3,
+      SPD: 7
+    },
+    attacks: [new Attack('bubbles')]
+  },
+  Toko: {
+    speciesName: 'Toko',
+    currentLevel: 3,
+    currentStats: {
+      HP: 12,
+      ATK: 7,
+      DEF: 3,
+      INT: 7,
+      RES: 7,
+      HIT: 3,
+      AVO: 3,
+      SPD: 3
+    },
+    attacks: [new Attack('bubbles')]
+  },
+  Pagu: {
+    speciesName: 'Pagu',
+    currentLevel: 3,
+    currentStats: {
+      HP: 12,
+      ATK: 7,
+      DEF: 3,
+      INT: 7,
+      RES: 3,
+      HIT: 3,
+      AVO: 7,
+      SPD: 3
+    },
+    attacks: [new Attack('bubbles')]
+  },
   Agu: {
     speciesName: 'Agu',
     currentLevel: 4,
@@ -1678,7 +1895,7 @@ var bossEncountersDB = {
     speciesName: 'Koro',
     currentLevel: 4,
     currentStats: {
-      HP: 26,
+      HP: 56,
       ATK: 9,
       DEF: 4,
       INT: 4,
@@ -1819,6 +2036,10 @@ var EnemyGenerator = function EnemyGenerator(dgmnAH) {
   _defineProperty(this, "calcDgmnStage", function (currFloor) {
     if (currFloor < 2) {
       return 1;
+    } else if (currFloor === 2 || currFloor === 3) {
+      return Math.floor(Math.random() * 100) < 80 ? 1 : 2;
+    } else if (currFloor === 4) {
+      return Math.floor(Math.random() * 100) < 60 ? 2 : 1;
     }
     return 1;
   });
@@ -2327,7 +2548,7 @@ var DigiBeetleCanvas = function (_GameCanvas) {
 
 var dungeonImages = ['Dungeon/startTile', 'Dungeon/endTile', 'Dungeon/enemyTile', 'Dungeon/treasureTile', 'Dungeon/treasureTileOpen', 'Menus/dungeonPauseOverlay'];
 var digiBeetleImages = ['Dungeon/DigiBeetle/digiBeetleDown0', 'Dungeon/DigiBeetle/digiBeetleDown1', 'Dungeon/DigiBeetle/digiBeetleUp0', 'Dungeon/DigiBeetle/digiBeetleUp1', 'Dungeon/DigiBeetle/digiBeetleRight0', 'Dungeon/DigiBeetle/digiBeetleRight1', 'Dungeon/DigiBeetle/digiBeetleLeft0', 'Dungeon/DigiBeetle/digiBeetleLeft1'];
-var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/pwrDIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay', 'Menus/textBox', 'Menus/basicMenu', 'Icons/Pause/itemsSelected', 'Icons/Pause/itemsDeselected', 'Icons/Pause/beetleDeselected', 'Icons/Pause/beetleSelected', 'Menus/itemsTargetOverlay', 'Icons/rewardIconDeselected', 'Icons/rewardIconSelected', 'Icons/rewardIconNull', 'Icons/rewardIconFull', 'Menus/bossRewardFieldChoice'];
+var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/pwrDIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay', 'Menus/textBox', 'Menus/basicMenu', 'Icons/Pause/itemsSelected', 'Icons/Pause/itemsDeselected', 'Icons/Pause/beetleDeselected', 'Icons/Pause/beetleSelected', 'Menus/itemsTargetOverlay', 'Icons/rewardIconDeselected', 'Icons/rewardIconSelected', 'Icons/rewardIconNull', 'Icons/rewardIconFull', 'Menus/bossRewardFieldChoice', 'Menus/titleScreen'];
 var loadingImages = ['Loading/loading0', 'Loading/loading1', 'Loading/loading2', 'Loading/loading3', 'Loading/loading4', 'Loading/loading5', 'Loading/loading6', 'Loading/loading7', 'Loading/loading8', 'Loading/loading9', 'Loading/loading10'];
 var fontImages$1 = ['Fonts/fontsBlack', 'Fonts/fontsWhite', 'Fonts/fontsLightGreen', 'Fonts/fontsDarkGreen'];
 var typeIcons = ['Icons/Types/noneTypeIcon', 'Icons/Types/fireTypeIcon', 'Icons/Types/windTypeIcon', 'Icons/Types/plantTypeIcon', 'Icons/Types/elecTypeIcon', 'Icons/Types/evilTypeIcon', 'Icons/Types/metalTypeIcon'];
@@ -6582,7 +6803,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
 }
 ;
 
-var GameAH = function GameAH(addToObjectListCB, drawGameScreenCB, startBattleCB, getDgmnPartyCB, endBattleCB) {
+var GameAH = function GameAH(addToObjectListCB, drawGameScreenCB, startBattleCB, getDgmnPartyCB, endBattleCB, buildDungeonCB, startNewGameCB) {
   _classCallCheck(this, GameAH);
   this.addCanvasObject = function (canvas) {
     addToObjectListCB(canvas);
@@ -6599,7 +6820,84 @@ var GameAH = function GameAH(addToObjectListCB, drawGameScreenCB, startBattleCB,
   this.endBattle = function () {
     return endBattleCB();
   };
+  this.buildDungeon = function () {
+    return buildDungeonCB();
+  };
+  this.startNewGame = function () {
+    return startNewGameCB();
+  };
 };
+
+var TitleAH = function TitleAH(cbObj) {
+  _classCallCheck(this, TitleAH);
+  this.startNewGame = function () {
+    return cbObj.startNewGameCB();
+  };
+};
+
+var TitleIO = function (_IO) {
+  _inherits(TitleIO, _IO);
+  var _super = _createSuper(TitleIO);
+  function TitleIO() {
+    var _this;
+    _classCallCheck(this, TitleIO);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "actionKeyHandler", function (upDown) {
+      _this.titleAH.startNewGame();
+    });
+    _this.gameAH;
+    _this.titleAH;
+    _this.menuUtility = new MenuUtility();
+    return _this;
+  }
+  return TitleIO;
+}(IO);
+
+var TitleMenu = function (_Menu) {
+  _inherits(TitleMenu, _Menu);
+  var _super = _createSuper(TitleMenu);
+  function TitleMenu() {
+    var _this;
+    _classCallCheck(this, TitleMenu);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "init", function () {
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('titleScreen'), 0, 0);
+      _this.addSubMenu('titleMain', new ListMenu([4, 13], 1, 10, 1, ['New Game', 'Continue'], _this.systemAH.fetchImage('miniCursor'), null, 'titleMain'));
+      _this.subMenus.titleMain.isVisible = true;
+      _this.subMenus.titleMain.isActive = true;
+      _this.subMenus.titleMain.cursorOffset = 1;
+      _this.subMenus.titleMain.drawMenu();
+      _this.drawMenu();
+      _this.titleMenuIO.gameAH = _this.gameAH;
+      _this.titleMenuIO.titleAH = _this.titleAH;
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      for (var key in _this.subMenus) {
+        if (_this.subMenus[key].isVisible) {
+          _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
+        }
+      }
+      _this.gameAH.refreshScreen();
+    });
+    _defineProperty(_assertThisInitialized(_this), "startNewGame", function () {
+      debugLog("Starting New Game...");
+      _this.gameAH.startNewGame();
+    });
+    _this.menuCanvas = new MenuCanvas('victory', 160, 144);
+    _this.titleAH = new TitleAH({
+      startNewGameCB: _this.startNewGame
+    });
+    _this.titleMenuIO = new TitleIO();
+    return _this;
+  }
+  return TitleMenu;
+}(Menu);
 
 var Game = function Game(systemAH) {
   var _this = this;
@@ -6608,6 +6906,18 @@ var Game = function Game(systemAH) {
     _this.systemAH = actionHandler;
   });
   _defineProperty(this, "bootGame", function () {
+    _this.buildTitleScreen();
+  });
+  _defineProperty(this, "buildTitleScreen", function () {
+    _this.titleMenu.init();
+    _this.addToObjectList(_this.titleMenu.menuCanvas);
+    _this.drawGameScreen();
+  });
+  _defineProperty(this, "startNewGame", function () {
+    _this.atTitle = false;
+    setTimeout(function () {
+      _this.buildDungeon();
+    }, 500);
   });
   _defineProperty(this, "keyHandler", function (keyState) {
     if (keyState[config.keyBindings.action]) {
@@ -6653,6 +6963,11 @@ var Game = function Game(systemAH) {
   _defineProperty(this, "keyManager", function (key, upDown) {
     var _this$battle, _this$dungeon, _this$dungeon2, _this$dungeon3, _this$dungeon4;
     _this.keyTimers[key]++;
+    if (_this.atTitle) {
+      if (_this.keyTimers[key] === 2) {
+        _this.titleMenu.titleMenuIO.keyTriage(key, upDown);
+      }
+    }
     if ((_this$battle = _this.battle) !== null && _this$battle !== void 0 && _this$battle.battleActive) {
       if (_this.keyTimers[key] === 2) {
         _this.battle.battleIO.keyTriage(key, upDown);
@@ -6684,6 +6999,7 @@ var Game = function Game(systemAH) {
   });
   _defineProperty(this, "buildDungeon", function () {
     debugLog("Building Dungeon...");
+    _this.atTitle = false;
     _this.setupPartyDgmn();
     _this.dungeon = new Dungeon(true, _this.onDungeonLoad);
     _this.digiBeetle = new DigiBeetle();
@@ -6744,10 +7060,11 @@ var Game = function Game(systemAH) {
     return _this.yourParty;
   });
   debugLog('Game Created...');
-  this.gameAH = new GameAH(this.addToObjectList, this.drawGameScreen, this.startBattle, this.getDgmnParty, this.endBattle);
+  this.gameAH = new GameAH(this.addToObjectList, this.drawGameScreen, this.startBattle, this.getDgmnParty, this.endBattle, this.buildDungeon, this.startNewGame);
   this.systemAH = systemAH;
   this.yourDgmn = new DgmnManager(this.systemAH);
   this.yourParty = this.yourDgmn.party;
+  this.atTitle = true;
   this.battle;
   this.dungeon;
   this.gameCanvas =
@@ -6764,6 +7081,7 @@ var Game = function Game(systemAH) {
     select: 0
   };
   this.objectList = [];
+  this.titleMenu = new TitleMenu(this.systemAH, this.gameAH);
 };
 
 (function (_GameCanvas) {

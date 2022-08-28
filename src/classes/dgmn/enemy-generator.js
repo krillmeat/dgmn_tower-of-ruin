@@ -13,12 +13,6 @@ class EnemyGenerator{
     console.log("Generating Enemies on Floor ",currFloor);
 
     for(let i = 0; i < 3; i++){
-      // Mock for now, but eventually from Data
-      // let dgmnData = {
-      //   speciesName: data[`edId${i}`].speciesName,
-      //   currentStats: data[`edId${i}`].currentStats,
-      //   attacks: data[`edId${i}`].attacks
-      // };
       let stage = this.calcDgmnStage(currFloor);
       let field = this.calcDgmnField(); // TODO - Pass in mods
       let dgmnName = this.mapUtility.isBossFloor(currFloor) ? bossEncountersChartDB[bossEncoutnersMapDB.indexOf(currFloor)][i] : this.calcDgmnName(stage,field);
@@ -35,9 +29,9 @@ class EnemyGenerator{
     // TODO - There should be a lot of logic here, but for now, it's simple
     if(currFloor < 2){ return 1
     } else if(currFloor === 2 || currFloor === 3){
-      // rando = 50% 2 | 50% 1
+      return Math.floor(Math.random() * 100) < 80 ? 1 : 2; // 80% 1 : 20% 2
     } else if(currFloor === 4){
-      // rando 40% 2 | 60% 3
+      return Math.floor(Math.random() * 100) < 60 ? 2 : 1; // 60% 2 : 40% 1
     }
 
     return 1;

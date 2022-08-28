@@ -13,13 +13,16 @@
  * ------
  * I'm thinking there should be no methods. Just callbacks in the constructors
  * ----------------------------------------------------------------------*/
+// TODO - I need to split this one into a cbObj
 class GameAH{
-    constructor(addToObjectListCB,drawGameScreenCB,startBattleCB,getDgmnPartyCB,endBattleCB){
+    constructor(addToObjectListCB,drawGameScreenCB,startBattleCB,getDgmnPartyCB,endBattleCB,buildDungeonCB,startNewGameCB){
         this.addCanvasObject = canvas => { addToObjectListCB(canvas) }
         this.refreshScreen = () => { drawGameScreenCB() }
         this.startBattle = () => { startBattleCB() }
         this.getDgmnParty = () => { return getDgmnPartyCB() }
         this.endBattle = () => endBattleCB()
+        this.buildDungeon = () => buildDungeonCB()
+        this.startNewGame = () => startNewGameCB()
     }
 }
 

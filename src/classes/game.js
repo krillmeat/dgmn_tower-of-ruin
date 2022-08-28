@@ -7,6 +7,7 @@ import GameCanvas from "./canvas";
 
 import config from "../config";
 import GameAH from "./action-handlers/game.ah";
+import TitleMenu from "./title/title-menu";
 
 /**------------------------------------------------------------------------
  * GAME
@@ -20,11 +21,13 @@ class Game{
   constructor(systemAH){
     debugLog('Game Created...');
 
-    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty,this.endBattle);
+    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty,this.endBattle,this.buildDungeon,this.startNewGame);
     this.systemAH = systemAH;
 
     this.yourDgmn = new DgmnManager(this.systemAH);        // All of your Dgmn (party, reserves, etc.)
     this.yourParty = this.yourDgmn.party;     // Your current Party of Dgmn (possible to be empty)
+
+    this.atTitle = true;
     this.battle;                              // Init Battle (cleared and created by Game Logic)
     this.dungeon;
 
@@ -42,6 +45,7 @@ class Game{
 
     // this.loadImages = (imageList,callback) => { loadImageCallback(imageList,callback) }
     // this.fetchImage = imageName => { return fetchImageCallback(imageName) }
+    this.titleMenu = new TitleMenu(this.systemAH,this.gameAH);
   }
 
   initSystemAH = actionHandler => { this.systemAH = actionHandler }
@@ -53,7 +57,21 @@ class Game{
    * Runs all functionality that would boot a game up (load screen, company, etc.)
    * ----------------------------------------------------------------------*/
   bootGame = () => {
-    // TODO - Once the game is more fleshed-out, run through this, rather than debuggers
+    // TODO - Don's skip straight to Title, show some fanfare
+    this.buildTitleScreen();
+  }
+
+  buildTitleScreen = () => {
+    this.titleMenu.init();
+    this.addToObjectList(this.titleMenu.menuCanvas)
+    this.drawGameScreen();
+  }
+
+  startNewGame = () => {
+    this.atTitle = false;
+    setTimeout(()=>{
+      this.buildDungeon();
+    },500);
   }
 
   /**------------------------------------------------------------------------
@@ -97,6 +115,10 @@ class Game{
    * ----------------------------------------------------------------------*/
   keyManager = (key, upDown) => {
     this.keyTimers[key]++;
+
+    if(this.atTitle){
+      if(this.keyTimers[key] === 2){ this.titleMenu.titleMenuIO.keyTriage(key,upDown) }
+    }
 
     if(this.battle?.battleActive){
         if(this.keyTimers[key] === 2){
@@ -144,6 +166,7 @@ class Game{
   buildDungeon = () => {
     debugLog("Building Dungeon...");
     // TODO - ALL OF THIS IS TEMP RIGHT NOW
+    this.atTitle = false;
 
     this.setupPartyDgmn();
 

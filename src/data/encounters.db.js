@@ -67,7 +67,8 @@ export const dgmnEncounterChartDB = {
     },
     NA: {
       pre10: 1,
-      dgmnList: ['Pagu']
+      // dgmnList: ['Pagu']
+      dgmnList: ['Koro']
     }
   },
   3: {},
