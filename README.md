@@ -3,4 +3,4 @@ I'm making a Digimon Rogue-like about a kid transported to the digital world, wh
 
 ## MECHANICS
 
-![](docs\root.png)
+![](docs/root.png)
