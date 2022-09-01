@@ -14,6 +14,11 @@ window.onload = function(){
   init();
 }
 
+/**------------------------------------------------------------------------
+ * INITIALIZE
+ * ------------------------------------------------------------------------
+ * Once the base Webpage is loaded, Boot up the System
+ * ----------------------------------------------------------------------*/
 function init(){
   debugLog(`Booting for ${config.userName}...`);
   

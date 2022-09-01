@@ -2,8 +2,6 @@ import config from "../config";
 import { debugLog } from "../utils/log-utils";
 import { inDebug } from "../utils/url-utils";
 import Game from "./game";
-import BackgroundCanvas from "./background-canvas";
-import Battle from './battle/battle';
 import GameCanvas from "./canvas";
 import Controller from "./controller";
 import DebugMenu from "./debug-menu";

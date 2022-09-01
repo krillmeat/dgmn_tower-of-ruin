@@ -3,4 +3,5 @@ I'm making a Digimon Rogue-like about a kid transported to the digital world, wh
 
 ## MECHANICS
 
+## FLOW CHART
 ![](docs/root.png)
