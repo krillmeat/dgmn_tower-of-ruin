@@ -20,15 +20,15 @@ class System{
   constructor(){
     debugLog("Loading System...");
 
-    this.systemAH = new SystemAH(this.loadImage,this.fetchImage,this.startLoading,this.stopLoading)
+    this.systemAH = new SystemAH(this.loadImage,this.fetchImage,this.startLoading,this.stopLoading); // TODO -Switch to Callback Object
 
-    this.controllers = [];
-    this.keyState = {};
+    this.controllers = [];                          // Controllers Handle Inputs
+    this.keyState = {};                             // Key-Value Pairs for all Active and Inactive Pairs
 
-    this.systemScreen = document.getElementById('game-screen');
-    this.systemScreen.style.width = (160 * config.screenSize)+'px';
-    this.systemScreen.style.height = (144 * config.screenSize)+'px';
-    this.debugMenu;
+    this.systemScreen = document.getElementById('game-screen');       // Screen Element
+    this.systemScreen.style.width = (160 * config.screenSize)+'px';   //
+    this.systemScreen.style.height = (144 * config.screenSize)+'px';  // 
+    this.debugMenu;                                                   // 
 
     this.imageHandler = new ImageHandler();
     this.loadManager = new LoadManager(this.systemAH);
