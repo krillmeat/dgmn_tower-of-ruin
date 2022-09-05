@@ -11,7 +11,11 @@ The following are the Private and Public Methods in the System Class
 
 
 ### PRIVATE
-#### start
+#### start()
 Starts the System
-### paintToScreen
+#### paintToScreen()
 Paints a Canvas to the visible System Screen
+#### startGameTimer()
+Something
+#### buildFontImages()
+Something
