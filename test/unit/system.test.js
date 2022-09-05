@@ -1,5 +1,5 @@
 import { beforeEach, expect, test } from "@jest/globals";
-import System from "../../src/classes/system";
+import System from "../../src/system/system";
 
 import 'jest-canvas-mock';
 

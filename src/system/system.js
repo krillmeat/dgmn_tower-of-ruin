@@ -1,15 +1,15 @@
 import config from "../config";
 import { debugLog } from "../utils/log-utils";
 import { inDebug } from "../utils/url-utils";
-import Game from "./game";
-import GameCanvas from "./canvas";
-import Controller from "./controller";
-import DebugMenu from "./debug-menu";
-import ImageHandler from "./image-handler";
+import Game from "../classes/game";
+import GameCanvas from "../classes/canvas";
+import Controller from "../classes/controller";
+import DebugMenu from "../classes/debug-menu";
+import ImageHandler from "../classes/image-handler";
 import { fontImages, genericImages, loadingImages } from "../data/images.db";
 import { fontImages as globalFontImages} from "../data/font.db";
-import SystemAH from "./action-handlers/system.ah";
-import LoadManager from "./load-manager";
+import SystemAH from "../classes/action-handlers/system.ah";
+import LoadManager from "../classes/load-manager";
 
 /**------------------------------------------------------------------------
  * SYSTEM CLASS
@@ -18,28 +18,26 @@ import LoadManager from "./load-manager";
  * ----------------------------------------------------------------------*/
 class System{
   constructor(){
-    debugLog("Loading System...");
-
     this.systemAH = new SystemAH(this.loadImage,this.fetchImage,this.startLoading,this.stopLoading); // TODO -Switch to Callback Object
 
-    this.controllers = [];                          // Controllers Handle Inputs
-    this.keyState = {};                             // Key-Value Pairs for all Active and Inactive Pairs
+    this.controllers = [];                                            // Controllers Handle Inputs
+    this.keyState = {};                                               // Key-Value Pairs for all Active and Inactive Pairs
 
     this.systemScreen = document.getElementById('game-screen');       // Screen Element
     this.systemScreen.style.width = (160 * config.screenSize)+'px';   //
     this.systemScreen.style.height = (144 * config.screenSize)+'px';  // 
-    this.debugMenu;                                                   // 
+    this.debugMenu;                                                   // Menu Used for running things in Debug
 
-    this.imageHandler = new ImageHandler();
-    this.loadManager = new LoadManager(this.systemAH);
+    this.imageHandler = new ImageHandler();                           // Handles Image Loading and Fetching | TODO - Rename to Manager
+    this.loadManager = new LoadManager(this.systemAH);                // Handles Load Screens
 
-    this.gameTimer;
-    this.systemCount = 0;
-    this.actionQueue = [];
+    this.gameTimer;                                                   // Interval that handles everything
+    this.systemCount = 0;                                             // Used by the Interval
+    this.actionQueue = [];                                            // TODO - I'm not sure I'm using this method anymore
 
-    this.screenCanvas = new GameCanvas('screen-canvas',160,144);
-    this.game = new Game(this.systemAH);
-    this.subCanvases = [this.backgroundCanvas]; // TODO - this should be loaded
+    this.screenCanvas = new GameCanvas('screen-canvas',160,144);      // Root Canvas Instance (this is the only true Canvas we see)
+    this.game = new Game(this.systemAH);                              // Game Being Loaded | TODO - In the future, should be dynamic
+    this.subCanvases = [this.backgroundCanvas];                       // All of the Canvases being rendered currently | TODO - Backgorund Canvas should be loaded
 
     this.buildFontImages();
   }
@@ -67,6 +65,13 @@ class System{
     })
   }
 
+  /**------------------------------------------------------------------------
+   * PAINT TO SCREEN
+   * ------------------------------------------------------------------------
+   * Draw a Canvas to the System Screen
+   * ------------------------------------------------------------------------
+   * @param {Canvas}  canvas  Canvas Elem to be painted
+   * ----------------------------------------------------------------------*/
   paintToScreen = canvas => {
     this.screenCanvas.clearCanvas();
     this.screenCanvas.paintCanvas(canvas);

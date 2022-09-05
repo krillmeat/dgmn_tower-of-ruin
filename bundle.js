@@ -678,7 +678,7 @@ var dgmnDB = {
   },
   Agu: {
     stage: 3,
-    attr: 'vaccine',
+    attr: 'Vaccine',
     stats: {
       HP: 6,
       ATK: 3,
@@ -7083,19 +7083,6 @@ var Game = function Game(systemAH) {
   this.objectList = [];
   this.titleMenu = new TitleMenu(this.systemAH, this.gameAH);
 };
-
-(function (_GameCanvas) {
-  _inherits(BackgroundCanvas, _GameCanvas);
-  var _super = _createSuper(BackgroundCanvas);
-  function BackgroundCanvas() {
-    _classCallCheck(this, BackgroundCanvas);
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-    return _super.call.apply(_super, [this].concat(args));
-  }
-  return BackgroundCanvas;
-})(GameCanvas);
 
 var Controller = function Controller(setKeyState) {
   var _this = this;

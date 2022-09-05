@@ -5,7 +5,7 @@
  * It handles the Loading Event for the Entire System
  * ----------------------------------------------------------------------*/
 
-import System from './classes/system';
+import System from './system/system';
 import config from './config';
 import { debugLog } from './utils/log-utils';
 
