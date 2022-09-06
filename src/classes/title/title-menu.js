@@ -15,6 +15,8 @@ class TitleMenu extends Menu{
       startNewGameCB: this.startNewGame
     })
     this.titleMenuIO = new TitleIO();
+
+    this.atTitle = true;                                  // Whether or not the Title Screen is currently showing
   }
 
   init = () => {

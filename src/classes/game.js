@@ -12,43 +12,35 @@ import TitleMenu from "./title/title-menu";
 /**------------------------------------------------------------------------
  * GAME
  * ------------------------------------------------------------------------
- * Manager for all Game Elements, which includes most things
+ * Manager for all Game Elements
  * ------------------------------------------------------------------------
- * @param {Function} loadImageCallback  Callback used by the System to load Images
- * @param {Function} fetchImageCallback Gets an image from the System
+ * @param {SystemAH}  systemAH
  * ----------------------------------------------------------------------*/
 class Game{
   constructor(systemAH){
     debugLog('Game Created...');
 
+    // TODO - Split this into a cbObj
     this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty,this.endBattle,this.buildDungeon,this.startNewGame);
-    this.systemAH = systemAH;
+    this.systemAH = systemAH;                                   // Action Handlers used by this Class
 
-    this.yourDgmn = new DgmnManager(this.systemAH);        // All of your Dgmn (party, reserves, etc.)
-    this.yourParty = this.yourDgmn.party;     // Your current Party of Dgmn (possible to be empty)
+    this.yourDgmn = new DgmnManager(this.systemAH);             // All of your Dgmn (party, reserves, etc.)
+    this.yourParty = this.yourDgmn.party;                       // Your current Party of Dgmn (possible to be empty)
 
-    this.atTitle = true;
-    this.battle;                              // Init Battle (cleared and created by Game Logic)
-    this.dungeon;
+    this.titleMenu = new TitleMenu(this.systemAH,this.gameAH);  // Initial Menu at the Boot of the Game
+    this.atTitle = true;                                        // TODO - Find a way to not have this here (move to Title Menu)
+    this.battle; this.dungeon;                                  // Major Components inside of the Game
 
-    this.gameCanvas =                         // Canvas Every in-game Element is drawn on
-      new GameCanvas('game-canvas',160,144);  
+    this.gameCanvas = new GameCanvas('game-canvas',160,144);    // Everything inside of the Game is drawn here  
+    this.objectList = [];                                       // All of the Canvases inside of the Game that should be drawn at a given time
 
-    this.keyState = {};                      // Sent in from System, holds true/false value for all Keys Pressed
-    this.keyTimers = {                       // Keeps track of how many ms each action has been held
+    this.keyState = {};                                         // Sent in from System, holds true/false value for all Keys Pressed
+    this.keyTimers = {                                          // Keeps track of how many MS each action has been held
       action: 0, cancel: 0,
       up: 0, right: 0, down: 0, left: 0,
       start: 0, select: 0
     }
-
-    this.objectList = [];                    // All of the Images to be drawn on the Game Canvas
-
-    // this.loadImages = (imageList,callback) => { loadImageCallback(imageList,callback) }
-    // this.fetchImage = imageName => { return fetchImageCallback(imageName) }
-    this.titleMenu = new TitleMenu(this.systemAH,this.gameAH);
   }
-
-  initSystemAH = actionHandler => { this.systemAH = actionHandler }
 
   /**------------------------------------------------------------------------
    * BOOT GAME
@@ -61,12 +53,22 @@ class Game{
     this.buildTitleScreen();
   }
 
+  /**------------------------------------------------------------------------
+   * BUILD TITLE SCREEN
+   * ------------------------------------------------------------------------
+   * Builds the initial Title Screen (Main Menu)
+   * ----------------------------------------------------------------------*/
   buildTitleScreen = () => {
     this.titleMenu.init();
-    this.addToObjectList(this.titleMenu.menuCanvas)
+    this.addToObjectList(this.titleMenu.menuCanvas);
     this.drawGameScreen();
   }
 
+  /**------------------------------------------------------------------------
+   * START NEW GAME
+   * ------------------------------------------------------------------------
+   * Starts the sequence for creating a New Game File
+   * ----------------------------------------------------------------------*/
   startNewGame = () => {
     this.atTitle = false;
     setTimeout(()=>{
@@ -75,90 +77,36 @@ class Game{
   }
 
   /**------------------------------------------------------------------------
-   * KEY HANDLER
-   * ------------------------------------------------------------------------
-   * Run by the Game Timer, sends all needed key inputs into the Manager
-   * ------------------------------------------------------------------------
-   * @param {Object} keyState The true/false values for all pressed keys
-   * ----------------------------------------------------------------------*/
-  keyHandler = keyState => {
-    if(keyState[config.keyBindings.action]){ this.keyManager('action')
-    } else { this.keyTimers.action = 0 }
-
-    if(keyState[config.keyBindings.cancel]){ this.keyManager('cancel')
-    } else { this.keyTimers.cancel = 0 }
-
-    if(keyState[config.keyBindings.start]){ this.keyManager('start')
-    } else { this.keyTimers.start = 0 }
-
-    if(keyState[config.keyBindings.up]){ this.keyManager('up','down')
-    } else { this.keyTimers.up = 0; this.keyManager('up','up') }
-    
-    if(keyState[config.keyBindings.right]){ this.keyManager('right','down')
-    } else { this.keyTimers.right = 0; this.keyManager('right','up') }
-    
-    if(keyState[config.keyBindings.down]){ this.keyManager('down','down')
-    } else { this.keyTimers.down = 0; this.keyManager('down','up') }
-    
-    if(keyState[config.keyBindings.left]){ this.keyManager('left','down')
-    } else { this.keyTimers.left = 0; this.keyManager('left','up') }
-  }
-
-  /**------------------------------------------------------------------------
-   * KEY MANAGER
-   * ------------------------------------------------------------------------
-   * Takes the action from a key and takes the proper action, depending on
-   *   current Game state
-   * ------------------------------------------------------------------------
-   * @param {String} key    Not the event listener Key, but the System Action Key
-   * @param {String} upDown Picking up or putting down - up|down
-   * ----------------------------------------------------------------------*/
-  keyManager = (key, upDown) => {
-    this.keyTimers[key]++;
-
-    if(this.atTitle){
-      if(this.keyTimers[key] === 2){ this.titleMenu.titleMenuIO.keyTriage(key,upDown) }
-    }
-
-    if(this.battle?.battleActive){
-        if(this.keyTimers[key] === 2){
-          this.battle.battleIO.keyTriage(key,upDown);
-        }
-        if((key === 'right' || key === 'left' || key === 'down' || key === 'up') && this.keyTimers[key] > 15){ // Only directions can be held to take action
-          this.keyTimers[key] = 0;
-        }
-    }
-
-    if(this.dungeon?.dungeonState === 'free'){ // TODO - Probably should be a more specific check
-      // TODO - Logic that checks things like "held down" or "tapped" go here
-      if(key === 'start' || key === 'select'){ // Start and Select shouldn't be able to be "held down"
-        if(this.keyTimers[key] === 2){ this.dungeon.dungeonIO.keyTriage(key,upDown) }
-      } else {
-        this.dungeon.dungeonIO.keyTriage(key,upDown);
-      }
-    } else if(this.dungeon?.dungeonState === 'hatch' || this.dungeon?.dungeonState === 'text-box-next' || this.dungeon?.dungeonState === 'main-menu'){
-      if(this.keyTimers[key] === 2){
-        this.dungeon.dungeonIO.keyTriage(key,upDown);
-      }
-    }
-  }
-
-  /**------------------------------------------------------------------------
-   * START BATTLE
+   * START BATTLE                                               [[EXPORTED ]]
    * ------------------------------------------------------------------------
    * Gathers up needed data and starts a battle.
-   * TODO - Currently, a lot of this is mocked up and will eventually
-   *        need to pull from the proper sources
    * ----------------------------------------------------------------------*/
   startBattle = () => {
     debugLog("Starting Battle...");
     this.battle = new Battle(this.dungeon.floor.isBossFloor,this.dungeon.floor.number);
-    this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,this.dungeon?.dungeonAH,()=>{}); // The other two AH's aren't generated, because there's no dungeon/beetle yet
+    this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,this.dungeon?.dungeonAH,()=>{}); // TODO - Missing BeetleAH
     this.battle.init();
   }
 
   /**------------------------------------------------------------------------
-   * BUILD DUNGEON
+   * END BATTLE                                                 [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * Ends a Battle and gets things back to the proper Dungeon State
+   * ----------------------------------------------------------------------*/
+   endBattle = () => {
+    debugLog("Ending Battle...");
+    this.removeFromObjectList(this.battle.battleCanvas);
+    this.battle = null;
+
+    setTimeout(()=>{ this.systemAH.stopLoading(); },1000);
+
+    setTimeout(()=>{
+      this.dungeon.dungeonState = 'free';
+    },2000)
+  }
+  
+  /**------------------------------------------------------------------------
+   * BUILD DUNGEON                                              [[EXPORTED ]]
    * ------------------------------------------------------------------------
    * Gathers up needed data and creates a new Dungeon
    *   TODO - Also creates a new DigiBeetle, but this should move to on boot up
@@ -216,21 +164,8 @@ class Game{
     this.drawGameScreen();
   }
 
-  endBattle = () => {
-    debugLog("Ending Battle...");
-    this.removeFromObjectList(this.battle.battleCanvas);
-    this.battle = null;
-
-    setTimeout(()=>{ this.systemAH.stopLoading(); },1000);
-
-    setTimeout(()=>{
-      this.dungeon.dungeonState = 'free';
-    },2000)
-    
-  }
-
   /**------------------------------------------------------------------------
-   * ADD TO OBJECT LIST
+   * ADD TO OBJECT LIST                                         [[EXPORTED ]]
    * ------------------------------------------------------------------------
    * Sent into parts of the Game as a Callback.
    * Adds an object to the draw array, so that it will paint on the Screen
@@ -257,7 +192,7 @@ class Game{
   }
 
   /**------------------------------------------------------------------------
-   * DRAW GAME SCREEN
+   * DRAW GAME SCREEN                                           [[EXPORTED ]]
    * ------------------------------------------------------------------------
    * Sent into parts of the Game as a Callback.
    * Triggers a Canvas Paint of every object in the Object List
@@ -268,6 +203,80 @@ class Game{
       this.gameCanvas.paintCanvas(obj);
     }
   }
+
+  /**------------------------------------------------------------------------
+   * KEY HANDLER
+   * ------------------------------------------------------------------------
+   * Run by the Game Timer, sends all needed key inputs into the Manager
+   * ------------------------------------------------------------------------
+   * @param {Object} keyState The true/false values for all pressed keys
+   * ----------------------------------------------------------------------*/
+   keyHandler = keyState => {
+    if(keyState[config.keyBindings.action]){ this.keyManager('action')
+    } else { this.keyTimers.action = 0 }
+
+    if(keyState[config.keyBindings.cancel]){ this.keyManager('cancel')
+    } else { this.keyTimers.cancel = 0 }
+
+    if(keyState[config.keyBindings.start]){ this.keyManager('start')
+    } else { this.keyTimers.start = 0 }
+
+    if(keyState[config.keyBindings.up]){ this.keyManager('up','down')
+    } else { this.keyTimers.up = 0; this.keyManager('up','up') }
+    
+    if(keyState[config.keyBindings.right]){ this.keyManager('right','down')
+    } else { this.keyTimers.right = 0; this.keyManager('right','up') }
+    
+    if(keyState[config.keyBindings.down]){ this.keyManager('down','down')
+    } else { this.keyTimers.down = 0; this.keyManager('down','up') }
+    
+    if(keyState[config.keyBindings.left]){ this.keyManager('left','down')
+    } else { this.keyTimers.left = 0; this.keyManager('left','up') }
+  }
+
+  /**------------------------------------------------------------------------
+   * KEY MANAGER
+   * ------------------------------------------------------------------------
+   * Takes the action from a key and takes the proper action, depending on
+   *   current Game state
+   * TODO - This is getting VERY bulky...
+   * ------------------------------------------------------------------------
+   * @param {String} key    Not the event listener Key, but the System Action Key
+   * @param {String} upDown Picking up or putting down - up|down
+   * ----------------------------------------------------------------------*/
+  keyManager = (key, upDown) => {
+    this.keyTimers[key]++;
+
+    // Title Menu
+    if(this.atTitle){
+      if(this.keyTimers[key] === 2){ this.titleMenu.titleMenuIO.keyTriage(key,upDown) }
+    }
+
+    // Battle 
+    if(this.battle?.battleActive){
+        if(this.keyTimers[key] === 2){
+          this.battle.battleIO.keyTriage(key,upDown);
+        }
+        if((key === 'right' || key === 'left' || key === 'down' || key === 'up') && this.keyTimers[key] > 15){ // Only directions can be held to take action
+          this.keyTimers[key] = 0;
+        }
+    }
+
+    // Dungeon
+    if(this.dungeon?.dungeonState === 'free'){ // TODO - Probably should be a more specific check
+      // TODO - Logic that checks things like "held down" or "tapped" go here
+      if(key === 'start' || key === 'select'){ // Start and Select shouldn't be able to be "held down"
+        if(this.keyTimers[key] === 2){ this.dungeon.dungeonIO.keyTriage(key,upDown) }
+      } else {
+        this.dungeon.dungeonIO.keyTriage(key,upDown);
+      }
+    } else if(this.dungeon?.dungeonState === 'hatch' || this.dungeon?.dungeonState === 'text-box-next' || this.dungeon?.dungeonState === 'main-menu'){
+      if(this.keyTimers[key] === 2){
+        this.dungeon.dungeonIO.keyTriage(key,upDown);
+      }
+    }
+  }
+
 
   /**------------------------------------------------------------------------
    * ------------------------------------------------------------------------

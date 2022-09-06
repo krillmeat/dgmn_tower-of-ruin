@@ -7,7 +7,7 @@ import { debugLog } from "../utils/log-utils";
  * ----------------------------------------------------------------------*/
 class Controller{
   constructor(setKeyState){
-    debugLog("Plugged In Controller...");
+    debugLog("  - Plugged In Controller...");
     this.setKeyState = (key,value) => { setKeyState(key, value) }
     this.setupMobileController();
     this.connectEventListener();

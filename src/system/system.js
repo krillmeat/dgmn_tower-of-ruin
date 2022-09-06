@@ -8,7 +8,7 @@ import DebugMenu from "../classes/debug-menu";
 import ImageHandler from "../classes/image-handler";
 import { fontImages, genericImages, loadingImages } from "../data/images.db";
 import { fontImages as globalFontImages} from "../data/font.db";
-import SystemAH from "../classes/action-handlers/system.ah";
+import SystemAH from "./system.ah";
 import LoadManager from "../classes/load-manager";
 
 /**------------------------------------------------------------------------
@@ -18,7 +18,12 @@ import LoadManager from "../classes/load-manager";
  * ----------------------------------------------------------------------*/
 class System{
   constructor(){
-    this.systemAH = new SystemAH(this.loadImage,this.fetchImage,this.startLoading,this.stopLoading); // TODO -Switch to Callback Object
+    this.systemAH = new SystemAH({
+      loadImageCB: this.loadImage,
+      fetchImageCB: this.fetchImage,
+      startLoadingCB: this.startLoading,
+      stopLoadingCB: this.stopLoading
+    });
 
     this.controllers = [];                                            // Controllers Handle Inputs
     this.keyState = {};                                               // Key-Value Pairs for all Active and Inactive Pairs

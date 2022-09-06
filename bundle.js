@@ -6894,6 +6894,7 @@ var TitleMenu = function (_Menu) {
       startNewGameCB: _this.startNewGame
     });
     _this.titleMenuIO = new TitleIO();
+    _this.atTitle = true;
     return _this;
   }
   return TitleMenu;
@@ -6902,9 +6903,6 @@ var TitleMenu = function (_Menu) {
 var Game = function Game(systemAH) {
   var _this = this;
   _classCallCheck(this, Game);
-  _defineProperty(this, "initSystemAH", function (actionHandler) {
-    _this.systemAH = actionHandler;
-  });
   _defineProperty(this, "bootGame", function () {
     _this.buildTitleScreen();
   });
@@ -6918,6 +6916,72 @@ var Game = function Game(systemAH) {
     setTimeout(function () {
       _this.buildDungeon();
     }, 500);
+  });
+  _defineProperty(this, "startBattle", function () {
+    var _this$dungeon;
+    debugLog("Starting Battle...");
+    _this.battle = new Battle(_this.dungeon.floor.isBossFloor, _this.dungeon.floor.number);
+    _this.battle.initAH(_this.systemAH, _this.gameAH, _this.yourDgmn.dgmnAH, (_this$dungeon = _this.dungeon) === null || _this$dungeon === void 0 ? void 0 : _this$dungeon.dungeonAH, function () {});
+    _this.battle.init();
+  });
+  _defineProperty(this, "endBattle", function () {
+    debugLog("Ending Battle...");
+    _this.removeFromObjectList(_this.battle.battleCanvas);
+    _this.battle = null;
+    setTimeout(function () {
+      _this.systemAH.stopLoading();
+    }, 1000);
+    setTimeout(function () {
+      _this.dungeon.dungeonState = 'free';
+    }, 2000);
+  });
+  _defineProperty(this, "buildDungeon", function () {
+    debugLog("Building Dungeon...");
+    _this.atTitle = false;
+    _this.setupPartyDgmn();
+    _this.dungeon = new Dungeon(true, _this.onDungeonLoad);
+    _this.digiBeetle = new DigiBeetle();
+    _this.digiBeetle.initDungeonAH(_this.dungeon.dungeonAH);
+    _this.digiBeetle.initGameAH(_this.gameAH);
+    _this.digiBeetle.initSystemAH(_this.systemAH);
+    _this.dungeon.initAH(_this.systemAH, _this.gameAH, _this.digiBeetle.digiBeetleAH, _this.yourDgmn.dgmnAH);
+    _this.dungeon.init();
+  });
+  _defineProperty(this, "setupPartyDgmn", function () {
+    _this.yourDgmn.buildPartyEggs();
+  });
+  _defineProperty(this, "onBattleLoad", function () {
+    console.log("Battle Loaded...");
+    _this.drawGameScreen();
+  });
+  _defineProperty(this, "onDungeonLoad", function () {
+    console.log("Dungeon Loaded...");
+    _this.drawGameScreen();
+  });
+  _defineProperty(this, "addToObjectList", function (newObject) {
+    if (_this.objectList.indexOf(newObject) === -1) {
+      _this.objectList.push(newObject);
+    }
+  });
+  _defineProperty(this, "removeFromObjectList", function (removeObject) {
+    if (_this.objectList.indexOf(removeObject) !== -1) {
+      _this.objectList.splice(_this.objectList.indexOf(removeObject), 1);
+    }
+  });
+  _defineProperty(this, "drawGameScreen", function () {
+    _this.gameCanvas.clearCanvas();
+    var _iterator = _createForOfIteratorHelper(_this.objectList),
+        _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var obj = _step.value;
+        _this.gameCanvas.paintCanvas(obj);
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
   });
   _defineProperty(this, "keyHandler", function (keyState) {
     if (keyState[config.keyBindings.action]) {
@@ -6961,7 +7025,7 @@ var Game = function Game(systemAH) {
     }
   });
   _defineProperty(this, "keyManager", function (key, upDown) {
-    var _this$battle, _this$dungeon, _this$dungeon2, _this$dungeon3, _this$dungeon4;
+    var _this$battle, _this$dungeon2, _this$dungeon3, _this$dungeon4, _this$dungeon5;
     _this.keyTimers[key]++;
     if (_this.atTitle) {
       if (_this.keyTimers[key] === 2) {
@@ -6976,7 +7040,7 @@ var Game = function Game(systemAH) {
         _this.keyTimers[key] = 0;
       }
     }
-    if (((_this$dungeon = _this.dungeon) === null || _this$dungeon === void 0 ? void 0 : _this$dungeon.dungeonState) === 'free') {
+    if (((_this$dungeon2 = _this.dungeon) === null || _this$dungeon2 === void 0 ? void 0 : _this$dungeon2.dungeonState) === 'free') {
       if (key === 'start' || key === 'select') {
         if (_this.keyTimers[key] === 2) {
           _this.dungeon.dungeonIO.keyTriage(key, upDown);
@@ -6984,76 +7048,10 @@ var Game = function Game(systemAH) {
       } else {
         _this.dungeon.dungeonIO.keyTriage(key, upDown);
       }
-    } else if (((_this$dungeon2 = _this.dungeon) === null || _this$dungeon2 === void 0 ? void 0 : _this$dungeon2.dungeonState) === 'hatch' || ((_this$dungeon3 = _this.dungeon) === null || _this$dungeon3 === void 0 ? void 0 : _this$dungeon3.dungeonState) === 'text-box-next' || ((_this$dungeon4 = _this.dungeon) === null || _this$dungeon4 === void 0 ? void 0 : _this$dungeon4.dungeonState) === 'main-menu') {
+    } else if (((_this$dungeon3 = _this.dungeon) === null || _this$dungeon3 === void 0 ? void 0 : _this$dungeon3.dungeonState) === 'hatch' || ((_this$dungeon4 = _this.dungeon) === null || _this$dungeon4 === void 0 ? void 0 : _this$dungeon4.dungeonState) === 'text-box-next' || ((_this$dungeon5 = _this.dungeon) === null || _this$dungeon5 === void 0 ? void 0 : _this$dungeon5.dungeonState) === 'main-menu') {
       if (_this.keyTimers[key] === 2) {
         _this.dungeon.dungeonIO.keyTriage(key, upDown);
       }
-    }
-  });
-  _defineProperty(this, "startBattle", function () {
-    var _this$dungeon5;
-    debugLog("Starting Battle...");
-    _this.battle = new Battle(_this.dungeon.floor.isBossFloor, _this.dungeon.floor.number);
-    _this.battle.initAH(_this.systemAH, _this.gameAH, _this.yourDgmn.dgmnAH, (_this$dungeon5 = _this.dungeon) === null || _this$dungeon5 === void 0 ? void 0 : _this$dungeon5.dungeonAH, function () {});
-    _this.battle.init();
-  });
-  _defineProperty(this, "buildDungeon", function () {
-    debugLog("Building Dungeon...");
-    _this.atTitle = false;
-    _this.setupPartyDgmn();
-    _this.dungeon = new Dungeon(true, _this.onDungeonLoad);
-    _this.digiBeetle = new DigiBeetle();
-    _this.digiBeetle.initDungeonAH(_this.dungeon.dungeonAH);
-    _this.digiBeetle.initGameAH(_this.gameAH);
-    _this.digiBeetle.initSystemAH(_this.systemAH);
-    _this.dungeon.initAH(_this.systemAH, _this.gameAH, _this.digiBeetle.digiBeetleAH, _this.yourDgmn.dgmnAH);
-    _this.dungeon.init();
-  });
-  _defineProperty(this, "setupPartyDgmn", function () {
-    _this.yourDgmn.buildPartyEggs();
-  });
-  _defineProperty(this, "onBattleLoad", function () {
-    console.log("Battle Loaded...");
-    _this.drawGameScreen();
-  });
-  _defineProperty(this, "onDungeonLoad", function () {
-    console.log("Dungeon Loaded...");
-    _this.drawGameScreen();
-  });
-  _defineProperty(this, "endBattle", function () {
-    debugLog("Ending Battle...");
-    _this.removeFromObjectList(_this.battle.battleCanvas);
-    _this.battle = null;
-    setTimeout(function () {
-      _this.systemAH.stopLoading();
-    }, 1000);
-    setTimeout(function () {
-      _this.dungeon.dungeonState = 'free';
-    }, 2000);
-  });
-  _defineProperty(this, "addToObjectList", function (newObject) {
-    if (_this.objectList.indexOf(newObject) === -1) {
-      _this.objectList.push(newObject);
-    }
-  });
-  _defineProperty(this, "removeFromObjectList", function (removeObject) {
-    if (_this.objectList.indexOf(removeObject) !== -1) {
-      _this.objectList.splice(_this.objectList.indexOf(removeObject), 1);
-    }
-  });
-  _defineProperty(this, "drawGameScreen", function () {
-    _this.gameCanvas.clearCanvas();
-    var _iterator = _createForOfIteratorHelper(_this.objectList),
-        _step;
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var obj = _step.value;
-        _this.gameCanvas.paintCanvas(obj);
-      }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
     }
   });
   _defineProperty(this, "getDgmnParty", function () {
@@ -7064,11 +7062,12 @@ var Game = function Game(systemAH) {
   this.systemAH = systemAH;
   this.yourDgmn = new DgmnManager(this.systemAH);
   this.yourParty = this.yourDgmn.party;
+  this.titleMenu = new TitleMenu(this.systemAH, this.gameAH);
   this.atTitle = true;
   this.battle;
   this.dungeon;
-  this.gameCanvas =
-  new GameCanvas('game-canvas', 160, 144);
+  this.gameCanvas = new GameCanvas('game-canvas', 160, 144);
+  this.objectList = [];
   this.keyState = {};
   this.keyTimers = {
     action: 0,
@@ -7080,9 +7079,8 @@ var Game = function Game(systemAH) {
     start: 0,
     select: 0
   };
-  this.objectList = [];
-  this.titleMenu = new TitleMenu(this.systemAH, this.gameAH);
-};
+}
+;
 
 var Controller = function Controller(setKeyState) {
   var _this = this;
@@ -7103,7 +7101,7 @@ var Controller = function Controller(setKeyState) {
       _this.setKeyState(e.key, false);
     });
   });
-  debugLog("Plugged In Controller...");
+  debugLog("  - Plugged In Controller...");
   this.setKeyState = function (key, value) {
     setKeyState(key, value);
   };
@@ -7135,7 +7133,7 @@ var DebugMenu = function DebugMenu(launchBattleCallback, buildDungeonCallback) {
       }
     });
   });
-  debugLog('Booting Debug Menu...');
+  debugLog('  - Booting Debug Menu...');
   this.elem = document.getElementById("debug-menu");
   this.state = 'active';
   this.activate();
@@ -7184,19 +7182,19 @@ var ImageHandler = function ImageHandler() {
   this.loadedImages = {};
 };
 
-var SystemAH = function SystemAH(loadImagesCB, fetchImageCB, startLoadingCB, stopLoadingCB) {
+var SystemAH = function SystemAH(cbObj) {
   _classCallCheck(this, SystemAH);
   this.loadImages = function (images, callback) {
-    loadImagesCB(images, callback);
+    return cbObj.loadImageCB(images, callback);
   };
   this.fetchImage = function (image) {
-    return fetchImageCB(image);
+    return cbObj.fetchImageCB(image);
   };
   this.startLoading = function (callback) {
-    return startLoadingCB(callback);
+    return cbObj.startLoadingCB(callback);
   };
   this.stopLoading = function () {
-    return stopLoadingCB();
+    return cbObj.stopLoadingCB();
   };
 };
 
@@ -7298,7 +7296,12 @@ var System = function System() {
   _defineProperty(this, "fetchImage", function (imageName) {
     return _this.imageHandler.fetchImage(imageName);
   });
-  this.systemAH = new SystemAH(this.loadImage, this.fetchImage, this.startLoading, this.stopLoading);
+  this.systemAH = new SystemAH({
+    loadImageCB: this.loadImage,
+    fetchImageCB: this.fetchImage,
+    startLoadingCB: this.startLoading,
+    stopLoadingCB: this.stopLoading
+  });
   this.controllers = [];
   this.keyState = {};
   this.systemScreen = document.getElementById('game-screen');

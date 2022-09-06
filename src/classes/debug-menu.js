@@ -2,7 +2,7 @@ import { debugLog } from '../utils/log-utils';
 
 class DebugMenu {
   constructor(launchBattleCallback,buildDungeonCallback){
-    debugLog('Booting Debug Menu...');
+    debugLog('  - Booting Debug Menu...');
 
     this.elem = document.getElementById("debug-menu");
     this.state = 'active';  // Is the debug menu supposed to be visible or not [active | inactive]
