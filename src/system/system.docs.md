@@ -23,6 +23,5 @@ Tells the Load Manager that loading is complete
 Uses the Image Manager to Load an Image
 
 
-`fetchImage(imageName)`
-
+`fetchImage(imageName)`  
 Uses the Image Manager to Fetch a Stored Image
