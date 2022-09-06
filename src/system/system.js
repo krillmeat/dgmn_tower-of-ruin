@@ -33,7 +33,6 @@ class System{
 
     this.gameTimer;                                                   // Interval that handles everything
     this.systemCount = 0;                                             // Used by the Interval
-    this.actionQueue = [];                                            // TODO - I'm not sure I'm using this method anymore
 
     this.screenCanvas = new GameCanvas('screen-canvas',160,144);      // Root Canvas Instance (this is the only true Canvas we see)
     this.game = new Game(this.systemAH);                              // Game Being Loaded | TODO - In the future, should be dynamic
@@ -77,10 +76,22 @@ class System{
     this.screenCanvas.paintCanvas(canvas);
   }
 
+  /**------------------------------------------------------------------------
+   * START LOADING                                              [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * Tells the Load Manager that loading is happening
+   * ------------------------------------------------------------------------
+   * @param {Function}  callback  Function to run after Loading is done
+   * ----------------------------------------------------------------------*/
   startLoading = callback => {
     this.loadManager.load(callback);
   }
 
+  /**------------------------------------------------------------------------
+   * STOP LOADING                                               [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * Tells the Load Manager that loading is complete
+   * ----------------------------------------------------------------------*/
   stopLoading = () => {
     this.loadManager.stop();
   }
@@ -93,26 +104,20 @@ class System{
   startGameTimer = () => {
     this.gameTimer = setInterval( () => {
       
-      // try{
-        this.systemCount++;
-        this.game.keyHandler(this.keyState);
-        this.screenCanvas.paintCanvas(this.game.gameCanvas); // TODO - Should be a full compiler of all other canvases
-        if(this.loadManager.isLoading) this.screenCanvas.paintCanvas(this.loadManager.loadCanvas);
-        if(this.actionQueue.length > 0){
-          if(this.actionQueue[0] === null){ /* SPACER */ } else{
-            debugLog("Taking Action ",this.actionQueue[0]);
-          }
-          this.actionQueue.shift();
-        }
-      // } catch(e){ console.log("GAME ERROR! - ",e.message); clearInterval(this.gameTimer) }
+      this.systemCount++;
+      this.game.keyHandler(this.keyState);
+      this.screenCanvas.paintCanvas(this.game.gameCanvas);
+      if(this.loadManager.isLoading) this.screenCanvas.paintCanvas(this.loadManager.loadCanvas);
 
     }, 33);
   }
 
-  addToActionQueue = action => {
-    this.actionQueue.push(action);
-  }
-
+  /**------------------------------------------------------------------------
+   * BUILD FONT IMAGES
+   * ------------------------------------------------------------------------
+   * Loads all of the Font Images used by the Game
+   * TODO - Should this be in the Image Handler?
+   * ----------------------------------------------------------------------*/
   buildFontImages = () => {
     for(let imgURL of fontImages){
       let image = new Image();
@@ -146,11 +151,26 @@ class System{
     this.controllers.push(new Controller(this.setKeyState.bind(this)));
   }
 
-  // this.imageHandler.addToQueue.bind(this), imageName => { return this.imageHandler.fetchImage(imageName) }
+  /**------------------------------------------------------------------------
+   * LOAD IMAGE                                                 [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * Uses the Image Manager to Load an Image
+   * ------------------------------------------------------------------------
+   * @param {Array} images  List of Images to Load
+   * @param {Function}  callback  Function to run after Images are Loaded
+   * ----------------------------------------------------------------------*/
   loadImage = (images,callback) => {
     this.imageHandler.addToQueue(images,callback);
   }
 
+  /**------------------------------------------------------------------------
+   * FETCH IMAGES                                               [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * Uses the Image Manager to Fetch a Stored Image
+   * ------------------------------------------------------------------------
+   * @param {String}  imageName Name of the Image to fetch
+   * @returns Image requested from the Stored Data
+   * ----------------------------------------------------------------------*/
   fetchImage = imageName => {
     return this.imageHandler.fetchImage(imageName);
   }

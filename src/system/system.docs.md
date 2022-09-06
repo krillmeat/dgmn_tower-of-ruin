@@ -4,18 +4,17 @@ Think of the System Class as a Physical, Hand-held Video Game System. It has a s
 ## PROPS
 _The System Class has no Props, as it is the Parent class, and isn't very configurable_
 
-## METHODS
-The following are the Private and Public Methods in the System Class
-
-### PUBLIC
-
-
-### PRIVATE
-#### start()
-Starts the System
-#### paintToScreen()
-Paints a Canvas to the visible System Screen
-#### startGameTimer()
-Something
-#### buildFontImages()
-Something
+## EXPORTED METHODS
+These Methods are accessible to any other Class that uses the **System Action Handler**
+### START LOADING
+`startLoading(callback)`
+Tells the Load Manager that loading is happening
+### STOP LOADING
+`stopLoading()`
+Tells the Load Manager that loading is complete
+### LOAD IMAGE
+`loadImage(images,callback)`
+Uses the Image Manager to Load an Image
+### FETCH IMAGE
+`fetchImage(imageName)`
+Uses the Image Manager to Fetch a Stored Image

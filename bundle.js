@@ -7268,16 +7268,7 @@ var System = function System() {
       _this.game.keyHandler(_this.keyState);
       _this.screenCanvas.paintCanvas(_this.game.gameCanvas);
       if (_this.loadManager.isLoading) _this.screenCanvas.paintCanvas(_this.loadManager.loadCanvas);
-      if (_this.actionQueue.length > 0) {
-        if (_this.actionQueue[0] === null) ; else {
-          debugLog("Taking Action ", _this.actionQueue[0]);
-        }
-        _this.actionQueue.shift();
-      }
     }, 33);
-  });
-  _defineProperty(this, "addToActionQueue", function (action) {
-    _this.actionQueue.push(action);
   });
   _defineProperty(this, "buildFontImages", function () {
     var _iterator = _createForOfIteratorHelper(fontImages$1),
@@ -7307,7 +7298,6 @@ var System = function System() {
   _defineProperty(this, "fetchImage", function (imageName) {
     return _this.imageHandler.fetchImage(imageName);
   });
-  debugLog("Loading System...");
   this.systemAH = new SystemAH(this.loadImage, this.fetchImage, this.startLoading, this.stopLoading);
   this.controllers = [];
   this.keyState = {};
@@ -7319,7 +7309,6 @@ var System = function System() {
   this.loadManager = new LoadManager(this.systemAH);
   this.gameTimer;
   this.systemCount = 0;
-  this.actionQueue = [];
   this.screenCanvas = new GameCanvas('screen-canvas', 160, 144);
   this.game = new Game(this.systemAH);
   this.subCanvases = [this.backgroundCanvas];
