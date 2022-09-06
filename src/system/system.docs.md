@@ -8,18 +8,15 @@ _The System Class has no Props, as it is the Parent class, and isn't very config
 These Methods are accessible to any other Class that uses the **System Action Handler**
 
 
-`startLoading(callback)`
-
+`startLoading(callback)`  
 Tells the Load Manager that loading is happening
 
 
-`stopLoading()`
-
+`stopLoading()`  
 Tells the Load Manager that loading is complete
 
 
-`loadImage(images,callback)`
-
+`loadImage(images,callback)`  
 Uses the Image Manager to Load an Image
 
 
