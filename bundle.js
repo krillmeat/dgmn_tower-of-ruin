@@ -7025,22 +7025,34 @@ var Game = function Game(systemAH) {
     }
   });
   _defineProperty(this, "keyManager", function (key, upDown) {
-    var _this$battle, _this$dungeon2, _this$dungeon3, _this$dungeon4, _this$dungeon5;
+    var _this$battle, _this$dungeon2;
     _this.keyTimers[key]++;
     if (_this.atTitle) {
-      if (_this.keyTimers[key] === 2) {
-        _this.titleMenu.titleMenuIO.keyTriage(key, upDown);
-      }
+      _this.titleKeyManager(key, upDown);
     }
     if ((_this$battle = _this.battle) !== null && _this$battle !== void 0 && _this$battle.battleActive) {
-      if (_this.keyTimers[key] === 2) {
-        _this.battle.battleIO.keyTriage(key, upDown);
-      }
-      if ((key === 'right' || key === 'left' || key === 'down' || key === 'up') && _this.keyTimers[key] > 15) {
-        _this.keyTimers[key] = 0;
-      }
+      _this.battleKeyManager(key, upDown);
     }
-    if (((_this$dungeon2 = _this.dungeon) === null || _this$dungeon2 === void 0 ? void 0 : _this$dungeon2.dungeonState) === 'free') {
+    if (((_this$dungeon2 = _this.dungeon) === null || _this$dungeon2 === void 0 ? void 0 : _this$dungeon2.dungeonState) !== 'loading') {
+      _this.dungeonKeyManager(key, upDown);
+    }
+  });
+  _defineProperty(this, "titleKeyManager", function (key, upDown) {
+    if (_this.keyTimers[key] === 2) {
+      _this.titleMenu.titleMenuIO.keyTriage(key, upDown);
+    }
+  });
+  _defineProperty(this, "battleKeyManager", function (key, upDown) {
+    if (_this.keyTimers[key] === 2) {
+      _this.battle.battleIO.keyTriage(key, upDown);
+    }
+    if ((key === 'right' || key === 'left' || key === 'down' || key === 'up') && _this.keyTimers[key] > 15) {
+      _this.keyTimers[key] = 0;
+    }
+  });
+  _defineProperty(this, "dungeonKeyManager", function (key, upDown) {
+    var _this$dungeon3, _this$dungeon4, _this$dungeon5, _this$dungeon6;
+    if (((_this$dungeon3 = _this.dungeon) === null || _this$dungeon3 === void 0 ? void 0 : _this$dungeon3.dungeonState) === 'free') {
       if (key === 'start' || key === 'select') {
         if (_this.keyTimers[key] === 2) {
           _this.dungeon.dungeonIO.keyTriage(key, upDown);
@@ -7048,7 +7060,7 @@ var Game = function Game(systemAH) {
       } else {
         _this.dungeon.dungeonIO.keyTriage(key, upDown);
       }
-    } else if (((_this$dungeon3 = _this.dungeon) === null || _this$dungeon3 === void 0 ? void 0 : _this$dungeon3.dungeonState) === 'hatch' || ((_this$dungeon4 = _this.dungeon) === null || _this$dungeon4 === void 0 ? void 0 : _this$dungeon4.dungeonState) === 'text-box-next' || ((_this$dungeon5 = _this.dungeon) === null || _this$dungeon5 === void 0 ? void 0 : _this$dungeon5.dungeonState) === 'main-menu') {
+    } else if (((_this$dungeon4 = _this.dungeon) === null || _this$dungeon4 === void 0 ? void 0 : _this$dungeon4.dungeonState) === 'hatch' || ((_this$dungeon5 = _this.dungeon) === null || _this$dungeon5 === void 0 ? void 0 : _this$dungeon5.dungeonState) === 'text-box-next' || ((_this$dungeon6 = _this.dungeon) === null || _this$dungeon6 === void 0 ? void 0 : _this$dungeon6.dungeonState) === 'main-menu') {
       if (_this.keyTimers[key] === 2) {
         _this.dungeon.dungeonIO.keyTriage(key, upDown);
       }

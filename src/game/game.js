@@ -1,13 +1,13 @@
 import { debugLog } from "../utils/log-utils";
-import DgmnManager from "./dgmn/dgmn-manager";
-import DigiBeetle from "./digibeetle";
-import Battle from "./battle/battle";
-import Dungeon from "./dungeon/dungeon";
-import GameCanvas from "./canvas";
+import DgmnManager from "../classes/dgmn/dgmn-manager";
+import DigiBeetle from "../classes/digibeetle";
+import Battle from "../classes/battle/battle";
+import Dungeon from "../classes/dungeon/dungeon";
+import GameCanvas from "../classes/canvas";
 
 import config from "../config";
-import GameAH from "./action-handlers/game.ah";
-import TitleMenu from "./title/title-menu";
+import GameAH from "./game.ah";
+import TitleMenu from "../classes/title/title-menu";
 
 /**------------------------------------------------------------------------
  * GAME
@@ -239,7 +239,6 @@ class Game{
    * ------------------------------------------------------------------------
    * Takes the action from a key and takes the proper action, depending on
    *   current Game state
-   * TODO - This is getting VERY bulky...
    * ------------------------------------------------------------------------
    * @param {String} key    Not the event listener Key, but the System Action Key
    * @param {String} upDown Picking up or putting down - up|down
@@ -247,35 +246,64 @@ class Game{
   keyManager = (key, upDown) => {
     this.keyTimers[key]++;
 
-    // Title Menu
-    if(this.atTitle){
+    if(this.atTitle){ this.titleKeyManager(key,upDown) }
+    if(this.battle?.battleActive){ this.battleKeyManager(key,upDown); }
+    if(this.dungeon?.dungeonState !== 'loading'){ this.dungeonKeyManager(key,upDown) } // TODO - Probably need to set the Dungeon state to not loading during battle and other events
+  }
+    
+    /**------------------------------------------------------------------------
+     * TITLE KEY MANAGER
+     * ------------------------------------------------------------------------
+     * Key Manager for the Title Screen
+     * ------------------------------------------------------------------------
+     * @param {String} key    Not the event listener Key, but the System Action Key
+     * @param {String} upDown Picking up or putting down - up|down
+     * ----------------------------------------------------------------------*/
+    titleKeyManager = (key,upDown) => {
       if(this.keyTimers[key] === 2){ this.titleMenu.titleMenuIO.keyTriage(key,upDown) }
     }
 
-    // Battle 
-    if(this.battle?.battleActive){
-        if(this.keyTimers[key] === 2){
-          this.battle.battleIO.keyTriage(key,upDown);
-        }
-        if((key === 'right' || key === 'left' || key === 'down' || key === 'up') && this.keyTimers[key] > 15){ // Only directions can be held to take action
-          this.keyTimers[key] = 0;
-        }
-    }
-
-    // Dungeon
-    if(this.dungeon?.dungeonState === 'free'){ // TODO - Probably should be a more specific check
-      // TODO - Logic that checks things like "held down" or "tapped" go here
-      if(key === 'start' || key === 'select'){ // Start and Select shouldn't be able to be "held down"
-        if(this.keyTimers[key] === 2){ this.dungeon.dungeonIO.keyTriage(key,upDown) }
-      } else {
-        this.dungeon.dungeonIO.keyTriage(key,upDown);
-      }
-    } else if(this.dungeon?.dungeonState === 'hatch' || this.dungeon?.dungeonState === 'text-box-next' || this.dungeon?.dungeonState === 'main-menu'){
+    
+    /**------------------------------------------------------------------------
+     * BATTLE KEY MANAGER
+     * ------------------------------------------------------------------------
+     * Key Manager for during a Battle
+     * ------------------------------------------------------------------------
+     * @param {String} key    Not the event listener Key, but the System Action Key
+     * @param {String} upDown Picking up or putting down - up|down
+     * ----------------------------------------------------------------------*/
+    battleKeyManager = (key,upDown) => {
       if(this.keyTimers[key] === 2){
-        this.dungeon.dungeonIO.keyTriage(key,upDown);
+        this.battle.battleIO.keyTriage(key,upDown);
+      }
+      if((key === 'right' || key === 'left' || key === 'down' || key === 'up') && this.keyTimers[key] > 15){ // Only directions can be held to take action
+        this.keyTimers[key] = 0;
       }
     }
-  }
+    
+    /**------------------------------------------------------------------------
+     * DUNGEON KEY MANAGER
+     * ------------------------------------------------------------------------
+     * Key Manager for during the Dungeon
+     * TODO - This seems mildly inneficient
+     * ------------------------------------------------------------------------
+     * @param {String} key    Not the event listener Key, but the System Action Key
+     * @param {String} upDown Picking up or putting down - up|down
+     * ----------------------------------------------------------------------*/
+    dungeonKeyManager = (key,upDown) => {
+      if(this.dungeon?.dungeonState === 'free'){ // TODO - Probably should be a more specific check
+        // TODO - Logic that checks things like "held down" or "tapped" go here
+        if(key === 'start' || key === 'select'){ // Start and Select shouldn't be able to be "held down"
+          if(this.keyTimers[key] === 2){ this.dungeon.dungeonIO.keyTriage(key,upDown) }
+        } else {
+          this.dungeon.dungeonIO.keyTriage(key,upDown);
+        }
+      } else if(this.dungeon?.dungeonState === 'hatch' || this.dungeon?.dungeonState === 'text-box-next' || this.dungeon?.dungeonState === 'main-menu'){
+        if(this.keyTimers[key] === 2){
+          this.dungeon.dungeonIO.keyTriage(key,upDown);
+        }
+      }
+    }
 
 
   /**------------------------------------------------------------------------

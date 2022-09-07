@@ -1,7 +1,7 @@
 import config from "../config";
 import { debugLog } from "../utils/log-utils";
 import { inDebug } from "../utils/url-utils";
-import Game from "../classes/game";
+import Game from "../game/game";
 import GameCanvas from "../classes/canvas";
 import Controller from "../classes/controller";
 import DebugMenu from "../classes/debug-menu";
