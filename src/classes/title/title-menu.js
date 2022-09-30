@@ -10,7 +10,7 @@ class TitleMenu extends Menu{
   constructor(...args){
     super(...args);
 
-    this.menuCanvas = new MenuCanvas('victory',160,144); 
+    this.menuCanvas = new MenuCanvas('titleMenu',160,144); 
     this.titleAH = new TitleAH({
       startNewGameCB: this.startNewGame
     })

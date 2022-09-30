@@ -447,6 +447,7 @@ class Battle {
    * ------------------------------------------------------------------------
    * When in the Reward Menu, gives the left-most Reward to the DGMN in the
    * specified Direction
+   * TODO - Give this to the reward Menu, somehow
    * ------------------------------------------------------------------------
    * @param {String}  dir Direction of Input [left|up|right]
    * ----------------------------------------------------------------------*/

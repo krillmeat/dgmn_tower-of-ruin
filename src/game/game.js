@@ -71,9 +71,7 @@ class Game{
    * ----------------------------------------------------------------------*/
   startNewGame = () => {
     this.atTitle = false;
-    setTimeout(()=>{
-      this.buildDungeon();
-    },500);
+    setTimeout(()=>{ this.buildDungeon() },500);
   }
 
   /**------------------------------------------------------------------------
@@ -99,10 +97,7 @@ class Game{
     this.battle = null;
 
     setTimeout(()=>{ this.systemAH.stopLoading(); },1000);
-
-    setTimeout(()=>{
-      this.dungeon.dungeonState = 'free';
-    },2000)
+    setTimeout(()=>{ this.dungeon.dungeonState = 'free' },2000)
   }
   
   /**------------------------------------------------------------------------
@@ -138,18 +133,16 @@ class Game{
    * When the Dungeon Loads, I need to set up the DGMN Party properly
    * TODO - When I implement the Hatching Screen, a lot of this logic will move
    * ----------------------------------------------------------------------*/
-  setupPartyDgmn = () => {
-    this.yourDgmn.buildPartyEggs();
-  }
+  setupPartyDgmn = () => { this.yourDgmn.buildPartyEggs() }
 
   /**------------------------------------------------------------------------
    * ON BATTLE LOAD
    * ------------------------------------------------------------------------
    * Sent into the Battle as a Callback.
    * Runs whenever the Battle returns that it has been fully loaded
-   * ----------------------------------------------------------------------*/
+   * -------------------------------------------*/ /* istanbul ignore next */
   onBattleLoad = () => {
-    console.log("Battle Loaded...");
+    debugLog("Battle Loaded...");
     this.drawGameScreen();
   }
 
@@ -158,9 +151,9 @@ class Game{
    * ------------------------------------------------------------------------
    * Sent into the Dungeon as a Callback.
    * Runs whenever the Dungeon returns that it has been fully loaded
-   * ----------------------------------------------------------------------*/
+   * -------------------------------------------*/ /* istanbul ignore next */
   onDungeonLoad = () => {
-    console.log("Dungeon Loaded...");
+    debugLog("Dungeon Loaded...");
     this.drawGameScreen();
   }
 

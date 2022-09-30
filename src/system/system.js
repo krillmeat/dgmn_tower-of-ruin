@@ -54,20 +54,18 @@ class System{
   start = () => {
     debugLog("Starting System...");
     this.pluginController();
-    if(inDebug()){
+    if(inDebug())
       this.debugMenu = new DebugMenu(this.game.startBattle,this.game.buildDungeon);
-    }
 
-    // Load Base Images - Run game once that is all done
-    this.imageHandler.addToQueue(genericImages.concat(fontImages).concat(loadingImages),()=>{ 
-      this.game.bootGame(); // TODO - Eventually, this needs to wait until loaded to take actions
+    // Load Base Images - Run game once that is all done | TODO - Maybe split out the onDone
+    this.imageHandler.addToQueue(genericImages.concat(fontImages).concat(loadingImages),this.onGenericImagesLoaded);
+  }; 
 
+    onGenericImagesLoaded = () => {
+      this.game.bootGame();
       this.systemScreen.appendChild(this.screenCanvas.elem);
-
-      setTimeout(()=>{ this.startGameTimer();
-      },1000);
-    })
-  }
+      setTimeout(()=>{ this.startGameTimer() },1000);
+    }
 
   /**------------------------------------------------------------------------
    * PAINT TO SCREEN
@@ -75,7 +73,7 @@ class System{
    * Draw a Canvas to the System Screen
    * ------------------------------------------------------------------------
    * @param {Canvas}  canvas  Canvas Elem to be painted
-   * ----------------------------------------------------------------------*/
+   * -------------------------------------------*/ /* istanbul ignore next */
   paintToScreen = canvas => {
     this.screenCanvas.clearCanvas();
     this.screenCanvas.paintCanvas(canvas);
@@ -87,33 +85,27 @@ class System{
    * Tells the Load Manager that loading is happening
    * ------------------------------------------------------------------------
    * @param {Function}  callback  Function to run after Loading is done
-   * ----------------------------------------------------------------------*/
-  startLoading = callback => {
-    this.loadManager.load(callback);
-  }
+   * -------------------------------------------*/ /* istanbul ignore next */
+  startLoading = callback => { this.loadManager.load(callback) }
 
   /**------------------------------------------------------------------------
    * STOP LOADING                                               [[EXPORTED ]]
    * ------------------------------------------------------------------------
    * Tells the Load Manager that loading is complete
-   * ----------------------------------------------------------------------*/
-  stopLoading = () => {
-    this.loadManager.stop();
-  }
+   * -------------------------------------------*/ /* istanbul ignore next */
+  stopLoading = () => { this.loadManager.stop() }
 
   /**------------------------------------------------------------------------
    * START GAME TIMER
    * ------------------------------------------------------------------------
    * Handles all of the initial actions and starts the game timer
-   * ----------------------------------------------------------------------*/
+   * -------------------------------------------*/ /* istanbul ignore next */
   startGameTimer = () => {
     this.gameTimer = setInterval( () => {
-      
       this.systemCount++;
       this.game.keyHandler(this.keyState);
       this.screenCanvas.paintCanvas(this.game.gameCanvas);
       if(this.loadManager.isLoading) this.screenCanvas.paintCanvas(this.loadManager.loadCanvas);
-
     }, 33);
   }
 
@@ -142,9 +134,7 @@ class System{
    * @param {String} key    The Key that was pressed
    * @param {Boolean} value Whether the key is down or not
    * ----------------------------------------------------------------------*/
-  setKeyState = (key, value) => {
-    this.keyState[key] = value;
-  }
+  setKeyState = (key, value) => { this.keyState[key] = value }
 
   /**------------------------------------------------------------------------
    * PLUG IN CONTROLLER
@@ -152,9 +142,7 @@ class System{
    * Plugs a Virtual Controller into the System
    * For now, there's only one player at a time
    * ----------------------------------------------------------------------*/
-  pluginController = () => {
-    this.controllers.push(new Controller(this.setKeyState.bind(this)));
-  }
+  pluginController = () => { this.controllers.push(new Controller(this.setKeyState.bind(this))) }
 
   /**------------------------------------------------------------------------
    * LOAD IMAGE                                                 [[EXPORTED ]]
@@ -164,9 +152,7 @@ class System{
    * @param {Array} images  List of Images to Load
    * @param {Function}  callback  Function to run after Images are Loaded
    * ----------------------------------------------------------------------*/
-  loadImage = (images,callback) => {
-    this.imageHandler.addToQueue(images,callback);
-  }
+  loadImage = (images,callback) => { this.imageHandler.addToQueue(images,callback) }
 
   /**------------------------------------------------------------------------
    * FETCH IMAGES                                               [[EXPORTED ]]
@@ -176,9 +162,7 @@ class System{
    * @param {String}  imageName Name of the Image to fetch
    * @returns Image requested from the Stored Data
    * ----------------------------------------------------------------------*/
-  fetchImage = imageName => {
-    return this.imageHandler.fetchImage(imageName);
-  }
+  fetchImage = imageName => { return this.imageHandler.fetchImage(imageName) }
 }
 
 export default System;

@@ -24,7 +24,7 @@ import MapUtility from "../../dungeon/utility/map.util";
 class VictoryMenu extends Menu{
   constructor(isBoss,battleXP,battleRewards,...args){
     super(...args);
-    this.currState = '';
+    this.currState = '';                      // Current "State" of the Menu | TODO - Look into this
     this.topTxt = new TextArea(0,0,20,1);     // Text Area at the Top of the Screen
     this.actionTxt = new TextArea(4,14,16,4); // Text Area at the Bottom of the Screen
 
@@ -35,8 +35,8 @@ class VictoryMenu extends Menu{
     this.levelUpIndex = 0;
     this.bossRewardIndex = 0;
     this.levelUpDgmn = [];
+    this.isBoss = isBoss;                     // True if the Victory Comes from a Boss Battle
     this.bossRewardsDgmn = [];                // Only used when there are no Level Ups
-    this.isBoss = isBoss;
 
     this.victoryMenuAH = new VictoryMenuAH({
       getCurrStateCB: this.getCurrState,
@@ -65,14 +65,15 @@ class VictoryMenu extends Menu{
    * ----------------------------------------------------------------------*/ /* istanbul ignore next */
   gotoRewards = (rewards) => {
     this.currState = 'loading';
+
+    // TODO - Any reason this is here and not in the RewardsMenu?
     this.menuCanvas.paintImage(this.systemAH.fetchImage('battleVictoryRewardsOverlay'),0,0);
     this.actionTxt.timedText(this.menuCanvas.ctx,'Choose DGMN to get Rewards!',this.drawMenu);
 
     this.addSubMenu('rewards', new RewardsMenu('rewards'));
     this.subMenus.rewards.isVisible = true;
     this.subMenus.rewards.isActive = true;
-    this.subMenus.rewards.fetchImageCB = img => { return this.systemAH.fetchImage(img) }
-    this.subMenus.rewards.redrawParentCB = () => { this.drawMenu() }
+    this.attachImageCallbacks('rewards');
 
     this.subMenus.rewards.drawRewardsList(rewards);
     setTimeout(()=>{ this.currState = 'rewards' },1500);
@@ -83,6 +84,7 @@ class VictoryMenu extends Menu{
    * GO TO LEVEL UP
    * ------------------------------------------------------------------------
    * Sets up a DGMN's Level Up Screen
+   * TODO - Getting too long
    * ----------------------------------------------------------------------*/ /* istanbul ignore next */
   gotoLevelUp = () => {
     this.removeSubMenu('rewards');
@@ -102,7 +104,7 @@ class VictoryMenu extends Menu{
     this.addSubMenu('level', new LevelUpMenu('level'));
     this.subMenus.level.isVisible = true;
     this.subMenus.level.isActive = true;
-    this.subMenus.level.fetchImgCB = img => { return this.systemAH.fetchImage(img) }
+    this.attachImageCallbacks('level');
     this.subMenus.level.buildLevelUpScreen(dgmn,this.parentAH.drawBattleCanvas);
 
     setTimeout(()=>{
@@ -113,16 +115,12 @@ class VictoryMenu extends Menu{
     this.drawMenu();
   }
 
-  launchBossRewardFPSelection = () => {
-    this.subMenus.boss.inFPSelection = true;
-    this.addSubMenu('rewardFP',new ListMenu([7,3],8,10,1,['DR','NS','DS','JT','NA','ME','WG','VB'],this.systemAH.fetchImage('miniCursor'),null,'rewardFP'));
-    this.subMenus.rewardFP.cursorOffset = 2;
-    this.subMenus.rewardFP.isVisible = true;
-    this.subMenus.rewardFP.isActive = true;
-    this.subMenus.rewardFP.drawMenu();
-    this.drawMenu();
-  }
-
+  /**------------------------------------------------------------------------
+   * GO TO NEXT LEVEL UP
+   * ------------------------------------------------------------------------
+   * Sets the current DGMN Level up to the next one, and then reloads the
+   *   Level Up Menu
+   * ----------------------------------------------------------------------*/ /* istanbul ignore next */
   gotoNextLevelUp = () => {
     this.levelUpIndex++;
     this.gotoLevelUp();
@@ -216,6 +214,22 @@ class VictoryMenu extends Menu{
     this.menuCanvas.ctx.fillRect(4*config.tileSize,14*config.tileSize,16*config.tileSize,4*config.tileSize);
     let messages = ['Increase 1 FP','Gain 1 XP on each Level Up','Raise your Max   EN by 5'];
     this.descriptionTxt.instantText(this.menuCanvas.ctx,messages[this.subMenus.boss.currIndex],'white');
+    this.drawMenu();
+  }
+
+  /**------------------------------------------------------------------------
+   * LAUNCH BOSS REWARD FP SELECTION
+   * ------------------------------------------------------------------------
+   * Launches the Popup for FP Selection when choosing FP Boost after defeating
+   *   a Boss Battle
+   * ----------------------------------------------------------------------*/ /* istanbul ignore next */
+   launchBossRewardFPSelection = () => {
+    this.subMenus.boss.inFPSelection = true;
+    this.addSubMenu('rewardFP',new ListMenu([7,3],8,10,1,['DR','NS','DS','JT','NA','ME','WG','VB'],this.systemAH.fetchImage('miniCursor'),null,'rewardFP'));
+    this.subMenus.rewardFP.cursorOffset = 2;
+    this.subMenus.rewardFP.isVisible = true;
+    this.subMenus.rewardFP.isActive = true;
+    this.subMenus.rewardFP.drawMenu();
     this.drawMenu();
   }
 

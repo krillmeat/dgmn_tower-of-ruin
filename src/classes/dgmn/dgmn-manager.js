@@ -49,7 +49,8 @@ class DgmnManager{
       evolveCB: this.evolve,
       hatchEggCB: this.hatchEgg,
       useItemOnCB: this.useItemOn,
-      giveUpgradeCB: this.giveUpgrade
+      giveUpgradeCB: this.giveUpgrade,
+      getPartyCB: this.getParty
     });
 
     this.systemAH = systemAH;
@@ -274,6 +275,7 @@ class DgmnManager{
    * @param {String} reward FP or XP Boost to be rewarded
    * ----------------------------------------------------------------------*/
   giveDgmnReward = (dgmnId,reward) => {
+    debugLog('  - Give '+dgmnId+' reward: '+reward);
     reward === 'XP' ? this.allDgmn[dgmnId].currentXP++ : this.allDgmn[dgmnId].currentFP[reward]++; // TODO - XXP
   }
 
@@ -428,6 +430,7 @@ class DgmnManager{
     this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.stop();
   }
 
+  getParty = () => this.party
   getTempDgmn = () => { return this.tempDgmn }
 
   /**------------------------------------------------------------------------

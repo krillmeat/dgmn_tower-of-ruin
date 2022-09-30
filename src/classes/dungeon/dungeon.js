@@ -6,11 +6,12 @@ import { dungeonImages, fieldIcons } from "../../data/images.db";
 
 import DungeonAH from "../action-handlers/dungeon.ah";
 import DungeonIO from "../input-output/dungeon.io";
-import HatchingMenu from "../menu/hatching-menu";
+import HatchingMenu from "../dgmn/hatch-victory/hatching-menu";
 import DgmnUtility from "../dgmn/utility/dgmn.util";
 import TreasureUtility from "./utility/treasure.util";
 import DungeonTextCanvas from "./canvas/dungeon-text-canvas";
 import PauseMenu from "../menu/pause-menu";
+import DgmnGrowthMenu from "../dgmn/hatch-victory/dgmn-growth.menu";
 
 class Dungeon{
   constructor(isNewDungeon,loadedCallback){
@@ -60,6 +61,7 @@ class Dungeon{
     };
 
     this.hatchingMenu;
+    this.dgmnGrowthMenu;
     this.pauseMenu;
 
     this.textBoxCanvas = new DungeonTextCanvas('dungeon-text',160,144);
@@ -77,27 +79,50 @@ class Dungeon{
 
     this.systemAH.startLoading(()=>{
       this.gameAH.addCanvasObject(this.dungeonCanvas);
-      this.hatchingMenu = new HatchingMenu(this.systemAH,this.gameAH,this.dungeonAH);
-        this.dungeonIO.setMenuAH(this.hatchingMenu.hatchMenuAH);
+      // this.hatchingMenu = new HatchingMenu(this.systemAH,this.gameAH,this.dungeonAH);
+      this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch',this.dgmnAH,this.systemAH,this.gameAH,this.dungeonAH,'hatching');
+        // this.dungeonIO.setMenuAH(this.hatchingMenu.hatchMenuAH);
+        this.dungeonIO.setMenuAH(this.dgmnGrowthMenu.dgmnGrowthMenuAH);
       this.pauseMenu = new PauseMenu(this.yourParty,this.dgmnAH,this.digiBeetleAH,this.systemAH,this.gameAH,this.dungeonAH);
 
       this.systemAH.loadImages(fieldIcons, ()=>{
-        this.hatchingMenu.gotoRewards(['DR']); // TODO - temporary permanent Reward (needs to grab from game data)
+        // this.hatchingMenu.gotoRewards(['DR']); // TODO - temporary permanent Reward (needs to grab from game data)
+        this.dgmnGrowthMenu.gotoRewards(['DR']);
         this.drawDungeon();
         this.systemAH.stopLoading();
       });
     })
   }
 
+  
+  /**------------------------------------------------------------------------
+   * ACTION HANDLER INITIALIZERS
+   * ------------------------------------------------------------------------
+   * The Initializers for the different Action Handlers for other Classes
+   * ----------------------------------------------------------------------*/
+   initAH = (system,game,beetle,dgmn) => {
+    this.systemAH = system;
+    this.gameAH = game;
+    this.digiBeetleAH = beetle;
+    this.dgmnAH = dgmn;
+  }
+
+  /**------------------------------------------------------------------------
+   * DRAW DUNGEON
+   * ------------------------------------------------------------------------
+   * Determines which Canvases to paint onto the Dungeon Canvas, depending
+   *   on what the current Dungeon State is 
+   *   [hatch|text-box|text-box-next|main-menu]
+   * ----------------------------------------------------------------------*/
   drawDungeon = () => {
     if(this.dungeonState === 'hatch'){
-      this.dungeonCanvas.paintCanvas(this.hatchingMenu.menuCanvas);
+      this.dungeonCanvas.paintCanvas(this.dgmnGrowthMenu.menuCanvas);
     } else if(this.dungeonState === 'text-box' || this.dungeonState === 'text-box-next'){
       this.dungeonCanvas.paintCanvas(this.textBoxCanvas);
     } else if(this.dungeonState === 'main-menu'){
       this.dungeonCanvas.paintCanvas(this.pauseMenu.menuCanvas);
     }else{
-      // DRAW DUNGEON
+      // TODO - Why is nothing here?
     }
 
     this.gameAH.refreshScreen();
@@ -108,6 +133,7 @@ class Dungeon{
    * ------------------------------------------------------------------------
    * When in the Reward Menu, gives the left-most Reward to the DGMN in the
    * specified Direction
+   * TODO - Why is this here, and not in a shared location w/Battle
    * ------------------------------------------------------------------------
    * @param {String}  dir Direction of Input [left|up|right]
    * ----------------------------------------------------------------------*/
@@ -120,7 +146,8 @@ class Dungeon{
     } else if(dir === 'right'){ dgmnId = this.yourParty[2] }
 
     this.dgmnAH.giveDgmnReward(dgmnId,reward);
-    this.hatchingMenu.updateRewardsList(['DR'],this.rewardWrapUp)
+    // this.hatchingMenu.updateRewardsList(['DR'],this.rewardWrapUp)
+    this.dgmnGrowthMenu.updateRewardsList(['DR'],this.rewardWrapUp);
   }
 
   /**------------------------------------------------------------------------
@@ -131,12 +158,14 @@ class Dungeon{
    * TODO - ALSO, this isn't just done on Reward done
    * ----------------------------------------------------------------------*/
   rewardWrapUp = () => {
-    let currDgmn = this.yourParty[this.hatchingMenu.hatchingIndex];
+    // let currDgmn = this.yourParty[this.hatchingMenu.hatchingIndex];
+    let currDgmn = this.yourParty[this.dgmnGrowthMenu.hatchingIndex]
     let currDgmnData = this.dgmnAH.getDgmnData(currDgmn,['eggField','currentFP'],false);
         currDgmnData.dgmnId = currDgmn;
     let hatchImages = this.dgmnUtility.getAllHatchImages(currDgmnData.eggField);
     this.systemAH.loadImages(hatchImages, ()=>{
-      this.hatchingMenu.gotoHatchEggs(currDgmnData);
+      // this.hatchingMenu.gotoHatchEggs(currDgmnData);
+      this.dgmnGrowthMenu.gotoHatchEggs(currDgmnData);
     });
   }
 
@@ -144,6 +173,7 @@ class Dungeon{
    * HATCH EGG
    * ------------------------------------------------------------------------
    * Takes a DGMN Egg and Hatches it
+   * TODO - Move into Hatching Menu
    * ----------------------------------------------------------------------*/
   hatchEgg = () => {
     if(this.hatchingMenu.subMenus.hatchEgg.canHatch()){
@@ -161,18 +191,6 @@ class Dungeon{
         this.rewardWrapUp();
       }
     }
-  }
-
-  /**------------------------------------------------------------------------
-   * ACTION HANDLER INITIALIZERS
-   * ------------------------------------------------------------------------
-   * The Initializers for the different Action Handlers for other Classes
-   * ----------------------------------------------------------------------*/
-  initAH = (system,game,beetle,dgmn) => {
-    this.systemAH = system;
-    this.gameAH = game;
-    this.digiBeetleAH = beetle;
-    this.dgmnAH = dgmn;
   }
 
   /**------------------------------------------------------------------------
@@ -210,6 +228,13 @@ class Dungeon{
     });
   }
 
+  /**------------------------------------------------------------------------
+   * GET ROOM IMAGES
+   * ------------------------------------------------------------------------
+   * Fetches images for specifically the Room Backgrounds
+   * ------------------------------------------------------------------------
+   * @param {Matrix} roomMatrix Dungeon's Room Matrix
+   * ----------------------------------------------------------------------*/
   getRoomImages = roomMatrix => {
     let rooms = [];
     let allImages = [];
@@ -229,7 +254,8 @@ class Dungeon{
        * After all of the images have been loaded, runs a lot of setup
        * ----------------------------------------------------------------------*/ /* istanbul ignore next */
       onDungeonImagesLoaded = () => {
-        this.hatchingMenu = null;
+        // this.hatchingMenu = null;
+        this.dgmnGrowthMenu = null; // Clear out the Growth Menu (it will never be called again)
         this.gameAH.addCanvasObject(this.dungeonCanvas);
         this.floor.drawFloor();
         this.floor.checkCollision(); // Otherwise, if you start on an edge, you'll ignore it

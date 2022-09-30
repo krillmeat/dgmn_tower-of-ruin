@@ -1,19 +1,16 @@
-import { debugLog } from "../../utils/log-utils";
-import DgmnUtility from "../dgmn/utility/dgmn.util";
-import IconMenu from "./icon-menu";
-import TextArea from "../text-area";
-import GameCanvas from "../canvas";
-import DgmnCanvas from "../dgmn/canvas/dgmn-canvas";
+import { debugLog } from "../../../utils/log-utils";
+import DgmnUtility from "../utility/dgmn.util";
+import IconMenu from "../../menu/icon-menu";
+import TextArea from "../../text-area";
+import GameCanvas from "../../canvas";
+import DgmnCanvas from "../canvas/dgmn-canvas";
 
-import config from "../../config";
+import config from "../../../config";
 
 // TODO - So much is shared between this and Evolution Menu, it feels like I should make a new Class for the shared elements
 class HatchingEggMenu extends IconMenu{
   constructor(...args){
     super(...args);
-
-    this.fetchImgCB;
-    this.redrawParentCB;
 
     this.currSelection = 0;
     this.selectedDgmn = '';
@@ -90,14 +87,14 @@ class HatchingEggMenu extends IconMenu{
     this.menuCanvas.ctx.fillStyle = "#00131A";
     this.menuCanvas.ctx.fillRect(0*config.tileSize,14*config.tileSize,20*config.tileSize,4*config.tileSize);
 
-    this.drawEvoPortrait(this.fetchImgCB(`${species.toLowerCase()}Portrait`))
+    this.drawEvoPortrait(this.fetchImageCB(`${species.toLowerCase()}Portrait`))
     this.evoNameTxt.instantText(this.menuCanvas.ctx,`${species}.MON`,'white')
     this.evoAttributeTxt.instantText(this.menuCanvas.ctx,this.dgmnUtility.getAttribute(species),'green')
     this.evoWeakTxt.instantText(this.menuCanvas.ctx,'WEAK','green');
     this.evoResTxt.instantText(this.menuCanvas.ctx,'RES','green');
 
     for(let field in this.dgmnUtility.getBaseFP(species)){
-      this.menuCanvas.paintImage(this.fetchImgCB(`field${field}Icon`),(5+this.dgmnUtility.getAttribute(species).length)*config.tileSize,15*config.tileSize);
+      this.menuCanvas.paintImage(this.fetchImageCB(`field${field}Icon`),(5+this.dgmnUtility.getAttribute(species).length)*config.tileSize,15*config.tileSize);
     }
   }
 
@@ -129,7 +126,7 @@ class HatchingEggMenu extends IconMenu{
     let i = 0;
     for(let req in fpReqs){
       let color = this.eggData.currentFP[req] >= fpReqs[req] ? 'white' : 'darkGreen';
-      let img = this.fetchImgCB(`field${req}Icon`);
+      let img = this.fetchImageCB(`field${req}Icon`);
       this.menuCanvas.paintImage(img,(1+(i * 5))*config.tileSize,11*config.tileSize);
       this.hatchReqsTxt[i].instantText(this.menuCanvas.ctx,this.menuUtility.prependZeros(fpReqs[req],3),color);
       i++;
@@ -141,8 +138,8 @@ class HatchingEggMenu extends IconMenu{
     this.hatchCanvas = new DgmnCanvas(()=>{this.redrawDgmn(this.hatchCanvas,coord,redrawCB)},species,'dgmn-canvas',32,32);
     this.hatchCanvas.x = coord[0]*config.tileSize;
     this.hatchCanvas.y = coord[1]*config.tileSize;
-    this.hatchCanvas.frames = [this.fetchImgCB(`${species.toLowerCase()}Idle0`),
-                              this.fetchImgCB(`${species.toLowerCase()}Idle1`)];
+    this.hatchCanvas.frames = [this.fetchImageCB(`${species.toLowerCase()}Idle0`),
+                              this.fetchImageCB(`${species.toLowerCase()}Idle1`)];
     // this.hatchCanvas.refreshScreen = () => this.redrawDgmn(this.hatchCanvas,coord,redrawCB);
     this.hatchCanvas.animate(500);
   }
@@ -167,8 +164,8 @@ class HatchingEggMenu extends IconMenu{
       let img;
       if( this.dgmnUtility.canHatchInto(dgmnFP,hatchList[i]) ){
         possibleHatches.push(hatchList[i]);
-        img = this.fetchImgCB('evoIconPositive');
-      } else{ img = this.fetchImgCB('evoIconNegative') }
+        img = this.fetchImageCB('evoIconPositive');
+      } else{ img = this.fetchImageCB('evoIconNegative') }
       this.menuCanvas.paintImage(img,iconsOffset[0]+(i*config.tileSize),iconsOffset[1]);
     }
 

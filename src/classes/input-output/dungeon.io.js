@@ -22,7 +22,8 @@ class DungeonIO extends IO{
   actionKeyHandler = upDown => {
     if(this.dungeonAH.getDungeonState() === 'hatch'){
       if(this.menuAH.getState() === 'hatch-choice'){
-        this.dungeonAH.hatchEgg();
+        // this.dungeonAH.hatchEgg();
+        console.log("Hatch an Egg... FROM THE GROWTH MENU!");
       }
     } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
       if(this.menuAH.getState() === 'main'){
@@ -84,7 +85,8 @@ class DungeonIO extends IO{
   leftKeyHandler = upDown => {
     if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){
       if(this.menuAH.getState() === 'rewards'){
-         this.dungeonAH.giveCurrReward('left');
+        //  this.dungeonAH.giveCurrReward('left');
+        this.menuAH.giveCurrReward('left');
       } else if(this.menuAH.getState() === 'hatch-choice'){
         this.menuAH.prevHatch();
       }
