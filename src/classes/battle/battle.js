@@ -11,6 +11,7 @@ import BattleDgmnStatusCanvas from "./canvas/battle-dgmn-status-canvas";
 import AttackUtility from "../dgmn/utility/attack.util";
 import config from "../../config";
 import VictoryMenu from "./menus/victory-menu";
+import DgmnGrowthMenu from "../dgmn/hatch-victory/dgmn-growth.menu";
 
 // TODO - Do I have too many "pass-throughs"? Functions in here that only serve to call a Child Class function
 
@@ -65,6 +66,7 @@ class Battle {
     this.dgmnStatusCanvas;
     this.battleMenu;
     this.victoryMenu;
+    this.dgmnGrowthMenu;
   }
 
   /**------------------------------------------------------------------------
@@ -325,8 +327,10 @@ class Battle {
 
       this.battleCanvas.paintCanvas(this.battleMenu.menuCanvas);
   
-    } else if(this.victoryMenu){
-      this.battleCanvas.paintCanvas(this.victoryMenu.menuCanvas);
+    // } else if(this.victoryMenu){
+    } else if(this.dgmnGrowthMenu){
+      // this.battleCanvas.paintCanvas(this.victoryMenu.menuCanvas);
+      this.battleCanvas.paintCanvas(this.dgmnGrowthMenu.menuCanvas);
       
       for(let i = 0; i < 3; i++){
         this.battleCanvas.drawDgmnCanvas(this.dgmnAH.getCanvas(this.yourParty[i]));
@@ -431,15 +435,16 @@ class Battle {
     this.battleState = 'victory';
     this.battleMenu.menuCanvas.clearCanvas();
     this.battleMenu = null;
+    this.stopDgmnBattleCanvas();  // Get rid of the Animating DGMN Party
 
-    this.victoryMenu = new VictoryMenu(this.isBoss,this.battleBaseXP,this.battleRewards,this.systemAH,this.gameAH,this.battleAH);
-    this.battleIO.setMenuAH(this.victoryMenu.victoryMenuAH);
-    this.victoryMenu.gotoRewards(this.battleRewards);
+    this.dgmnGrowthMenu = new DgmnGrowthMenu('victory',this.dgmnAH,this.systemAH,this.gameAH,this.battleAH,'victory');
+        this.battleIO.setMenuAH(this.dgmnGrowthMenu.dgmnGrowthMenuAH);
+    this.dgmnGrowthMenu.gotoRewards(this.battleRewards);
 
-    // Move DGMN Canvases to new Spots
-    for(let i = 0; i < 3; i++){
-      this.dgmnAH.moveDgmnCanvas(this.yourParty[i],((6*i)+2)*8*config.screenSize,72*config.screenSize);
-    }
+    // // Move DGMN Canvases to new Spots
+    // for(let i = 0; i < 3; i++){
+    //   this.dgmnAH.moveDgmnCanvas(this.yourParty[i],((6*i)+2)*8*config.screenSize,72*config.screenSize);
+    // }
   }
 
   /**------------------------------------------------------------------------
@@ -447,7 +452,7 @@ class Battle {
    * ------------------------------------------------------------------------
    * When in the Reward Menu, gives the left-most Reward to the DGMN in the
    * specified Direction
-   * TODO - Give this to the reward Menu, somehow
+   * TODO - Reward menu SHOULD be handling this now
    * ------------------------------------------------------------------------
    * @param {String}  dir Direction of Input [left|up|right]
    * ----------------------------------------------------------------------*/
@@ -473,6 +478,7 @@ class Battle {
    * ------------------------------------------------------------------------
    * After the last reward is given, this gets things ready for the rest
    * of the Victory Menu (Boss Reward, Level Up, Evolution, etc.)
+   * TODO - Handled by DGMN Growth Menu now
    * ----------------------------------------------------------------------*/
    rewardWrapUp = () => {
     this.stopDgmnBattleCanvas();  // Get rid of the Animating DGMN Party

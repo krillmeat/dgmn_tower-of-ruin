@@ -28,7 +28,7 @@ class DgmnAH{
     this.hatchEgg = (dgmnId,species) => cbObj.hatchEggCB(dgmnId,species)
     this.useItemOn = (dgmnId,item) => cbObj.useItemOnCB(dgmnId,item)
     this.giveUpgrade = (dgmnId,upgrade,FP) => cbObj.giveUpgradeCB(dgmnId,upgrade,FP)
-    this.getParty = () => cbObj.getPartyCB()
+    this.getDgmnParty = () => cbObj.getDgmnPartyCB()
   }
 }
 

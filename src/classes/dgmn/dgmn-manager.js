@@ -50,7 +50,7 @@ class DgmnManager{
       hatchEggCB: this.hatchEgg,
       useItemOnCB: this.useItemOn,
       giveUpgradeCB: this.giveUpgrade,
-      getPartyCB: this.getParty
+      getDgmnPartyCB: this.getDgmnParty
     });
 
     this.systemAH = systemAH;
@@ -430,7 +430,7 @@ class DgmnManager{
     this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.stop();
   }
 
-  getParty = () => this.party
+  getDgmnParty = () => this.party
   getTempDgmn = () => { return this.tempDgmn }
 
   /**------------------------------------------------------------------------

@@ -124,6 +124,13 @@ class DgmnUtility{
     } return true;
   }
 
+  canEvolveIntoAny = (dgmnFP,currSpecies) => {
+    let evolutions = this.getEvolutions(currSpecies);
+    for(let evo of evolutions){
+      if(this.canEvolveInto(dgmnFP,evo)) return true
+    }
+  }
+
   canHatchInto = (dgmnFP,hatchSpecies) => {
     let hatchFP = this.getHatchFP(hatchSpecies);
     for(let FP in hatchFP){

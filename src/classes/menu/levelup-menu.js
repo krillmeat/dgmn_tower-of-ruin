@@ -18,27 +18,26 @@ class LevelUpMenu extends SubMenu{
     this.levelUpTxt = new TextArea(3,5,4,1,this.baseXPTxtColorize);
 
     this.statTxtAreas = {
-      HP:  {original: new TextArea(13,4,3,1,this.baseXPTxtColorize),
+      HP:  {original: new TextArea(13,3,3,1,this.baseXPTxtColorize),
+            plus: new TextArea(17,3,2,1,this.baseXPTxtColorize) },
+      ATK: {original: new TextArea(13,4,3,1,this.baseXPTxtColorize),
             plus: new TextArea(17,4,2,1,this.baseXPTxtColorize) },
-      ATK: {original: new TextArea(13,5,3,1,this.baseXPTxtColorize),
+      DEF: {original: new TextArea(13,5,3,1,this.baseXPTxtColorize),
             plus: new TextArea(17,5,2,1,this.baseXPTxtColorize) },
-      DEF: {original: new TextArea(13,6,3,1,this.baseXPTxtColorize),
+      INT: {original: new TextArea(13,6,3,1,this.baseXPTxtColorize),
             plus: new TextArea(17,6,2,1,this.baseXPTxtColorize) },
-      INT: {original: new TextArea(13,7,3,1,this.baseXPTxtColorize),
+      RES: {original: new TextArea(13,7,3,1,this.baseXPTxtColorize),
             plus: new TextArea(17,7,2,1,this.baseXPTxtColorize) },
-      RES: {original: new TextArea(13,8,3,1,this.baseXPTxtColorize),
+      HIT: {original: new TextArea(13,8,3,1,this.baseXPTxtColorize),
             plus: new TextArea(17,8,2,1,this.baseXPTxtColorize) },
-      HIT: {original: new TextArea(13,9,3,1,this.baseXPTxtColorize),
+      AVO: {original: new TextArea(13,9,3,1,this.baseXPTxtColorize),
             plus: new TextArea(17,9,2,1,this.baseXPTxtColorize) },
-      AVO: {original: new TextArea(13,10,3,1,this.baseXPTxtColorize),
-            plus: new TextArea(17,10,2,1,this.baseXPTxtColorize) },
-      SPD: {original: new TextArea(13,11,3,1,this.baseXPTxtColorize),
-            plus: new TextArea(17,11,2,1,this.baseXPTxtColorize) }
+      SPD: {original: new TextArea(13,10,3,1,this.baseXPTxtColorize),
+            plus: new TextArea(17,10,2,1,this.baseXPTxtColorize) }
     }
   }
 
-  buildLevelUpScreen = (dgmnData,redrawCB) => {
-    this.drawDgmnCanvas(dgmnData.speciesName,redrawCB);
+  buildLevelUpScreen = dgmnData => {
     for(let stat in dgmnData.currentStats){
       let growth = this.dgmnUtility.getBaseStat(dgmnData.speciesName,stat);
       this.statTxtAreas[stat].original.instantText(this.menuCanvas.ctx, this.menuUtility.prependZeros(dgmnData.currentStats[stat],3),'white');

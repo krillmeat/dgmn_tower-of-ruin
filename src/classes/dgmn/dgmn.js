@@ -68,11 +68,13 @@ class Dgmn {
    * START IDLE ANIMATION
    * ------------------------------------------------------------------------
    * Starts the Idle Animation on the DGMN Canvas
+   * TODO - Leave in, but disable for now.
    * ----------------------------------------------------------------------*/
   startIdleAnimation = () => {
-    let speed = 1800 - (Math.floor(this.currentStats.SPD*2) * 33);
-        speed = speed <= 0 ? 33 : speed;
-    this.dgmnCanvas.animate(speed);
+    // let speed = 1800 - (Math.floor(this.currentStats.SPD*2) * 33);
+    //     speed = speed <= 0 ? 33 : speed;
+    // this.dgmnCanvas.animate(speed);
+    this.dgmnCanvas.animate();
   }
 
   showFrame = frame => {
@@ -106,17 +108,10 @@ class Dgmn {
     this.speciesName = species;
     this.currentStats = this.dgmnUtility.buildInitialStats(this.speciesName);
     this.currentHP = this.currentStats.HP;
-    this.setInitialFP();
   }
 
   setInitialFP = () => {
     debugLog("  - Egg Field : ",this.eggField);
-    // let baseFP = this.dgmnUtility.getBaseFP(this.speciesName);
-    // for(let FP in baseFP){
-    //   if(this.currentFP[FP]){
-    //     this.currentFP[FP] += baseFP[FP];
-    //   } else { this.currentFP[FP] = baseFP[FP] }
-    // }
 
     this.currentFP[this.eggField] = 1;
   }

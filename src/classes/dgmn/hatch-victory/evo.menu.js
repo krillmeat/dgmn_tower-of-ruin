@@ -37,6 +37,15 @@ class EvoMenu extends IconMenu{
       HIT: new TextArea(16,7,3,1,this.baseXPTxtColorize),
       AVO: new TextArea(16,8,3,1,this.baseXPTxtColorize),
       SPD: new TextArea(16,9,3,1,this.baseXPTxtColorize) }
+    this.evoStatTxtAreas = {
+      HP:  new TextArea(17,2,3,1,this.baseXPTxtColorize),
+      ATK: new TextArea(17,3,3,1,this.baseXPTxtColorize),
+      DEF: new TextArea(17,4,3,1,this.baseXPTxtColorize),
+      INT: new TextArea(17,5,3,1,this.baseXPTxtColorize),
+      RES: new TextArea(17,6,3,1,this.baseXPTxtColorize),
+      HIT: new TextArea(17,7,3,1,this.baseXPTxtColorize),
+      AVO: new TextArea(17,8,3,1,this.baseXPTxtColorize),
+      SPD: new TextArea(17,9,3,1,this.baseXPTxtColorize) }
 
     this.dgmnUtility = new DgmnUtility();
   }
@@ -45,22 +54,27 @@ class EvoMenu extends IconMenu{
    * BUILD HATCHING SCREEN
    * ------------------------------------------------------------------------
    * Set up for the Hatching Screen
+   * ------------------------------------------------------------------------
+   * @param {Object} dgmnData All the necessary info for a DGMN
    * -------------------------------------------*/ /* istanbul ignore next */
-  buildHatchingScreen = (dgmnData,drawCB) => {
+  buildHatchingScreen = (dgmnData) => {
     debugLog("Hatching DGMN...");
     this.dgmnData = dgmnData;
     this.choices = this.dgmnUtility.getEggHatches(dgmnData.eggField);
+      debugLog("  - Hatch Options : ",this.choices);
     this.selectedDgmn = this.choices[0];
-    // this.redrawCB = redrawCB;
-
-    debugLog("  - Hatch Options : ",this.choices);
-
+    
     this.drawHatchScreen();
-    this.redrawParentCB();
   }
 
-  buildEvoScreen = (dgmnData,drawCB) => {
+  buildEvoScreen = (dgmnData) => {
+    debugLog("Evolving DGMN...");
+    this.dgmnData = dgmnData;
+    this.choices = this.dgmnUtility.getEvolutions(dgmnData.species);
+      debugLog("  - Evo Options : ",this.choices);
+    this.selectedDgmn = this.choices[0];
 
+    this.drawEvoScreen();
   }
 
   /**------------------------------------------------------------------------
@@ -70,10 +84,29 @@ class EvoMenu extends IconMenu{
    * -------------------------------------------*/ /* istanbul ignore next */
   drawHatchScreen = () => {
     this.drawDgmnCanvas(this.choices[this.currChoice],[5,4]);
-    this.drawEvoRequirements(this.choices[this.currChoice]);
+    this.drawEvoRequirements('hatch',this.choices[this.currChoice]);
     this.drawHatchStats(this.dgmnUtility.buildInitialStats(this.choices[this.currChoice]));
     this.drawEvoChoiceIcons();
     this.drawDgmnInfo(this.choices[this.currChoice]);
+    
+    this.redrawParentCB();
+  }
+
+  
+  /**------------------------------------------------------------------------
+   * DRAW EVO SCREEN
+   * ------------------------------------------------------------------------
+   * Handles drawing all of the necessary info on the canvas when evolving
+   * -------------------------------------------*/ /* istanbul ignore next */
+   drawEvoScreen = () => {
+    this.drawDgmnCanvas(this.dgmnData.species,[1,4]);
+    this.drawDgmnCanvas(this.choices[this.currChoice],[8,4]);
+    this.drawEvoRequirements('evo',this.choices[this.currChoice]);
+    this.drawEvoStats(this.dgmnUtility.getAllBaseStats(this.choices[this.currChoice]));
+    this.drawEvoChoiceIcons();
+    this.drawDgmnInfo(this.choices[this.currChoice]);
+    
+    this.redrawParentCB();
   }
 
   /**------------------------------------------------------------------------
@@ -96,10 +129,10 @@ class EvoMenu extends IconMenu{
    * ------------------------------------------------------------------------
    * @param {String} species  Name of the DGMN Species
    * -------------------------------------------*/ /* istanbul ignore next */
-  drawEvoRequirements = species => {
+  drawEvoRequirements = (origin,species) => {
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(1*config.tileSize,11*config.tileSize,10*config.tileSize,1*config.tileSize);
-    let fpReqs = this.dgmnUtility.getHatchFP(species);
+    this.menuCanvas.ctx.fillRect(1*config.tileSize,10*config.tileSize,11*config.tileSize,2*config.tileSize);
+    let fpReqs = origin === 'hatch' ? this.dgmnUtility.getHatchFP(species) : this.dgmnUtility.getEvoFP(species);
     let i = 0;
     for(let req in fpReqs){
       let color = this.dgmnData.currentFP[req] >= fpReqs[req] ? 'white' : 'darkGreen';
@@ -147,9 +180,24 @@ class EvoMenu extends IconMenu{
    * -------------------------------------------*/ /* istanbul ignore next */
   drawHatchStats = stats => {
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(16*config.tileSize,3*config.tileSize,3*config.tileSize,8*config.tileSize);
+    this.menuCanvas.ctx.fillRect(16*config.tileSize,2*config.tileSize,3*config.tileSize,8*config.tileSize);
     for(let stat in stats){
       this.hatchStatTxtAreas[stat].instantText(this.menuCanvas.ctx, this.menuUtility.prependZeros(stats[stat],3),'white');
+    }
+  }
+  
+  /**------------------------------------------------------------------------
+   * DRAW EVO STATS
+   * ------------------------------------------------------------------------
+   * Draws the Growth Stats of a DGMN
+   * ------------------------------------------------------------------------
+   * @param {Array} stats  List of DGMN Stats
+   * -------------------------------------------*/ /* istanbul ignore next */
+   drawEvoStats = stats => {
+    this.menuCanvas.ctx.fillStyle = "#00131A";
+    this.menuCanvas.ctx.fillRect(17*config.tileSize,2*config.tileSize,2*config.tileSize,8*config.tileSize);
+    for(let stat in stats){
+      this.evoStatTxtAreas[stat].instantText(this.menuCanvas.ctx, this.menuUtility.prependZeros(stats[stat],2),'white');
     }
   }
 
@@ -174,9 +222,27 @@ class EvoMenu extends IconMenu{
     }
   }
 
-  nextChoice = () => {}
-  prevChoice = () => {}
-  selectChoice = () => {}
+  /**------------------------------------------------------------------------
+   * CAN HATCH
+   * ------------------------------------------------------------------------
+   * Check to see if the current DGMN Selection is able to hatch
+   * ----------------------------------------------------------------------*/
+  canHatch = () => { return this.dgmnUtility.canHatchInto(this.dgmnData.currentFP,this.choices[this.currChoice]) }
+
+  nextChoice = () => {
+    if(this.currChoice < this.choices.length - 1){
+      this.currChoice++;
+      this.selectedDgmn = this.choices[this.currChoice];
+      this.drawHatchScreen();
+    }
+  }
+  prevChoice = () => {
+    if(this.currChoice > 0){
+      this.currChoice--;
+      this.selectedDgmn = this.choices[this.currChoice];
+      this.drawHatchScreen();
+    }
+  }
 }
 
 export default EvoMenu;

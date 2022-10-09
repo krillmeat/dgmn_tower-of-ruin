@@ -19,6 +19,15 @@ class MenuUtility{
     }
     return zeroString+number.toString();
   }
+
+  /**------------------------------------------------------------------------
+   * DIM LEADING ZEROS
+   * ------------------------------------------------------------------------
+   * If a number has extra zeros in front, I want them dimmed out
+   * ----------------------------------------------------------------------*/
+  dimLeadingZeros = () => {
+
+  }
 }
 
 export default MenuUtility;

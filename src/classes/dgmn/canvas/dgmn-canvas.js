@@ -13,25 +13,27 @@ class DgmnCanvas extends GameCanvas{
     this.refreshScreen = () => { refreshScreenCB() }
   }
 
+  // TODO - Leave in, but disable for now
   animate = speed => {
-    let counter = 0;
-    let currentFrame = 0;
+    this.paintImage(this.frames[0]);
+    // let counter = 0;
+    // let currentFrame = 0;
 
-    this.paintImage(this.frames[1]);
-    this.refreshScreen();
+    // 
+    // this.refreshScreen();
 
-    this.idleInterval = setInterval( () => {
-      if(this.isIdle){
-        this.clearCanvas();
-        // if(counter % 4 === 0){
-          this.paintImage(this.frames[currentFrame]);
-          currentFrame++;
-          if(currentFrame > 1) currentFrame = 0;
-        // }
-      }
-      counter++;
-      this.refreshScreen();
-    },speed);
+    // this.idleInterval = setInterval( () => {
+    //   if(this.isIdle){
+    //     this.clearCanvas();
+    //     // if(counter % 4 === 0){
+    //       this.paintImage(this.frames[currentFrame]);
+    //       currentFrame++;
+    //       if(currentFrame > 1) currentFrame = 0;
+    //     // }
+    //   }
+    //   counter++;
+    //   this.refreshScreen();
+    // },speed);
   }
 
   showFrame = frame => {
@@ -40,7 +42,7 @@ class DgmnCanvas extends GameCanvas{
     this.paintImage(frame);
   }
 
-  idle = () => { this.isIdle = true }
+  idle = () => { this.isIdle = true; this.showFrame(this.frames[0]) } // TODO - If I re-animate, remove this.showFrame
 
   stop = () => {
     clearInterval(this.idleInterval);

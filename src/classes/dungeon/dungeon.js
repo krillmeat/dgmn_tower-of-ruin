@@ -34,7 +34,7 @@ class Dungeon{
       startBattleCB: this.startBattle,
       getCurrentFloorCB: this.getCurrentFloor,
       giveCurrRewardCB: this.giveCurrReward,
-      hatchEggCB: this.hatchEgg,
+      closeGrowthMenuCB: this.closeGrowthMenu,
       getTreasureCB: this.getTreasure,
       closeTextBoxCB: this.closeTextBox,
       bringUpMenuCB: this.handleMenu
@@ -79,9 +79,8 @@ class Dungeon{
 
     this.systemAH.startLoading(()=>{
       this.gameAH.addCanvasObject(this.dungeonCanvas);
-      // this.hatchingMenu = new HatchingMenu(this.systemAH,this.gameAH,this.dungeonAH);
+      
       this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch',this.dgmnAH,this.systemAH,this.gameAH,this.dungeonAH,'hatching');
-        // this.dungeonIO.setMenuAH(this.hatchingMenu.hatchMenuAH);
         this.dungeonIO.setMenuAH(this.dgmnGrowthMenu.dgmnGrowthMenuAH);
       this.pauseMenu = new PauseMenu(this.yourParty,this.dgmnAH,this.digiBeetleAH,this.systemAH,this.gameAH,this.dungeonAH);
 
@@ -164,33 +163,21 @@ class Dungeon{
         currDgmnData.dgmnId = currDgmn;
     let hatchImages = this.dgmnUtility.getAllHatchImages(currDgmnData.eggField);
     this.systemAH.loadImages(hatchImages, ()=>{
-      // this.hatchingMenu.gotoHatchEggs(currDgmnData);
       this.dgmnGrowthMenu.gotoHatchEggs(currDgmnData);
     });
   }
-
-  /**------------------------------------------------------------------------
-   * HATCH EGG
-   * ------------------------------------------------------------------------
-   * Takes a DGMN Egg and Hatches it
-   * TODO - Move into Hatching Menu
-   * ----------------------------------------------------------------------*/
-  hatchEgg = () => {
-    if(this.hatchingMenu.subMenus.hatchEgg.canHatch()){
-      let hatchDgmn = this.hatchingMenu.subMenus.hatchEgg.selectedDgmn;
-      this.dgmnAH.hatchEgg(this.yourParty[this.hatchingMenu.hatchingIndex],hatchDgmn);
   
-      if(this.hatchingMenu.hatchingIndex == 2){
-        this.dungeonState = 'loading';
-        this.systemAH.startLoading(()=>{
-          this.buildFloor();
-          this.loadDungeonImages(this.floor.roomMatrix);
-        })
-      } else{
-        this.hatchingMenu.hatchingIndex++;
-        this.rewardWrapUp();
-      }
-    }
+  /**------------------------------------------------------------------------
+   * CLOSE GRWOTH MENU
+   * ------------------------------------------------------------------------
+   * Closes the Hatching Growth Menu and starts loading the Dungeon
+   * ----------------------------------------------------------------------*/
+   closeGrowthMenu = () => {
+    this.dungeonState = 'loading';
+    this.systemAH.startLoading(()=>{
+      this.buildFloor();
+      this.loadDungeonImages(this.floor.roomMatrix);
+    })
   }
 
   /**------------------------------------------------------------------------
