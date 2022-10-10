@@ -1,12 +1,13 @@
+import CFG from "../config";
 import { debugLog } from "../utils/log-utils";
+
+import GameAH from "./game.ah";
+
 import DgmnManager from "../classes/dgmn/dgmn-manager";
 import DigiBeetle from "../classes/digibeetle";
 import Battle from "../classes/battle/battle";
 import Dungeon from "../dungeon/dungeon";
 import GameCanvas from "../classes/canvas";
-
-import CFG from "../config";
-import GameAH from "./game.ah";
 import TitleMenu from "../classes/title/title-menu";
 
 /**------------------------------------------------------------------------
@@ -20,8 +21,15 @@ class Game{
   constructor(systemAH){
     debugLog('Game Created...');
 
-    // TODO - Split this into a cbObj
-    this.gameAH = new GameAH(this.addToObjectList,this.drawGameScreen,this.startBattle,this.getDgmnParty,this.endBattle,this.buildDungeon,this.startNewGame);
+    this.gameAH = new GameAH({
+      addToObjectListCB: this.addToObjectList,
+      drawGameScreenCB: this.drawGameScreen,
+      startBattleCB: this.startBattle,
+      getDgmnPartyCB: this.getDgmnParty,
+      endBattleCB: this.endBattle,
+      buildDungeonCB: this.buildDungeon,
+      startNewGameCB: this.startNewGame
+    });
     this.systemAH = systemAH;                                   // Action Handlers used by this Class
 
     this.yourDgmn = new DgmnManager(this.systemAH);             // All of your Dgmn (party, reserves, etc.)

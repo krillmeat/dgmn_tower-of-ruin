@@ -240,6 +240,31 @@ var SystemAH = function SystemAH(cbObj) {
   };
 };
 
+var GameAH = function GameAH(cbObj) {
+  _classCallCheck(this, GameAH);
+  this.addCanvasObject = function (canvas) {
+    cbObj.addToObjectListCB(canvas);
+  };
+  this.refreshScreen = function () {
+    cbObj.drawGameScreenCB();
+  };
+  this.startBattle = function () {
+    cbObj.startBattleCB();
+  };
+  this.getDgmnParty = function () {
+    return cbObj.getDgmnPartyCB();
+  };
+  this.endBattle = function () {
+    return cbObj.endBattleCB();
+  };
+  this.buildDungeon = function () {
+    return cbObj.buildDungeonCB();
+  };
+  this.startNewGame = function () {
+    return cbObj.startNewGameCB();
+  };
+};
+
 var DgmnAH = function DgmnAH(cbObj) {
   _classCallCheck(this, DgmnAH);
   this.getDgmnData = function (dgmnId, dataList, isEnemy) {
@@ -6479,31 +6504,6 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
 }
 ;
 
-var GameAH = function GameAH(addToObjectListCB, drawGameScreenCB, startBattleCB, getDgmnPartyCB, endBattleCB, buildDungeonCB, startNewGameCB) {
-  _classCallCheck(this, GameAH);
-  this.addCanvasObject = function (canvas) {
-    addToObjectListCB(canvas);
-  };
-  this.refreshScreen = function () {
-    drawGameScreenCB();
-  };
-  this.startBattle = function () {
-    startBattleCB();
-  };
-  this.getDgmnParty = function () {
-    return getDgmnPartyCB();
-  };
-  this.endBattle = function () {
-    return endBattleCB();
-  };
-  this.buildDungeon = function () {
-    return buildDungeonCB();
-  };
-  this.startNewGame = function () {
-    return startNewGameCB();
-  };
-};
-
 var TitleAH = function TitleAH(cbObj) {
   _classCallCheck(this, TitleAH);
   this.startNewGame = function () {
@@ -6746,7 +6746,15 @@ var Game = function Game(systemAH) {
     return _this.yourParty;
   });
   debugLog('Game Created...');
-  this.gameAH = new GameAH(this.addToObjectList, this.drawGameScreen, this.startBattle, this.getDgmnParty, this.endBattle, this.buildDungeon, this.startNewGame);
+  this.gameAH = new GameAH({
+    addToObjectListCB: this.addToObjectList,
+    drawGameScreenCB: this.drawGameScreen,
+    startBattleCB: this.startBattle,
+    getDgmnPartyCB: this.getDgmnParty,
+    endBattleCB: this.endBattle,
+    buildDungeonCB: this.buildDungeon,
+    startNewGameCB: this.startNewGame
+  });
   this.systemAH = systemAH;
   this.yourDgmn = new DgmnManager(this.systemAH);
   this.yourParty = this.yourDgmn.party;

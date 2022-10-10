@@ -15,14 +15,14 @@
  * ----------------------------------------------------------------------*/
 // TODO - I need to split this one into a cbObj
 class GameAH{
-    constructor(addToObjectListCB,drawGameScreenCB,startBattleCB,getDgmnPartyCB,endBattleCB,buildDungeonCB,startNewGameCB){
-        this.addCanvasObject = canvas => { addToObjectListCB(canvas) }
-        this.refreshScreen = () => { drawGameScreenCB() }
-        this.startBattle = () => { startBattleCB() }
-        this.getDgmnParty = () => { return getDgmnPartyCB() }
-        this.endBattle = () => endBattleCB()
-        this.buildDungeon = () => buildDungeonCB()
-        this.startNewGame = () => startNewGameCB()
+    constructor(cbObj){
+        this.addCanvasObject = canvas => { cbObj.addToObjectListCB(canvas) }
+        this.refreshScreen = () => { cbObj.drawGameScreenCB() }
+        this.startBattle = () => { cbObj.startBattleCB() }
+        this.getDgmnParty = () => { return cbObj.getDgmnPartyCB() }
+        this.endBattle = () => cbObj.endBattleCB()
+        this.buildDungeon = () => cbObj.buildDungeonCB()
+        this.startNewGame = () => cbObj.startNewGameCB()
     }
 }
 
