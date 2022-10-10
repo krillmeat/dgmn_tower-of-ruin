@@ -1,4 +1,4 @@
-import config from "../../../config";
+import CFG from "../../../config";
 import GameCanvas from "../../canvas";
 
 class BattleDgmnStatusCanvas extends GameCanvas{
@@ -13,24 +13,24 @@ class BattleDgmnStatusCanvas extends GameCanvas{
     let barHex = meterLength >= 5 ? "#6CA66C" : "#1D5A4A";
     let borderImg = meterLength >= 5 ? images[0] : images[1];
 
-    this.ctx.clearRect(xPosition*config.screenSize,yPosition*config.screenSize,
-                      16*config.screenSize,8*config.screenSize);
+    this.ctx.clearRect(xPosition*CFG.screenSize,yPosition*CFG.screenSize,
+                      16*CFG.screenSize,8*CFG.screenSize);
 
-    this.ctx.drawImage(borderImg, xPosition*config.screenSize,yPosition*config.screenSize,
-                      16*config.screenSize,8*config.screenSize);
+    this.ctx.drawImage(borderImg, xPosition*CFG.screenSize,yPosition*CFG.screenSize,
+                      16*CFG.screenSize,8*CFG.screenSize);
                       
     this.ctx.fillStyle = barHex;
-    this.ctx.fillRect((xPosition+4)*config.screenSize,(yPosition+2)*config.screenSize, meterLength*config.screenSize,(3*config.screenSize));
+    this.ctx.fillRect((xPosition+4)*CFG.screenSize,(yPosition+2)*CFG.screenSize, meterLength*CFG.screenSize,(3*CFG.screenSize));
   }
 
   drawDgmnCombo = (coord,image) => {
-    this.ctx.clearRect(coord[0]*config.tileSize,coord[1]*config.tileSize,config.tileSize,config.tileSize);
-    this.ctx.drawImage(image,coord[0]*config.tileSize,coord[1]*config.tileSize,config.tileSize,config.tileSize)
+    this.ctx.clearRect(coord[0]*CFG.tileSize,coord[1]*CFG.tileSize,CFG.tileSize,CFG.tileSize);
+    this.ctx.drawImage(image,coord[0]*CFG.tileSize,coord[1]*CFG.tileSize,CFG.tileSize,CFG.tileSize)
   }
 
   drawDgmnWeak = (coord,image) => {
-    this.ctx.clearRect(coord[0]*config.tileSize,coord[1]*config.tileSize,config.tileSize,config.tileSize);
-    this.ctx.drawImage(image,coord[0]*config.tileSize,coord[1]*config.tileSize,config.tileSize,config.tileSize)
+    this.ctx.clearRect(coord[0]*CFG.tileSize,coord[1]*CFG.tileSize,CFG.tileSize,CFG.tileSize);
+    this.ctx.drawImage(image,coord[0]*CFG.tileSize,coord[1]*CFG.tileSize,CFG.tileSize,CFG.tileSize)
   }
 
 }

@@ -1,43 +1,5 @@
 'use strict';
 
-function ownKeys(object, enumerableOnly) {
-  var keys = Object.keys(object);
-
-  if (Object.getOwnPropertySymbols) {
-    var symbols = Object.getOwnPropertySymbols(object);
-
-    if (enumerableOnly) {
-      symbols = symbols.filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-      });
-    }
-
-    keys.push.apply(keys, symbols);
-  }
-
-  return keys;
-}
-
-function _objectSpread2(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-
-    if (i % 2) {
-      ownKeys(Object(source), true).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      });
-    } else if (Object.getOwnPropertyDescriptors) {
-      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-    } else {
-      ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
-    }
-  }
-
-  return target;
-}
-
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -214,7 +176,7 @@ function _createForOfIteratorHelper(o, allowArrayLike) {
   };
 }
 
-var config = {
+var CFG = {
   userName: 'Debug User',
   keyBindings: {
     action: 'ArrowRight',
@@ -260,6 +222,22 @@ var debugLog = function debugLog(message, object) {
 };
 var warningLog = function warningLog(message, object) {
   if (inDebug()) object ? console.log("%c".concat(message), 'color:#E6DB74', object) : console.log("%c".concat(message), 'color:#E6DB74');
+};
+
+var SystemAH = function SystemAH(cbObj) {
+  _classCallCheck(this, SystemAH);
+  this.loadImages = function (images, callback) {
+    return cbObj.loadImageCB(images, callback);
+  };
+  this.fetchImage = function (image) {
+    return cbObj.fetchImageCB(image);
+  };
+  this.startLoading = function (callback) {
+    return cbObj.startLoadingCB(callback);
+  };
+  this.stopLoading = function () {
+    return cbObj.stopLoadingCB();
+  };
 };
 
 var DgmnAH = function DgmnAH(cbObj) {
@@ -906,8 +884,8 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdle
     _this.ctx.drawImage(canvas.elem, canvas.x, canvas.y, canvas.width, canvas.height);
   });
   _defineProperty(this, "paintImage", function (image, x, y, isFlipped) {
-    var imgHeight = image.height / 8 * config.screenSize;
-    var imgWidth = image.width / 8 * config.screenSize;
+    var imgHeight = image.height / 8 * CFG.screenSize;
+    var imgWidth = image.width / 8 * CFG.screenSize;
     var imgX = x || 0;
     var imgY = y || 0;
     if (isFlipped) {
@@ -921,13 +899,13 @@ var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdle
     _this.ctx.translate(_this.width * -1, 0);
   });
   _defineProperty(this, "clearBottomSection", function () {
-    _this.ctx.clearRect(0, 14 * 8 * config.screenSize, 20 * 8 * config.screenSize, 4 * 8 * config.screenSize);
+    _this.ctx.clearRect(0, 14 * 8 * CFG.screenSize, 20 * 8 * CFG.screenSize, 4 * 8 * CFG.screenSize);
   });
   this.canvasClass = canvasClass;
-  this.x = _x * config.screenSize || 0;
-  this.y = _y * config.screenSize || 0;
-  this.width = width * config.screenSize;
-  this.height = height * config.screenSize;
+  this.x = _x * CFG.screenSize || 0;
+  this.y = _y * CFG.screenSize || 0;
+  this.width = width * CFG.screenSize;
+  this.height = height * CFG.screenSize;
   this.elem = this.buildCanvas();
   this.ctx;
   this.imageUrlStack = [];
@@ -1341,6 +1319,7 @@ var DgmnUtility = function DgmnUtility() {
     } finally {
       _iterator4.f();
     }
+    return false;
   });
   _defineProperty(this, "canHatchInto", function (dgmnFP, hatchSpecies) {
     var hatchFP = _this.getHatchFP(hatchSpecies);
@@ -1361,8 +1340,8 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   _classCallCheck(this, Dgmn);
   _defineProperty(this, "initCanvas", function (refreshScreenCB, dgmnImageList, battlePosition) {
     _this.dgmnCanvas = new DgmnCanvas(refreshScreenCB, _this.speciesName, 'dgmn-canvas', 32, 32);
-    _this.dgmnCanvas.x = (24 + (_this.isEnemy ? 8 : 72)) * config.screenSize;
-    _this.dgmnCanvas.y = (16 + battlePosition * 32) * config.screenSize;
+    _this.dgmnCanvas.x = (24 + (_this.isEnemy ? 8 : 72)) * CFG.screenSize;
+    _this.dgmnCanvas.y = (16 + battlePosition * 32) * CFG.screenSize;
     _this.dgmnCanvas.frames = dgmnImageList;
     if (_this.isEnemy) {
       _this.dgmnCanvas.flip();
@@ -2027,14 +2006,14 @@ var MapUtility = function MapUtility() {
     return _this.getRoomOffset(roomCount) + _this.getTileOffset(tileCount);
   });
   _defineProperty(this, "getRoomOffset", function (roomCount) {
-    return roomCount * 128 * config.screenSize;
+    return roomCount * 128 * CFG.screenSize;
   });
   _defineProperty(this, "getTileOffset", function (tileCount) {
-    return tileCount * 16 * config.screenSize;
+    return tileCount * 16 * CFG.screenSize;
   });
   _defineProperty(this, "isOnExactTile", function (dir, canvasX, canvasY) {
     var coord = dir === 'down' || dir === 'up' ? canvasY : canvasX;
-    return coord % (16 * config.screenSize) === 0 || coord === 0;
+    return coord % (16 * CFG.screenSize) === 0 || coord === 0;
   });
   _defineProperty(this, "isOpenTile", function (tileValue) {
     var possibleValues = [1];
@@ -2639,7 +2618,7 @@ var DigiBeetle = function DigiBeetle(dungeonAH) {
     _this.digiBeetleCanvas.x = -1000;
   });
   _defineProperty(this, "showCanvas", function () {
-    _this.digiBeetleCanvas.x = 64 * config.screenSize;
+    _this.digiBeetleCanvas.x = 64 * CFG.screenSize;
   });
   _defineProperty(this, "addItemToToolBox", function (item) {
     _this.toolBox.items.push(item);
@@ -2759,6 +2738,9 @@ var BattleAH = function BattleAH(cbObj) {
   this.selectBossReward = function () {
     return cbObj.selectBossRewardCB();
   };
+  this.closeGrowthMenu = function () {
+    return cbObj.closeGrowthMenuCB();
+  };
 };
 
 var BattleUtility = function BattleUtility() {
@@ -2822,6 +2804,15 @@ var MenuUtility = function MenuUtility() {
     }
     return zeroString + number.toString();
   });
+  _defineProperty(this, "dimLeadingZeros", function (_char, message, index) {
+    if (_char !== '0') return 'none';
+    if (index === 0 && _char === '0') return 'darkGreen';
+    for (var i = 0; i <= index; i++) {
+      if (message[i] !== '0') return 'none';
+      if (i === index) return 'darkGreen';
+    }
+    return 'none';
+  });
 }
 ;
 
@@ -2878,12 +2869,10 @@ var BattleIO = function (_IO) {
         }
       } else if (_this.battleAH.getBattleState() === 'victory') {
         if (_this.menuAH.getState() === 'level-next') {
-          _this.battleAH.levelUpNext();
-        } else if (_this.menuAH.getState() === 'evolution-choice') {
-          _this.battleAH.evolveCurrDgmn();
-        } else if (_this.menuAH.getState() === 'boss-reward') {
-          _this.battleAH.selectBossReward();
-        }
+          _this.menuAH.confirmLevelUp();
+        } else if (_this.menuAH.getState() === 'evo-choice') {
+          _this.menuAH.selectEvo();
+        } else if (_this.menuAH.getState() === 'boss-reward') ;
       }
     });
     _defineProperty(_assertThisInitialized(_this), "upKeyHandler", function (upDown) {
@@ -2908,7 +2897,7 @@ var BattleIO = function (_IO) {
             _this.menuAH.nextIcon();
           }
         } else if (_this.battleAH.getBattleState() === 'victory') {
-          if (_this.menuAH.getState() === 'rewards') _this.menuAH.giveCurrReward('up');
+          if (_this.menuAH.getState() === 'rewards') _this.menuAH.giveCurrReward('right');
         }
       }
     });
@@ -2930,7 +2919,7 @@ var BattleIO = function (_IO) {
             _this.menuAH.prevIcon();
           }
         } else if (_this.battleAH.getBattleState() === 'victory') {
-          if (_this.menuAH.getState() === 'rewards') _this.menuAH.giveCurrReward('up');
+          if (_this.menuAH.getState() === 'rewards') _this.menuAH.giveCurrReward('left');
         }
       }
     });
@@ -3108,7 +3097,7 @@ var IconMenu = function (_SubMenu) {
       _this.clearIcons();
       for (var i = 0; i < _this.iconList.length; i++) {
         var img = selected === i ? _this.images[_this.iconList[i]].selected : _this.images[_this.iconList[i]].deselected;
-        _this.menuCanvas.paintImage(img, i * 16 * config.screenSize, 0);
+        _this.menuCanvas.paintImage(img, i * 16 * CFG.screenSize, 0);
       }
     });
     _this.currIcon = 0;
@@ -3117,8 +3106,8 @@ var IconMenu = function (_SubMenu) {
     _this.images;
     _this.coord = coord;
     _this.menuCanvas = new GameCanvas("".concat(_this.label, "-menu"), _this.iconList.length * 16, 16);
-    _this.menuCanvas.x = coord[0] * 8 * config.screenSize;
-    _this.menuCanvas.y = coord[1] * 8 * config.screenSize;
+    _this.menuCanvas.x = coord[0] * 8 * CFG.screenSize;
+    _this.menuCanvas.y = coord[1] * 8 * CFG.screenSize;
     return _this;
   }
   return IconMenu;
@@ -3211,7 +3200,9 @@ var TextArea = function TextArea(x, y, width) {
     for (var w = 0; w < wordArray.length; w++) {
       var charArray = _this.createCharArray(wordArray[w]);
       for (var c = 0; c < charArray.length; c++) {
-        _this.drawChar(ctx, charArray[c], col, row, color);
+        var modColor = _this.colorizeCB ? _this.colorizeCB(charArray[c], wordArray[w], c) : color;
+        modColor = modColor === undefined || modColor === 'none' ? color : modColor;
+        _this.drawChar(ctx, charArray[c], col, row, modColor);
         row = col + 1 >= _this.width ? row + 1 : row;
         col = col + 1 >= _this.width ? 0 : col + 1;
       }
@@ -3254,12 +3245,12 @@ var TextArea = function TextArea(x, y, width) {
         }
       }
       if (word >= wordArray.length) clearInterval(paintInterval);
-    }, config.textSpeed * 33);
+    }, CFG.textSpeed * 33);
   });
   _defineProperty(this, "drawChar", function (ctx, _char2, col, row) {
     var color = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'white';
     var coord = _this.getCharCoordinates(_char2);
-    ctx.drawImage(_this.colorImages[color], coord[0] * 64, coord[1] * 64, 64, 64, (col + _this.x) * config.tileSize, (row + _this.y) * config.tileSize, config.tileSize, config.tileSize);
+    ctx.drawImage(_this.colorImages[color], coord[0] * 64, coord[1] * 64, 64, 64, (col + _this.x) * CFG.tileSize, (row + _this.y) * CFG.tileSize, CFG.tileSize, CFG.tileSize);
   });
   _defineProperty(this, "createCharArray", function (message) {
     return _this.returnSpecialCharacters(_this.splitMessage(_this.replaceSpecialCharacters(message)));
@@ -3318,9 +3309,7 @@ var TextArea = function TextArea(x, y, width) {
   };
   this.colorizeCB = colorizeCB ? function (_char5, wholeString, index) {
     return colorizeCB(_char5, wholeString, index);
-  } : function () {
-    return 'none';
-  };
+  } : undefined;
 }
 ;
 
@@ -3359,8 +3348,8 @@ var ListMenu = function (_SubMenu) {
     _defineProperty(_assertThisInitialized(_this), "drawCursor", function (index) {
       var spotIndex = index ? index : _this.currIndex;
       _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(0, 0, config.tileSize, _this.itemAmount * _this.itemHeight * config.tileSize);
-      _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * config.screenSize);
+      _this.menuCanvas.ctx.fillRect(0, 0, CFG.tileSize, _this.itemAmount * _this.itemHeight * CFG.tileSize);
+      _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
       _this.drawBackImg();
@@ -3368,16 +3357,16 @@ var ListMenu = function (_SubMenu) {
       _this.drawCursor();
     });
     _defineProperty(_assertThisInitialized(_this), "drawScrollBar", function () {
-      var barMax = 8 * config.screenSize * _this.itemHeight * _this.itemAmount;
+      var barMax = 8 * CFG.screenSize * _this.itemHeight * _this.itemAmount;
       var barHeight = barMax / Math.ceil(_this.listItems.length / _this.itemAmount);
-      var barX = _this.menuCanvas.width - 8 * config.screenSize;
+      var barX = _this.menuCanvas.width - 8 * CFG.screenSize;
       var barY = barHeight * (Math.ceil((_this.currIndex + 1) / _this.itemAmount) - 1);
       barY = barY < 0 ? 0 : barY;
       _this.menuCanvas.ctx.fillStyle = "#6CA66C";
-      _this.menuCanvas.ctx.fillRect(barX + 2 * config.screenSize, barY + 1 * config.screenSize, 5 * config.screenSize, barHeight - 3 * config.screenSize);
+      _this.menuCanvas.ctx.fillRect(barX + 2 * CFG.screenSize, barY + 1 * CFG.screenSize, 5 * CFG.screenSize, barHeight - 3 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "getYOffsetForIndex", function (listIndex) {
-      return _this.itemHeight * listIndex * 8 * config.screenSize;
+      return _this.itemHeight * listIndex * 8 * CFG.screenSize;
     });
     _defineProperty(_assertThisInitialized(_this), "nextListItem", function () {
       if (_this.currIndex < _this.listItems.length - 1) {
@@ -3406,8 +3395,8 @@ var ListMenu = function (_SubMenu) {
     _this.cursorImg = cursorImg;
     _this.cursorOffset = 0;
     _this.menuCanvas = new GameCanvas("".concat(_this.label, "-menu"), listWidth * 8, itemAmount * (itemHeight * 8));
-    _this.menuCanvas.x = coord[0] * 8 * config.screenSize;
-    _this.menuCanvas.y = coord[1] * 8 * config.screenSize;
+    _this.menuCanvas.x = coord[0] * 8 * CFG.screenSize;
+    _this.menuCanvas.y = coord[1] * 8 * CFG.screenSize;
     return _this;
   }
   return ListMenu;
@@ -3440,21 +3429,21 @@ var AttackMenu = function (_ListMenu) {
     });
     _defineProperty(_assertThisInitialized(_this), "drawCursor", function (index) {
       var spotIndex = index ? index : _this.currIndex;
-      _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * config.screenSize);
+      _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawTypeIcon", function (listIndex, type) {
-      _this.menuCanvas.paintImage(_this.fetchImage("".concat(type, "TypeIcon")), 88 * config.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * config.screenSize);
+      _this.menuCanvas.paintImage(_this.fetchImage("".concat(type, "TypeIcon")), 88 * CFG.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawPowerIcon", function (listIndex, power) {
-      _this.menuCanvas.paintImage(_this.fetchImage("pwr".concat(power, "Icon")), 96 * config.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * config.screenSize);
+      _this.menuCanvas.paintImage(_this.fetchImage("pwr".concat(power, "Icon")), 96 * CFG.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawTargetsIcon", function (listIndex, targets) {
       var imageName = targets === 'single' ? 'targetOne' : 'targetAll';
-      _this.menuCanvas.paintImage(_this.fetchImage(imageName), 104 * config.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * config.screenSize);
+      _this.menuCanvas.paintImage(_this.fetchImage(imageName), 104 * CFG.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawHitsIcon", function (listIndex, hits) {
       _this.menuCanvas.paintImage(_this.fetchImage('oneHitIcon'),
-      112 * config.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * config.screenSize);
+      112 * CFG.screenSize, _this.getYOffsetForIndex(listIndex) + 8 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawCostMeter", function (listIndex, maxCost, currCost) {
       var blockCount = maxCost / 4;
@@ -3465,7 +3454,7 @@ var AttackMenu = function (_ListMenu) {
         var _final = 25 * (remCount - check);
         _final = _final >= 0 ? 0 : _final;
         _final = _final / 25 < -3 ? -100 : _final;
-        _this.menuCanvas.ctx.drawImage(_this.fetchImage("costMeter".concat(100 + _final)), (1 + i) * (8 * config.screenSize), (1 + listIndex * 2) * (8 * config.screenSize), 8 * config.screenSize, 8 * config.screenSize);
+        _this.menuCanvas.ctx.drawImage(_this.fetchImage("costMeter".concat(100 + _final)), (1 + i) * (8 * CFG.screenSize), (1 + listIndex * 2) * (8 * CFG.screenSize), 8 * CFG.screenSize, 8 * CFG.screenSize);
         remCount -= 4;
       }
     });
@@ -3522,14 +3511,14 @@ var BattleMenuCanvas = function (_GameCanvas) {
     }
     _this = _super.call.apply(_super, [this].concat(args));
     _defineProperty(_assertThisInitialized(_this), "clearTopMessage", function () {
-      _this.ctx.clearRect(0, 8 * config.screenSize, 160 * config.screenSize, 8 * config.screenSize);
+      _this.ctx.clearRect(0, 8 * CFG.screenSize, 160 * CFG.screenSize, 8 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "setTopMessage", function (message) {
       _this.clearTopMessage();
       _this.topTxt.instantText(_this.ctx, message, 'white');
     });
     _defineProperty(_assertThisInitialized(_this), "clearBottomSection", function () {
-      _this.ctx.clearRect(0, 14 * 8 * config.screenSize, 20 * 8 * config.screenSize, 4 * 8 * config.screenSize);
+      _this.ctx.clearRect(0, 14 * 8 * CFG.screenSize, 20 * 8 * CFG.screenSize, 4 * 8 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawBottomSection", function (dgmnData) {
       _this.clearBottomSection();
@@ -3547,28 +3536,28 @@ var BattleMenuCanvas = function (_GameCanvas) {
       textArea.instantText(_this.ctx, ".lv" + _this.menuUtility.prependZeros(level, 3), "white");
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnPortrait", function (portraitImg) {
-      _this.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
+      _this.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * CFG.screenSize, 32 * CFG.screenSize, (32 - 1) * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawMenuButtons", function (selected, images, coord) {
       var buttonCount = Object.keys(images).length;
-      _this.ctx.clearRect(coord[0] * 8 * config.screenSize, coord[1] * 8 * config.screenSize, buttonCount * 16 * config.screenSize, 16 * config.screenSize);
+      _this.ctx.clearRect(coord[0] * 8 * CFG.screenSize, coord[1] * 8 * CFG.screenSize, buttonCount * 16 * CFG.screenSize, 16 * CFG.screenSize);
       var offset = 0;
       for (var image in images) {
         var img = image === selected ? images[image].selected : images[image].deselected;
-        _this.ctx.drawImage(img, (offset * 16 + coord[0] * 8) * config.screenSize, coord[1] * 8 * config.screenSize, 16 * config.screenSize, 16 * config.screenSize);
+        _this.ctx.drawImage(img, (offset * 16 + coord[0] * 8) * CFG.screenSize, coord[1] * 8 * CFG.screenSize, 16 * CFG.screenSize, 16 * CFG.screenSize);
         offset++;
       }
     });
     _defineProperty(_assertThisInitialized(_this), "paintCurrentCursor", function (battleIndex, image) {
-      _this.paintImage(image, 80 * config.screenSize, (24 + battleIndex * 32) * config.screenSize);
+      _this.paintImage(image, 80 * CFG.screenSize, (24 + battleIndex * 32) * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "clearCurrentCursors", function (isEnemy) {
       var xOffset = !isEnemy ? 72 : 56;
-      _this.ctx.clearRect(xOffset * config.screenSize, 16 * config.screenSize, 24 * config.screenSize, 96 * config.screenSize);
+      _this.ctx.clearRect(xOffset * CFG.screenSize, 16 * CFG.screenSize, 24 * CFG.screenSize, 96 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "setCurrentTargetCursor", function (battleIndex, image) {
       _this.clearCurrentCursors(true);
-      _this.paintImage(image, 64 * config.screenSize, (battleIndex * 32 + 24) * config.screenSize);
+      _this.paintImage(image, 64 * CFG.screenSize, (battleIndex * 32 + 24) * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "dgmnHPENTxtColorize", function (_char, wholeString, index) {
       var color = 'none';
@@ -3610,7 +3599,7 @@ var TargetSelect = function (_ListMenu) {
     _this = _super.call.apply(_super, [this].concat(args));
     _defineProperty(_assertThisInitialized(_this), "drawCursor", function (index) {
       var spotIndex = index ? index : _this.currIndex;
-      _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * config.screenSize);
+      _this.menuCanvas.paintImage(_this.cursorImg, 0, spotIndex % _this.itemAmount * (8 * _this.itemHeight) * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
       var startingIndex = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
@@ -3623,7 +3612,7 @@ var TargetSelect = function (_ListMenu) {
     });
     _defineProperty(_assertThisInitialized(_this), "clearAllCursors", function (isEnemy) {
       if (isEnemy) {
-        _this.parentCTX.clearRect(8 * 8 * config.screenSize, 2 * 8 * config.screenSize, 2 * 8 * config.screenSize, 12 * 8 * config.screenSize);
+        _this.parentCTX.clearRect(8 * 8 * CFG.screenSize, 2 * 8 * CFG.screenSize, 2 * 8 * CFG.screenSize, 12 * 8 * CFG.screenSize);
       }
     });
     _defineProperty(_assertThisInitialized(_this), "drawAllCursors", function (isEnemy) {
@@ -3668,595 +3657,6 @@ var TargetSelect = function (_ListMenu) {
   }
   return TargetSelect;
 }(ListMenu);
-
-var MenuCanvas = function (_GameCanvas) {
-  _inherits(MenuCanvas, _GameCanvas);
-  var _super = _createSuper(MenuCanvas);
-  function MenuCanvas() {
-    var _this;
-    _classCallCheck(this, MenuCanvas);
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-    _this = _super.call.apply(_super, [this].concat(args));
-    _defineProperty(_assertThisInitialized(_this), "clearTopMessage", function () {
-      _this.ctx.clearRect(0, 8 * config.screenSize, 160 * config.screenSize, 8 * config.screenSize);
-    });
-    _defineProperty(_assertThisInitialized(_this), "clearBottomSection", function () {
-      _this.ctx.fillStyle = "#00131A";
-      _this.ctx.fillRect(0, 14 * config.tileSize, 20 * config.tileSize, 4 * config.tileSize);
-    });
-    _defineProperty(_assertThisInitialized(_this), "setTopMessage", function (message) {
-      _this.clearTopMessage();
-      _this.topTxt.instantText(_this.ctx, message, 'white');
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawDgmnPortrait", function (portraitImg) {
-      _this.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
-    });
-    _this.topTxt = new TextArea(0, 1, 20);
-    return _this;
-  }
-  return MenuCanvas;
-}(GameCanvas);
-
-var VictoryMenuAH = function VictoryMenuAH(cbObj) {
-  _classCallCheck(this, VictoryMenuAH);
-  this.getState = function () {
-    return cbObj.getCurrStateCB();
-  };
-  this.getCurrMenuType = function () {
-    return cbObj.getCurrMenuTypeCB();
-  };
-  this.nextIcon = function () {
-    return cbObj.nextEvolutionCB();
-  };
-  this.prevIcon = function () {
-    return cbObj.prevEvolutionCB();
-  };
-  this.navDown = function () {
-    return cbObj.navDownCB();
-  };
-  this.navUp = function () {
-    return cbObj.navUpCB();
-  };
-  this.selectBossReward = function () {
-    return cbObj.selectBossRewardCB();
-  };
-};
-
-var RewardsMenu = function (_SubMenu) {
-  _inherits(RewardsMenu, _SubMenu);
-  var _super = _createSuper(RewardsMenu);
-  function RewardsMenu() {
-    var _this;
-    _classCallCheck(this, RewardsMenu);
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-    _this = _super.call.apply(_super, [this].concat(args));
-    _defineProperty(_assertThisInitialized(_this), "drawRewardsList", function (rewards) {
-      _this.menuCanvas.paintImage(_this.fetchImageCB("field".concat(rewards[_this.currIndex], "Icon")), 1 * config.tileSize, 2 * config.tileSize);
-      for (var i = _this.currIndex + 1; i < rewards.length; i++) {
-        var img = rewards[i] === 'XP' ? 'xpIconSmall' : "field".concat(rewards[i], "Icon");
-        _this.menuCanvas.paintImage(_this.fetchImageCB(img), (2 + (i - _this.currIndex)) * config.tileSize, 2 * config.tileSize);
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "updateRewardsList", function (rewards, onDoneCB) {
-      var backImg = _this.fetchImageCB('battleVictoryRewardsOverlay');
-      _this.currIndex++;
-      if (_this.currIndex >= rewards.length) {
-        _this.menuCanvas.paintImage(backImg, 0, 0);
-        _this.redrawParentCB();
-        onDoneCB();
-      } else {
-        _this.menuCanvas.paintImage(backImg, 0, 0);
-        _this.drawRewardsList(rewards);
-        _this.redrawParentCB();
-      }
-    });
-    _this.fetchImageCB;
-    _this.redrawParentCB;
-    _this.currIndex = 0;
-    _this.menuCanvas = new GameCanvas('rewards-menu', 160, 144);
-    return _this;
-  }
-  return RewardsMenu;
-}(SubMenu);
-
-var LevelUpMenu = function (_SubMenu) {
-  _inherits(LevelUpMenu, _SubMenu);
-  var _super = _createSuper(LevelUpMenu);
-  function LevelUpMenu() {
-    var _this;
-    _classCallCheck(this, LevelUpMenu);
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-    _this = _super.call.apply(_super, [this].concat(args));
-    _defineProperty(_assertThisInitialized(_this), "buildLevelUpScreen", function (dgmnData) {
-      for (var stat in dgmnData.currentStats) {
-        var growth = _this.dgmnUtility.getBaseStat(dgmnData.speciesName, stat);
-        _this.statTxtAreas[stat].original.instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(dgmnData.currentStats[stat], 3), 'white');
-        _this.statTxtAreas[stat].plus.instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(growth, 2), 'green');
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawDgmnCanvas", function (species, redrawCB) {
-      _this.dgmnCanvas = new DgmnCanvas(function () {}, species, 'dgmn-canvas', 32, 32);
-      _this.dgmnCanvas.x = 3 * config.tileSize;
-      _this.dgmnCanvas.y = 8 * config.tileSize;
-      _this.dgmnCanvas.frames = [_this.fetchImgCB("".concat(species.toLowerCase(), "Idle0")), _this.fetchImgCB("".concat(species.toLowerCase(), "Idle1"))];
-      _this.dgmnCanvas.refreshScreen = function () {
-        return _this.redrawDgmn(redrawCB);
-      };
-      _this.dgmnCanvas.animate(100);
-    });
-    _defineProperty(_assertThisInitialized(_this), "redrawDgmn", function (redrawCB) {
-      _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(3 * config.tileSize, 8 * config.tileSize, 32 * config.screenSize, 32 * config.screenSize);
-      _this.menuCanvas.paintCanvas(_this.dgmnCanvas);
-      redrawCB();
-    });
-    _this.menuCanvas = new GameCanvas('level-up', 160, 144);
-    _this.dgmnUtility = new DgmnUtility();
-    _this.dgmnCanvas;
-    _this.levelUpTxt = new TextArea(3, 5, 4, 1, _this.baseXPTxtColorize);
-    _this.statTxtAreas = {
-      HP: {
-        original: new TextArea(13, 4, 3, 1, _this.baseXPTxtColorize),
-        plus: new TextArea(17, 4, 2, 1, _this.baseXPTxtColorize)
-      },
-      ATK: {
-        original: new TextArea(13, 5, 3, 1, _this.baseXPTxtColorize),
-        plus: new TextArea(17, 5, 2, 1, _this.baseXPTxtColorize)
-      },
-      DEF: {
-        original: new TextArea(13, 6, 3, 1, _this.baseXPTxtColorize),
-        plus: new TextArea(17, 6, 2, 1, _this.baseXPTxtColorize)
-      },
-      INT: {
-        original: new TextArea(13, 7, 3, 1, _this.baseXPTxtColorize),
-        plus: new TextArea(17, 7, 2, 1, _this.baseXPTxtColorize)
-      },
-      RES: {
-        original: new TextArea(13, 8, 3, 1, _this.baseXPTxtColorize),
-        plus: new TextArea(17, 8, 2, 1, _this.baseXPTxtColorize)
-      },
-      HIT: {
-        original: new TextArea(13, 9, 3, 1, _this.baseXPTxtColorize),
-        plus: new TextArea(17, 9, 2, 1, _this.baseXPTxtColorize)
-      },
-      AVO: {
-        original: new TextArea(13, 10, 3, 1, _this.baseXPTxtColorize),
-        plus: new TextArea(17, 10, 2, 1, _this.baseXPTxtColorize)
-      },
-      SPD: {
-        original: new TextArea(13, 11, 3, 1, _this.baseXPTxtColorize),
-        plus: new TextArea(17, 11, 2, 1, _this.baseXPTxtColorize)
-      }
-    };
-    return _this;
-  }
-  return LevelUpMenu;
-}(SubMenu);
-
-var EvolutionMenu = function (_IconMenu) {
-  _inherits(EvolutionMenu, _IconMenu);
-  var _super = _createSuper(EvolutionMenu);
-  function EvolutionMenu() {
-    var _this;
-    _classCallCheck(this, EvolutionMenu);
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-    _this = _super.call.apply(_super, [this].concat(args));
-    _defineProperty(_assertThisInitialized(_this), "buildEvolutionScreen", function (dgmnData, redrawCB) {
-      var evos = _this.dgmnUtility.getEvolutions(dgmnData.speciesName);
-      _this.selectedDgmn = evos[0];
-      _this.iconList = evos;
-      _this.drawIcons(dgmnData.currentFP, evos, 0);
-      _this.drawDgmnStats(_this.dgmnUtility.getAllBaseStats(_this.selectedDgmn));
-      _this.drawEvoRequirements(evos[0]);
-      _this.drawDgmnCanvas('dgmnCanvas', dgmnData.speciesName, redrawCB);
-      _this.drawDgmnCanvas('evoCanvas', evos[0], redrawCB);
-      _this.drawDgmnInfo(evos[0]);
-      _this.redrawParentCB();
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawDgmnInfo", function (species) {
-      _this.drawEvoPortrait(_this.fetchImgCB("".concat(species.toLowerCase(), "Portrait")));
-      _this.evoNameTxt.instantText(_this.menuCanvas.ctx, "".concat(species, ".MON"), 'white');
-      _this.evoAttributeTxt.instantText(_this.menuCanvas.ctx, _this.dgmnUtility.getAttribute(species), 'green');
-      _this.evoWeakTxt.instantText(_this.menuCanvas.ctx, 'WEAK', 'green');
-      _this.evoResTxt.instantText(_this.menuCanvas.ctx, 'RES', 'green');
-      for (var field in _this.dgmnUtility.getBaseFP(species)) {
-        _this.menuCanvas.paintImage(_this.fetchImgCB("field".concat(field, "Icon")), (_this.dgmnUtility.getAttribute(species).length + 5) * config.tileSize, 15 * config.tileSize);
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawDgmnStats", function (stats) {
-      for (var stat in stats) {
-        _this.statTxtAreas[stat].instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(stats[stat], 2), 'white');
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawEvoRequirements", function (species) {
-      var fpReqs = _this.dgmnUtility.getEvoFP(species);
-      var i = 0;
-      for (var req in fpReqs) {
-        var img = _this.fetchImgCB("field".concat(req, "Icon"));
-        _this.menuCanvas.paintImage(img, (1 + i) * config.tileSize, 10 * config.tileSize);
-        _this.evoReqsTxt[i].instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(fpReqs[req], 3), 'white');
-        i++;
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawIcons", function (dgmnFP, evoList, selected) {
-      var possibleEvos = [];
-      var iconsOffset = [1 * config.tileSize, 13 * config.tileSize];
-      for (var i = 0; i < evoList.length; i++) {
-        var img = void 0;
-        if (_this.dgmnUtility.canEvolveInto(dgmnFP, evoList[i])) {
-          possibleEvos.push(evoList[i]);
-          img = _this.fetchImgCB('evoIconPositive');
-        } else {
-          img = _this.fetchImgCB('evoIconNegative');
-        }
-        _this.menuCanvas.paintImage(img, iconsOffset[0] + i * config.tileSize, iconsOffset[1]);
-      }
-      _this.menuCanvas.ctx.fillStyle = "#C4CFA1";
-      _this.menuCanvas.ctx.fillRect(iconsOffset[0] + selected * 8 + 3, iconsOffset[1] + 3, 5 * config.screenSize, 4 * config.screenSize);
-    });
-    _defineProperty(_assertThisInitialized(_this), "chooseEvolution", function (dgmnData) {});
-    _defineProperty(_assertThisInitialized(_this), "drawEvoPortrait", function (portraitImg) {
-      _this.menuCanvas.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawDgmnCanvas", function (canvas, species, redrawCB) {
-      var coord = canvas === 'dgmnCanvas' ? [1, 4] : [8, 4];
-      _this[canvas] = new DgmnCanvas(function () {}, species, 'dgmn-canvas', 32, 32);
-      _this[canvas].x = coord[0] * config.tileSize;
-      _this[canvas].y = coord[1] * config.tileSize;
-      _this[canvas].frames = [_this.fetchImgCB("".concat(species.toLowerCase(), "Idle0")), _this.fetchImgCB("".concat(species.toLowerCase(), "Idle1"))];
-      _this[canvas].refreshScreen = function () {
-        return _this.redrawDgmn(_this[canvas], coord, redrawCB);
-      };
-      _this[canvas].animate(100);
-    });
-    _defineProperty(_assertThisInitialized(_this), "redrawDgmn", function (canvas, coord, redrawCB) {
-      _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(coord[0] * config.tileSize, coord[1] * config.tileSize, 32 * config.screenSize, 32 * config.screenSize);
-      _this.menuCanvas.paintCanvas(canvas);
-      redrawCB();
-    });
-    _this.dgmnUtility = new DgmnUtility();
-    _this.dgmnCanvas;
-    _this.evoCanvas;
-    _this.menuCanvas = new GameCanvas("".concat(_this.label, "-menu"), 160, 144);
-    _this.menuCanvas.x = 0;
-    _this.menuCanvas.y = 0;
-    _this.selectedDgmn = '';
-    _this.statTxtAreas = {
-      HP: new TextArea(17, 2, 3, 1, _this.baseXPTxtColorize),
-      ATK: new TextArea(17, 3, 3, 1, _this.baseXPTxtColorize),
-      DEF: new TextArea(17, 4, 3, 1, _this.baseXPTxtColorize),
-      INT: new TextArea(17, 5, 3, 1, _this.baseXPTxtColorize),
-      RES: new TextArea(17, 6, 3, 1, _this.baseXPTxtColorize),
-      HIT: new TextArea(17, 7, 3, 1, _this.baseXPTxtColorize),
-      AVO: new TextArea(17, 8, 3, 1, _this.baseXPTxtColorize),
-      SPD: new TextArea(17, 9, 3, 1, _this.baseXPTxtColorize)
-    };
-    _this.evoReqsTxt = [new TextArea(2, 10, 3, 1, _this.baseXPTxtColorize), new TextArea(6, 10, 3, 1, _this.baseXPTxtColorize), new TextArea(2, 11, 3, 1, _this.baseXPTxtColorize), new TextArea(6, 11, 3, 1, _this.baseXPTxtColorize)];
-    _this.evoNameTxt = new TextArea(4, 14, 12, 1, _this.baseXPTxtColorize);
-    _this.evoAttributeTxt = new TextArea(4, 15, 7, 1, _this.baseXPTxtColorize);
-    _this.evoWeakTxt = new TextArea(4, 16, 4, 1, _this.baseXPTxtColorize);
-    _this.evoResTxt = new TextArea(12, 16, 3, 1, _this.baseXPTxtColorize);
-    _this.fetchImgCB;
-    _this.redrawParentCB;
-    return _this;
-  }
-  return EvolutionMenu;
-}(IconMenu);
-
-var BossVictoryMenu = function (_ListMenu) {
-  _inherits(BossVictoryMenu, _ListMenu);
-  var _super = _createSuper(BossVictoryMenu);
-  function BossVictoryMenu(currFloor) {
-    var _this;
-    _classCallCheck(this, BossVictoryMenu);
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-    _this = _super.call.apply(_super, [this].concat(args));
-    _defineProperty(_assertThisInitialized(_this), "drawList", function () {
-      for (var i = 0; i < _this.listItems.length; i++) {
-        for (var r = 0; r < 8; r++) {
-          var image = 'rewardIconDeselected';
-          if (r > _this.mapUtility.getBossRewardLevel(_this.currFloor)) image = 'rewardIconNull';
-          _this.drawIcon(i, r, image);
-        }
-      }
-      _this.drawIcon(_this.currIndex, _this.currUpgradeIndex, 'rewardIconSelected');
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawCurrIcon", function () {});
-    _defineProperty(_assertThisInitialized(_this), "drawIcon", function (row, col, image) {
-      _this.menuCanvas.paintImage(_this.fetchImageCB(image), (col + 9) * config.tileSize, 2 * row * config.tileSize);
-    });
-    _defineProperty(_assertThisInitialized(_this), "moveUp", function () {
-      if (!_this.inFPSelection) {
-        if (_this.currIndex > 0) {
-          _this.currIndex--;
-          _this.drawMenu();
-          _this.redrawParentCB();
-        }
-      } else {
-        console.log("MOVE UP FP CHOICE");
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "moveDown", function () {
-      if (!_this.inFPSelection) {
-        if (_this.currIndex < 2) {
-          _this.currIndex++;
-          _this.drawMenu();
-          _this.redrawParentCB();
-        }
-      } else {
-        console.log("MOVE DOWN FP CHOICE");
-      }
-    });
-    _this.currFloor = currFloor;
-    _this.dgmnIndex = 0;
-    _this.currUpgradeIndex = 0;
-    _this.mapUtility = new MapUtility();
-    _this.inFPSelection = false;
-    _this.learnedAttackTxt = new TextArea(1, 12, 18, 1);
-    _this.fetchImageCB;
-    _this.redrawParentCB;
-    _this.onDone;
-    return _this;
-  }
-  return BossVictoryMenu;
-}(ListMenu);
-
-(function (_Menu) {
-  _inherits(VictoryMenu, _Menu);
-  var _super = _createSuper(VictoryMenu);
-  function VictoryMenu(isBoss, battleXP, battleRewards) {
-    var _this;
-    _classCallCheck(this, VictoryMenu);
-    for (var _len = arguments.length, args = new Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
-      args[_key - 3] = arguments[_key];
-    }
-    _this = _super.call.apply(_super, [this].concat(args));
-    _defineProperty(_assertThisInitialized(_this), "gotoRewards", function (rewards) {
-      _this.currState = 'loading';
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('battleVictoryRewardsOverlay'), 0, 0);
-      _this.actionTxt.timedText(_this.menuCanvas.ctx, 'Choose DGMN to get Rewards!', _this.drawMenu);
-      _this.addSubMenu('rewards', new RewardsMenu('rewards'));
-      _this.subMenus.rewards.isVisible = true;
-      _this.subMenus.rewards.isActive = true;
-      _this.attachImageCallbacks('rewards');
-      _this.subMenus.rewards.drawRewardsList(rewards);
-      setTimeout(function () {
-        _this.currState = 'rewards';
-      }, 1500);
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "gotoLevelUp", function () {
-      _this.removeSubMenu('rewards');
-      _this.removeSubMenu('boss');
-      _this.removeSubMenu('rewardFP');
-      _this.currState = 'level';
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('battleLevelUpOverlay'), 0, 0);
-      _this.menuCanvas.clearBottomSection();
-      debugLog('Leveling Up : ', _this.levelUpDgmn);
-      var dgmn = _this.levelUpDgmn[_this.levelUpIndex];
-      _this.actionTxt.timedText(_this.menuCanvas.ctx, "".concat(dgmn.nickname, " Leveled Up!"), _this.drawMenu);
-      _this.drawDgmnPortrait(_this.systemAH.fetchImage(dgmn.speciesName.toLowerCase() + 'Portrait'));
-      _this.addSubMenu('level', new LevelUpMenu('level'));
-      _this.subMenus.level.isVisible = true;
-      _this.subMenus.level.isActive = true;
-      _this.attachImageCallbacks('level');
-      _this.subMenus.level.buildLevelUpScreen(dgmn, _this.parentAH.drawBattleCanvas);
-      setTimeout(function () {
-        _this.drawContinueCursor(_this.systemAH.fetchImage('continueCursor'), _this.drawMenu);
-        _this.currState = 'level-next';
-      }, 1000);
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "gotoNextLevelUp", function () {
-      _this.levelUpIndex++;
-      _this.gotoLevelUp();
-    });
-    _defineProperty(_assertThisInitialized(_this), "setLevelUpList", function (dgmnDataList) {
-      var _iterator = _createForOfIteratorHelper(dgmnDataList),
-          _step;
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var dgmn = _step.value;
-          _this.levelUpDgmn.push(dgmn);
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "gotoEvolution", function (dgmnData) {
-      _this.continueCursor.remove();
-      _this.currState = 'evolution';
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('battleEvolutionOverlay'), 0, 0);
-      _this.menuCanvas.clearBottomSection();
-      _this.removeSubMenu('level');
-      _this.addSubMenu('evolution', new EvolutionMenu([1, 13], [], 'evolution'));
-      _this.subMenus.evolution.isVisible = true;
-      _this.subMenus.evolution.isActive = true;
-      _this.subMenus.evolution.fetchImgCB = function (img) {
-        return _this.systemAH.fetchImage(img);
-      };
-      _this.subMenus.evolution.redrawParentCB = function () {
-        _this.drawMenu();
-      };
-      _this.subMenus.evolution.buildEvolutionScreen(dgmnData, _this.parentAH.drawBattleCanvas);
-      setTimeout(function () {
-        _this.drawContinueCursor(_this.systemAH.fetchImage('continueCursor'), _this.drawMenu);
-        _this.currState = 'evolution-choice';
-      }, 1000);
-    });
-    _defineProperty(_assertThisInitialized(_this), "gotoBossRewards", function (floorNumber, onDone) {
-      var _this$continueCursor;
-      (_this$continueCursor = _this.continueCursor) === null || _this$continueCursor === void 0 ? void 0 : _this$continueCursor.remove();
-      _this.removeSubMenu('rewards');
-      _this.currState = 'boss-reward';
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('bossRewardMenu'), 0, 0);
-      _this.drawTopText('Choose an Upgrade!');
-      _this.addSubMenu('boss', new BossVictoryMenu(floorNumber, [1, 2], 3, 18, 2, ['FP', 'EN', 'XP'], _this.systemAH.fetchImage('miniCursor'), null, 'bossReward'));
-      _this.subMenus.boss.onDone = function () {
-        return onDone();
-      };
-      _this.subMenus.boss.fetchImageCB = function (img) {
-        return _this.systemAH.fetchImage(img);
-      };
-      _this.subMenus.boss.redrawParentCB = function () {
-        _this.drawMenu();
-      };
-      _this.subMenus.boss.drawMenu();
-      _this.subMenus.boss.isVisible = true;
-      _this.subMenus.boss.isActive = true;
-      var dgmnList = _this.levelUpDgmn.length > 0 ? _this.levelUpDgmn : _this.bossRewardsDgmn;
-      _this.drawBossRewardBottomSection(dgmnList[_this.bossRewardIndex].speciesName);
-      _this.drawAttackLearned(dgmnList[_this.bossRewardIndex].speciesName, floorNumber, dgmnList[_this.bossRewardIndex].permAttacks);
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "nextBossReward", function (floorNumber) {
-      _this.subMenus.boss.inFPSelection = false;
-      _this.removeSubMenu('rewardFP');
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('bossRewardMenu'), 0, 0);
-      _this.bossRewardIndex++;
-      _this.subMenus.boss.currIndex = 0;
-      var dgmnList = _this.levelUpDgmn.length > 0 ? _this.levelUpDgmn : _this.bossRewardsDgmn;
-      _this.drawBossRewardBottomSection(dgmnList[_this.bossRewardIndex].speciesName);
-      _this.drawAttackLearned(dgmnList[_this.bossRewardIndex].speciesName, floorNumber, dgmnList[_this.bossRewardIndex].permAttacks);
-      _this.subMenus.boss.drawMenu();
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawBossRewardBottomSection", function (speciesName) {
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage(speciesName.toLowerCase() + 'Portrait'), 0, 14 * config.tileSize);
-      _this.drawUpgradeDescription();
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawUpgradeDescription", function () {
-      _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(4 * config.tileSize, 14 * config.tileSize, 16 * config.tileSize, 4 * config.tileSize);
-      var messages = ['Increase 1 FP', 'Gain 1 XP on each Level Up', 'Raise your Max   EN by 5'];
-      _this.descriptionTxt.instantText(_this.menuCanvas.ctx, messages[_this.subMenus.boss.currIndex], 'white');
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "launchBossRewardFPSelection", function () {
-      _this.subMenus.boss.inFPSelection = true;
-      _this.addSubMenu('rewardFP', new ListMenu([7, 3], 8, 10, 1, ['DR', 'NS', 'DS', 'JT', 'NA', 'ME', 'WG', 'VB'], _this.systemAH.fetchImage('miniCursor'), null, 'rewardFP'));
-      _this.subMenus.rewardFP.cursorOffset = 2;
-      _this.subMenus.rewardFP.isVisible = true;
-      _this.subMenus.rewardFP.isActive = true;
-      _this.subMenus.rewardFP.drawMenu();
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawAttackLearned", function (speciesName, floorNumber) {
-      var permAttacks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-      var stage = _this.dgmnUtility.getStage(speciesName);
-      if (stage > 2 && stage === _this.mapUtility.getBossAttackLevel(floorNumber)) {
-        var attackName = _this.attackUtility.getDisplayName(_this.dgmnUtility.getAttack(speciesName));
-        if (permAttacks.indexOf(attackName) === -1) _this.subMenus.boss.learnedAttackTxt.instantText(_this.menuCanvas.ctx, "ATK+ ".concat(attackName), 'white');
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "nextEvolution", function () {
-      console.log("NEXT ICON");
-    });
-    _defineProperty(_assertThisInitialized(_this), "prevEvolution", function () {
-      console.log("PREV ICON");
-    });
-    _defineProperty(_assertThisInitialized(_this), "selectIcon", function () {
-      _this.subMenus.evolution.chooseEvolution(_this.levelUpDgmn[_this.levelUpIndex]);
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
-      for (var key in _this.subMenus) {
-        if (_this.subMenus[key].isVisible) {
-          var _this$subMenus$boss;
-          if ((_this$subMenus$boss = _this.subMenus.boss) !== null && _this$subMenus$boss !== void 0 && _this$subMenus$boss.inFPSelection) {
-            _this.menuCanvas.paintImage(_this.systemAH.fetchImage('bossRewardFieldChoice'), 0, 0);
-          }
-          _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
-        }
-      }
-      _this.parentAH.drawBattleCanvas();
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawDgmnPortrait", function (portraitImg) {
-      _this.menuCanvas.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawTopText", function (message) {
-      _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(0, 0, 20 * config.tileSize, 7 * config.screenSize);
-      _this.topTxt.instantText(_this.menuCanvas.ctx, message, 'white');
-    });
-    _defineProperty(_assertThisInitialized(_this), "updateRewardsList", function (rewards, onDone) {
-      _this.subMenus.rewards.updateRewardsList(rewards, onDone);
-    });
-    _defineProperty(_assertThisInitialized(_this), "navUp", function () {
-      if (_this.currState === 'boss-reward') {
-        if (_this.subMenus.boss.inFPSelection) {
-          _this.subMenus.rewardFP.prevListItem();
-        } else {
-          _this.subMenus.boss.moveUp();
-          _this.drawUpgradeDescription();
-        }
-      }
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "navRight", function () {});
-    _defineProperty(_assertThisInitialized(_this), "navDown", function () {
-      if (_this.currState === 'boss-reward') {
-        if (_this.subMenus.boss.inFPSelection) {
-          _this.subMenus.rewardFP.nextListItem();
-        } else {
-          _this.subMenus.boss.moveDown();
-          _this.drawUpgradeDescription();
-        }
-      }
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "navLeft", function () {});
-    _defineProperty(_assertThisInitialized(_this), "selectBossReward", function () {
-    });
-    _defineProperty(_assertThisInitialized(_this), "getCurrState", function () {
-      return _this.currState;
-    });
-    _defineProperty(_assertThisInitialized(_this), "getCurrMenuType", function () {
-      return 'icon';
-    });
-    _this.currState = '';
-    _this.topTxt = new TextArea(0, 0, 20, 1);
-    _this.actionTxt = new TextArea(4, 14, 16, 4);
-    _this.battleRewards = battleRewards;
-    _this.battleXP = battleXP;
-    _this.currRewardIndex = 0;
-    _this.levelUpIndex = 0;
-    _this.bossRewardIndex = 0;
-    _this.levelUpDgmn = [];
-    _this.isBoss = isBoss;
-    _this.bossRewardsDgmn = [];
-    _this.victoryMenuAH = new VictoryMenuAH({
-      getCurrStateCB: _this.getCurrState,
-      getCurrMenuTypeCB: _this.getCurrMenuType,
-      nextEvolutionCB: _this.nextEvolution,
-      prevEvolutionCB: _this.prevEvolution,
-      navDownCB: _this.navDown,
-      navUpCB: _this.navUp,
-      selectBossRewardCB: _this.selectBossReward
-    });
-    _this.menuUtility = new MenuUtility();
-    _this.dgmnUtility = new DgmnUtility();
-    _this.attackUtility = new AttackUtility();
-    _this.mapUtility = new MapUtility();
-    _this.menuCanvas = new MenuCanvas('victory', 160, 144);
-    _this.descriptionTxt = new TextArea(4, 14, 16, 4);
-    return _this;
-  }
-  return VictoryMenu;
-})(Menu);
 
 var BattleMenu = function (_Menu) {
   _inherits(BattleMenu, _Menu);
@@ -4313,7 +3713,7 @@ var BattleMenu = function (_Menu) {
       return start;
     });
     _defineProperty(_assertThisInitialized(_this), "setCurrentDgmn", function (battleIndex) {
-      _this.menuCanvas.ctx.clearRect(10 * config.tileSize, 2 * config.tileSize, 2 * config.tileSize, 12 * config.tileSize);
+      _this.menuCanvas.ctx.clearRect(10 * CFG.tileSize, 2 * CFG.tileSize, 2 * CFG.tileSize, 12 * CFG.tileSize);
       _this.menuCanvas.paintCurrentCursor(battleIndex, _this.systemAH.fetchImage('cursor'));
       var dgmnData = _this.battleAH.getDgmnDataByIndex(_this.currDgmnIndex, ['speciesName', 'nickname', 'currentHP', 'currentEN', 'currentLevel']);
       dgmnData.portrait = _this.systemAH.fetchImage("".concat(dgmnData.speciesName.toLowerCase(), "Portrait"));
@@ -4334,7 +3734,7 @@ var BattleMenu = function (_Menu) {
     _defineProperty(_assertThisInitialized(_this), "launchTargetSelect", function () {
       _this.buildTargetSelect();
       if (_this.currSubMenu === 'attack') {
-        _this.menuCanvas.ctx.clearRect(32 * config.screenSize, 16 * config.screenSize, 128 * config.screenSize, 96 * config.screenSize);
+        _this.menuCanvas.ctx.clearRect(32 * CFG.screenSize, 16 * CFG.screenSize, 128 * CFG.screenSize, 96 * CFG.screenSize);
       }
       _this.removeSubMenu(_this.currSubMenu);
       _this.currSubMenu = 'target';
@@ -4432,7 +3832,7 @@ var BattleMenu = function (_Menu) {
     });
     _defineProperty(_assertThisInitialized(_this), "beginCombat", function () {
       debugLog("+ BEGIN COMBAT!");
-      _this.menuCanvas.ctx.clearRect(10 * config.tileSize, 2 * config.tileSize, 2 * config.tileSize, 12 * config.tileSize);
+      _this.menuCanvas.ctx.clearRect(10 * CFG.tileSize, 2 * CFG.tileSize, 2 * CFG.tileSize, 12 * CFG.tileSize);
       _this.menuCanvas.clearTopMessage();
       _this.menuCanvas.clearBottomSection();
       _this.removeSubMenu(_this.currSubMenu);
@@ -4490,7 +3890,7 @@ var BattleMenu = function (_Menu) {
       var i = 0;
       var rewardInterval = setInterval(function () {
         var image = rewards[i] === 'XP' ? 'xpIconSmall' : "field".concat(rewards[i], "Icon");
-        _this.menuCanvas.paintImage(_this.systemAH.fetchImage(image), (2 + i) * config.tileSize, 5 * config.tileSize);
+        _this.menuCanvas.paintImage(_this.systemAH.fetchImage(image), (2 + i) * CFG.tileSize, 5 * CFG.tileSize);
         if (i >= rewards.length - 1) {
           clearInterval(rewardInterval);
           setTimeout(function () {
@@ -4597,7 +3997,7 @@ var AttackCanvas = function (_GameCanvas) {
     });
     _defineProperty(_assertThisInitialized(_this), "paintAttackFrame", function (targetIndex, frame) {
       _this.clearCanvas();
-      _this.paintImage(frame, 0, 4 * targetIndex * config.tileSize);
+      _this.paintImage(frame, 0, 4 * targetIndex * CFG.tileSize);
       _this.drawCB();
     });
     _this.drawCB = function () {
@@ -4892,23 +4292,60 @@ var BattleDgmnStatusCanvas = function (_GameCanvas) {
       var yPosition = coord[1] * 8;
       var barHex = meterLength >= 5 ? "#6CA66C" : "#1D5A4A";
       var borderImg = meterLength >= 5 ? images[0] : images[1];
-      _this.ctx.clearRect(xPosition * config.screenSize, yPosition * config.screenSize, 16 * config.screenSize, 8 * config.screenSize);
-      _this.ctx.drawImage(borderImg, xPosition * config.screenSize, yPosition * config.screenSize, 16 * config.screenSize, 8 * config.screenSize);
+      _this.ctx.clearRect(xPosition * CFG.screenSize, yPosition * CFG.screenSize, 16 * CFG.screenSize, 8 * CFG.screenSize);
+      _this.ctx.drawImage(borderImg, xPosition * CFG.screenSize, yPosition * CFG.screenSize, 16 * CFG.screenSize, 8 * CFG.screenSize);
       _this.ctx.fillStyle = barHex;
-      _this.ctx.fillRect((xPosition + 4) * config.screenSize, (yPosition + 2) * config.screenSize, meterLength * config.screenSize, 3 * config.screenSize);
+      _this.ctx.fillRect((xPosition + 4) * CFG.screenSize, (yPosition + 2) * CFG.screenSize, meterLength * CFG.screenSize, 3 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnCombo", function (coord, image) {
-      _this.ctx.clearRect(coord[0] * config.tileSize, coord[1] * config.tileSize, config.tileSize, config.tileSize);
-      _this.ctx.drawImage(image, coord[0] * config.tileSize, coord[1] * config.tileSize, config.tileSize, config.tileSize);
+      _this.ctx.clearRect(coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
+      _this.ctx.drawImage(image, coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnWeak", function (coord, image) {
-      _this.ctx.clearRect(coord[0] * config.tileSize, coord[1] * config.tileSize, config.tileSize, config.tileSize);
-      _this.ctx.drawImage(image, coord[0] * config.tileSize, coord[1] * config.tileSize, config.tileSize, config.tileSize);
+      _this.ctx.clearRect(coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
+      _this.ctx.drawImage(image, coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
     });
     return _this;
   }
   return BattleDgmnStatusCanvas;
 }(GameCanvas);
+
+var RewardsMenu = function (_SubMenu) {
+  _inherits(RewardsMenu, _SubMenu);
+  var _super = _createSuper(RewardsMenu);
+  function RewardsMenu() {
+    var _this;
+    _classCallCheck(this, RewardsMenu);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "drawRewardsList", function (rewards) {
+      _this.menuCanvas.paintImage(_this.fetchImageCB("field".concat(rewards[_this.currIndex], "Icon")), 1 * CFG.tileSize, 2 * CFG.tileSize);
+      for (var i = _this.currIndex + 1; i < rewards.length; i++) {
+        var img = rewards[i] === 'XP' ? 'xpIconSmall' : "field".concat(rewards[i], "Icon");
+        _this.menuCanvas.paintImage(_this.fetchImageCB(img), (2 + (i - _this.currIndex)) * CFG.tileSize, 2 * CFG.tileSize);
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "updateRewardsList", function (rewards, onDoneCB) {
+      _this.menuCanvas.clearCanvas();
+      _this.currIndex++;
+      if (_this.currIndex >= rewards.length) {
+        _this.redrawParentCB();
+        onDoneCB();
+      } else {
+        _this.drawRewardsList(rewards);
+        _this.redrawParentCB();
+      }
+    });
+    _this.fetchImageCB;
+    _this.redrawParentCB;
+    _this.currIndex = 0;
+    _this.menuCanvas = new GameCanvas('rewards-menu', 160, 144);
+    return _this;
+  }
+  return RewardsMenu;
+}(SubMenu);
 
 var DgmnGrowthMenuAH = function DgmnGrowthMenuAH(cbObj) {
   _classCallCheck(this, DgmnGrowthMenuAH);
@@ -4930,154 +4367,40 @@ var DgmnGrowthMenuAH = function DgmnGrowthMenuAH(cbObj) {
   this.selectEvo = function () {
     cbObj.selectEvoCB();
   };
+  this.confirmLevelUp = function () {
+    cbObj.confirmLevelUpCB();
+  };
 };
 
-var HatchingEggMenu = function (_IconMenu) {
-  _inherits(HatchingEggMenu, _IconMenu);
-  var _super = _createSuper(HatchingEggMenu);
-  function HatchingEggMenu() {
+var MenuCanvas = function (_GameCanvas) {
+  _inherits(MenuCanvas, _GameCanvas);
+  var _super = _createSuper(MenuCanvas);
+  function MenuCanvas() {
     var _this;
-    _classCallCheck(this, HatchingEggMenu);
+    _classCallCheck(this, MenuCanvas);
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
     _this = _super.call.apply(_super, [this].concat(args));
-    _defineProperty(_assertThisInitialized(_this), "buildHatchingScreen", function (eggData, redrawCB) {
-      debugLog("Hatching DGMN...");
-      _this.eggData = eggData;
-      _this.hatches = _this.dgmnUtility.getEggHatches(eggData.eggField);
-      _this.selectedDgmn = _this.hatches[0];
-      _this.redrawCB = redrawCB;
-      debugLog("  - Hatch Options : ", _this.hatches);
-      _this.drawHatchScreen();
-      _this.redrawParentCB();
+    _defineProperty(_assertThisInitialized(_this), "clearTopMessage", function () {
+      _this.ctx.clearRect(0, 8 * CFG.screenSize, 160 * CFG.screenSize, 8 * CFG.screenSize);
     });
-    _defineProperty(_assertThisInitialized(_this), "drawHatchScreen", function () {
-      _this.drawDgmnCanvas(_this.hatches[_this.currSelection], _this.redrawCB);
-      _this.drawDgmnStats(_this.dgmnUtility.buildInitialStats(_this.hatches[_this.currSelection]));
-      _this.drawDgmnInfo(_this.hatches[_this.currSelection]);
-      _this.drawHatchRequirements(_this.hatches[_this.currSelection]);
-      _this.drawIcons(_this.eggData.currentFP, _this.hatches, _this.currSelection);
+    _defineProperty(_assertThisInitialized(_this), "clearBottomSection", function () {
+      _this.ctx.fillStyle = "#00131A";
+      _this.ctx.fillRect(0, 14 * CFG.tileSize, 20 * CFG.tileSize, 4 * CFG.tileSize);
     });
-    _defineProperty(_assertThisInitialized(_this), "drawDgmnInfo", function (species) {
-      _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(0 * config.tileSize, 14 * config.tileSize, 20 * config.tileSize, 4 * config.tileSize);
-      _this.drawEvoPortrait(_this.fetchImageCB("".concat(species.toLowerCase(), "Portrait")));
-      _this.evoNameTxt.instantText(_this.menuCanvas.ctx, "".concat(species, ".MON"), 'white');
-      _this.evoAttributeTxt.instantText(_this.menuCanvas.ctx, _this.dgmnUtility.getAttribute(species), 'green');
-      _this.evoWeakTxt.instantText(_this.menuCanvas.ctx, 'WEAK', 'green');
-      _this.evoResTxt.instantText(_this.menuCanvas.ctx, 'RES', 'green');
-      for (var field in _this.dgmnUtility.getBaseFP(species)) {
-        _this.menuCanvas.paintImage(_this.fetchImageCB("field".concat(field, "Icon")), (5 + _this.dgmnUtility.getAttribute(species).length) * config.tileSize, 15 * config.tileSize);
-      }
+    _defineProperty(_assertThisInitialized(_this), "setTopMessage", function (message) {
+      _this.clearTopMessage();
+      _this.topTxt.instantText(_this.ctx, message, 'white');
     });
-    _defineProperty(_assertThisInitialized(_this), "drawEvoPortrait", function (portraitImg) {
-      _this.menuCanvas.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * config.screenSize, 32 * config.screenSize, (32 - 1) * config.screenSize);
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnPortrait", function (portraitImg) {
+      _this.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * CFG.screenSize, 32 * CFG.screenSize, (32 - 1) * CFG.screenSize);
     });
-    _defineProperty(_assertThisInitialized(_this), "drawDgmnStats", function (stats) {
-      _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(16 * config.tileSize, 3 * config.tileSize, 3 * config.tileSize, 8 * config.tileSize);
-      for (var stat in stats) {
-        _this.statTxtAreas[stat].instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(stats[stat], 3), 'white');
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawHatchRequirements", function (species) {
-      _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(1 * config.tileSize, 11 * config.tileSize, 10 * config.tileSize, 1 * config.tileSize);
-      var fpReqs = _this.dgmnUtility.getHatchFP(species);
-      var i = 0;
-      for (var req in fpReqs) {
-        var color = _this.eggData.currentFP[req] >= fpReqs[req] ? 'white' : 'darkGreen';
-        var img = _this.fetchImageCB("field".concat(req, "Icon"));
-        _this.menuCanvas.paintImage(img, (1 + i * 5) * config.tileSize, 11 * config.tileSize);
-        _this.hatchReqsTxt[i].instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(fpReqs[req], 3), color);
-        i++;
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawDgmnCanvas", function (species, redrawCB) {
-      var coord = [4, 5];
-      _this.hatchCanvas = new DgmnCanvas(function () {
-        _this.redrawDgmn(_this.hatchCanvas, coord, redrawCB);
-      }, species, 'dgmn-canvas', 32, 32);
-      _this.hatchCanvas.x = coord[0] * config.tileSize;
-      _this.hatchCanvas.y = coord[1] * config.tileSize;
-      _this.hatchCanvas.frames = [_this.fetchImageCB("".concat(species.toLowerCase(), "Idle0")), _this.fetchImageCB("".concat(species.toLowerCase(), "Idle1"))];
-      _this.hatchCanvas.animate(500);
-    });
-    _defineProperty(_assertThisInitialized(_this), "redrawDgmn", function (canvas, coord, redrawCB) {
-      _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(coord[0] * config.tileSize, coord[1] * config.tileSize, 32 * config.screenSize, 32 * config.screenSize);
-      _this.menuCanvas.paintCanvas(canvas);
-      redrawCB();
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawIcons", function (dgmnFP, hatchList, selected) {
-      var possibleHatches = [];
-      var iconsOffset = [1 * config.tileSize, 13 * config.tileSize];
-      _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(iconsOffset[0], iconsOffset[1], 11 * config.tileSize, 7 * config.screenSize);
-      for (var i = 0; i < hatchList.length; i++) {
-        var img = void 0;
-        if (_this.dgmnUtility.canHatchInto(dgmnFP, hatchList[i])) {
-          possibleHatches.push(hatchList[i]);
-          img = _this.fetchImageCB('evoIconPositive');
-        } else {
-          img = _this.fetchImageCB('evoIconNegative');
-        }
-        _this.menuCanvas.paintImage(img, iconsOffset[0] + i * config.tileSize, iconsOffset[1]);
-      }
-      _this.menuCanvas.ctx.fillStyle = _this.dgmnUtility.canHatchInto(dgmnFP, hatchList[selected]) ? "#C4CFA1" : "#1D5A4A";
-      _this.menuCanvas.ctx.fillRect(iconsOffset[0] + selected * config.tileSize + 3, iconsOffset[1] + 3, 5 * config.screenSize, 4 * config.screenSize);
-    });
-    _defineProperty(_assertThisInitialized(_this), "canHatch", function () {
-      return _this.dgmnUtility.canHatchInto(_this.eggData.currentFP, _this.hatches[_this.currSelection]);
-    });
-    _defineProperty(_assertThisInitialized(_this), "nextHatch", function () {
-      if (_this.currSelection < _this.hatches.length - 1) {
-        _this.currSelection++;
-        _this.selectedDgmn = _this.hatches[_this.currSelection];
-        _this.drawIcons(_this.eggData, _this.hatches, _this.currSelection);
-        _this.drawHatchScreen();
-        _this.redrawParentCB();
-      }
-    });
-    _defineProperty(_assertThisInitialized(_this), "prevHatch", function () {
-      if (_this.currSelection > 0) {
-        _this.currSelection--;
-        _this.selectedDgmn = _this.hatches[_this.currSelection];
-        _this.drawIcons(_this.eggData, _this.hatches, _this.currSelection);
-        _this.drawHatchScreen();
-        _this.redrawParentCB();
-      }
-    });
-    _this.currSelection = 0;
-    _this.selectedDgmn = '';
-    _this.hatches;
-    _this.eggData;
-    _this.redrawCB;
-    _this.menuCanvas = new GameCanvas("".concat(_this.label, "-menu"), 160, 144);
-    _this.menuCanvas.x = 0;
-    _this.menuCanvas.y = 0;
-    _this.hatchCanvas;
-    _this.statTxtAreas = {
-      HP: new TextArea(16, 3, 3, 1, _this.baseXPTxtColorize),
-      ATK: new TextArea(16, 4, 3, 1, _this.baseXPTxtColorize),
-      DEF: new TextArea(16, 5, 3, 1, _this.baseXPTxtColorize),
-      INT: new TextArea(16, 6, 3, 1, _this.baseXPTxtColorize),
-      RES: new TextArea(16, 7, 3, 1, _this.baseXPTxtColorize),
-      HIT: new TextArea(16, 8, 3, 1, _this.baseXPTxtColorize),
-      AVO: new TextArea(16, 9, 3, 1, _this.baseXPTxtColorize),
-      SPD: new TextArea(16, 10, 3, 1, _this.baseXPTxtColorize)
-    };
-    _this.hatchReqsTxt = [new TextArea(2, 11, 3, 1, _this.baseXPTxtColorize), new TextArea(7, 11, 3, 1, _this.baseXPTxtColorize)];
-    _this.evoNameTxt = new TextArea(4, 14, 12, 1, _this.baseXPTxtColorize);
-    _this.evoAttributeTxt = new TextArea(4, 15, 7, 1, _this.baseXPTxtColorize);
-    _this.evoWeakTxt = new TextArea(4, 16, 4, 1, _this.baseXPTxtColorize);
-    _this.evoResTxt = new TextArea(12, 16, 3, 1, _this.baseXPTxtColorize);
-    _this.dgmnUtility = new DgmnUtility();
+    _this.topTxt = new TextArea(0, 1, 20);
     return _this;
   }
-  return HatchingEggMenu;
-}(IconMenu);
+  return MenuCanvas;
+}(GameCanvas);
 
 var EvoMenu = function (_IconMenu) {
   _inherits(EvoMenu, _IconMenu);
@@ -5100,7 +4423,7 @@ var EvoMenu = function (_IconMenu) {
     _defineProperty(_assertThisInitialized(_this), "buildEvoScreen", function (dgmnData) {
       debugLog("Evolving DGMN...");
       _this.dgmnData = dgmnData;
-      _this.choices = _this.dgmnUtility.getEvolutions(dgmnData.species);
+      _this.choices = _this.dgmnUtility.getEvolutions(dgmnData.speciesName);
       debugLog("  - Evo Options : ", _this.choices);
       _this.selectedDgmn = _this.choices[0];
       _this.drawEvoScreen();
@@ -5114,7 +4437,7 @@ var EvoMenu = function (_IconMenu) {
       _this.redrawParentCB();
     });
     _defineProperty(_assertThisInitialized(_this), "drawEvoScreen", function () {
-      _this.drawDgmnCanvas(_this.dgmnData.species, [1, 4]);
+      _this.drawDgmnCanvas(_this.dgmnData.speciesName, [1, 4]);
       _this.drawDgmnCanvas(_this.choices[_this.currChoice], [8, 4]);
       _this.drawEvoRequirements('evo', _this.choices[_this.currChoice]);
       _this.drawEvoStats(_this.dgmnUtility.getAllBaseStats(_this.choices[_this.currChoice]));
@@ -5124,18 +4447,18 @@ var EvoMenu = function (_IconMenu) {
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnCanvas", function (species, coord) {
       _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(coord[0] * config.tileSize, coord[1] * config.tileSize, 4 * config.tileSize, 4 * config.tileSize);
-      _this.menuCanvas.paintImage(_this.fetchImageCB("".concat(species.toLowerCase(), "Idle0")), coord[0] * config.tileSize, coord[1] * config.tileSize);
+      _this.menuCanvas.ctx.fillRect(coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, 4 * CFG.tileSize, 4 * CFG.tileSize);
+      _this.menuCanvas.paintImage(_this.fetchImageCB("".concat(species.toLowerCase(), "Idle0")), coord[0] * CFG.tileSize, coord[1] * CFG.tileSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawEvoRequirements", function (origin, species) {
       _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(1 * config.tileSize, 10 * config.tileSize, 11 * config.tileSize, 2 * config.tileSize);
+      _this.menuCanvas.ctx.fillRect(1 * CFG.tileSize, 10 * CFG.tileSize, 11 * CFG.tileSize, 2 * CFG.tileSize);
       var fpReqs = origin === 'hatch' ? _this.dgmnUtility.getHatchFP(species) : _this.dgmnUtility.getEvoFP(species);
       var i = 0;
       for (var req in fpReqs) {
         var color = _this.dgmnData.currentFP[req] >= fpReqs[req] ? 'white' : 'darkGreen';
         var img = _this.fetchImageCB("field".concat(req, "Icon"));
-        _this.menuCanvas.paintImage(img, (1 + i * 5) * config.tileSize, 10 * config.tileSize);
+        _this.menuCanvas.paintImage(img, (1 + i * 5) * CFG.tileSize, 10 * CFG.tileSize);
         _this.evoReqsTxt[i].instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(fpReqs[req], 3), color);
         i++;
       }
@@ -5143,9 +4466,9 @@ var EvoMenu = function (_IconMenu) {
     _defineProperty(_assertThisInitialized(_this), "drawEvoChoiceIcons", function () {
       var dgmnFP = _this.dgmnData.currentFP;
       var possibleHatches = [];
-      var iconsOffset = [1 * config.tileSize, 13 * config.tileSize];
+      var iconsOffset = [1 * CFG.tileSize, 13 * CFG.tileSize];
       _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(iconsOffset[0], iconsOffset[1], 11 * config.tileSize, 7 * config.screenSize);
+      _this.menuCanvas.ctx.fillRect(iconsOffset[0], iconsOffset[1], 11 * CFG.tileSize, 7 * CFG.screenSize);
       for (var i = 0; i < _this.choices.length; i++) {
         var img = void 0;
         if (_this.dgmnUtility.canHatchInto(dgmnFP, _this.choices[i])) {
@@ -5154,21 +4477,21 @@ var EvoMenu = function (_IconMenu) {
         } else {
           img = _this.fetchImageCB('evoIconNegative');
         }
-        _this.menuCanvas.paintImage(img, iconsOffset[0] + i * config.tileSize, iconsOffset[1]);
+        _this.menuCanvas.paintImage(img, iconsOffset[0] + i * CFG.tileSize, iconsOffset[1]);
       }
       _this.menuCanvas.ctx.fillStyle = _this.dgmnUtility.canHatchInto(dgmnFP, _this.choices[_this.currChoice]) ? "#C4CFA1" : "#1D5A4A";
-      _this.menuCanvas.ctx.fillRect(iconsOffset[0] + _this.currChoice * config.tileSize + 3, iconsOffset[1] + 3, 5 * config.screenSize, 4 * config.screenSize);
+      _this.menuCanvas.ctx.fillRect(iconsOffset[0] + _this.currChoice * CFG.tileSize + 3, iconsOffset[1] + 3, 5 * CFG.screenSize, 4 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawHatchStats", function (stats) {
       _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(16 * config.tileSize, 2 * config.tileSize, 3 * config.tileSize, 8 * config.tileSize);
+      _this.menuCanvas.ctx.fillRect(16 * CFG.tileSize, 2 * CFG.tileSize, 3 * CFG.tileSize, 8 * CFG.tileSize);
       for (var stat in stats) {
         _this.hatchStatTxtAreas[stat].instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(stats[stat], 3), 'white');
       }
     });
     _defineProperty(_assertThisInitialized(_this), "drawEvoStats", function (stats) {
       _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(17 * config.tileSize, 2 * config.tileSize, 2 * config.tileSize, 8 * config.tileSize);
+      _this.menuCanvas.ctx.fillRect(17 * CFG.tileSize, 2 * CFG.tileSize, 2 * CFG.tileSize, 8 * CFG.tileSize);
       for (var stat in stats) {
         _this.evoStatTxtAreas[stat].instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(stats[stat], 2), 'white');
       }
@@ -5181,7 +4504,7 @@ var EvoMenu = function (_IconMenu) {
       _this.evoWeakTxt.instantText(_this.menuCanvas.ctx, 'WEAK', 'green');
       _this.evoResTxt.instantText(_this.menuCanvas.ctx, 'RES', 'green');
       for (var field in _this.dgmnUtility.getBaseFP(species)) {
-        _this.menuCanvas.paintImage(_this.fetchImageCB("field".concat(field, "Icon")), (5 + _this.dgmnUtility.getAttribute(species).length) * config.tileSize, 15 * config.tileSize);
+        _this.menuCanvas.paintImage(_this.fetchImageCB("field".concat(field, "Icon")), (5 + _this.dgmnUtility.getAttribute(species).length) * CFG.tileSize, 15 * CFG.tileSize);
       }
     });
     _defineProperty(_assertThisInitialized(_this), "canHatch", function () {
@@ -5209,36 +4532,98 @@ var EvoMenu = function (_IconMenu) {
     _this.menuCanvas = new MenuCanvas("".concat(_this.label, "-menu"), 160, 144);
     _this.menuCanvas.x = 0;
     _this.menuCanvas.y = 0;
-    _this.evoNameTxt = new TextArea(4, 14, 12, 1, _this.baseXPTxtColorize);
-    _this.evoAttributeTxt = new TextArea(4, 15, 7, 1, _this.baseXPTxtColorize);
-    _this.evoWeakTxt = new TextArea(4, 16, 4, 1, _this.baseXPTxtColorize);
-    _this.evoResTxt = new TextArea(12, 16, 3, 1, _this.baseXPTxtColorize);
-    _this.evoReqsTxt = [new TextArea(2, 10, 3, 1, _this.baseXPTxtColorize), new TextArea(7, 10, 3, 1, _this.baseXPTxtColorize)];
+    _this.evoNameTxt = new TextArea(4, 14, 12, 1);
+    _this.evoAttributeTxt = new TextArea(4, 15, 7, 1);
+    _this.evoWeakTxt = new TextArea(4, 16, 4, 1);
+    _this.evoResTxt = new TextArea(12, 16, 3, 1);
+    _this.evoReqsTxt = [new TextArea(2, 10, 3, 1, _this.menuUtility.dimLeadingZeros), new TextArea(7, 10, 3, 1, _this.menuUtility.dimLeadingZeros)];
     _this.hatchStatTxtAreas = {
-      HP: new TextArea(16, 2, 3, 1, _this.baseXPTxtColorize),
-      ATK: new TextArea(16, 3, 3, 1, _this.baseXPTxtColorize),
-      DEF: new TextArea(16, 4, 3, 1, _this.baseXPTxtColorize),
-      INT: new TextArea(16, 5, 3, 1, _this.baseXPTxtColorize),
-      RES: new TextArea(16, 6, 3, 1, _this.baseXPTxtColorize),
-      HIT: new TextArea(16, 7, 3, 1, _this.baseXPTxtColorize),
-      AVO: new TextArea(16, 8, 3, 1, _this.baseXPTxtColorize),
-      SPD: new TextArea(16, 9, 3, 1, _this.baseXPTxtColorize)
+      HP: new TextArea(16, 2, 3, 1, _this.menuUtility.dimLeadingZeros),
+      ATK: new TextArea(16, 3, 3, 1, _this.menuUtility.dimLeadingZeros),
+      DEF: new TextArea(16, 4, 3, 1, _this.menuUtility.dimLeadingZeros),
+      INT: new TextArea(16, 5, 3, 1, _this.menuUtility.dimLeadingZeros),
+      RES: new TextArea(16, 6, 3, 1, _this.menuUtility.dimLeadingZeros),
+      HIT: new TextArea(16, 7, 3, 1, _this.menuUtility.dimLeadingZeros),
+      AVO: new TextArea(16, 8, 3, 1, _this.menuUtility.dimLeadingZeros),
+      SPD: new TextArea(16, 9, 3, 1, _this.menuUtility.dimLeadingZeros)
     };
     _this.evoStatTxtAreas = {
-      HP: new TextArea(17, 2, 3, 1, _this.baseXPTxtColorize),
-      ATK: new TextArea(17, 3, 3, 1, _this.baseXPTxtColorize),
-      DEF: new TextArea(17, 4, 3, 1, _this.baseXPTxtColorize),
-      INT: new TextArea(17, 5, 3, 1, _this.baseXPTxtColorize),
-      RES: new TextArea(17, 6, 3, 1, _this.baseXPTxtColorize),
-      HIT: new TextArea(17, 7, 3, 1, _this.baseXPTxtColorize),
-      AVO: new TextArea(17, 8, 3, 1, _this.baseXPTxtColorize),
-      SPD: new TextArea(17, 9, 3, 1, _this.baseXPTxtColorize)
+      HP: new TextArea(17, 2, 3, 1, _this.menuUtility.dimLeadingZeros),
+      ATK: new TextArea(17, 3, 3, 1, _this.menuUtility.dimLeadingZeros),
+      DEF: new TextArea(17, 4, 3, 1, _this.menuUtility.dimLeadingZeros),
+      INT: new TextArea(17, 5, 3, 1, _this.menuUtility.dimLeadingZeros),
+      RES: new TextArea(17, 6, 3, 1, _this.menuUtility.dimLeadingZeros),
+      HIT: new TextArea(17, 7, 3, 1, _this.menuUtility.dimLeadingZeros),
+      AVO: new TextArea(17, 8, 3, 1, _this.menuUtility.dimLeadingZeros),
+      SPD: new TextArea(17, 9, 3, 1, _this.menuUtility.dimLeadingZeros)
     };
     _this.dgmnUtility = new DgmnUtility();
     return _this;
   }
   return EvoMenu;
 }(IconMenu);
+
+var LevelUpMenu = function (_SubMenu) {
+  _inherits(LevelUpMenu, _SubMenu);
+  var _super = _createSuper(LevelUpMenu);
+  function LevelUpMenu() {
+    var _this;
+    _classCallCheck(this, LevelUpMenu);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "buildLevelUpScreen", function (dgmnData) {
+      for (var stat in dgmnData.currentStats) {
+        var growth = _this.dgmnUtility.getBaseStat(dgmnData.speciesName, stat);
+        _this.statTxtAreas[stat].original.instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(dgmnData.currentStats[stat], 3), 'white');
+        _this.statTxtAreas[stat].plus.instantText(_this.menuCanvas.ctx, _this.menuUtility.prependZeros(growth, 2), 'green');
+      }
+      _this.levelUpTxt.instantText(_this.menuCanvas.ctx, "LV ".concat(_this.menuUtility.prependZeros(dgmnData.currentLevel + 1, 3)), 'white');
+      _this.menuCanvas.paintImage(_this.fetchImageCB("".concat(dgmnData.speciesName.toLowerCase(), "Idle0")), 3 * CFG.tileSize, 8 * CFG.tileSize);
+    });
+    _this.menuCanvas = new GameCanvas('level-up', 160, 144);
+    _this.dgmnUtility = new DgmnUtility();
+    _this.dgmnCanvas;
+    _this.levelUpTxt = new TextArea(2, 5, 6, 1);
+    _this.statTxtAreas = {
+      HP: {
+        original: new TextArea(13, 3, 3, 1, _this.menuUtility.dimLeadingZeros),
+        plus: new TextArea(17, 3, 2, 1, _this.menuUtility.dimLeadingZeros)
+      },
+      ATK: {
+        original: new TextArea(13, 4, 3, 1, _this.menuUtility.dimLeadingZeros),
+        plus: new TextArea(17, 4, 2, 1, _this.menuUtility.dimLeadingZeros)
+      },
+      DEF: {
+        original: new TextArea(13, 5, 3, 1, _this.menuUtility.dimLeadingZeros),
+        plus: new TextArea(17, 5, 2, 1, _this.menuUtility.dimLeadingZeros)
+      },
+      INT: {
+        original: new TextArea(13, 6, 3, 1, _this.menuUtility.dimLeadingZeros),
+        plus: new TextArea(17, 6, 2, 1, _this.menuUtility.dimLeadingZeros)
+      },
+      RES: {
+        original: new TextArea(13, 7, 3, 1, _this.menuUtility.dimLeadingZeros),
+        plus: new TextArea(17, 7, 2, 1, _this.menuUtility.dimLeadingZeros)
+      },
+      HIT: {
+        original: new TextArea(13, 8, 3, 1, _this.menuUtility.dimLeadingZeros),
+        plus: new TextArea(17, 8, 2, 1, _this.menuUtility.dimLeadingZeros)
+      },
+      AVO: {
+        original: new TextArea(13, 9, 3, 1, _this.menuUtility.dimLeadingZeros),
+        plus: new TextArea(17, 9, 2, 1, _this.menuUtility.dimLeadingZeros)
+      },
+      SPD: {
+        original: new TextArea(13, 10, 3, 1, _this.menuUtility.dimLeadingZeros),
+        plus: new TextArea(17, 10, 2, 1, _this.menuUtility.dimLeadingZeros)
+      }
+    };
+    return _this;
+  }
+  return LevelUpMenu;
+}(SubMenu);
 
 var DgmnGrowthMenu = function (_Menu) {
   _inherits(DgmnGrowthMenu, _Menu);
@@ -5320,17 +4705,20 @@ var DgmnGrowthMenu = function (_Menu) {
       _this.origin === 'hatch' ? _this.parentAH.drawDungeon() : _this.parentAH.drawBattleCanvas();
     });
     _defineProperty(_assertThisInitialized(_this), "drawEggs", function () {
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggDR'), 2 * config.tileSize, 8 * config.tileSize);
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggJT'), 8 * config.tileSize, 8 * config.tileSize);
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggME'), 14 * config.tileSize, 8 * config.tileSize);
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggDR'), 2 * CFG.tileSize, 8 * CFG.tileSize);
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggJT'), 8 * CFG.tileSize, 8 * CFG.tileSize);
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggME'), 14 * CFG.tileSize, 8 * CFG.tileSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmn", function () {
+      var i = 0;
       var _iterator = _createForOfIteratorHelper(_this.dgmnAH.getDgmnParty()),
           _step;
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var dgmn = _step.value;
-          console.log("DGMN ? ", dgmn);
+          var species = _this.dgmnAH.getDgmnData(dgmn, ['speciesName']).speciesName;
+          _this.menuCanvas.paintImage(_this.systemAH.fetchImage("".concat(species.toLowerCase(), "Idle0")), (2 + i * 6) * CFG.tileSize, 8 * CFG.tileSize);
+          i++;
         }
       } catch (err) {
         _iterator.e(err);
@@ -5341,10 +4729,11 @@ var DgmnGrowthMenu = function (_Menu) {
     _defineProperty(_assertThisInitialized(_this), "updateRewardsList", function () {
       var currDgmnData = _this.getCurrDgmnData();
       var nextImages = _this.origin === 'hatch' ? _this.dgmnUtility.getAllHatchImages(currDgmnData.eggField) : [];
+      _this.drawBackground('battleVictoryRewardsOverlay');
+      _this.origin === 'hatch' ? _this.drawEggs() : _this.drawDgmn();
       _this.subMenus.rewards.updateRewardsList(_this.rewards, function () {
         if (nextImages.length === 0) {
-          _this.removeSubMenu('rewards');
-          _this.gotoLevelUp(currDgmnData);
+          _this.gotoNextScreen();
           return;
         } else {
           _this.systemAH.loadImages(nextImages, function () {
@@ -5362,21 +4751,56 @@ var DgmnGrowthMenu = function (_Menu) {
         right: dgmnParty[2]
       };
       var dgmnId = dirMap[dir];
-      _this.dgmnAH.giveDgmnReward(dgmnId, 'DR');
+      _this.dgmnAH.giveDgmnReward(dgmnId, _this.rewards[_this.subMenus.rewards.currIndex]);
       _this.updateRewardsList();
     });
-    _defineProperty(_assertThisInitialized(_this), "wrapUpHatch", function () {
-      var canEvolve = _this.dgmnUtility.canEvolveIntoAny(_this.dgmnAH.getDgmnData(_this.dgmnAH.getDgmnParty()[_this.currDgmnIndex], ['currentFP']).currentFP,
-      _this.subMenus.hatch.choices[_this.subMenus.hatch.currChoice]);
-      var direction = canEvolve ? 'evolve' : 'hatch';
+    _defineProperty(_assertThisInitialized(_this), "wrapUpRewards", function () {
+      _this.removeSubMenu('rewards');
+      var currDgmnData = _this.getCurrDgmnData();
+      var canLevelUp = _this.dgmnAH.checkLevelUp(_this.dgmnAH.getDgmnParty()[_this.currDgmnIndex]);
+      if (canLevelUp) {
+        _this.gotoLevelUp(currDgmnData);
+      } else {
+        _this.wrapUpLevelUp();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "wrapUpLevelUp", function () {
+      _this.removeSubMenu('level');
+      var currDgmnData = _this.getCurrDgmnData();
+      var canEvolve = _this.dgmnUtility.canEvolveIntoAny(currDgmnData.currentFP, currDgmnData.speciesName);
+      var direction = canEvolve ? 'evolve' : 'level';
       if (!canEvolve) _this.currDgmnIndex++;
       if (_this.currDgmnIndex > 2) {
         _this.parentAH.closeGrowthMenu();
       } else {
-        var currDgmnData = _objectSpread2(_objectSpread2({}, _this.getCurrDgmnData()), {}, {
-          species: _this.subMenus.hatch.choices[_this.subMenus.hatch.currChoice]
-        });
-        var nextImages = direction === 'hatch' ? _this.dgmnUtility.getAllHatchImages(currDgmnData.eggField) : _this.dgmnUtility.getAllEvoImages(currDgmnData.species);
+        if (direction === 'level') {
+          var nextDgmnData = _this.getCurrDgmnData();
+          var canLevelUp = _this.dgmnAH.checkLevelUp(_this.dgmnAH.getDgmnParty()[_this.currDgmnIndex]);
+          if (canLevelUp) {
+            _this.gotoLevelUp(nextDgmnData);
+          } else {
+            _this.wrapUpLevelUp();
+          }
+        } else {
+          var evoImages = _this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
+          _this.systemAH.loadImages(evoImages, function () {
+            _this.gotoEvolution(currDgmnData);
+          });
+        }
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "wrapUpHatch", function () {
+      var currDgmnData = _this.getCurrDgmnData();
+      var canEvolve = _this.dgmnUtility.canEvolveIntoAny(currDgmnData.currentFP, currDgmnData.speciesName);
+      var direction = canEvolve ? 'evolve' : 'hatch';
+      if (!canEvolve) {
+        _this.currDgmnIndex++;
+        currDgmnData = _this.currDgmnIndex <= 2 ? _this.getCurrDgmnData() : currDgmnData;
+      }
+      if (_this.currDgmnIndex > 2) {
+        _this.parentAH.closeGrowthMenu();
+      } else {
+        var nextImages = direction === 'hatch' ? _this.dgmnUtility.getAllHatchImages(currDgmnData.eggField) : _this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
         _this.systemAH.loadImages(nextImages, function () {
           if (direction === 'evolve') {
             _this.removeSubMenu('hatch');
@@ -5391,13 +4815,17 @@ var DgmnGrowthMenu = function (_Menu) {
     _defineProperty(_assertThisInitialized(_this), "wrapUpEvolution", function () {
       _this.currDgmnIndex++;
       if (_this.currDgmnIndex > 2) {
-        console.log("CLOSE HATCH");
+        _this.parentAH.closeGrowthMenu();
       } else {
         var currDgmnData = _this.getCurrDgmnData();
         var nextImages = _this.dgmnUtility.getAllHatchImages(currDgmnData.eggField);
         _this.systemAH.loadImages(nextImages, function () {
           _this.removeSubMenu('evolve');
-          _this.gotoHatch(currDgmnData);
+          if (_this.origin === 'hatch') _this.gotoHatch(currDgmnData);
+          if (_this.origin === 'victory') {
+            _this.currDgmnIndex--;
+            _this.wrapUpLevelUp();
+          }
         });
       }
     });
@@ -5408,11 +4836,19 @@ var DgmnGrowthMenu = function (_Menu) {
         } else if (_this.subMenus.evolve) {
           _this.wrapUpEvolution();
         }
-      } else if (_this.origin === 'victory') ;
+      } else if (_this.origin === 'victory') {
+        if (_this.subMenus.rewards) {
+          _this.wrapUpRewards();
+        } else if (_this.subMenus.level) {
+          _this.wrapUpLevelUp();
+        } else if (_this.subMenus.evolve) {
+          _this.wrapUpEvolution();
+        }
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "getCurrDgmnData", function () {
       var currDgmn = _this.dgmnAH.getDgmnParty()[_this.currDgmnIndex];
-      var currDgmnData = _this.dgmnAH.getDgmnData(currDgmn, ['eggField', 'currentFP', 'nickname', 'speciesName', 'currentStats'], false);
+      var currDgmnData = _this.dgmnAH.getDgmnData(currDgmn, ['eggField', 'currentFP', 'nickname', 'speciesName', 'currentStats', 'currentLevel', 'currentXP'], false);
       currDgmnData.dgmnId = currDgmn;
       return currDgmnData;
     });
@@ -5448,6 +4884,9 @@ var DgmnGrowthMenu = function (_Menu) {
       _this.evolveIntoDgmn();
       _this.gotoNextScreen();
     });
+    _defineProperty(_assertThisInitialized(_this), "confirmLevelUp", function () {
+      _this.gotoNextScreen();
+    });
     _this.origin = origin;
     _this.currDgmnIndex = 0;
     _this.rewards = [];
@@ -5462,7 +4901,8 @@ var DgmnGrowthMenu = function (_Menu) {
       nextHatchCB: _this.nextHatch,
       prevHatchCB: _this.prevHatch,
       selectHatchCB: _this.selectHatch,
-      selectEvoCB: _this.selectEvo
+      selectEvoCB: _this.selectEvo,
+      confirmLevelUpCB: _this.confirmLevelUp
     });
     return _this;
   }
@@ -5660,6 +5100,7 @@ var Battle = function Battle(isBoss, floorNumber) {
   });
   _defineProperty(this, "battleWin", function () {
     debugLog("BATTLE WON!");
+    _this.giveDgmnBaseXP();
     _this.battleMenu.drawVictoryMessage();
     _this.battleMenu.endBattle(_this.battleRewards, _this.battleBaseXP);
   });
@@ -5685,6 +5126,9 @@ var Battle = function Battle(isBoss, floorNumber) {
       _this.dgmnAH.stopDgmnCanvas(_this.yourParty[i]);
     }
   });
+  _defineProperty(this, "closeGrowthMenu", function () {
+    _this.end();
+  });
   _defineProperty(this, "gotoRewards", function () {
     _this.battleState = 'victory';
     _this.battleMenu.menuCanvas.clearCanvas();
@@ -5693,132 +5137,6 @@ var Battle = function Battle(isBoss, floorNumber) {
     _this.dgmnGrowthMenu = new DgmnGrowthMenu('victory', _this.dgmnAH, _this.systemAH, _this.gameAH, _this.battleAH, 'victory');
     _this.battleIO.setMenuAH(_this.dgmnGrowthMenu.dgmnGrowthMenuAH);
     _this.dgmnGrowthMenu.gotoRewards(_this.battleRewards);
-  });
-  _defineProperty(this, "giveCurrReward", function (dir) {
-    var dgmnId;
-    var reward = _this.battleRewards[_this.victoryMenu.subMenus.rewards.currIndex];
-    if (dir === 'left') {
-      dgmnId = _this.yourParty[0];
-    } else if (dir === 'up') {
-      dgmnId = _this.yourParty[1];
-    } else if (dir === 'right') {
-      dgmnId = _this.yourParty[2];
-    }
-    if (!_this.dgmnAH.getDgmnData(dgmnId, ['isDead'], false).isDead) {
-      _this.dgmnAH.giveDgmnReward(dgmnId, reward);
-      _this.victoryMenu.updateRewardsList(_this.battleRewards, _this.rewardWrapUp);
-    } else {
-      debugLog("Cannot give to them, they died!");
-    }
-  });
-  _defineProperty(this, "rewardWrapUp", function () {
-    _this.stopDgmnBattleCanvas();
-    var levelUps = [];
-    _this.giveDgmnBaseXP();
-    for (var i = 0; i < 3; i++) {
-      if (_this.dgmnAH.checkLevelUp(_this.yourParty[i])) {
-        levelUps.push(_this.yourParty[i]);
-      }
-    }
-    if (levelUps.length > 0) {
-      var dgmnData = [];
-      var _iterator4 = _createForOfIteratorHelper(levelUps),
-          _step4;
-      try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var dgmn = _step4.value;
-          var data = _this.dgmnAH.getDgmnData(dgmn, ['nickname', 'currentStats', 'speciesName', 'currentLevel', 'permAttacks'], false);
-          data.dgmnId = dgmn;
-          dgmnData.push(data);
-        }
-      } catch (err) {
-        _iterator4.e(err);
-      } finally {
-        _iterator4.f();
-      }
-      _this.victoryMenu.setLevelUpList(dgmnData);
-      _this.isBoss ? _this.victoryMenu.gotoBossRewards(_this.dungeonAH.getCurrentFloor()) : _this.victoryMenu.gotoLevelUp();
-    } else if (_this.isBoss) {
-      var _dgmnData = [];
-      var _iterator5 = _createForOfIteratorHelper(_this.yourParty),
-          _step5;
-      try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var _dgmn = _step5.value;
-          var _data = _this.dgmnAH.getDgmnData(_dgmn, ['speciesName', 'upgrades', 'permAttacks'], false);
-          _data.dgmnId = _dgmn;
-          _dgmnData.push(_data);
-        }
-      } catch (err) {
-        _iterator5.e(err);
-      } finally {
-        _iterator5.f();
-      }
-      _this.victoryMenu.bossRewardsDgmn = _dgmnData;
-      _this.victoryMenu.gotoBossRewards(_this.dungeonAH.getCurrentFloor());
-    } else {
-      _this.end();
-    }
-  });
-  _defineProperty(this, "selectBossReward", function () {
-    var upgrades = ['FP', 'XP', 'EN'];
-    var FPList = ['DR', 'NS', 'DS', 'JT', 'NA', 'ME', 'WG', 'VB'];
-    if (_this.victoryMenu.bossRewardIndex === 2 && _this.victoryMenu.levelUpDgmn.length === 0) {
-      _this.end();
-    } else {
-      if (_this.victoryMenu.subMenus.boss.currIndex !== 0 || _this.victoryMenu.subMenus.boss.currIndex === 0 && _this.victoryMenu.subMenus.boss.inFPSelection) {
-        var FP = _this.victoryMenu.subMenus.boss.inFPSelection ? FPList[_this.victoryMenu.subMenus.rewardFP.currIndex] : undefined;
-        _this.dgmnAH.giveUpgrade(_this.yourParty[_this.victoryMenu.bossRewardIndex], upgrades[_this.victoryMenu.subMenus.boss.currIndex], FP);
-        if (_this.victoryMenu.levelUpDgmn.length !== 0) {
-          if (_this.victoryMenu.bossRewardIndex === 0) {
-            _this.victoryMenu.gotoLevelUp();
-          } else {
-            _this.victoryMenu.gotoNextLevelUp();
-          }
-          _this.victoryMenu.bossRewardIndex++;
-        } else {
-          _this.victoryMenu.nextBossReward(_this.dungeonAH.getCurrentFloor());
-        }
-      } else {
-        _this.victoryMenu.launchBossRewardFPSelection();
-      }
-    }
-  });
-  _defineProperty(this, "levelUpNext", function () {
-    var currDgmn = _this.victoryMenu.levelUpDgmn[_this.victoryMenu.levelUpIndex].dgmnId;
-    var currDgmnData = _this.dgmnAH.getDgmnData(currDgmn, ['speciesName', 'currentFP'], false);
-    currDgmnData.dgmnId = currDgmn;
-    if (_this.dgmnUtility.checkEvolution(currDgmnData)) {
-      var evoImages = _this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
-      _this.systemAH.loadImages(evoImages, function () {
-        _this.victoryMenu.gotoEvolution(currDgmnData);
-      });
-    } else if (_this.victoryMenu.levelUpDgmn.length > 1 && _this.victoryMenu.levelUpIndex < _this.victoryMenu.levelUpDgmn.length - 1) {
-      if (_this.isBoss) {
-        _this.victoryMenu.gotoBossRewards(_this.dungeonAH.getCurrentFloor());
-      } else {
-        _this.victoryMenu.removeSubMenu('level');
-        _this.victoryMenu.gotoNextLevelUp();
-      }
-    } else {
-      _this.end();
-    }
-  });
-  _defineProperty(this, "evolveCurrDgmn", function () {
-    var currDgmn = _this.victoryMenu.levelUpDgmn[_this.victoryMenu.levelUpIndex];
-    var evoChoice = _this.victoryMenu.subMenus.evolution.selectedDgmn;
-    _this.dgmnAH.evolve(currDgmn.dgmnId, evoChoice);
-    _this.victoryMenu.selectIcon();
-    if (_this.victoryMenu.levelUpDgmn.length > 1 && _this.victoryMenu.levelUpIndex < _this.victoryMenu.levelUpDgmn.length - 1) {
-      _this.victoryMenu.removeSubMenu('evolution');
-      if (_this.isBoss) {
-        _this.victoryMenu.gotoBossRewards(_this.dungeonAH.getCurrentFloor());
-      } else {
-        _this.victoryMenu.gotoNextLevelUp();
-      }
-    } else {
-      _this.end();
-    }
   });
   _defineProperty(this, "getDgmnValueByIndex", function (isEnemy, dgmnIndex, value) {
     var returnValue;
@@ -5901,10 +5219,7 @@ var Battle = function Battle(isBoss, floorNumber) {
     battleLoseCB: this.battleLose,
     addRewardsCB: this.addRewards,
     gotoRewardsCB: this.gotoRewards,
-    giveCurrRewardCB: this.giveCurrReward,
-    levelUpNextCB: this.levelUpNext,
-    evolveCurrDgmnCB: this.evolveCurrDgmn,
-    selectBossRewardCB: this.selectBossReward
+    closeGrowthMenuCB: this.closeGrowthMenu
   });
   this.battleIO = new BattleIO(this.battleAH);
   this.battleUtility = new BattleUtility();
@@ -5966,14 +5281,14 @@ var FloorCanvas = function (_GameCanvas) {
     _defineProperty(_assertThisInitialized(_this), "drawRoom", function (image, position) {
       var roomX = position[1] * 16 * 8;
       var roomY = position[0] * 16 * 8;
-      _this.paintImage(image, roomX * config.screenSize, roomY * config.screenSize);
+      _this.paintImage(image, roomX * CFG.screenSize, roomY * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawTile", function (image, room, tile) {
       var roomXOffset = room[1] * 16 * 8;
       var roomYOffset = room[0] * 16 * 8;
       var tileXOffset = tile[1] * 16;
       var tileYOffset = tile[0] * 16;
-      _this.paintImage(image, (roomXOffset + tileXOffset) * config.screenSize, (roomYOffset + tileYOffset) * config.screenSize);
+      _this.paintImage(image, (roomXOffset + tileXOffset) * CFG.screenSize, (roomYOffset + tileYOffset) * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "redraw", function () {
       _this.blackFill();
@@ -6185,8 +5500,8 @@ var Floor = function Floor(_floorNumber) {
   });
   _defineProperty(this, "moveInDirection", function (dir) {
     var delta = dir === 'down' || dir === 'right' ? -1 : 1;
-    var moveX = dir === 'down' || dir === 'up' ? null : _this.floorCanvas.x + delta * config.screenSize;
-    var moveY = dir === 'right' || dir === 'left' ? null : _this.floorCanvas.y + delta * config.screenSize;
+    var moveX = dir === 'down' || dir === 'up' ? null : _this.floorCanvas.x + delta * CFG.screenSize;
+    var moveY = dir === 'right' || dir === 'left' ? null : _this.floorCanvas.y + delta * CFG.screenSize;
     _this.moveFloorCanvas(moveX, moveY);
   });
   _defineProperty(this, "checkCurrentTile", function () {
@@ -6329,8 +5644,8 @@ var Floor = function Floor(_floorNumber) {
     }
   });
   _defineProperty(this, "setFloorToStart", function () {
-    var xOffset = 64 * config.screenSize - _this.mapUtility.getTotalOffset(_this.start.room[1], _this.start.tile[1]);
-    var yOffset = 64 * config.screenSize - _this.mapUtility.getTotalOffset(_this.start.room[0], _this.start.tile[0]);
+    var xOffset = 64 * CFG.screenSize - _this.mapUtility.getTotalOffset(_this.start.room[1], _this.start.tile[1]);
+    var yOffset = 64 * CFG.screenSize - _this.mapUtility.getTotalOffset(_this.start.room[0], _this.start.tile[0]);
     _this.moveFloorCanvas(xOffset, yOffset);
     _this.redrawFloor();
   });
@@ -6554,110 +5869,6 @@ var DungeonIO = function (_IO) {
   return DungeonIO;
 }(IO);
 
-var HatchMenuAH = function HatchMenuAH(cbObj) {
-  _classCallCheck(this, HatchMenuAH);
-  this.getState = function () {
-    return cbObj.getStateCB();
-  };
-  this.nextHatch = function () {
-    return cbObj.nextHatchCB();
-  };
-  this.prevHatch = function () {
-    return cbObj.prevHatchCB();
-  };
-};
-
-(function (_Menu) {
-  _inherits(HatchingMenu, _Menu);
-  var _super = _createSuper(HatchingMenu);
-  function HatchingMenu() {
-    var _this;
-    _classCallCheck(this, HatchingMenu);
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-    _this = _super.call.apply(_super, [this].concat(args));
-    _defineProperty(_assertThisInitialized(_this), "gotoRewards", function (rewards) {
-      _this.currState = 'loading';
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('battleVictoryRewardsOverlay'), 0, 0);
-      _this.topTxt.instantText(_this.menuCanvas.ctx, 'Use D Pad to choose', 'white');
-      _this.actionTxt.timedText(_this.menuCanvas.ctx, 'Choose DGMN Egg to get Rewards!', _this.drawMenu);
-      _this.addSubMenu('rewards', new RewardsMenu('rewards'));
-      _this.subMenus.rewards.isVisible = true;
-      _this.subMenus.rewards.isActive = true;
-      _this.attachImageCallbacks('rewards');
-      _this.drawEggs();
-      _this.subMenus.rewards.drawRewardsList(rewards);
-      setTimeout(function () {
-        _this.drawContinueCursor(_this.systemAH.fetchImage('continueCursor'), _this.drawMenu);
-        _this.currState = 'rewards';
-      }, 1500);
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
-      for (var key in _this.subMenus) {
-        if (_this.subMenus[key].isVisible) {
-          _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
-        }
-      }
-      _this.parentAH.drawDungeon();
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawEggs", function () {
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggDR'), 2 * config.tileSize, 8 * config.tileSize);
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggJT'), 8 * config.tileSize, 8 * config.tileSize);
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggME'), 14 * config.tileSize, 8 * config.tileSize);
-    });
-    _defineProperty(_assertThisInitialized(_this), "updateRewardsList", function (rewards, callback) {
-      callback();
-    });
-    _defineProperty(_assertThisInitialized(_this), "gotoHatchEggs", function (eggData) {
-      _this.removeSubMenu('rewards');
-      _this.currState = 'loading';
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('hatchingEggOverlay'), 0, 0);
-      _this.topTxt.instantText(_this.menuCanvas.ctx, 'Choose a DGMN!', 'white');
-      _this.menuCanvas.clearBottomSection();
-      _this.addSubMenu('hatchEgg', new HatchingEggMenu([1, 13], [], 'hatching-egg'));
-      _this.subMenus.hatchEgg.isVisible = true;
-      _this.subMenus.hatchEgg.isActive = true;
-      _this.attachImageCallbacks('hatchEgg');
-      _this.subMenus.hatchEgg.buildHatchingScreen(eggData, _this.parentAH.drawDungeon);
-      setTimeout(function () {
-        _this.drawContinueCursor(_this.systemAH.fetchImage('continueCursor'), _this.drawMenu);
-        _this.currState = 'hatch-choice';
-      }, 500);
-      _this.drawMenu();
-    });
-    _defineProperty(_assertThisInitialized(_this), "nextIcon", function () {
-      _this.subMenus.hatchEgg.nextHatch();
-    });
-    _defineProperty(_assertThisInitialized(_this), "prevIcon", function () {
-      _this.subMenus.hatchEgg.prevHatch();
-    });
-    _defineProperty(_assertThisInitialized(_this), "getState", function () {
-      return _this.currState;
-    });
-    _this.currState = '';
-    _this.hatchingIndex = 0;
-    _this.topTxt = new TextArea(0, 0, 20, 1);
-    _this.subTopTxt = new TextArea(0, 1, 20, 1);
-    _this.actionTxt = new TextArea(2, 15, 16, 2);
-    _this.menuCanvas = new MenuCanvas('hatching', 160, 144);
-    _this.hatchMenuAH = new HatchMenuAH({
-      getStateCB: function getStateCB() {
-        return _this.getState();
-      },
-      nextHatchCB: function nextHatchCB() {
-        return _this.nextIcon();
-      },
-      prevHatchCB: function prevHatchCB() {
-        return _this.prevIcon();
-      }
-    });
-    return _this;
-  }
-  return HatchingMenu;
-})(Menu);
-
 var DungeonTextCanvas = function (_GameCanvas) {
   _inherits(DungeonTextCanvas, _GameCanvas);
   var _super = _createSuper(DungeonTextCanvas);
@@ -6743,7 +5954,7 @@ var ItemsMenu = function (_ListMenu) {
     _defineProperty(_assertThisInitialized(_this), "drawCursor", function (index) {
       var spotIndex = index ? index : _this.currIndex;
       var columnOffset = (spotIndex + 1) % 2 === 0 ? 9 : 0;
-      _this.menuCanvas.paintImage(_this.cursorImg, columnOffset * config.tileSize, Math.floor(spotIndex / 2) % _this.itemAmount * (8 * _this.itemHeight) * config.screenSize);
+      _this.menuCanvas.paintImage(_this.cursorImg, columnOffset * CFG.tileSize, Math.floor(spotIndex / 2) % _this.itemAmount * (8 * _this.itemHeight) * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "upListItem", function () {
       if (_this.currIndex - 2 >= 0) {
@@ -6875,12 +6086,12 @@ var PauseMenu = function (_Menu) {
     });
     _defineProperty(_assertThisInitialized(_this), "drawTopText", function (message) {
       _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(0, 0, 20 * config.tileSize, 7 * config.screenSize);
+      _this.menuCanvas.ctx.fillRect(0, 0, 20 * CFG.tileSize, 7 * CFG.screenSize);
       _this.topTxt.instantText(_this.menuCanvas.ctx, message, 'white');
     });
     _defineProperty(_assertThisInitialized(_this), "drawBottomSection", function (type, data) {
       _this.menuCanvas.ctx.fillStyle = "#00131A";
-      _this.menuCanvas.ctx.fillRect(0, 14 * config.tileSize, 20 * config.tileSize, 4 * config.tileSize);
+      _this.menuCanvas.ctx.fillRect(0, 14 * CFG.tileSize, 20 * CFG.tileSize, 4 * CFG.tileSize);
       if (type === 'item') {
         _this.itemDescriptionTxt.instantText(_this.menuCanvas.ctx, _this.treasureUtility.getItemDescription(data.itemName), 'white');
       } else if (type === 'dgmn') {
@@ -6894,7 +6105,7 @@ var PauseMenu = function (_Menu) {
         dgmnENTxt.instantText(_this.menuCanvas.ctx, ".en" + _this.menuUtility.prependZeros(data.currentEN, 3) + "-100", "white");
         var dgmnLVTxt = new TextArea(16, 14, 4, 1);
         dgmnLVTxt.instantText(_this.menuCanvas.ctx, ".lv" + _this.menuUtility.prependZeros(data.currentLevel, 3), "white");
-        _this.menuCanvas.paintImage(_this.systemAH.fetchImage("".concat(data.speciesName.toLowerCase(), "Portrait")), 0, 14 * config.tileSize);
+        _this.menuCanvas.paintImage(_this.systemAH.fetchImage("".concat(data.speciesName.toLowerCase(), "Portrait")), 0, 14 * CFG.tileSize);
       } else if (type === 'message') {
         _this.itemDescriptionTxt.timedText(_this.menuCanvas.ctx, data.message, _this.drawMenu);
         setTimeout(function () {
@@ -7449,40 +6660,40 @@ var Game = function Game(systemAH) {
     }
   });
   _defineProperty(this, "keyHandler", function (keyState) {
-    if (keyState[config.keyBindings.action]) {
+    if (keyState[CFG.keyBindings.action]) {
       _this.keyManager('action');
     } else {
       _this.keyTimers.action = 0;
     }
-    if (keyState[config.keyBindings.cancel]) {
+    if (keyState[CFG.keyBindings.cancel]) {
       _this.keyManager('cancel');
     } else {
       _this.keyTimers.cancel = 0;
     }
-    if (keyState[config.keyBindings.start]) {
+    if (keyState[CFG.keyBindings.start]) {
       _this.keyManager('start');
     } else {
       _this.keyTimers.start = 0;
     }
-    if (keyState[config.keyBindings.up]) {
+    if (keyState[CFG.keyBindings.up]) {
       _this.keyManager('up', 'down');
     } else {
       _this.keyTimers.up = 0;
       _this.keyManager('up', 'up');
     }
-    if (keyState[config.keyBindings.right]) {
+    if (keyState[CFG.keyBindings.right]) {
       _this.keyManager('right', 'down');
     } else {
       _this.keyTimers.right = 0;
       _this.keyManager('right', 'up');
     }
-    if (keyState[config.keyBindings.down]) {
+    if (keyState[CFG.keyBindings.down]) {
       _this.keyManager('down', 'down');
     } else {
       _this.keyTimers.down = 0;
       _this.keyManager('down', 'up');
     }
-    if (keyState[config.keyBindings.left]) {
+    if (keyState[CFG.keyBindings.left]) {
       _this.keyManager('left', 'down');
     } else {
       _this.keyTimers.left = 0;
@@ -7633,7 +6844,7 @@ var ImageHandler = function ImageHandler() {
       var modName = _this.modImageName(imageList[i]);
       if (!_this.loadedImages[modName]) {
         loadedImages[modName] = new Image();
-        loadedImages[modName].src = "./sprites/".concat(config.pixelKidMode, "/").concat(imageList[i], ".png");
+        loadedImages[modName].src = "./sprites/".concat(CFG.pixelKidMode, "/").concat(imageList[i], ".png");
         loadedImages[modName].onload = function () {
           if (++loadedCount >= totalImages) {
             _this.loadedImages = Object.assign(_this.loadedImages, loadedImages);
@@ -7657,22 +6868,6 @@ var ImageHandler = function ImageHandler() {
   });
   this.loadQueue = [];
   this.loadedImages = {};
-};
-
-var SystemAH = function SystemAH(cbObj) {
-  _classCallCheck(this, SystemAH);
-  this.loadImages = function (images, callback) {
-    return cbObj.loadImageCB(images, callback);
-  };
-  this.fetchImage = function (image) {
-    return cbObj.fetchImageCB(image);
-  };
-  this.startLoading = function (callback) {
-    return cbObj.startLoadingCB(callback);
-  };
-  this.stopLoading = function () {
-    return cbObj.stopLoadingCB();
-  };
 };
 
 var LoadManager = function LoadManager(systemAH) {
@@ -7751,7 +6946,7 @@ var System = function System() {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var imgURL = _step.value;
         var image = new Image();
-        image.src = "./sprites/".concat(config.pixelKidMode, "/").concat(imgURL, ".png");
+        image.src = "./sprites/".concat(CFG.pixelKidMode, "/").concat(imgURL, ".png");
         fontImages.push(image);
       }
     } catch (err) {
@@ -7781,8 +6976,8 @@ var System = function System() {
   this.controllers = [];
   this.keyState = {};
   this.systemScreen = document.getElementById('game-screen');
-  this.systemScreen.style.width = 160 * config.screenSize + 'px';
-  this.systemScreen.style.height = 144 * config.screenSize + 'px';
+  this.systemScreen.style.width = 160 * CFG.screenSize + 'px';
+  this.systemScreen.style.height = 144 * CFG.screenSize + 'px';
   this.debugMenu;
   this.imageHandler = new ImageHandler();
   this.loadManager = new LoadManager(this.systemAH);
@@ -7799,7 +6994,7 @@ window.onload = function () {
   init();
 };
 function init() {
-  debugLog("Booting for ".concat(config.userName, "..."));
+  debugLog("Booting for ".concat(CFG.userName, "..."));
   var system = new System();
   setTimeout(function () {
     system.start();

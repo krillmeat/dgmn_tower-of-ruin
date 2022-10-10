@@ -7,7 +7,7 @@ import { partyMock, enemyPartyMock } from "../../mock/dgmn.mock";
 import EnemyGenerator from "./enemy-generator";
 import DgmnUtility from "./utility/dgmn.util";
 import { debugLog } from "../../utils/log-utils";
-import TreasureUtility from "../dungeon/utility/treasure.util";
+import TreasureUtility from "../../dungeon/utils/treasure.util";
 
 // TODO - THIS CLASS WILL NEVER WORK LIKE THIS. IT WILL INTERACT HEAVILY WITH THE SAVE DATA TO BUILD OUT THE allDgmn OBJECT
 // TODO - RENAME TO ALL DGMN

@@ -1,7 +1,8 @@
-import config from '../../../config';
-import {dungeonFloorsBossMapDB, dungeonFloorsDB,dungeonRoomsDB} from '../../../data/dungeon.db';
-import { bossEncountersDB, bossEncoutnersMapDB } from '../../../data/encounters.db';
-import {debugLog} from '../../../utils/log-utils';
+import CFG from "../../config";
+import {dungeonFloorsBossMapDB, dungeonFloorsDB,dungeonRoomsDB} from '../../data/dungeon.db';
+import { bossEncountersDB, bossEncoutnersMapDB } from '../../data/encounters.db';
+import {debugLog} from '../../utils/log-utils';
+
 
 /**------------------------------------------------------------------------
  * MAP UTILITY
@@ -54,11 +55,11 @@ class MapUtility{
   }
 
   getRoomOffset = roomCount => {
-    return roomCount * 128 * config.screenSize;
+    return roomCount * 128 * CFG.screenSize;
   }
 
   getTileOffset = tileCount => {
-    return tileCount * 16 * config.screenSize;
+    return tileCount * 16 * CFG.screenSize;
   }
 
   /**------------------------------------------------------------------------
@@ -72,7 +73,7 @@ class MapUtility{
    * ----------------------------------------------------------------------*/
    isOnExactTile = (dir,canvasX,canvasY) => {
     let coord = (dir === 'down' || dir === 'up') ? canvasY : canvasX;
-    return coord % (16 * config.screenSize) === 0 || coord === 0;
+    return coord % (16 * CFG.screenSize) === 0 || coord === 0;
   }
 
   /**------------------------------------------------------------------------

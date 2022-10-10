@@ -1,8 +1,8 @@
 import ListMenu from './list-menu';
 import {toolBoxDB} from '../../data/digibeetle.db'
 import TextArea from '../text-area';
-import TreasureUtility from '../dungeon/utility/treasure.util';
-import config from '../../config';
+import TreasureUtility from '../../dungeon/utils/treasure.util';
+import CFG from '../../config';
 import DigiBeetleUtility from '../digibeetle.util';
 
 class ItemsMenu extends ListMenu{
@@ -44,7 +44,7 @@ class ItemsMenu extends ListMenu{
   drawCursor = index => {
     let spotIndex = index ? index : this.currIndex;
     let columnOffset = (spotIndex+1) % 2 === 0 ? 9 : 0;
-    this.menuCanvas.paintImage(this.cursorImg,columnOffset * config.tileSize,(Math.floor(spotIndex/2) % this.itemAmount) * (8 * this.itemHeight) * config.screenSize);
+    this.menuCanvas.paintImage(this.cursorImg,columnOffset * CFG.tileSize,(Math.floor(spotIndex/2) % this.itemAmount) * (8 * this.itemHeight) * CFG.screenSize);
   }
 
   upListItem = () => {

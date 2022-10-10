@@ -1,4 +1,4 @@
-import MapUtility from "./utility/map.util";
+import MapUtility from "../utils/map.util";
 
 class Room{
   constructor(roomId, position){

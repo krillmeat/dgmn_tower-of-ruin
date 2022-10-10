@@ -1,4 +1,4 @@
-import IO from "./io";
+import IO from "../classes/input-output/io";
 
 class DungeonIO extends IO{
   constructor(dungeonAH,...args){

@@ -1,6 +1,6 @@
-import GameCanvas from "../../canvas";
-import TextArea from "../../text-area";
-import ContinueCursor from "../../menu/continue-cursor";
+import GameCanvas from "../../classes/canvas";
+import TextArea from "../../classes/text-area";
+import ContinueCursor from "../../classes/menu/continue-cursor";
 
 class DungeonTextCanvas extends GameCanvas{
   constructor(...args){

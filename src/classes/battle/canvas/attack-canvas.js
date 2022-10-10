@@ -1,4 +1,4 @@
-import config from "../../../config";
+import CFG from "../../../config";
 import GameCanvas from "../../canvas";
 
 class AttackCanvas extends GameCanvas{
@@ -54,7 +54,7 @@ class AttackCanvas extends GameCanvas{
    * ----------------------------------------------------------------------*/
   paintAttackFrame = (targetIndex,frame) => {
     this.clearCanvas();
-    this.paintImage(frame,0,(4 * targetIndex)*config.tileSize)
+    this.paintImage(frame,0,(4 * targetIndex)*CFG.tileSize)
     this.drawCB();
   }
 }

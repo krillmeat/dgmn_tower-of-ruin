@@ -1,4 +1,4 @@
-import config from "../config";
+import CFG from "../config";
 
 class ImageHandler{
   constructor(){
@@ -14,7 +14,7 @@ class ImageHandler{
       let modName = this.modImageName(imageList[i]);
       if(!this.loadedImages[modName]){ // Prevents Double Load
         loadedImages[modName] = new Image();
-        loadedImages[modName].src = `./sprites/${config.pixelKidMode}/${imageList[i]}.png`
+        loadedImages[modName].src = `./sprites/${CFG.pixelKidMode}/${imageList[i]}.png`
         loadedImages[modName].onload = () => {
           if(++loadedCount >= totalImages){
             this.loadedImages = Object.assign(this.loadedImages, loadedImages);

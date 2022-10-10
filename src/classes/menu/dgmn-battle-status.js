@@ -1,4 +1,4 @@
-import config from "../../config";
+import CFG from "../../config";
 import BattleMeter from "./battle-meter";
 import { fontData } from "../../data/font.db";
 
@@ -14,24 +14,24 @@ class DgmnBattleStatus{
 
   drawMeter = (canvas,meter,image, meterLength, color) => {
     // TODO - Clear the original
-    let meterOffset = meter === 'hp' ? 0 : 8 * config.screenSize;
-    let leftOffset = this.dgmnData.isEnemy ? 8 * config.screenSize : 17 * 8 * config.screenSize;
-    let battleLocationOffset = this.dgmnData.battleLocation * 32 * config.screenSize;
+    let meterOffset = meter === 'hp' ? 0 : 8 * CFG.screenSize;
+    let leftOffset = this.dgmnData.isEnemy ? 8 * CFG.screenSize : 17 * 8 * CFG.screenSize;
+    let battleLocationOffset = this.dgmnData.battleLocation * 32 * CFG.screenSize;
     let barColor;
     if(color === 'Red'){  barColor = '#F83018'
     } else if(color === 'Blue'){ barColor = '#58A0F8'
     } else {  barColor = '#6CA66C'}
-    canvas.ctx.clearRect(leftOffset, (16 * config.screenSize) + meterOffset + battleLocationOffset,
-                         24 * config.screenSize,8 * config.screenSize )
+    canvas.ctx.clearRect(leftOffset, (16 * CFG.screenSize) + meterOffset + battleLocationOffset,
+                         24 * CFG.screenSize,8 * CFG.screenSize )
     canvas.ctx.drawImage(image,
-                         leftOffset, (16 * config.screenSize) + meterOffset + battleLocationOffset,
-                         24 * config.screenSize,8 * config.screenSize);
+                         leftOffset, (16 * CFG.screenSize) + meterOffset + battleLocationOffset,
+                         24 * CFG.screenSize,8 * CFG.screenSize);
     canvas.ctx.fillStyle = barColor;
-    canvas.ctx.fillRect(leftOffset + (4 * config.screenSize),(16 * config.screenSize) + meterOffset + battleLocationOffset + (2 * config.screenSize),meterLength * config.screenSize,3 * config.screenSize );
+    canvas.ctx.fillRect(leftOffset + (4 * CFG.screenSize),(16 * CFG.screenSize) + meterOffset + battleLocationOffset + (2 * CFG.screenSize),meterLength * CFG.screenSize,3 * CFG.screenSize );
   }
 
   setCombo = (canvas, combo, comboImg) => {
-    let tileMod = (8 * config.screenSize);
+    let tileMod = (8 * CFG.screenSize);
     let leftOffset = this.dgmnData.isEnemy ? 3 * tileMod : 19 * tileMod;
     let battleLocationOffset = ( this.dgmnData.battleLocation * 4 ) * tileMod;
     let char = combo;
@@ -45,7 +45,7 @@ class DgmnBattleStatus{
   }
 
   setWeakened = (canvas, levelImg) => {
-    let tileMod = (8 * config.screenSize);
+    let tileMod = (8 * CFG.screenSize);
     let leftOffset = this.dgmnData.isEnemy ? 0 * tileMod : 16 * tileMod;
     let battleLocationOffset = ( this.dgmnData.battleLocation * 4 ) * tileMod;
 

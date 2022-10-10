@@ -1,4 +1,4 @@
-import config from "../../config";
+import CFG from "../../config";
 import { dgmnDB } from "../../data/dgmn.db";
 // import BattleDgmnCanvas from "../battle/canvas/battle-dgmn-canvas";
 import DgmnCanvas from "./canvas/dgmn-canvas";
@@ -58,8 +58,8 @@ class Dgmn {
    * ----------------------------------------------------------------------*/ /* istanbul ignore next */
   initCanvas = (refreshScreenCB,dgmnImageList,battlePosition) => {
     this.dgmnCanvas = new DgmnCanvas(refreshScreenCB,this.speciesName,'dgmn-canvas',32,32);
-    this.dgmnCanvas.x = (24 + (this.isEnemy ? 8 : 72) ) * config.screenSize;
-    this.dgmnCanvas.y = (16 + (battlePosition * 32) ) * config.screenSize;
+    this.dgmnCanvas.x = (24 + (this.isEnemy ? 8 : 72) ) * CFG.screenSize;
+    this.dgmnCanvas.y = (16 + (battlePosition * 32) ) * CFG.screenSize;
     this.dgmnCanvas.frames = dgmnImageList;
     if(this.isEnemy){ this.dgmnCanvas.flip() }
   }

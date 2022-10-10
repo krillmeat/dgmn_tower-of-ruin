@@ -2,12 +2,11 @@ import Menu from "../../menu";
 import RewardsMenu from "../../menu/rewards-menu";
 import TextArea from "../../text-area";
 import DgmnGrowthMenuAH from "./dgmn-growth-menu.ah";
-import config from "../../../config";
+import CFG from "../../../config";
 import DgmnUtility from "../utility/dgmn.util";
-import HatchingEggMenu from "./hatching-egg-menu";
 import { debugLog } from "../../../utils/log-utils";
 import EvoMenu from "./evo.menu";
-import LevelUpMenu from "../../menu/levelup-menu";
+import LevelUpMenu from "./level-up.menu";
 
 class DgmnGrowthMenu extends Menu{
   constructor(origin,dgmnAH,...args){
@@ -31,7 +30,8 @@ class DgmnGrowthMenu extends Menu{
       nextHatchCB: this.nextHatch,
       prevHatchCB: this.prevHatch,
       selectHatchCB: this.selectHatch,
-      selectEvoCB: this.selectEvo
+      selectEvoCB: this.selectEvo,
+      confirmLevelUpCB: this.confirmLevelUp
     });
   }
 
@@ -172,22 +172,18 @@ class DgmnGrowthMenu extends Menu{
    *        Eggs and draw those specifically
    * ----------------------------------------------------------------------*/
   drawEggs = () => {
-    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggDR'),2*config.tileSize,8*config.tileSize);
-    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggJT'),8*config.tileSize,8*config.tileSize);
-    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggME'),14*config.tileSize,8*config.tileSize);
+    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggDR'),2*CFG.tileSize,8*CFG.tileSize);
+    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggJT'),8*CFG.tileSize,8*CFG.tileSize);
+    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggME'),14*CFG.tileSize,8*CFG.tileSize);
   }
 
   drawDgmn = () => {
+    let i = 0;
     for(let dgmn of this.dgmnAH.getDgmnParty()){
-      console.log("DGMN ? ",dgmn);
+      let species = this.dgmnAH.getDgmnData(dgmn,['speciesName']).speciesName;
+      this.menuCanvas.paintImage(this.systemAH.fetchImage(`${species.toLowerCase()}Idle0`),((2+(i*6)))*CFG.tileSize,8*CFG.tileSize);
+      i++;
     }
-    // this.menuCanvas.paintImage(this.systemAH.fetchImage('eggDR'),2*config.tileSize,8*config.tileSize);
-    /*
-    this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(coord[0]*config.tileSize,coord[1]*config.tileSize,4*config.tileSize,4*config.tileSize);
-    this.menuCanvas.paintImage(this.fetchImageCB(`${species.toLowerCase()}Idle0`),
-      coord[0]*config.tileSize,coord[1]*config.tileSize);
-    */
   }
 
   /**------------------------------------------------------------------------
@@ -200,12 +196,16 @@ class DgmnGrowthMenu extends Menu{
     const currDgmnData = this.getCurrDgmnData();
     const nextImages = this.origin === 'hatch' ? this.dgmnUtility.getAllHatchImages(currDgmnData.eggField) : [];
 
+    this.drawBackground('battleVictoryRewardsOverlay');
+    this.origin === 'hatch' ? this.drawEggs() : this.drawDgmn(); // Draw Eggs or DGMN, depending on Origin
+
     this.subMenus.rewards.updateRewardsList(this.rewards, () => {
       if(nextImages.length === 0){
-        this.removeSubMenu('rewards');
-        this.gotoLevelUp(currDgmnData);
+        // this.wrapUpRewards();
+        // this.gotoLevelUp(currDgmnData); // TODO - Should actually check if they Level Up
+        this.gotoNextScreen()
         return;
-      } else{
+      } else{ // TODO - Move to wrapUpRewards
         this.systemAH.loadImages(nextImages,()=>{
           this.removeSubMenu('rewards');
           this.gotoHatch(currDgmnData);
@@ -214,12 +214,13 @@ class DgmnGrowthMenu extends Menu{
     });
   }
 
+  
   /**------------------------------------------------------------------------
    * GIVE CURRENT REWARD                                           [EXPORTED]
    * ------------------------------------------------------------------------
    * Handles giving the Currently Selected Reward to the correct DGMN
    * ----------------------------------------------------------------------*/
-  giveCurrReward = dir => {
+   giveCurrReward = dir => {
     let dgmnParty = this.dgmnAH.getDgmnParty();
     let dirMap = { // TODO - Move this to a CONST or UTIL file
       left: dgmnParty[0],
@@ -227,11 +228,52 @@ class DgmnGrowthMenu extends Menu{
       right: dgmnParty[2]
     }
     let dgmnId = dirMap[dir];
-    let reward = ['DR']; // TODO - Pull from Data
 
-    this.dgmnAH.giveDgmnReward(dgmnId,'DR'); // TODO - Pull from curr spot
+    this.dgmnAH.giveDgmnReward(dgmnId,this.rewards[this.subMenus.rewards.currIndex]); // TODO - Pull from curr spot
     this.updateRewardsList()
   }
+
+  /**------------------------------------------------------------------------
+   * WRAP UP REWARDS
+   * ------------------------------------------------------------------------
+   * When the Rewards Menu is done, determines where to go
+   * ----------------------------------------------------------------------*/
+  wrapUpRewards = () => {
+    this.removeSubMenu('rewards');
+    let currDgmnData = this.getCurrDgmnData();
+    let canLevelUp = this.dgmnAH.checkLevelUp(this.dgmnAH.getDgmnParty()[this.currDgmnIndex])
+    
+    if(canLevelUp){
+      this.gotoLevelUp(currDgmnData);
+    } else{ this.wrapUpLevelUp() }
+  }
+
+  /**------------------------------------------------------------------------
+   * WRAP UP LEVEL UP
+   * ------------------------------------------------------------------------
+   * When the Level Up Menu is done, determines where to go
+   * ----------------------------------------------------------------------*/
+   wrapUpLevelUp = () => {
+    this.removeSubMenu('level');
+    let currDgmnData = this.getCurrDgmnData();
+    const canEvolve = this.dgmnUtility.canEvolveIntoAny(currDgmnData.currentFP,currDgmnData.speciesName);
+    const direction = canEvolve ? 'evolve' : 'level';
+    if(!canEvolve) this.currDgmnIndex++;
+
+    if(this.currDgmnIndex > 2){ this.parentAH.closeGrowthMenu()
+    } else {
+      if(direction === 'level'){
+        const nextDgmnData = this.getCurrDgmnData();
+        const canLevelUp = this.dgmnAH.checkLevelUp(this.dgmnAH.getDgmnParty()[this.currDgmnIndex]);
+        if(canLevelUp){ 
+          this.gotoLevelUp(nextDgmnData)
+        } else { this.wrapUpLevelUp() } // If they can't evolve OR level up, just run this again on the next DGMN
+      } else {
+        const evoImages = this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
+        this.systemAH.loadImages(evoImages, () => { this.gotoEvolution(currDgmnData)});
+      }
+    }
+   }
 
   /**------------------------------------------------------------------------
    * WRAP UP HATCH
@@ -239,24 +281,21 @@ class DgmnGrowthMenu extends Menu{
    * Clears out the Hatch Screen
    * -------------------------------------------*/ /* istanbul ignore next */
    wrapUpHatch = () => {
-    // TODO - You can also go to Level Up first...
-    // Check if Evolution is Possible and determine next screen
-    const canEvolve = this.dgmnUtility.canEvolveIntoAny( this.dgmnAH.getDgmnData(
-      this.dgmnAH.getDgmnParty()[this.currDgmnIndex],['currentFP']).currentFP, // DGMN FP
-      this.subMenus.hatch.choices[this.subMenus.hatch.currChoice]);  // Hatch Into DGMN
+    let currDgmnData = this.getCurrDgmnData();
+    const canEvolve = this.dgmnUtility.canEvolveIntoAny(currDgmnData.currentFP,currDgmnData.speciesName);
     let direction = canEvolve ? 'evolve' : 'hatch';
-    if(!canEvolve) this.currDgmnIndex++;
+    if(!canEvolve){
+      this.currDgmnIndex++;
+      currDgmnData = this.currDgmnIndex <= 2 ? this.getCurrDgmnData() : currDgmnData; // TODO - Refactor like wrapUpLevelUp so I don't need this...
+    } 
 
     if(this.currDgmnIndex > 2){ // If that was the last DGMN
       this.parentAH.closeGrowthMenu();
     } else{
       // Get ready for the next screen
-      const currDgmnData = {
-        ...this.getCurrDgmnData(),
-        species: this.subMenus.hatch.choices[this.subMenus.hatch.currChoice] }
       const nextImages = direction === 'hatch' ? 
         this.dgmnUtility.getAllHatchImages(currDgmnData.eggField) : 
-        this.dgmnUtility.getAllEvoImages(currDgmnData.species);
+        this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
 
       // Load Images, then go to next screen
       this.systemAH.loadImages(nextImages, () =>{
@@ -279,18 +318,22 @@ class DgmnGrowthMenu extends Menu{
    wrapUpEvolution = () => {
       // TODO - Check if Can Evolve Again...
       // TODO - Need to consider Boss Reward
-      // TODO - The gotoHatch only happens on the hatch origin, and needs to switch
-      //        when I move onto the Victory Menu, which might go to Level Up
 
       this.currDgmnIndex++;
       if(this.currDgmnIndex > 2) { // If that was the last DGMN
-        console.log("CLOSE HATCH");
+        this.parentAH.closeGrowthMenu();
       } else{
         const currDgmnData = this.getCurrDgmnData();
         const nextImages = this.dgmnUtility.getAllHatchImages(currDgmnData.eggField);
         this.systemAH.loadImages(nextImages,()=>{
           this.removeSubMenu('evolve');
-          this.gotoHatch(currDgmnData);
+          if(this.origin === 'hatch') this.gotoHatch(currDgmnData);
+          if(this.origin === 'victory'){
+            // TODO - Possible to go to Boss Rewards
+            // TODO - While I THINK this is working okay, might need to run some test scenarios
+            this.currDgmnIndex--;
+            this.wrapUpLevelUp();
+          }
         })
       }
    }
@@ -310,7 +353,13 @@ class DgmnGrowthMenu extends Menu{
         this.wrapUpEvolution();
       }
     } else if(this.origin === 'victory'){
-      // TODO - This
+      if(this.subMenus.rewards){
+        this.wrapUpRewards();
+      } else if(this.subMenus.level){
+        this.wrapUpLevelUp();
+      } else if(this.subMenus.evolve){
+        this.wrapUpEvolution();
+      }
     }
   }
 
@@ -321,7 +370,7 @@ class DgmnGrowthMenu extends Menu{
    * ----------------------------------------------------------------------*/
   getCurrDgmnData = () => {
     let currDgmn = this.dgmnAH.getDgmnParty()[this.currDgmnIndex];
-    let currDgmnData = this.dgmnAH.getDgmnData(currDgmn,['eggField','currentFP','nickname','speciesName','currentStats'],false);
+    let currDgmnData = this.dgmnAH.getDgmnData(currDgmn,['eggField','currentFP','nickname','speciesName','currentStats','currentLevel','currentXP'],false);
         currDgmnData.dgmnId = currDgmn;
     return currDgmnData;
   }
@@ -383,6 +432,16 @@ class DgmnGrowthMenu extends Menu{
     // TODO - Check to make sure Evo is allowed
     this.evolveIntoDgmn();
     this.gotoNextScreen()
+  }
+
+  /**------------------------------------------------------------------------
+   * CONFIRM LEVEL UP                                              [EXPORTED]
+   * ------------------------------------------------------------------------
+   * Runs when player hits Action on the Level Up Screen
+   * ----------------------------------------------------------------------*/
+  confirmLevelUp = () => {
+    // do some stuff
+    this.gotoNextScreen();
   }
 
 }

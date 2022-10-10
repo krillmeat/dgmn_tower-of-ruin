@@ -2,7 +2,7 @@ import Menu from "../../menu";
 import MenuCanvas from "../../menu/menu-canvas";
 import TextArea from "../../text-area";
 import RewardsMenu from "../../menu/rewards-menu";
-import config from "../../../config";
+import CFG from "../../../config";
 import HatchingEggMenu from "./hatching-egg-menu";
 import HatchMenuAH from "../../dungeon/hatch-menu.ah";
 
@@ -75,9 +75,9 @@ class HatchingMenu extends Menu{
    *        Eggs and draw those specifically
    * ----------------------------------------------------------------------*/
   drawEggs = () => {
-    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggDR'),2*config.tileSize,8*config.tileSize);
-    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggJT'),8*config.tileSize,8*config.tileSize);
-    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggME'),14*config.tileSize,8*config.tileSize);
+    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggDR'),2*CFG.tileSize,8*CFG.tileSize);
+    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggJT'),8*CFG.tileSize,8*CFG.tileSize);
+    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggME'),14*CFG.tileSize,8*CFG.tileSize);
   }
 
   /**------------------------------------------------------------------------

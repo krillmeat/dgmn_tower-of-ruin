@@ -1,9 +1,9 @@
 import Room from './room';
-import MapUtility from './utility/map.util';
-import FloorCanvas from './canvas/floor-canvas';
-import config from '../../config';
+import MapUtility from '../utils/map.util';
+import FloorCanvas from '../canvas/floor-canvas';
+import CFG from '../../config';
 import {debugLog} from '../../utils/log-utils';
-import TreasureUtility from './utility/treasure.util';
+import TreasureUtility from '../utils/treasure.util';
 
 class Floor{
   constructor(floorNumber){
@@ -340,8 +340,8 @@ class Floor{
        * ----------------------------------------------------------------------*/
         moveInDirection = dir => {
         let delta = (dir === 'down' || dir === 'right') ? -1 : 1;
-        let moveX = (dir === 'down' || dir === 'up') ? null : this.floorCanvas.x + (delta * config.screenSize);
-        let moveY = (dir === 'right' || dir === 'left') ? null : this.floorCanvas.y + (delta * config.screenSize);
+        let moveX = (dir === 'down' || dir === 'up') ? null : this.floorCanvas.x + (delta * CFG.screenSize);
+        let moveY = (dir === 'right' || dir === 'left') ? null : this.floorCanvas.y + (delta * CFG.screenSize);
         this.moveFloorCanvas(moveX,moveY);
       }
 
@@ -544,8 +544,8 @@ class Floor{
    * Moves the Floor Canvas to the starting point
    * ----------------------------------------------------------------------*/
     setFloorToStart = () => {
-      let xOffset = (64 * config.screenSize) - this.mapUtility.getTotalOffset(this.start.room[1],this.start.tile[1]);
-      let yOffset = (64 * config.screenSize) - this.mapUtility.getTotalOffset(this.start.room[0],this.start.tile[0]);
+      let xOffset = (64 * CFG.screenSize) - this.mapUtility.getTotalOffset(this.start.room[1],this.start.tile[1]);
+      let yOffset = (64 * CFG.screenSize) - this.mapUtility.getTotalOffset(this.start.room[0],this.start.tile[0]);
       this.moveFloorCanvas(xOffset,yOffset);
       this.redrawFloor();
     }

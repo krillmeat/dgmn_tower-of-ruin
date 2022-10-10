@@ -1,4 +1,4 @@
-import GameCanvas from "../../canvas";
+import GameCanvas from "../../classes/canvas";
 
 class DungeonCanvas extends GameCanvas{
   constructor(...args){

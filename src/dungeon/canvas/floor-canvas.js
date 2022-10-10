@@ -1,5 +1,5 @@
-import GameCanvas from "../../canvas";
-import config from '../../../config';
+import GameCanvas from "../../classes/canvas";
+import CFG from "../../config";
 
 class FloorCanvas extends GameCanvas{
   constructor(...args){
@@ -17,7 +17,7 @@ class FloorCanvas extends GameCanvas{
    drawRoom = (image,position) => {
     let roomX = position[1] * 16 * 8;
     let roomY = position[0] * 16 * 8;
-    this.paintImage(image,roomX * config.screenSize, roomY * config.screenSize);
+    this.paintImage(image,roomX * CFG.screenSize, roomY * CFG.screenSize);
   }
 
   /**------------------------------------------------------------------------
@@ -34,7 +34,7 @@ class FloorCanvas extends GameCanvas{
     let roomYOffset = room[0] * 16 * 8;
     let tileXOffset = tile[1] * 16;
     let tileYOffset = tile[0] * 16;
-    this.paintImage(image,(roomXOffset+tileXOffset)*config.screenSize,(roomYOffset+tileYOffset)*config.screenSize);
+    this.paintImage(image,(roomXOffset+tileXOffset)*CFG.screenSize,(roomYOffset+tileYOffset)*CFG.screenSize);
   }
 
   /**------------------------------------------------------------------------

@@ -1,15 +1,18 @@
-import config from "../config";
+import CFG from "../config";
 import { debugLog } from "../utils/log-utils";
 import { inDebug } from "../utils/url-utils";
+
+import SystemAH from "./system.ah";
+
 import Game from "../game/game";
 import GameCanvas from "../classes/canvas";
 import Controller from "../classes/controller";
 import DebugMenu from "../classes/debug-menu";
 import ImageHandler from "../classes/image-handler";
+import LoadManager from "../classes/load-manager";
+
 import { fontImages, genericImages, loadingImages } from "../data/images.db";
 import { fontImages as globalFontImages} from "../data/font.db";
-import SystemAH from "./system.ah";
-import LoadManager from "../classes/load-manager";
 
 /**------------------------------------------------------------------------
  * SYSTEM CLASS
@@ -29,8 +32,8 @@ class System{
     this.keyState = {};                                               // Key-Value Pairs for all Active and Inactive Pairs
 
     this.systemScreen = document.getElementById('game-screen');       // Screen Element
-    this.systemScreen.style.width = (160 * config.screenSize)+'px';   //
-    this.systemScreen.style.height = (144 * config.screenSize)+'px';  // 
+    this.systemScreen.style.width = (160 * CFG.screenSize)+'px'; 
+    this.systemScreen.style.height = (144 * CFG.screenSize)+'px'; 
     this.debugMenu;                                                   // Menu Used for running things in Debug
 
     this.imageHandler = new ImageHandler();                           // Handles Image Loading and Fetching | TODO - Rename to Manager
@@ -41,7 +44,7 @@ class System{
 
     this.screenCanvas = new GameCanvas('screen-canvas',160,144);      // Root Canvas Instance (this is the only true Canvas we see)
     this.game = new Game(this.systemAH);                              // Game Being Loaded | TODO - In the future, should be dynamic
-    this.subCanvases = [this.backgroundCanvas];                       // All of the Canvases being rendered currently | TODO - Backgorund Canvas should be loaded
+    this.subCanvases = [this.backgroundCanvas];                       // All of the Canvases being rendered currently | TODO - Background Canvas should be loaded
 
     this.buildFontImages();
   }
@@ -118,7 +121,7 @@ class System{
   buildFontImages = () => {
     for(let imgURL of fontImages){
       let image = new Image();
-          image.src = `./sprites/${config.pixelKidMode}/${imgURL}.png`;
+          image.src = `./sprites/${CFG.pixelKidMode}/${imgURL}.png`;
       globalFontImages.push(image);
     }
   }

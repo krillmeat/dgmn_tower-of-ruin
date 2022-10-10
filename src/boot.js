@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------*/
 
 import System from './system/system';
-import config from './config';
+import CFG from './config';
 import { debugLog } from './utils/log-utils';
 
 // Once Window is Loaded, Initialize
@@ -20,7 +20,7 @@ window.onload = function(){
  * Once the base Webpage is loaded, Boot up the System
  * ----------------------------------------------------------------------*/
 function init(){
-  debugLog(`Booting for ${config.userName}...`);
+  debugLog(`Booting for ${CFG.userName}...`);
   
   let system = new System();
   setTimeout(()=> {

@@ -1,4 +1,4 @@
-import {itemChart, itemsDB, rarityChartDB} from '../../../data/items.db'
+import {itemChart,itemsDB,rarityChartDB} from '../../data/items.db';
 
 /**------------------------------------------------------------------------
  * TREASURE UTILITY

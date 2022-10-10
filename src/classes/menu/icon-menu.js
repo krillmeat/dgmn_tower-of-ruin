@@ -1,4 +1,4 @@
-import config from "../../config";
+import CFG from "../../config";
 import GameCanvas from "../canvas";
 import SubMenu from "./sub-menu";
 
@@ -12,8 +12,8 @@ class IconMenu extends SubMenu{
     this.coord = coord; // Allow extenders to access
 
     this.menuCanvas = new GameCanvas(`${this.label}-menu`,this.iconList.length * 16 ,16 )
-    this.menuCanvas.x = coord[0] * 8 * config.screenSize;
-    this.menuCanvas.y = coord[1] * 8 * config.screenSize;
+    this.menuCanvas.x = coord[0] * 8 * CFG.screenSize;
+    this.menuCanvas.y = coord[1] * 8 * CFG.screenSize;
   }
 
   nextIcon = () => {
@@ -45,7 +45,7 @@ class IconMenu extends SubMenu{
     this.clearIcons();
     for(let i = 0; i < this.iconList.length; i++){
       let img = selected === i ? this.images[this.iconList[i]].selected : this.images[this.iconList[i]].deselected;
-      this.menuCanvas.paintImage(img,(i*16)*config.screenSize,0);
+      this.menuCanvas.paintImage(img,(i*16)*CFG.screenSize,0);
     }
   }
 

@@ -1,4 +1,4 @@
-import config from "../../../config";
+import CFG from "../../../config";
 import ListMenu from "../../menu/list-menu";
 
 class TargetSelect extends ListMenu{
@@ -13,7 +13,7 @@ class TargetSelect extends ListMenu{
 
   drawCursor = index => {
     let spotIndex = index ? index : this.currIndex;
-    this.menuCanvas.paintImage(this.cursorImg,0,(spotIndex % this.itemAmount) * (8 * this.itemHeight) * config.screenSize);
+    this.menuCanvas.paintImage(this.cursorImg,0,(spotIndex % this.itemAmount) * (8 * this.itemHeight) * CFG.screenSize);
   }
 
   drawMenu = (startingIndex = 0) => {
@@ -25,7 +25,7 @@ class TargetSelect extends ListMenu{
 
   clearAllCursors = isEnemy => {
     if(isEnemy){
-      this.parentCTX.clearRect(8*8*config.screenSize,2*8*config.screenSize,2*8*config.screenSize,12*8*config.screenSize);
+      this.parentCTX.clearRect(8*8*CFG.screenSize,2*8*CFG.screenSize,2*8*CFG.screenSize,12*8*CFG.screenSize);
     } else {
       // TODO - Player side
     }

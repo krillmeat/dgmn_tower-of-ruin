@@ -1,4 +1,4 @@
-import config from "../../../config";
+import CFG from "../../../config";
 import GameCanvas from "../../canvas";
 import TextArea from "../../text-area";
 
@@ -25,7 +25,7 @@ class BattleMenuCanvas extends GameCanvas{
   }
 
   clearTopMessage = () => {
-    this.ctx.clearRect(0,8*config.screenSize, 160*config.screenSize,8*config.screenSize);
+    this.ctx.clearRect(0,8*CFG.screenSize, 160*CFG.screenSize,8*CFG.screenSize);
   }
 
   setTopMessage = message => {
@@ -34,7 +34,7 @@ class BattleMenuCanvas extends GameCanvas{
   }
 
   clearBottomSection = () => {
-    this.ctx.clearRect(0,14*8*config.screenSize,20*8*config.screenSize,4*8*config.screenSize);
+    this.ctx.clearRect(0,14*8*CFG.screenSize,20*8*CFG.screenSize,4*8*CFG.screenSize);
   }
 
   /**------------------------------------------------------------------------
@@ -87,7 +87,7 @@ class BattleMenuCanvas extends GameCanvas{
    * ----------------------------------------------------------------------*/
   drawDgmnPortrait = portraitImg => {
     this.ctx.drawImage(portraitImg,0,0,256,248,
-                       0, 112 * config.screenSize,32*config.screenSize,(32-1)*config.screenSize);
+                       0, 112 * CFG.screenSize,32*CFG.screenSize,(32-1)*CFG.screenSize);
   }
 
  /**------------------------------------------------------------------------
@@ -102,13 +102,13 @@ class BattleMenuCanvas extends GameCanvas{
    * ----------------------------------------------------------------------*/
   drawMenuButtons = (selected,images,coord) => {
     let buttonCount = Object.keys(images).length;
-    this.ctx.clearRect((coord[0] * 8)*config.screenSize,(coord[1] * 8)*config.screenSize,
-                       (buttonCount*16)*config.screenSize,16*config.screenSize);
+    this.ctx.clearRect((coord[0] * 8)*CFG.screenSize,(coord[1] * 8)*CFG.screenSize,
+                       (buttonCount*16)*CFG.screenSize,16*CFG.screenSize);
     let offset = 0;
     for(let image in images){
       let img = image === selected ? images[image].selected : images[image].deselected;
-      this.ctx.drawImage(img, ((offset * 16 ) + (coord[0] * 8))*config.screenSize,(coord[1] * 8)*config.screenSize, 
-                        16*config.screenSize,16*config.screenSize);
+      this.ctx.drawImage(img, ((offset * 16 ) + (coord[0] * 8))*CFG.screenSize,(coord[1] * 8)*CFG.screenSize, 
+                        16*CFG.screenSize,16*CFG.screenSize);
       offset++;
     }
   }
@@ -122,21 +122,21 @@ class BattleMenuCanvas extends GameCanvas{
    * @param {Image}   image       Cursor Image
    * ----------------------------------------------------------------------*/
   paintCurrentCursor = (battleIndex,image) => {
-    this.paintImage(image,80*config.screenSize,(24+(battleIndex*32))*config.screenSize);
+    this.paintImage(image,80*CFG.screenSize,(24+(battleIndex*32))*CFG.screenSize);
   }
 
   // TODO - Moved to Target Select
   clearCurrentCursors = isEnemy => {
     let xOffset = !isEnemy ? 72 : 56;
-    this.ctx.clearRect(xOffset*config.screenSize,16*config.screenSize,
-      24*config.screenSize,96 * config.screenSize);
+    this.ctx.clearRect(xOffset*CFG.screenSize,16*CFG.screenSize,
+      24*CFG.screenSize,96 * CFG.screenSize);
   }
 
   // TODO - Moved to Target Select
   setCurrentTargetCursor = (battleIndex,image) => {
     this.clearCurrentCursors(true);
     this.paintImage(image,
-    64*config.screenSize, ((battleIndex * 32) + 24)*config.screenSize);
+    64*CFG.screenSize, ((battleIndex * 32) + 24)*CFG.screenSize);
   }
 
   // TEXT AREA CALCS

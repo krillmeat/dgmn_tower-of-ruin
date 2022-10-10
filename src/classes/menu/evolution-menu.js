@@ -1,6 +1,6 @@
 import IconMenu from "./icon-menu";
 import GameCanvas from "../canvas";
-import config from "../../config";
+import CFG from "../../config";
 import DgmnUtility from "../dgmn/utility/dgmn.util";
 import TextArea from "../text-area";
 import DgmnCanvas from "../dgmn/canvas/dgmn-canvas";
@@ -70,7 +70,7 @@ class EvolutionMenu extends IconMenu{
     this.evoResTxt.instantText(this.menuCanvas.ctx,'RES','green');
 
     for(let field in this.dgmnUtility.getBaseFP(species)){
-      this.menuCanvas.paintImage(this.fetchImgCB(`field${field}Icon`),(this.dgmnUtility.getAttribute(species).length+5)*config.tileSize,15*config.tileSize);
+      this.menuCanvas.paintImage(this.fetchImgCB(`field${field}Icon`),(this.dgmnUtility.getAttribute(species).length+5)*CFG.tileSize,15*CFG.tileSize);
     }
   }
 
@@ -87,7 +87,7 @@ class EvolutionMenu extends IconMenu{
     let i = 0;
     for(let req in fpReqs){
       let img = this.fetchImgCB(`field${req}Icon`);
-      this.menuCanvas.paintImage(img,(1+i)*config.tileSize,10*config.tileSize);
+      this.menuCanvas.paintImage(img,(1+i)*CFG.tileSize,10*CFG.tileSize);
       this.evoReqsTxt[i].instantText(this.menuCanvas.ctx,this.menuUtility.prependZeros(fpReqs[req],3),'white');
       i++;
     }
@@ -97,7 +97,7 @@ class EvolutionMenu extends IconMenu{
   drawIcons = (dgmnFP,evoList,selected) => {
     let possibleEvos = [];
 
-    let iconsOffset = [1*config.tileSize,13*config.tileSize];
+    let iconsOffset = [1*CFG.tileSize,13*CFG.tileSize];
 
     for(let i = 0; i < evoList.length; i++){
       let img;
@@ -105,11 +105,11 @@ class EvolutionMenu extends IconMenu{
         possibleEvos.push(evoList[i]);
         img = this.fetchImgCB('evoIconPositive');
       } else{ img = this.fetchImgCB('evoIconNegative') }
-      this.menuCanvas.paintImage(img,iconsOffset[0]+(i*config.tileSize),iconsOffset[1]);
+      this.menuCanvas.paintImage(img,iconsOffset[0]+(i*CFG.tileSize),iconsOffset[1]);
     }
 
     this.menuCanvas.ctx.fillStyle = "#C4CFA1";
-    this.menuCanvas.ctx.fillRect(iconsOffset[0]+(selected*8)+3,iconsOffset[1]+3,5*config.screenSize,4*config.screenSize);
+    this.menuCanvas.ctx.fillRect(iconsOffset[0]+(selected*8)+3,iconsOffset[1]+3,5*CFG.screenSize,4*CFG.screenSize);
 
     // this.redrawParentCB(); // TODO - Can't decide whether to put this here, or on the invoking function
   }
@@ -120,15 +120,15 @@ class EvolutionMenu extends IconMenu{
 
   drawEvoPortrait = portraitImg => {
     this.menuCanvas.ctx.drawImage(portraitImg,0,0,256,248,
-      0, 112 * config.screenSize,32*config.screenSize,(32-1)*config.screenSize);
+      0, 112 * CFG.screenSize,32*CFG.screenSize,(32-1)*CFG.screenSize);
   }
 
   // TODO - Find a way to make more Modular
   drawDgmnCanvas = (canvas,species,redrawCB) => {
     let coord = canvas === 'dgmnCanvas' ? [1,4] : [8,4];
     this[canvas] = new DgmnCanvas(()=>{},species,'dgmn-canvas',32,32);
-    this[canvas].x = coord[0]*config.tileSize;
-    this[canvas].y = coord[1]*config.tileSize;
+    this[canvas].x = coord[0]*CFG.tileSize;
+    this[canvas].y = coord[1]*CFG.tileSize;
     this[canvas].frames = [this.fetchImgCB(`${species.toLowerCase()}Idle0`),
                               this.fetchImgCB(`${species.toLowerCase()}Idle1`)];
     this[canvas].refreshScreen = () => this.redrawDgmn(this[canvas],coord,redrawCB);
@@ -137,7 +137,7 @@ class EvolutionMenu extends IconMenu{
 
   redrawDgmn = (canvas,coord,redrawCB) => {
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(coord[0]*config.tileSize,coord[1]*config.tileSize,32*config.screenSize,32*config.screenSize);
+    this.menuCanvas.ctx.fillRect(coord[0]*CFG.tileSize,coord[1]*CFG.tileSize,32*CFG.screenSize,32*CFG.screenSize);
     this.menuCanvas.paintCanvas(canvas);
     
     redrawCB();

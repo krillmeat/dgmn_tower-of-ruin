@@ -4,7 +4,7 @@ import FloorCanvas from '../../src/classes/dungeon/canvas/floor-canvas';
 import Floor from '../../src/classes/dungeon/floor';
 import Room from '../../src/classes/dungeon/room';
 
-import config from '../../src/config';
+import CFG from '../../src/config';
 
 jest.mock('../../src/classes/action-handlers/game.ah',()=>{})
 
@@ -428,8 +428,8 @@ describe('Dungeon Floor',()=>{
 
       mockFloor.setFloorToStart();
 
-      let mockX = 48 * config.screenSize;   // 64 - ( (0 x 128) + (1 * 16) ) = 48
-      let mockY = -64 * config.screenSize;  // 64 - ( (1 x 128) + (0 * 16) ) = -64
+      let mockX = 48 * CFG.screenSize;   // 64 - ( (0 x 128) + (1 * 16) ) = 48
+      let mockY = -64 * CFG.screenSize;  // 64 - ( (1 x 128) + (0 * 16) ) = -64
       expect(mockFloor.floorCanvas.x).toEqual(mockX);
       expect(mockFloor.floorCanvas.y).toEqual(mockY);
     })
@@ -445,7 +445,7 @@ describe('Dungeon Floor',()=>{
           mockFloor.moveInDirection('up');
 
           expect(mockFloor.floorCanvas.x).toEqual(0);
-          expect(mockFloor.floorCanvas.y).toEqual(1*config.screenSize);
+          expect(mockFloor.floorCanvas.y).toEqual(1*CFG.screenSize);
     })
 
     test('Moving right will move the map to the new location',()=>{
@@ -458,7 +458,7 @@ describe('Dungeon Floor',()=>{
 
           mockFloor.moveInDirection('right');
 
-          expect(mockFloor.floorCanvas.x).toEqual(-1*config.screenSize);
+          expect(mockFloor.floorCanvas.x).toEqual(-1*CFG.screenSize);
           expect(mockFloor.floorCanvas.y).toEqual(0);
     })
 
@@ -473,7 +473,7 @@ describe('Dungeon Floor',()=>{
           mockFloor.moveInDirection('down');
 
           expect(mockFloor.floorCanvas.x).toEqual(0);
-          expect(mockFloor.floorCanvas.y).toEqual(-1*config.screenSize);
+          expect(mockFloor.floorCanvas.y).toEqual(-1*CFG.screenSize);
     })
 
     test('Moving left will move the map to the new location',()=>{
@@ -486,7 +486,7 @@ describe('Dungeon Floor',()=>{
 
           mockFloor.moveInDirection('left');
 
-          expect(mockFloor.floorCanvas.x).toEqual(1*config.screenSize);
+          expect(mockFloor.floorCanvas.x).toEqual(1*CFG.screenSize);
           expect(mockFloor.floorCanvas.y).toEqual(0);
     })
   })

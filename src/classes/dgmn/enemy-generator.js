@@ -1,5 +1,5 @@
 import {bossEncountersDB, bossEncountersChartDB, bossEncoutnersMapDB, dgmnEncounterChartDB, dgmnEncounterDB, dgmnEncounterFieldsDB} from '../../data/encounters.db';
-import MapUtility from '../dungeon/utility/map.util';
+import MapUtility from '../../dungeon/utils/map.util';
 
 class EnemyGenerator{
   constructor(dgmnAH){

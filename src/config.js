@@ -1,7 +1,6 @@
 // TODO - This needs to eventually be built out of a database
-// TODO - Replace name with CFG, so I can make things a little smaller
 
-let config = {
+let CFG = {
   userName: 'Debug User',
   keyBindings: { 
     action: 'ArrowRight',
@@ -19,4 +18,4 @@ let config = {
   textSpeed: 1      // 1 is fastest, 4 is slowest
 }
 
-export default config;
+export default CFG;

@@ -128,7 +128,7 @@ class DgmnUtility{
     let evolutions = this.getEvolutions(currSpecies);
     for(let evo of evolutions){
       if(this.canEvolveInto(dgmnFP,evo)) return true
-    }
+    } return false;
   }
 
   canHatchInto = (dgmnFP,hatchSpecies) => {

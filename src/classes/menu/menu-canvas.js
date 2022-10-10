@@ -1,6 +1,6 @@
 import GameCanvas from "../canvas";
 import TextArea from "../text-area";
-import config from "../../config";
+import CFG from "../../config";
 
 class  MenuCanvas extends GameCanvas{
   constructor(...args){
@@ -10,12 +10,12 @@ class  MenuCanvas extends GameCanvas{
   }
 
   clearTopMessage = () => {
-    this.ctx.clearRect(0,8*config.screenSize, 160*config.screenSize,8*config.screenSize);
+    this.ctx.clearRect(0,8*CFG.screenSize, 160*CFG.screenSize,8*CFG.screenSize);
   }
 
   clearBottomSection = () => {
     this.ctx.fillStyle = "#00131A";
-    this.ctx.fillRect(0,14*config.tileSize,20*config.tileSize,4*config.tileSize);
+    this.ctx.fillRect(0,14*CFG.tileSize,20*CFG.tileSize,4*CFG.tileSize);
   }
 
   setTopMessage = message => {
@@ -32,7 +32,7 @@ class  MenuCanvas extends GameCanvas{
    * ----------------------------------------------------------------------*/
    drawDgmnPortrait = portraitImg => {
     this.ctx.drawImage(portraitImg,0,0,256,248,
-      0, 112 * config.screenSize,32*config.screenSize,(32-1)*config.screenSize);
+      0, 112 * CFG.screenSize,32*CFG.screenSize,(32-1)*CFG.screenSize);
   }
 }
 

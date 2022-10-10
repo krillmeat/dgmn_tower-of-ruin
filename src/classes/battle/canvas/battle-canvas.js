@@ -1,4 +1,4 @@
-import config from "../../../config";
+import CFG from "../../../config";
 import GameCanvas from "../../canvas";
 
 class BattleCanvas extends GameCanvas{

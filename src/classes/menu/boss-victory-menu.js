@@ -1,4 +1,4 @@
-import config from "../../config";
+import CFG from "../../config";
 import MapUtility from "../dungeon/utility/map.util";
 import TextArea from "../text-area";
 import ListMenu from "./list-menu";
@@ -38,7 +38,7 @@ class BossVictoryMenu extends ListMenu{
   }
 
   drawIcon = (row,col,image) => {
-    this.menuCanvas.paintImage(this.fetchImageCB(image),(col+9)*config.tileSize,(2*row)*config.tileSize);
+    this.menuCanvas.paintImage(this.fetchImageCB(image),(col+9)*CFG.tileSize,(2*row)*CFG.tileSize);
   }
 
   moveUp = () => {

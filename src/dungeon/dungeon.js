@@ -1,17 +1,17 @@
-import { debugLog } from "../../utils/log-utils";
+import { debugLog } from "../utils/log-utils";
 
-import GameCanvas from "../canvas";
-import Floor from "./floor";
-import { dungeonImages, fieldIcons } from "../../data/images.db";
+import GameCanvas from "../classes/canvas";
+import { dungeonImages, fieldIcons } from "../data/images.db";
 
-import DungeonAH from "../action-handlers/dungeon.ah";
-import DungeonIO from "../input-output/dungeon.io";
-import HatchingMenu from "../dgmn/hatch-victory/hatching-menu";
-import DgmnUtility from "../dgmn/utility/dgmn.util";
-import TreasureUtility from "./utility/treasure.util";
+import Floor from "./components/floor";
+import DungeonAH from "./dungeon.ah";
+import DungeonIO from "./dungeon.io";
+import TreasureUtility from "./utils/treasure.util";
+
+import DgmnUtility from "../classes/dgmn/utility/dgmn.util";
 import DungeonTextCanvas from "./canvas/dungeon-text-canvas";
-import PauseMenu from "../menu/pause-menu";
-import DgmnGrowthMenu from "../dgmn/hatch-victory/dgmn-growth.menu";
+import PauseMenu from "../classes/menu/pause-menu";
+import DgmnGrowthMenu from "../classes/dgmn/hatch-victory/dgmn-growth.menu";
 
 class Dungeon{
   constructor(isNewDungeon,loadedCallback){

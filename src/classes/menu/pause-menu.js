@@ -1,7 +1,7 @@
-import config from "../../config";
+import CFG from "../../config";
 import { debugLog, warningLog } from "../../utils/log-utils";
 import PauseMenuAH from "../action-handlers/pause-menu.ah";
-import TreasureUtility from "../dungeon/utility/treasure.util";
+import TreasureUtility from "../../dungeon/utils/treasure.util";
 import Menu from "../menu";
 import TextArea from "../text-area";
 import IconMenu from "./icon-menu";
@@ -168,7 +168,7 @@ class PauseMenu extends Menu{
 
   drawTopText = message => { 
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(0,0,20*config.tileSize,7*config.screenSize); 
+    this.menuCanvas.ctx.fillRect(0,0,20*CFG.tileSize,7*CFG.screenSize); 
     this.topTxt.instantText(this.menuCanvas.ctx,message,'white');
   }
 
@@ -180,7 +180,7 @@ class PauseMenu extends Menu{
    * ----------------------------------------------------------------------*/
   drawBottomSection = (type,data) => {
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(0,14*config.tileSize,20*config.tileSize,4*config.tileSize);
+    this.menuCanvas.ctx.fillRect(0,14*CFG.tileSize,20*CFG.tileSize,4*CFG.tileSize);
     if(type === 'item'){
       this.itemDescriptionTxt.instantText(this.menuCanvas.ctx,this.treasureUtility.getItemDescription(data.itemName),'white');
     }else if(type === 'dgmn'){
@@ -194,7 +194,7 @@ class PauseMenu extends Menu{
           dgmnENTxt.instantText(this.menuCanvas.ctx,".en"+this.menuUtility.prependZeros(data.currentEN,3)+"-100","white");
       let dgmnLVTxt = new TextArea(16,14,4,1);
           dgmnLVTxt.instantText(this.menuCanvas.ctx,".lv"+this.menuUtility.prependZeros(data.currentLevel,3),"white");
-      this.menuCanvas.paintImage(this.systemAH.fetchImage(`${data.speciesName.toLowerCase()}Portrait`),0,14*config.tileSize);
+      this.menuCanvas.paintImage(this.systemAH.fetchImage(`${data.speciesName.toLowerCase()}Portrait`),0,14*CFG.tileSize);
     } else if(type === 'message'){
       this.itemDescriptionTxt.timedText(this.menuCanvas.ctx,data.message,this.drawMenu);
       setTimeout(()=>{

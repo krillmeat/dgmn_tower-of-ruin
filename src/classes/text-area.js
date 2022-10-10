@@ -1,4 +1,4 @@
-import config from "../config";
+import CFG from "../config";
 import { fontImages, fontData } from "../data/font.db";
 
 class TextArea{
@@ -20,7 +20,7 @@ class TextArea{
    * ------------------------------------------------------------------------
    * Pass in the character and see if it should be a different color
    * ----------------------------------------------------------------------*/
-    this.colorizeCB = colorizeCB ? (char,wholeString,index) => { return colorizeCB(char,wholeString,index) } : () => { return'none' };
+    this.colorizeCB = colorizeCB ? (char,wholeString,index) => { return colorizeCB(char,wholeString,index) } : undefined;
   }
 
   /**------------------------------------------------------------------------
@@ -33,25 +33,6 @@ class TextArea{
    * @param {String}      message Text to paint
    * @param {String}      color   Which Color to write in
    * ----------------------------------------------------------------------*/
-  // instantText = (ctx,message,color) => {
-  //   let charArray = this.createCharArray(message);
-  //   let h = 0;
-  //   for(let w = 0; w < charArray.length; w++){
-  //     let coord = this.getCharCoordinates(charArray[w]);
-
-  //     // Colorizing - Pass in the character to see if there are special conditions
-  //     //              If not, just use the original color
-  //     let callbackColor = this.colorizeCB(charArray[w],charArray,w);
-  //         callbackColor = callbackColor === "none" ? this.colorImages[color] : this.colorImages[callbackColor];
-      
-  //     // image, sX, sY, sW, sH, dX, dY, dW, dH || s = source | d = destination
-  //     ctx.drawImage(callbackColor,
-  //                   coord[0] * 64,coord[1] * 64,64,64,  // Original Font Image has Chars at 64px x 64px
-  //                   ((w + this.x) * (8 * config.screenSize)),((h + this.y) * (8 * config.screenSize)),
-  //                   8 * config.screenSize, 8 * config.screenSize);
-  //   }
-  // }
-
   instantText = (ctx,message,color) => {
     let wordArray = message.split(" ");
     let row = 0; let col = 0;
@@ -59,7 +40,9 @@ class TextArea{
     for(let w = 0; w < wordArray.length; w++){
       let charArray = this.createCharArray(wordArray[w]);
       for(let c = 0; c < charArray.length; c++){
-        this.drawChar(ctx,charArray[c],col,row,color);
+        let modColor = this.colorizeCB ? this.colorizeCB(charArray[c],wordArray[w],c) : color;
+            modColor = modColor === undefined || modColor === 'none' ? color : modColor; // Protect against bad colorizers
+        this.drawChar(ctx,charArray[c],col,row,modColor);
         row = col + 1 >= this.width ? row + 1 : row;
         col = col + 1 >= this.width ? 0 : col + 1;
       }
@@ -106,7 +89,7 @@ class TextArea{
       }
       
       if(word >= wordArray.length) clearInterval(paintInterval); // Done with Message
-    },config.textSpeed * 33);
+    },CFG.textSpeed * 33);
   }
 
   /**------------------------------------------------------------------------
@@ -124,7 +107,7 @@ class TextArea{
     let coord = this.getCharCoordinates(char);
     ctx.drawImage(this.colorImages[color],
                   coord[0] * 64, coord[1] * 64, 64,64,
-                  (col+this.x)*config.tileSize,(row+this.y)*config.tileSize,config.tileSize,config.tileSize);
+                  (col+this.x)*CFG.tileSize,(row+this.y)*CFG.tileSize,CFG.tileSize,CFG.tileSize);
   }
 
   /**------------------------------------------------------------------------

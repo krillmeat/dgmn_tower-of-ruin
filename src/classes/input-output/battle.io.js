@@ -27,11 +27,11 @@ class BattleIO extends IO{
       }
     } else if(this.battleAH.getBattleState() === 'victory'){
       if(this.menuAH.getState() === 'level-next'){
-        this.battleAH.levelUpNext();
-      } else if(this.menuAH.getState() === 'evolution-choice'){
-        this.battleAH.evolveCurrDgmn();
+        this.menuAH.confirmLevelUp();
+      } else if(this.menuAH.getState() === 'evo-choice'){
+        this.menuAH.selectEvo();
       } else if(this.menuAH.getState() === 'boss-reward'){
-        this.battleAH.selectBossReward();
+        // this.battleAH.selectBossReward();
       }
     }
   }
@@ -57,7 +57,7 @@ class BattleIO extends IO{
           this.menuAH.nextIcon();
         }    
       } else if(this.battleAH.getBattleState() === 'victory'){
-        if(this.menuAH.getState() === 'rewards') this.menuAH.giveCurrReward('up');
+        if(this.menuAH.getState() === 'rewards') this.menuAH.giveCurrReward('right');
       }
     }
   }
@@ -81,7 +81,7 @@ class BattleIO extends IO{
           this.menuAH.prevIcon();
         }
       } else if(this.battleAH.getBattleState() === 'victory'){
-        if(this.menuAH.getState() === 'rewards') this.menuAH.giveCurrReward('up');
+        if(this.menuAH.getState() === 'rewards') this.menuAH.giveCurrReward('left');
       }
     }
   }

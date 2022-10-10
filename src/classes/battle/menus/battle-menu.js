@@ -1,4 +1,4 @@
-import config from "../../../config";
+import CFG from "../../../config";
 import { debugLog } from "../../../utils/log-utils";
 import Menu from "../../menu";
 import IconMenu from "../../menu/icon-menu";
@@ -8,7 +8,6 @@ import BattleMenuCanvas from "../canvas/battle-menu-canvas";
 import TargetSelect from "./target-select";
 import TextArea from "../../text-area";
 import ContinueCursor from "../../menu/continue-cursor";
-import VictoryMenu from "./victory-menu";
 
 class BattleMenu extends Menu{
   constructor(...args){
@@ -123,7 +122,7 @@ class BattleMenu extends Menu{
    * @param {Number}  battleIndex Spot of the Dgmn [0-3]
    * ----------------------------------------------------------------------*/
   setCurrentDgmn = battleIndex => {
-    this.menuCanvas.ctx.clearRect(10*config.tileSize,2*config.tileSize,2*config.tileSize,12*config.tileSize);
+    this.menuCanvas.ctx.clearRect(10*CFG.tileSize,2*CFG.tileSize,2*CFG.tileSize,12*CFG.tileSize);
     this.menuCanvas.paintCurrentCursor(battleIndex,this.systemAH.fetchImage('cursor'));
     let dgmnData = this.battleAH.getDgmnDataByIndex(this.currDgmnIndex,['speciesName','nickname','currentHP','currentEN','currentLevel']);
         dgmnData.portrait = this.systemAH.fetchImage(`${dgmnData.speciesName.toLowerCase()}Portrait`)
@@ -158,7 +157,7 @@ class BattleMenu extends Menu{
   launchTargetSelect = () => {
     this.buildTargetSelect();
     if(this.currSubMenu === 'attack'){
-      this.menuCanvas.ctx.clearRect(32*config.screenSize,16*config.screenSize,128*config.screenSize,96*config.screenSize);
+      this.menuCanvas.ctx.clearRect(32*CFG.screenSize,16*CFG.screenSize,128*CFG.screenSize,96*CFG.screenSize);
     }
     this.removeSubMenu(this.currSubMenu);
     this.currSubMenu = 'target';
@@ -320,7 +319,7 @@ class BattleMenu extends Menu{
    * ----------------------------------------------------------------------*/
   beginCombat = () => {
     debugLog("+ BEGIN COMBAT!");
-    this.menuCanvas.ctx.clearRect(10*config.tileSize,2*config.tileSize,2*config.tileSize,12*config.tileSize);
+    this.menuCanvas.ctx.clearRect(10*CFG.tileSize,2*CFG.tileSize,2*CFG.tileSize,12*CFG.tileSize);
     this.menuCanvas.clearTopMessage();
     this.menuCanvas.clearBottomSection();
     this.removeSubMenu(this.currSubMenu);
@@ -395,7 +394,7 @@ class BattleMenu extends Menu{
     let i = 0;
     let rewardInterval = setInterval(()=>{
       let image = rewards[i] === 'XP' ? 'xpIconSmall' : `field${rewards[i]}Icon`;
-      this.menuCanvas.paintImage(this.systemAH.fetchImage(image),(2+i)*config.tileSize,5*config.tileSize);
+      this.menuCanvas.paintImage(this.systemAH.fetchImage(image),(2+i)*CFG.tileSize,5*CFG.tileSize);
       if(i >= rewards.length-1){
         clearInterval(rewardInterval);
         setTimeout(()=>{callback()},500)

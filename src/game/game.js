@@ -2,10 +2,10 @@ import { debugLog } from "../utils/log-utils";
 import DgmnManager from "../classes/dgmn/dgmn-manager";
 import DigiBeetle from "../classes/digibeetle";
 import Battle from "../classes/battle/battle";
-import Dungeon from "../classes/dungeon/dungeon";
+import Dungeon from "../dungeon/dungeon";
 import GameCanvas from "../classes/canvas";
 
-import config from "../config";
+import CFG from "../config";
 import GameAH from "./game.ah";
 import TitleMenu from "../classes/title/title-menu";
 
@@ -205,25 +205,25 @@ class Game{
    * @param {Object} keyState The true/false values for all pressed keys
    * ----------------------------------------------------------------------*/
    keyHandler = keyState => {
-    if(keyState[config.keyBindings.action]){ this.keyManager('action')
+    if(keyState[CFG.keyBindings.action]){ this.keyManager('action')
     } else { this.keyTimers.action = 0 }
 
-    if(keyState[config.keyBindings.cancel]){ this.keyManager('cancel')
+    if(keyState[CFG.keyBindings.cancel]){ this.keyManager('cancel')
     } else { this.keyTimers.cancel = 0 }
 
-    if(keyState[config.keyBindings.start]){ this.keyManager('start')
+    if(keyState[CFG.keyBindings.start]){ this.keyManager('start')
     } else { this.keyTimers.start = 0 }
 
-    if(keyState[config.keyBindings.up]){ this.keyManager('up','down')
+    if(keyState[CFG.keyBindings.up]){ this.keyManager('up','down')
     } else { this.keyTimers.up = 0; this.keyManager('up','up') }
     
-    if(keyState[config.keyBindings.right]){ this.keyManager('right','down')
+    if(keyState[CFG.keyBindings.right]){ this.keyManager('right','down')
     } else { this.keyTimers.right = 0; this.keyManager('right','up') }
     
-    if(keyState[config.keyBindings.down]){ this.keyManager('down','down')
+    if(keyState[CFG.keyBindings.down]){ this.keyManager('down','down')
     } else { this.keyTimers.down = 0; this.keyManager('down','up') }
     
-    if(keyState[config.keyBindings.left]){ this.keyManager('left','down')
+    if(keyState[CFG.keyBindings.left]){ this.keyManager('left','down')
     } else { this.keyTimers.left = 0; this.keyManager('left','up') }
   }
 

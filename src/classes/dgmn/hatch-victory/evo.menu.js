@@ -5,7 +5,7 @@ import MenuCanvas from "../../menu/menu-canvas";
 import TextArea from "../../text-area";
 import DgmnUtility from "../utility/dgmn.util";
 import { debugLog } from "../../../utils/log-utils";
-import config from "../../../config";
+import CFG from "../../../config";
 
 class EvoMenu extends IconMenu{
   constructor(type,...args){
@@ -21,31 +21,31 @@ class EvoMenu extends IconMenu{
     this.menuCanvas.x = 0;
     this.menuCanvas.y = 0;
 
-    this.evoNameTxt = new TextArea(4,14,12,1,this.baseXPTxtColorize);
-    this.evoAttributeTxt = new TextArea(4,15,7,1,this.baseXPTxtColorize);
-    this.evoWeakTxt = new TextArea(4,16,4,1,this.baseXPTxtColorize);
-    this.evoResTxt = new TextArea(12,16,3,1,this.baseXPTxtColorize);
+    this.evoNameTxt = new TextArea(4,14,12,1);
+    this.evoAttributeTxt = new TextArea(4,15,7,1);
+    this.evoWeakTxt = new TextArea(4,16,4,1);
+    this.evoResTxt = new TextArea(12,16,3,1);
     this.evoReqsTxt = [
-      new TextArea(2,10,3,1,this.baseXPTxtColorize),
-      new TextArea(7,10,3,1,this.baseXPTxtColorize) ];
+      new TextArea(2,10,3,1,this.menuUtility.dimLeadingZeros),
+      new TextArea(7,10,3,1,this.menuUtility.dimLeadingZeros) ];
     this.hatchStatTxtAreas = {
-      HP:  new TextArea(16,2,3,1,this.baseXPTxtColorize),
-      ATK: new TextArea(16,3,3,1,this.baseXPTxtColorize),
-      DEF: new TextArea(16,4,3,1,this.baseXPTxtColorize),
-      INT: new TextArea(16,5,3,1,this.baseXPTxtColorize),
-      RES: new TextArea(16,6,3,1,this.baseXPTxtColorize),
-      HIT: new TextArea(16,7,3,1,this.baseXPTxtColorize),
-      AVO: new TextArea(16,8,3,1,this.baseXPTxtColorize),
-      SPD: new TextArea(16,9,3,1,this.baseXPTxtColorize) }
+      HP:  new TextArea(16,2,3,1,this.menuUtility.dimLeadingZeros),
+      ATK: new TextArea(16,3,3,1,this.menuUtility.dimLeadingZeros),
+      DEF: new TextArea(16,4,3,1,this.menuUtility.dimLeadingZeros),
+      INT: new TextArea(16,5,3,1,this.menuUtility.dimLeadingZeros),
+      RES: new TextArea(16,6,3,1,this.menuUtility.dimLeadingZeros),
+      HIT: new TextArea(16,7,3,1,this.menuUtility.dimLeadingZeros),
+      AVO: new TextArea(16,8,3,1,this.menuUtility.dimLeadingZeros),
+      SPD: new TextArea(16,9,3,1,this.menuUtility.dimLeadingZeros) }
     this.evoStatTxtAreas = {
-      HP:  new TextArea(17,2,3,1,this.baseXPTxtColorize),
-      ATK: new TextArea(17,3,3,1,this.baseXPTxtColorize),
-      DEF: new TextArea(17,4,3,1,this.baseXPTxtColorize),
-      INT: new TextArea(17,5,3,1,this.baseXPTxtColorize),
-      RES: new TextArea(17,6,3,1,this.baseXPTxtColorize),
-      HIT: new TextArea(17,7,3,1,this.baseXPTxtColorize),
-      AVO: new TextArea(17,8,3,1,this.baseXPTxtColorize),
-      SPD: new TextArea(17,9,3,1,this.baseXPTxtColorize) }
+      HP:  new TextArea(17,2,3,1,this.menuUtility.dimLeadingZeros),
+      ATK: new TextArea(17,3,3,1,this.menuUtility.dimLeadingZeros),
+      DEF: new TextArea(17,4,3,1,this.menuUtility.dimLeadingZeros),
+      INT: new TextArea(17,5,3,1,this.menuUtility.dimLeadingZeros),
+      RES: new TextArea(17,6,3,1,this.menuUtility.dimLeadingZeros),
+      HIT: new TextArea(17,7,3,1,this.menuUtility.dimLeadingZeros),
+      AVO: new TextArea(17,8,3,1,this.menuUtility.dimLeadingZeros),
+      SPD: new TextArea(17,9,3,1,this.menuUtility.dimLeadingZeros) }
 
     this.dgmnUtility = new DgmnUtility();
   }
@@ -70,7 +70,7 @@ class EvoMenu extends IconMenu{
   buildEvoScreen = (dgmnData) => {
     debugLog("Evolving DGMN...");
     this.dgmnData = dgmnData;
-    this.choices = this.dgmnUtility.getEvolutions(dgmnData.species);
+    this.choices = this.dgmnUtility.getEvolutions(dgmnData.speciesName);
       debugLog("  - Evo Options : ",this.choices);
     this.selectedDgmn = this.choices[0];
 
@@ -99,7 +99,7 @@ class EvoMenu extends IconMenu{
    * Handles drawing all of the necessary info on the canvas when evolving
    * -------------------------------------------*/ /* istanbul ignore next */
    drawEvoScreen = () => {
-    this.drawDgmnCanvas(this.dgmnData.species,[1,4]);
+    this.drawDgmnCanvas(this.dgmnData.speciesName,[1,4]);
     this.drawDgmnCanvas(this.choices[this.currChoice],[8,4]);
     this.drawEvoRequirements('evo',this.choices[this.currChoice]);
     this.drawEvoStats(this.dgmnUtility.getAllBaseStats(this.choices[this.currChoice]));
@@ -117,9 +117,9 @@ class EvoMenu extends IconMenu{
    * -------------------------------------------*/ /* istanbul ignore next */
   drawDgmnCanvas = (species,coord) => {
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(coord[0]*config.tileSize,coord[1]*config.tileSize,4*config.tileSize,4*config.tileSize);
+    this.menuCanvas.ctx.fillRect(coord[0]*CFG.tileSize,coord[1]*CFG.tileSize,4*CFG.tileSize,4*CFG.tileSize);
     this.menuCanvas.paintImage(this.fetchImageCB(`${species.toLowerCase()}Idle0`),
-      coord[0]*config.tileSize,coord[1]*config.tileSize);
+      coord[0]*CFG.tileSize,coord[1]*CFG.tileSize);
   }
 
   /**------------------------------------------------------------------------
@@ -131,13 +131,13 @@ class EvoMenu extends IconMenu{
    * -------------------------------------------*/ /* istanbul ignore next */
   drawEvoRequirements = (origin,species) => {
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(1*config.tileSize,10*config.tileSize,11*config.tileSize,2*config.tileSize);
+    this.menuCanvas.ctx.fillRect(1*CFG.tileSize,10*CFG.tileSize,11*CFG.tileSize,2*CFG.tileSize);
     let fpReqs = origin === 'hatch' ? this.dgmnUtility.getHatchFP(species) : this.dgmnUtility.getEvoFP(species);
     let i = 0;
     for(let req in fpReqs){
       let color = this.dgmnData.currentFP[req] >= fpReqs[req] ? 'white' : 'darkGreen';
       let img = this.fetchImageCB(`field${req}Icon`);
-      this.menuCanvas.paintImage(img,(1+(i * 5))*config.tileSize,10*config.tileSize);
+      this.menuCanvas.paintImage(img,(1+(i * 5))*CFG.tileSize,10*CFG.tileSize);
       this.evoReqsTxt[i].instantText(this.menuCanvas.ctx,this.menuUtility.prependZeros(fpReqs[req],3),color);
       i++;
     }
@@ -153,10 +153,10 @@ class EvoMenu extends IconMenu{
    drawEvoChoiceIcons = () => {
     let dgmnFP = this.dgmnData.currentFP;
     let possibleHatches = [];
-    let iconsOffset = [1*config.tileSize,13*config.tileSize];
+    let iconsOffset = [1*CFG.tileSize,13*CFG.tileSize];
 
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(iconsOffset[0],iconsOffset[1],11*config.tileSize,7*config.screenSize);
+    this.menuCanvas.ctx.fillRect(iconsOffset[0],iconsOffset[1],11*CFG.tileSize,7*CFG.screenSize);
 
     for(let i = 0; i < this.choices.length; i++){
       let img;
@@ -164,11 +164,11 @@ class EvoMenu extends IconMenu{
         possibleHatches.push(this.choices[i]);
         img = this.fetchImageCB('evoIconPositive');
       } else{ img = this.fetchImageCB('evoIconNegative') }
-      this.menuCanvas.paintImage(img,iconsOffset[0]+(i*config.tileSize),iconsOffset[1]);
+      this.menuCanvas.paintImage(img,iconsOffset[0]+(i*CFG.tileSize),iconsOffset[1]);
     }
 
     this.menuCanvas.ctx.fillStyle = this.dgmnUtility.canHatchInto(dgmnFP,this.choices[this.currChoice]) ? "#C4CFA1" : "#1D5A4A";
-    this.menuCanvas.ctx.fillRect(iconsOffset[0]+(this.currChoice*config.tileSize)+3,iconsOffset[1]+3,5*config.screenSize,4*config.screenSize);
+    this.menuCanvas.ctx.fillRect(iconsOffset[0]+(this.currChoice*CFG.tileSize)+3,iconsOffset[1]+3,5*CFG.screenSize,4*CFG.screenSize);
   }
 
   /**------------------------------------------------------------------------
@@ -180,7 +180,7 @@ class EvoMenu extends IconMenu{
    * -------------------------------------------*/ /* istanbul ignore next */
   drawHatchStats = stats => {
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(16*config.tileSize,2*config.tileSize,3*config.tileSize,8*config.tileSize);
+    this.menuCanvas.ctx.fillRect(16*CFG.tileSize,2*CFG.tileSize,3*CFG.tileSize,8*CFG.tileSize);
     for(let stat in stats){
       this.hatchStatTxtAreas[stat].instantText(this.menuCanvas.ctx, this.menuUtility.prependZeros(stats[stat],3),'white');
     }
@@ -195,7 +195,7 @@ class EvoMenu extends IconMenu{
    * -------------------------------------------*/ /* istanbul ignore next */
    drawEvoStats = stats => {
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(17*config.tileSize,2*config.tileSize,2*config.tileSize,8*config.tileSize);
+    this.menuCanvas.ctx.fillRect(17*CFG.tileSize,2*CFG.tileSize,2*CFG.tileSize,8*CFG.tileSize);
     for(let stat in stats){
       this.evoStatTxtAreas[stat].instantText(this.menuCanvas.ctx, this.menuUtility.prependZeros(stats[stat],2),'white');
     }
@@ -218,7 +218,7 @@ class EvoMenu extends IconMenu{
     this.evoResTxt.instantText(this.menuCanvas.ctx,'RES','green');
 
     for(let field in this.dgmnUtility.getBaseFP(species)){
-      this.menuCanvas.paintImage(this.fetchImageCB(`field${field}Icon`),(5+this.dgmnUtility.getAttribute(species).length)*config.tileSize,15*config.tileSize);
+      this.menuCanvas.paintImage(this.fetchImageCB(`field${field}Icon`),(5+this.dgmnUtility.getAttribute(species).length)*CFG.tileSize,15*CFG.tileSize);
     }
   }
 

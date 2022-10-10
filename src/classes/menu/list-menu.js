@@ -1,4 +1,4 @@
-import config from "../../config";
+import CFG from "../../config";
 import SubMenu from "./sub-menu";
 import GameCanvas from "../canvas";
 import { warningLog } from "../../utils/log-utils";
@@ -17,8 +17,8 @@ class ListMenu extends SubMenu{
     this.cursorOffset = 0;
 
     this.menuCanvas = new GameCanvas(`${this.label}-menu`,listWidth*8 ,itemAmount * (itemHeight * 8) )
-    this.menuCanvas.x = coord[0] * 8 * config.screenSize;
-    this.menuCanvas.y = coord[1] * 8 * config.screenSize;
+    this.menuCanvas.x = coord[0] * 8 * CFG.screenSize;
+    this.menuCanvas.y = coord[1] * 8 * CFG.screenSize;
   }
 
   
@@ -46,8 +46,8 @@ class ListMenu extends SubMenu{
   drawCursor = index => {
     let spotIndex = index ? index : this.currIndex;
     this.menuCanvas.ctx.fillStyle = "#00131A";
-    this.menuCanvas.ctx.fillRect(0,0,config.tileSize,(this.itemAmount*this.itemHeight)*config.tileSize);
-    this.menuCanvas.paintImage(this.cursorImg,0,(spotIndex % this.itemAmount) * (8 * this.itemHeight) * config.screenSize);
+    this.menuCanvas.ctx.fillRect(0,0,CFG.tileSize,(this.itemAmount*this.itemHeight)*CFG.tileSize);
+    this.menuCanvas.paintImage(this.cursorImg,0,(spotIndex % this.itemAmount) * (8 * this.itemHeight) * CFG.screenSize);
   }
 
   drawMenu = () => {
@@ -57,19 +57,19 @@ class ListMenu extends SubMenu{
   }
 
   drawScrollBar = () => {
-    let barMax = (8 * config.screenSize * this.itemHeight) * this.itemAmount;
+    let barMax = (8 * CFG.screenSize * this.itemHeight) * this.itemAmount;
     let barHeight = barMax / Math.ceil(this.listItems.length / this.itemAmount);
-    let barX = this.menuCanvas.width - (8 * config.screenSize);
+    let barX = this.menuCanvas.width - (8 * CFG.screenSize);
     let barY = barHeight * (Math.ceil((this.currIndex+1) / this.itemAmount)-1) ;
         barY = barY < 0 ? 0 : barY;
 
     this.menuCanvas.ctx.fillStyle = "#6CA66C";
-    this.menuCanvas.ctx.fillRect(barX+(2*config.screenSize),barY+(1*config.screenSize),5*config.screenSize,barHeight - (3 * config.screenSize));
+    this.menuCanvas.ctx.fillRect(barX+(2*CFG.screenSize),barY+(1*CFG.screenSize),5*CFG.screenSize,barHeight - (3 * CFG.screenSize));
   
   }
 
   getYOffsetForIndex = listIndex => {
-    return (this.itemHeight * listIndex * 8) * config.screenSize;
+    return (this.itemHeight * listIndex * 8) * CFG.screenSize;
   }
 
   nextListItem = () => {
