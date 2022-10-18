@@ -312,7 +312,7 @@ class DgmnManager{
   evolve = (dgmnId,evoSpecies) => {
     console.log(dgmnId+" is Evolving into "+evoSpecies);
     this.allDgmn[dgmnId].speciesName = evoSpecies;
-    this.allDgmn[dgmnId].levelUpStats();
+    this.allDgmn[dgmnId].levelUpStats(true);
     this.allDgmn[dgmnId].learnAttack();
   }
 

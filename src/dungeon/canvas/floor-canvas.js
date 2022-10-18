@@ -1,6 +1,20 @@
-import GameCanvas from "../../classes/canvas";
 import CFG from "../../config";
+import GameCanvas from "../../classes/canvas";
 
+/**------------------------------------------------------------------------
+ * FLOOR CANVAS
+ * ------------------------------------------------------------------------
+ * Canvas for the Dungeon Floor
+ * ------------------------------------------------------------------------
+ * SUPER
+ * @param {String}  canvasClass               Class Name for the Canvas
+ * @param {Number}  width                     Width of the Canvas (x Screen Size)
+ * @param {Number}  height                    Height of the Canvas (x Screen Size)
+ * @param {Number}  x                         X Position of the Canvas (x Screen Size)
+ * @param {Number}  y                         Y Position of the Canvas (x Screen Size)
+ * @param {Boolean} hasIdleAnimation          True if Canvas should animate
+ * @param {Func}    gameScreenRedrawCallback  Callback to Redraw Game Canvas
+ * ----------------------------------------------------------------------*/
 class FloorCanvas extends GameCanvas{
   constructor(...args){
     super(...args);

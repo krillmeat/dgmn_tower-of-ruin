@@ -1,5 +1,6 @@
 import CFG from "../../../config";
 import { debugLog } from "../../../utils/log-utils";
+
 import Menu from "../../menu";
 import IconMenu from "../../menu/icon-menu";
 import AttackMenu from "../../menu/attack-menu";
@@ -7,19 +8,23 @@ import BattleMenuAH from "../battle-menu.ah";
 import BattleMenuCanvas from "../canvas/battle-menu-canvas";
 import TargetSelect from "./target-select";
 import TextArea from "../../text-area";
-import ContinueCursor from "../../menu/continue-cursor";
+import BattleCannonMenu from "./battle-cannon.menu";
 
+/**------------------------------------------------------------------------
+ * BATTLE MENU 
+ * ------------------------------------------------------------------------
+ * Menu that handles all of the logic during a Battle 
+ * ----------------------------------------------------------------------*/
 class BattleMenu extends Menu{
   constructor(...args){
     super(...args);
-    this.battleAH = this.parentAH;
-    this.menuCanvas = new BattleMenuCanvas('battle-menu-canvas',160,144);
-    this.actionTxt = new TextArea(4,14,16,4);
+    this.battleAH = this.parentAH;            // Battle AH
+    this.actionTxt = new TextArea(4,14,16,4); // Text at bottom of screen
 
-    this.currDgmnIndex = 0;
-    this.currAttackAction = {};
+    this.currDgmnIndex = 0;                   // Currently Selected DGMN
+    this.currAttackAction = {};               // Temporary Action
 
-    this.currState = 'default';
+    this.currState = 'default';               // Active State of the Menu
 
     this.battleMenuAH = new BattleMenuAH({
       nextIconCB: this.nextIcon,
@@ -33,6 +38,8 @@ class BattleMenu extends Menu{
       getStateCB: this.getState,
       levelUpNextCB: this.levelUpNext
     });
+
+    this.menuCanvas = new BattleMenuCanvas('battle-menu-canvas',160,144);
   }
 
   /**------------------------------------------------------------------------
@@ -46,25 +53,47 @@ class BattleMenu extends Menu{
   }
 
   /**------------------------------------------------------------------------
+   * BUILD DIGIBEETLE MENU 
+   * ------------------------------------------------------------------------
+   * Creates the Icon Menu for when you're selecting DigiBeetle Actions 
+   * ----------------------------------------------------------------------*/
+  buildDigiBeetleMenu = () => {
+    this.menuCanvas.setTopMessage("DGMN");
+
+    this.addSubMenu('beetle',new IconMenu([14,16],['dgmn','cannon','run'],'beetle'));
+    this.subMenus.beetle.isVisible = true;
+    this.subMenus.beetle.images = this.buildIconImages( this.subMenus.beetle.iconList );
+    this.subMenus.beetle.drawIcons(0);
+    this.currSubMenu = 'beetle';
+
+    this.menuCanvas.beetleNicknameTxt.instantText(this.menuCanvas.ctx,'GUNNER','white'); // TODO - Actual Nickname
+    this.menuCanvas.beetleTxt.instantText(this.menuCanvas.ctx,'DigiBeetle','green'); // TODO - Beetle "Rank"
+  }
+
+  /**------------------------------------------------------------------------
    * BUILD DGMN MENU
    * ------------------------------------------------------------------------
    * Creates the Icon Menu for when you're selecting Dgmn Actions
    * ----------------------------------------------------------------------*/
   buildDgmnMenu = () => {
+    this.menuCanvas.setTopMessage("Attack");
+    this.setCurrentDgmn(this.currDgmnIndex);
+
     this.addSubMenu('dgmn',new IconMenu([14,16],['attack','defend','stats'],'dgmn'));
     this.subMenus.dgmn.isVisible = true;
     this.subMenus.dgmn.images = this.buildIconImages( this.subMenus.dgmn.iconList )
     this.subMenus.dgmn.drawIcons(0);
+    this.currSubMenu = 'dgmn';
+    this.drawMenu();
   }
 
+  /**------------------------------------------------------------------------
+   * NEW TURN 
+   * ------------------------------------------------------------------------
+   * Gets things ready for a new Turn in Battle 
+   * ----------------------------------------------------------------------*/
   newTurn = () => {
-    this.menuCanvas.setTopMessage("Attack");
-
-    this.currDgmnIndex = this.getInitialDgmn();
-    this.setCurrentDgmn(this.currDgmnIndex);
-    this.buildDgmnMenu();
-    this.currSubMenu = 'dgmn';
-
+    this.buildDigiBeetleMenu();
     this.drawMenu();
   }
 
@@ -78,7 +107,6 @@ class BattleMenu extends Menu{
     debugLog("++ Build Attack List | Data = ",currDgmnAttackData);
     this.addSubMenu('attack',new AttackMenu(this.systemAH.fetchImage,[4,2],6,16,2,currDgmnAttackData,this.systemAH.fetchImage('miniCursor'),this.systemAH.fetchImage('battleOptionSelectBaseRight'),'attack'));
     this.subMenus.attack.drawMenu();
-    // this.subMenus.attack.drawList();
   }
 
   /**------------------------------------------------------------------------
@@ -94,6 +122,17 @@ class BattleMenu extends Menu{
       this.menuCanvas.ctx,[8,2],3,3,4,['one','two','three'],this.systemAH.fetchImage('cursorLeft'),null,'target'));
     this.subMenus.target.currIndex = this.getStartingTarget();
     this.subMenus.target.drawMenu(this.getStartingTarget());
+  }
+
+  /**------------------------------------------------------------------------
+   * BUILD CANNON LIST 
+   * ------------------------------------------------------------------------
+   * Creates the List Menu for the Cannon Items 
+   * ----------------------------------------------------------------------*/
+  buildCannonList = () => {
+    debugLog("  - Selecting Ammo...");
+    this.addSubMenu('cannon',new BattleCannonMenu([4,2],5,16,1,['meat','damage'],this.systemAH.fetchImage('miniCursor'),this.systemAH.fetchImage('battleOptionSelectBaseRight'),'cannon'));
+    this.subMenus.cannon.drawMenu();
   }
 
   /**------------------------------------------------------------------------
@@ -167,6 +206,18 @@ class BattleMenu extends Menu{
   }
 
   /**------------------------------------------------------------------------
+   * LAUNCH CANNON LIST
+   * ------------------------------------------------------------------------
+   * Preps the Ammo List Menu for the DigiBeetle
+   * ----------------------------------------------------------------------*/
+  launchCannonList = () => {
+    this.buildCannonList();
+    this.currSubMenu = 'cannon';
+    this.subMenus.cannon.isVisible = true;
+    this.drawMenu();
+  }
+
+  /**------------------------------------------------------------------------
    * GET CURRENT MENU TYPE
    * ------------------------------------------------------------------------
    * @returns  current type of Menu that is Active - [icon|list]
@@ -208,13 +259,31 @@ class BattleMenu extends Menu{
   selectIcon = () => {
     let selected = this.subMenus[this.currSubMenu].getCurrLabel();
     this.subMenus[this.currSubMenu].selectIcon();
-    if(selected === 'attack'){
-      this.launchAttackList();
-    } else if(selected === 'defend'){
-      this.battleAH.addAction(this.currDgmnIndex,false,{isDefend: true}); // TODO - Need to switch the isEnemy to the beginning
-      this.gotoNextChoice();
+    if(this.currSubMenu === 'beetle'){
+      this.selectBeetleIcon(selected);
+    } else{
+      this.selectDgmnIcon(selected);
     }
   }
+
+    selectBeetleIcon = selected => {
+      if(selected === 'dgmn'){
+        this.removeSubMenu('beetle');
+        this.currDgmnIndex = this.getInitialDgmn();
+        this.buildDgmnMenu();
+      } else if(selected === 'cannon'){
+        this.launchCannonList();
+      }
+    }
+
+    selectDgmnIcon = selected => {
+      if(selected === 'attack'){
+        this.launchAttackList();
+      } else if(selected === 'defend'){
+        this.battleAH.addAction(this.currDgmnIndex,false,{isDefend: true}); // TODO - Need to switch the isEnemy to the beginning
+        this.gotoNextChoice();
+      }
+    }
 
   /**------------------------------------------------------------------------
    * NEXT LIST ITEM
@@ -244,6 +313,7 @@ class BattleMenu extends Menu{
    * ----------------------------------------------------------------------*/
   selectListItem = () => {
     let currSubMenuLabel = this.subMenus[this.currSubMenu].label;
+    console.log("CURRENT SUB LABEL ? ",currSubMenuLabel);
     if(currSubMenuLabel === 'attack'){
       this.setCurrentAttack();
       this.launchTargetSelect();
@@ -333,47 +403,14 @@ class BattleMenu extends Menu{
     this.drawContinueCursor(this.systemAH.fetchImage('continueCursor'),this.drawMenu);
   }
 
-  gotoRewards = (rewards) => {
-    this.currState = 'rewards';
-    
-    this.menuCanvas.continueCursor.remove();
-    this.menuCanvas.clearBottomSection();
-    this.actionTxt.timedText(this.menuCanvas.ctx,'Assign Rewards to your DGMN!',this.drawMenu);
-
-    this.victoryMenu.gotoRewardsScreen(rewards,this.systemAH.fetchImage);
-    this.drawMenu();
-  }
-
-  gotoLevelUp = levelUps => {
-    this.currState = 'levelUp';
-
-    this.levelUps = levelUps;
-
-    this.menuCanvas.clearBottomSection();
-    this.actionTxt.x = 5;
-    this.actionTxt.timedText(this.menuCanvas.ctx,`${levelUps[0].nickname} leveled up!`,this.drawMenu);
-
-    this.victoryMenu.gotoLevelUpScreen(levelUps,this.systemAH.fetchImage,this.menuCanvas.drawDgmnPortrait);
-    this.drawMenu();
-
-    setTimeout(()=>{
-      this.drawContinueCursor(this.systemAH.fetchImage('continueCursor'),this.drawMenu);
-      this.currState = 'levelUp-next';
-    })
-    
-  }
-
-  gotoEvolution = dgmnData => {
-    console.log("Evolving ",dgmnData.dgmnId);
-    this.victoryMenu.gotoEvolution(dgmnData,this.systemAH.fetchImage);
-  }
-
-  levelUpNext = () => { 
-    this.currState = 'levelUp';
-    this.victoryMenu.levelUpNext();
-    this.menuCanvas.continueCursor.remove();
-  }
-
+  /**------------------------------------------------------------------------
+   * END BATTLE 
+   * ------------------------------------------------------------------------
+   * Wraps up the Battle
+   * ------------------------------------------------------------------------
+   * @param {Array}   rewards List of Rewards from Battle
+   * @param {Number}  baseXP  XP Gained from Battle
+   * ----------------------------------------------------------------------*/
   endBattle = (rewards,baseXP) => {
     this.menuCanvas.clearBottomSection();
 
@@ -384,12 +421,22 @@ class BattleMenu extends Menu{
     this.drawMenu();
   }
 
+  /**------------------------------------------------------------------------
+   * DRAW VICTORY MESSAGE 
+   * ------------------------------------------------------------------------
+   * Paints the Message to show the battle is over 
+   * ----------------------------------------------------------------------*/
   drawVictoryMessage = () => {
     this.actionTxt.x = 2;
     this.actionTxt.y = 15;
     this.actionTxt.timedText(this.menuCanvas.ctx,'You won!',this.drawMenu);
   }
 
+  /**------------------------------------------------------------------------
+   * DRAW VICTORY REWARDS 
+   * ------------------------------------------------------------------------
+   *  Draws the FP (and bonus XP) gained from a Battle on the Victory Screen
+   * ----------------------------------------------------------------------*/
   drawVictoryRewards = (rewards,callback) => {
     let i = 0;
     let rewardInterval = setInterval(()=>{
@@ -403,12 +450,15 @@ class BattleMenu extends Menu{
     },66);
   }
 
+  /**------------------------------------------------------------------------
+   * DRAW BASE XP 
+   * ------------------------------------------------------------------------
+   * Draws the XP gained from a Battle on the Victory Screen 
+   * ----------------------------------------------------------------------*/
   drawBaseXP = xpTotal => {
     let baseXPTxt = new TextArea(6,11,3,1,(char,wholeString,index) => { return this.baseXPTxtColorize(char,wholeString,index) });
         baseXPTxt.instantText(this.menuCanvas.ctx,this.menuUtility.prependZeros(xpTotal,3),'white');
   }
-
-  getState = () => { return this.currState }
 
   /**------------------------------------------------------------------------
    * DRAW MENU
@@ -428,6 +478,11 @@ class BattleMenu extends Menu{
   // TEXT AREA COLORIZERS
 
   // TODO - This isn't working, figure it out
+  /**------------------------------------------------------------------------
+   * BASE XP COLORIZE 
+   * ------------------------------------------------------------------------
+   * TODO - This needs to go away, but it's used all over the place... 
+   * ----------------------------------------------------------------------*/
   baseXPTxtColorize = (char,wholeString,index) => {
     let color = 'none';
     if(index === 0 && char === 0){
@@ -436,7 +491,11 @@ class BattleMenu extends Menu{
     return color;
   }
 
-  // Grabs the first non KO'd DGMN
+  /**------------------------------------------------------------------------
+   * GET INITIAL DGMN 
+   * ------------------------------------------------------------------------
+   * When starting a new Turn, gets the first non-KO'd DGMN in your party 
+   * ----------------------------------------------------------------------*/
   getInitialDgmn = () => {
     for(let i = 0; i < 3; i++){
       let dgmnHP = this.battleAH.getDgmnDataByIndex(i,['currentHP',false]).currentHP;
@@ -445,7 +504,13 @@ class BattleMenu extends Menu{
 
     return -1; // This should never happen, you have lost at this point
   }
-  
+
+  /**------------------------------------------------------------------------
+   * GET STATE                                                     [EXPORTED]
+   * ------------------------------------------------------------------------
+   * Gets the current state of the Menu 
+   * ----------------------------------------------------------------------*/
+  getState = () => { return this.currState }
 }
 
 export default BattleMenu;

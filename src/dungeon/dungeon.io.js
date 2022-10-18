@@ -58,7 +58,7 @@ class DungeonIO extends IO{
   rightKeyHandler = upDown => {
     if(this.dungeonAH.getDungeonState() === 'hatch' && upDown === 'down'){
       if(this.menuAH.getState() === 'rewards'){
-        this.dungeonAH.giveCurrReward('right');
+        this.menuAH.giveCurrReward('right');
       } else if(this.menuAH.getState() === 'hatch-choice'){
         this.menuAH.nextHatch();
       }

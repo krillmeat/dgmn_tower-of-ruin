@@ -12,8 +12,8 @@ class DgmnGrowthMenu extends Menu{
   constructor(origin,dgmnAH,...args){
     super(...args);
 
-    this.origin = origin; // Where the Menu is launched from [hatch|victory]
-    this.currDgmnIndex = 0; // TODO - This shouldn't be named "hatching"
+    this.origin = origin;   // Where the Menu is launched from [hatch|victory]
+    this.currDgmnIndex = 0; // Which DGMN in the Party is Currently in-menu
     this.rewards = [];
 
     // Text Areas
@@ -46,7 +46,7 @@ class DgmnGrowthMenu extends Menu{
 
     // Prep Screen
     this.drawBackground('battleVictoryRewardsOverlay');
-    if(this.origin === 'hatch') this.topTxt.instantText(this.menuCanvas.ctx,'Use D Pad to choose','white'); // TODO - Probably should exist
+    if(this.origin === 'hatch') this.topTxt.instantText(this.menuCanvas.ctx,'Use D Pad to choose','white');
     this.actionTxt.timedText(this.menuCanvas.ctx,
       this.origin === 'hatch' ? 'Choose DGMN Egg to get Rewards!' : 'Choose DGMN to get Rewards!',
       this.drawMenu);
@@ -58,7 +58,7 @@ class DgmnGrowthMenu extends Menu{
 
     // Draw Elements
     this.origin === 'hatch' ? this.drawEggs() : this.drawDgmn(); // Draw Eggs or DGMN, depending on Origin
-    this.subMenus.rewards.drawRewardsList(rewards); // TODO - Can this be in the constructor?
+    this.subMenus.rewards.drawRewardsList(rewards);
 
     this.drawMenu();
     setTimeout(()=>{ this.currState = 'rewards' },500); // Wait before allowing Input
@@ -103,7 +103,7 @@ class DgmnGrowthMenu extends Menu{
     this.actionTxt.timedText(this.menuCanvas.ctx,`${dgmnData.nickname} Leveled Up!`,this.drawMenu);
 
     // Add Level Up SubMenu
-    this.addSubMenu('level',new LevelUpMenu('level')); // TODO - Check on this Menu, make sure it's legit
+    this.addSubMenu('level',new LevelUpMenu('level'));
     this.subMenus.level.isVisible = true;
     this.attachImageCallbacks('level');
     this.subMenus.level.buildLevelUpScreen(dgmnData,this.parentAH.drawBattleCanvas); // TODO - Shoudn't be called this
@@ -201,8 +201,6 @@ class DgmnGrowthMenu extends Menu{
 
     this.subMenus.rewards.updateRewardsList(this.rewards, () => {
       if(nextImages.length === 0){
-        // this.wrapUpRewards();
-        // this.gotoLevelUp(currDgmnData); // TODO - Should actually check if they Level Up
         this.gotoNextScreen()
         return;
       } else{ // TODO - Move to wrapUpRewards
@@ -229,7 +227,7 @@ class DgmnGrowthMenu extends Menu{
     }
     let dgmnId = dirMap[dir];
 
-    this.dgmnAH.giveDgmnReward(dgmnId,this.rewards[this.subMenus.rewards.currIndex]); // TODO - Pull from curr spot
+    this.dgmnAH.giveDgmnReward(dgmnId,this.rewards[this.subMenus.rewards.currIndex]);
     this.updateRewardsList()
   }
 
@@ -343,7 +341,6 @@ class DgmnGrowthMenu extends Menu{
    * ------------------------------------------------------------------------
    * Figures out the next place the Menu should go when done with the
    *   current actions
-   * TODO - Mother of God, this is awful...
    * ----------------------------------------------------------------------*/
   gotoNextScreen = () => {
     if(this.origin === 'hatch'){

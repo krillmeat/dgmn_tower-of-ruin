@@ -9,12 +9,8 @@ class Floor{
   constructor(floorNumber){
     this.number = floorNumber || 1;
 
-    // ACTION HANDLERS
-    this.systemAH;
-    this.gameAH;
-    this.dungeonAH;
+    this.systemAH; this.gameAH; this.dungeonAH;
 
-    // UTILITIES
     this.mapUtility = new MapUtility();
     this.treasureUtility = new TreasureUtility();
 

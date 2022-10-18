@@ -380,7 +380,6 @@ class Battle {
   battleWin = () => {
     debugLog("BATTLE WON!");
     this.giveDgmnBaseXP();
-    // this.giveDgmnRewards();
     this.battleMenu.drawVictoryMessage();
     this.battleMenu.endBattle(this.battleRewards,this.battleBaseXP);
     // this.battleMenu = null;

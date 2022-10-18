@@ -1,6 +1,18 @@
 import CFG from "../config";
-import {debugLog} from '../utils/log-utils';
 
+/**------------------------------------------------------------------------
+ * GAME CANVAS
+ * ------------------------------------------------------------------------
+ * Parent Class of all other Canvases inside of the Game
+ * ------------------------------------------------------------------------
+ * @param {String}  canvasClass               Class Name for the Canvas
+ * @param {Number}  width                     Width of the Canvas (x Screen Size)
+ * @param {Number}  height                    Height of the Canvas (x Screen Size)
+ * @param {Number}  x                         X Position of the Canvas (x Screen Size)
+ * @param {Number}  y                         Y Position of the Canvas (x Screen Size)
+ * @param {Boolean} hasIdleAnimation          True if Canvas should animate
+ * @param {Func}    gameScreenRedrawCallback  Callback to Redraw Game Canvas
+ * ----------------------------------------------------------------------*/
 class GameCanvas{
   constructor(canvasClass, width, height, x, y, hasIdleAnimation, gameScreenRedrawCallback){
     this.canvasClass = canvasClass;

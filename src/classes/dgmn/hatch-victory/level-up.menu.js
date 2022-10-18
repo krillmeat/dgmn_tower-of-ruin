@@ -38,7 +38,7 @@ class LevelUpMenu extends SubMenu{
   buildLevelUpScreen = dgmnData => {
     // Draw Stats
     for(let stat in dgmnData.currentStats){
-      let growth = this.dgmnUtility.getBaseStat(dgmnData.speciesName,stat);
+      let growth = this.dgmnUtility.getBaseStat(dgmnData.speciesName,stat) + this.dgmnUtility.calcFPStatBoost(dgmnData.currentFP,stat);
       this.statTxtAreas[stat].original.instantText(this.menuCanvas.ctx, this.menuUtility.prependZeros(dgmnData.currentStats[stat],3),'white');
       this.statTxtAreas[stat].plus.instantText(this.menuCanvas.ctx, this.menuUtility.prependZeros(growth,2),'green');
     }

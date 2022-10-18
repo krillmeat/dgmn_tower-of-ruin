@@ -22,6 +22,9 @@ class BattleMenuCanvas extends GameCanvas{
     this.dgmnENTxt = new TextArea(4,17,4,1, (char,wholeString,index) => { return this.dgmnHPENTxtColorize(char,wholeString,index) });
     this.dgmnLVTxt = new TextArea(16,14,4,1, (char,wholeString,index) => { return this.dgmnHPENTxtColorize(char,wholeString,index) });
 
+    this.beetleNicknameTxt = new TextArea(4,14,10);
+    this.beetleTxt = new TextArea(4,15,10);
+
   }
 
   clearTopMessage = () => {

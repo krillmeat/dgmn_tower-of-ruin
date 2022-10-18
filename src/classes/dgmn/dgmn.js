@@ -132,9 +132,11 @@ class Dgmn {
     }
   }
 
-  levelUpStats = () => {
+  levelUpStats = (isEvo=false) => {
     for(let stat in this.currentStats){
-      let growth = this.dgmnUtility.getBaseStat(this.speciesName,stat);
+      let growth = isEvo ? 
+        this.dgmnUtility.getBaseStat(this.speciesName,stat) :
+        this.dgmnUtility.getBaseStat(this.speciesName,stat) + this.dgmnUtility.calcFPStatBoost(this.currentFP,stat);
       this.currentStats[stat] += growth;
     }
 

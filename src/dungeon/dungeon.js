@@ -1,8 +1,5 @@
 import { debugLog } from "../utils/log-utils";
 
-import GameCanvas from "../classes/canvas";
-import { dungeonImages, fieldIcons } from "../data/images.db";
-
 import Floor from "./components/floor";
 import DungeonAH from "./dungeon.ah";
 import DungeonIO from "./dungeon.io";
@@ -12,12 +9,15 @@ import DgmnUtility from "../classes/dgmn/utility/dgmn.util";
 import DungeonTextCanvas from "./canvas/dungeon-text-canvas";
 import PauseMenu from "../classes/menu/pause-menu";
 import DgmnGrowthMenu from "../classes/dgmn/hatch-victory/dgmn-growth.menu";
+import GameCanvas from "../classes/canvas";
+
+import { dungeonImages, fieldIcons } from "../data/images.db";
 
 class Dungeon{
   constructor(isNewDungeon,loadedCallback){
     
-    // ACTION HANDLERS
-    this.digiBeetleAH; this.gameAH; this.systemAH; this.dgmnAH; // this.battleAH;
+    // Action Handlers
+    this.digiBeetleAH; this.gameAH; this.systemAH; this.dgmnAH;
 
     this.dungeonAH = new DungeonAH({
       getCurrentDirectionCB: this.getCurrentDirection,
@@ -33,7 +33,6 @@ class Dungeon{
       goUpFloorCB: this.goUpFloor,
       startBattleCB: this.startBattle,
       getCurrentFloorCB: this.getCurrentFloor,
-      giveCurrRewardCB: this.giveCurrReward,
       closeGrowthMenuCB: this.closeGrowthMenu,
       getTreasureCB: this.getTreasure,
       closeTextBoxCB: this.closeTextBox,
@@ -60,9 +59,8 @@ class Dungeon{
       left: false
     };
 
-    this.hatchingMenu;
-    this.dgmnGrowthMenu;
-    this.pauseMenu;
+    this.dgmnGrowthMenu;                      // Hatching Menu 
+    this.pauseMenu;                           // Main Pause Menu
 
     this.textBoxCanvas = new DungeonTextCanvas('dungeon-text',160,144);
 
@@ -85,8 +83,7 @@ class Dungeon{
       this.pauseMenu = new PauseMenu(this.yourParty,this.dgmnAH,this.digiBeetleAH,this.systemAH,this.gameAH,this.dungeonAH);
 
       this.systemAH.loadImages(fieldIcons, ()=>{
-        // this.hatchingMenu.gotoRewards(['DR']); // TODO - temporary permanent Reward (needs to grab from game data)
-        this.dgmnGrowthMenu.gotoRewards(['DR']);
+        this.dgmnGrowthMenu.gotoRewards([this.dgmnUtility.getRandomField()]);
         this.drawDungeon();
         this.systemAH.stopLoading();
       });
@@ -125,46 +122,6 @@ class Dungeon{
     }
 
     this.gameAH.refreshScreen();
-  }
-
-  /**------------------------------------------------------------------------
-   * GIVE CURRENT REWARD                                        [[EXPORTED ]]
-   * ------------------------------------------------------------------------
-   * When in the Reward Menu, gives the left-most Reward to the DGMN in the
-   * specified Direction
-   * TODO - Why is this here, and not in a shared location w/Battle
-   * ------------------------------------------------------------------------
-   * @param {String}  dir Direction of Input [left|up|right]
-   * ----------------------------------------------------------------------*/
-   giveCurrReward = dir => {
-    let dgmnId;
-    let reward = ['DR']; // TODO - Pull from data
-
-    if(dir === 'left'){ dgmnId = this.yourParty[0]
-    } else if(dir === 'up'){ dgmnId = this.yourParty[1]
-    } else if(dir === 'right'){ dgmnId = this.yourParty[2] }
-
-    this.dgmnAH.giveDgmnReward(dgmnId,reward);
-    // this.hatchingMenu.updateRewardsList(['DR'],this.rewardWrapUp)
-    this.dgmnGrowthMenu.updateRewardsList(['DR'],this.rewardWrapUp);
-  }
-
-  /**------------------------------------------------------------------------
-   * REWARD WRAP UP
-   * ------------------------------------------------------------------------
-   * After rewards are given...
-   * TODO - I need to follow a convention here. Something like rewardOnDone
-   * TODO - ALSO, this isn't just done on Reward done
-   * ----------------------------------------------------------------------*/
-  rewardWrapUp = () => {
-    // let currDgmn = this.yourParty[this.hatchingMenu.hatchingIndex];
-    let currDgmn = this.yourParty[this.dgmnGrowthMenu.hatchingIndex]
-    let currDgmnData = this.dgmnAH.getDgmnData(currDgmn,['eggField','currentFP'],false);
-        currDgmnData.dgmnId = currDgmn;
-    let hatchImages = this.dgmnUtility.getAllHatchImages(currDgmnData.eggField);
-    this.systemAH.loadImages(hatchImages, ()=>{
-      this.dgmnGrowthMenu.gotoHatchEggs(currDgmnData);
-    });
   }
   
   /**------------------------------------------------------------------------
