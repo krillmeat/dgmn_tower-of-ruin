@@ -58,7 +58,7 @@ class System{
     debugLog("Starting System...");
     this.pluginController();
     if(inDebug())
-      this.debugMenu = new DebugMenu(this.game.startBattle,this.game.buildDungeon);
+      this.debugMenu = new DebugMenu(this.game); // Unusual for me to do this, but pass the WHOLE game in
 
     // Load Base Images - Run game once that is all done | TODO - Maybe split out the onDone
     this.imageHandler.addToQueue(genericImages.concat(fontImages).concat(loadingImages),this.onGenericImagesLoaded);
@@ -165,7 +165,7 @@ class System{
    * @param {String}  imageName Name of the Image to fetch
    * @returns Image requested from the Stored Data
    * ----------------------------------------------------------------------*/
-  fetchImage = imageName => { return this.imageHandler.fetchImage(imageName) }
+  fetchImage = imageName => { return this.imageHandler.fetchImage(imageName) || '' }
 }
 
 export default System;

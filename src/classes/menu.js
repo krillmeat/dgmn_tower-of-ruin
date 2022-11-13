@@ -69,7 +69,8 @@ class Menu{
     for(let label of labels){
       images[label] = {
         selected: this.systemAH.fetchImage(`${label}Selected`),
-        deselected: this.systemAH.fetchImage(`${label}Deselected`)
+        deselected: this.systemAH.fetchImage(`${label}Deselected`),
+        disabled: this.systemAH.fetchImage(`${label}Disabled`)
       }
     }
 

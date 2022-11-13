@@ -11,6 +11,7 @@ import BattleDgmnStatusCanvas from "./canvas/battle-dgmn-status-canvas";
 import AttackUtility from "../dgmn/utility/attack.util";
 import CFG from "../../config";
 import DgmnGrowthMenu from "../dgmn/hatch-victory/dgmn-growth.menu";
+import CannonManager from "../../battle/components/cannon-manager";
 
 // TODO - Do I have too many "pass-throughs"? Functions in here that only serve to call a Child Class function
 
@@ -28,7 +29,7 @@ class Battle {
     this.attackChoice;
 
     // ACTION HANDLERS
-    this.systemAH; this.gameAH; this.digiBeetleAH;
+    this.systemAH; this.gameAH; this.digiBeetleAH; this.dgmnAH;
     this.dungeonAH; // TODO - We'll see if I need this, probably not
 
     this.battleAH = new BattleAH({
@@ -46,7 +47,8 @@ class Battle {
       battleLoseCB: this.battleLose,
       addRewardsCB: this.addRewards,
       gotoRewardsCB: this.gotoRewards,
-      closeGrowthMenuCB: this.closeGrowthMenu
+      closeGrowthMenuCB: this.closeGrowthMenu,
+      shootCannonCB: this.shootCannon
     });
 
     this.battleIO = new BattleIO(this.battleAH);  // Key Manager
@@ -57,6 +59,7 @@ class Battle {
     this.attackUtility = new AttackUtility();
 
     this.attackManager = new AttackManager();
+    this.cannonManager = new CannonManager();
 
     this.battleCanvas;
     this.dgmnStatusCanvas;
@@ -74,7 +77,7 @@ class Battle {
   init = () => {
     debugLog("Building New Battle...");
 
-    this.battleMenu = new BattleMenu(this.systemAH,this.gameAH,this.battleAH);
+    this.battleMenu = new BattleMenu(this.digiBeetleAH,this.systemAH,this.gameAH,this.battleAH);
     this.battleIO.setMenuAH(this.battleMenu.battleMenuAH);
     this.attackManager.battleMenuAH = this.battleMenu.battleMenuAH;
 
@@ -105,6 +108,7 @@ class Battle {
     this.dgmnAH = dgmnAH;
     this.dungeonAH = dungeonAH; this.digiBeetleAH = digiBeetleAH;
     this.attackManager.initAH(this.systemAH,this.battleAH,this.dgmnAH);
+    this.cannonManager.initAH(this.dgmnAH,this.battleAH);
   }
 
   /**------------------------------------------------------------------------
@@ -299,6 +303,7 @@ class Battle {
    * DRAW ACTION TEXT                                     
    * ------------------------------------------------------------------------
    * Passthrough to the Battle Menu to draw a message
+   * TODO - This seems like the wrong place for this
    * ----------------------------------------------------------------------*/
   drawActionText = (species,message) => {
     this.battleMenu.drawActionText(species,message);
@@ -446,6 +451,8 @@ class Battle {
     this.dgmnGrowthMenu.gotoRewards(this.battleRewards);
     // }
   }
+
+  shootCannon = (item,target) => {this.cannonManager.shoot(item,'party',target,this.battleMenu.selectBeetleIcon)} // TODO - Fix
 
   /**------------------------------------------------------------------------
    * SELECT BOSS REWARD                              

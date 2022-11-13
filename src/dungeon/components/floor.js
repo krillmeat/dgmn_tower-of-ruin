@@ -393,9 +393,8 @@ class Floor{
    * ----------------------------------------------------------------------*/
   clearTreasure = treasureNumber => {
     let treasureTile = this.findAllTilesOnFloor([parseFloat("103."+treasureNumber)])[0];
-    console.log("TREASURE TILE ? ",treasureTile);
     let room = this.roomMatrix[treasureTile.room[0]][treasureTile.room[1]];
-    room.changeTile[[treasureTile.tile[0],treasureTile.tile[1]],1]; // TODO - This isn't working, for some reason
+    room.changeTile([treasureTile.tile[0],treasureTile.tile[1]],1);
     this.floorCanvas.drawTile(this.systemAH.fetchImage('treasureTileOpen'),treasureTile.room,treasureTile.tile);
   }
 

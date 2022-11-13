@@ -60,9 +60,8 @@ class DigiBeetle{
   }
 
   removeItemFromToolBox = index => {
-    console.log("INDEX = ",index);
     this.toolBox.items.splice(index,1);
-    debugLog("Toolbox : ",this.toolBox.items);
+    debugLog("Removed Item || Toolbox : ",this.toolBox.items);
   }
 
   isToolBoxFull = () => {

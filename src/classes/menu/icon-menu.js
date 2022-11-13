@@ -10,6 +10,7 @@ class IconMenu extends SubMenu{
     this.iconList = iconList;
     this.images;
     this.coord = coord; // Allow extenders to access
+    this.disabledIcons = []; // Add a Label in here to disable the Icon altogether
 
     this.menuCanvas = new GameCanvas(`${this.label}-menu`,this.iconList.length * 16 ,16 )
     this.menuCanvas.x = coord[0] * 8 * CFG.screenSize;
@@ -45,6 +46,7 @@ class IconMenu extends SubMenu{
     this.clearIcons();
     for(let i = 0; i < this.iconList.length; i++){
       let img = selected === i ? this.images[this.iconList[i]].selected : this.images[this.iconList[i]].deselected;
+      if(this.disabledIcons.indexOf(this.iconList[i]) !== -1 ) img = this.images[this.iconList[i]].disabled;
       this.menuCanvas.paintImage(img,(i*16)*CFG.screenSize,0);
     }
   }

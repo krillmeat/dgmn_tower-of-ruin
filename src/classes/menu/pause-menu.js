@@ -234,7 +234,8 @@ class PauseMenu extends Menu{
         console.log("Selecting Item = ",item);
         if(this.treasureUtility.isTreasureUsable(item,'dungeon')){ // TODO - This needs to not be hard-coded to dungeon
           let target = this.treasureUtility.getItemTarget(item);
-          if(target === 'your-dgmn'){
+          console.log("TARGET ? ",target)
+          if(target === 'party'){
             this.launchItemTargetSelect();
           } else if(target === 'your-dgmn-all'){
             console.log("USE ITEM ON ALL DGMN");

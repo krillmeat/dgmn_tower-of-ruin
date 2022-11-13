@@ -31,7 +31,8 @@ class DgmnGrowthMenu extends Menu{
       prevHatchCB: this.prevHatch,
       selectHatchCB: this.selectHatch,
       selectEvoCB: this.selectEvo,
-      confirmLevelUpCB: this.confirmLevelUp
+      confirmLevelUpCB: this.confirmLevelUp,
+      skipEvoCB: this.skipEvo
     });
   }
 
@@ -430,6 +431,8 @@ class DgmnGrowthMenu extends Menu{
     this.evolveIntoDgmn();
     this.gotoNextScreen()
   }
+
+  skipEvo = () => { this.gotoNextScreen() }
 
   /**------------------------------------------------------------------------
    * CONFIRM LEVEL UP                                              [EXPORTED]

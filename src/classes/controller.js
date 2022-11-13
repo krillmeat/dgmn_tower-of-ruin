@@ -20,6 +20,8 @@ class Controller{
       let screenHeight = document.getElementById("game-screen").offsetHeight;
       mobileControllerElem.style.height = `${windowHeight - screenHeight}px`;
     }
+    document.getElementById('action').addEventListener('touchstart', e => { this.setKeyState('ArrowRight',true) })
+    document.getElementById('action').addEventListener('touchend', e => { this.setKeyState('ArrowRight',false) })
   }
 
   /**------------------------------------------------------------------------

@@ -90,7 +90,7 @@ class Game{
   startBattle = () => {
     debugLog("Starting Battle...");
     this.battle = new Battle(this.dungeon.floor.isBossFloor,this.dungeon.floor.number);
-    this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,this.dungeon?.dungeonAH,()=>{}); // TODO - Missing BeetleAH
+    this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,this.dungeon?.dungeonAH,this.digiBeetle?.digiBeetleAH);
     this.battle.init();
   }
 

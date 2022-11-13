@@ -9,6 +9,8 @@ import BattleMenuCanvas from "../canvas/battle-menu-canvas";
 import TargetSelect from "./target-select";
 import TextArea from "../../text-area";
 import BattleCannonMenu from "./battle-cannon.menu";
+import TreasureUtility from "../../../dungeon/utils/treasure.util"
+import { itemByName, itemsDB } from "../../../data/items.db";
 
 /**------------------------------------------------------------------------
  * BATTLE MENU 
@@ -16,15 +18,17 @@ import BattleCannonMenu from "./battle-cannon.menu";
  * Menu that handles all of the logic during a Battle 
  * ----------------------------------------------------------------------*/
 class BattleMenu extends Menu{
-  constructor(...args){
+  constructor(digiBeetleAH,...args){
     super(...args);
     this.battleAH = this.parentAH;            // Battle AH
     this.actionTxt = new TextArea(4,14,16,4); // Text at bottom of screen
 
     this.currDgmnIndex = 0;                   // Currently Selected DGMN
     this.currAttackAction = {};               // Temporary Action
+    this.currItem = [];                       // Temporary Item Store
 
     this.currState = 'default';               // Active State of the Menu
+    this.currIconMenu = 'beetle';
 
     this.battleMenuAH = new BattleMenuAH({
       nextIconCB: this.nextIcon,
@@ -36,10 +40,14 @@ class BattleMenu extends Menu{
       selectListItemCB: this.selectListItem,
       setTopMessageCB: message => { this.menuCanvas.setTopMessage(message) },
       getStateCB: this.getState,
-      levelUpNextCB: this.levelUpNext
+      getMenuLabelCB: this.getMenuLabel,
+      levelUpNextCB: this.levelUpNext,
+      goBackCB: this.goBack
     });
 
     this.menuCanvas = new BattleMenuCanvas('battle-menu-canvas',160,144);
+    this.digiBeetleAH = digiBeetleAH;
+    this.treasureUtility = new TreasureUtility();
   }
 
   /**------------------------------------------------------------------------
@@ -59,11 +67,16 @@ class BattleMenu extends Menu{
    * ----------------------------------------------------------------------*/
   buildDigiBeetleMenu = () => {
     this.menuCanvas.setTopMessage("DGMN");
+    this.currIconMenu = 'beetle';
+    this.menuCanvas. clearBottomSection();
 
     this.addSubMenu('beetle',new IconMenu([14,16],['dgmn','cannon','run'],'beetle'));
     this.subMenus.beetle.isVisible = true;
+
+    if(this.digiBeetleAH.getToolBoxItems().length === 0) this.subMenus.beetle.disabledIcons.push('cannon');
     this.subMenus.beetle.images = this.buildIconImages( this.subMenus.beetle.iconList );
     this.subMenus.beetle.drawIcons(0);
+
     this.currSubMenu = 'beetle';
 
     this.menuCanvas.beetleNicknameTxt.instantText(this.menuCanvas.ctx,'GUNNER','white'); // TODO - Actual Nickname
@@ -78,6 +91,7 @@ class BattleMenu extends Menu{
   buildDgmnMenu = () => {
     this.menuCanvas.setTopMessage("Attack");
     this.setCurrentDgmn(this.currDgmnIndex);
+    this.currIconMenu = 'dgmn';
 
     this.addSubMenu('dgmn',new IconMenu([14,16],['attack','defend','stats'],'dgmn'));
     this.subMenus.dgmn.isVisible = true;
@@ -114,15 +128,20 @@ class BattleMenu extends Menu{
    * ------------------------------------------------------------------------
    * Creates the List Menu for selecting an Enemy to hit with an attack
    * ----------------------------------------------------------------------*/
-  buildTargetSelect = () => {
+  buildTargetSelect = flow => {
     debugLog("++ Selecting Target...");
-    let hitsAll = this.currAttackAction.targets === 'all';
-    this.addSubMenu('target',new TargetSelect(hitsAll,
-      index => { return this.battleAH.getDgmnDataByIndex(index,['isDead'],true).isDead },
-      this.menuCanvas.ctx,[8,2],3,3,4,['one','two','three'],this.systemAH.fetchImage('cursorLeft'),null,'target'));
+    let side = flow === 'attack' ? 'enemy' : itemsDB[itemByName[this.currItem.name]].target;
+    let hitsAll = flow === 'attack' ? this.currAttackAction.targets === 'all' : itemsDB[itemByName[this.currItem.name]].hitsAll;
+    let xOffset = side === 'enemy' ? 0 : 2;
+    
+    this.addSubMenu('target',new TargetSelect(side,hitsAll,this.dgmnIsDeadCB,this.menuCanvas.ctx,
+      [8+xOffset,2],3,3,4,['one','two','three'],this.systemAH.fetchImage('cursorLeft'),null,'target'));
     this.subMenus.target.currIndex = this.getStartingTarget();
     this.subMenus.target.drawMenu(this.getStartingTarget());
   }
+
+    // Used above ^
+    dgmnIsDeadCB = index => { return this.battleAH.getDgmnDataByIndex(index,['isDead'],true).isDead }
 
   /**------------------------------------------------------------------------
    * BUILD CANNON LIST 
@@ -131,7 +150,8 @@ class BattleMenu extends Menu{
    * ----------------------------------------------------------------------*/
   buildCannonList = () => {
     debugLog("  - Selecting Ammo...");
-    this.addSubMenu('cannon',new BattleCannonMenu([4,2],5,16,1,['meat','damage'],this.systemAH.fetchImage('miniCursor'),this.systemAH.fetchImage('battleOptionSelectBaseRight'),'cannon'));
+    const items = this.digiBeetleAH.getToolBoxItems().map(item => this.treasureUtility.getTreasureName(item));
+    this.addSubMenu('cannon',new BattleCannonMenu([9,2],12,16,1,items,this.systemAH.fetchImage('miniCursor'),this.systemAH.fetchImage('battleCannonOverlay'),'cannon'));
     this.subMenus.cannon.drawMenu();
   }
 
@@ -181,6 +201,22 @@ class BattleMenu extends Menu{
     this.drawMenu();
   }
 
+    /**------------------------------------------------------------------------
+   * CLEAR ATTACK LIST
+   * ------------------------------------------------------------------------
+   * Gets rid of the Attack List (moving forward and back)
+   * ------------------------------------------------------------------------
+   * @param {String}  dir Which way the action is going [forward|back]
+   * ----------------------------------------------------------------------*/
+     clearAttackList = dir => {
+      this.removeSubMenu('attack');
+      this.menuCanvas.ctx.clearRect(32*CFG.screenSize,16*CFG.screenSize,128*CFG.screenSize,96*CFG.screenSize);
+  
+      if(dir === 'back') this.buildDgmnMenu();
+  
+      this.drawMenu();
+    }
+
   drawActionText = (species,message) => {
     this.menuCanvas.clearBottomSection();
     this.menuCanvas.drawDgmnPortrait(this.systemAH.fetchImage(species.toLowerCase()+'Portrait'));
@@ -191,17 +227,34 @@ class BattleMenu extends Menu{
    * LAUNCH TARGET SELECT
    * ------------------------------------------------------------------------
    * Launches the Target Selection
-   * TODO - Add Team-facing selection also
    * ----------------------------------------------------------------------*/
-  launchTargetSelect = () => {
-    this.buildTargetSelect();
-    if(this.currSubMenu === 'attack'){
-      this.menuCanvas.ctx.clearRect(32*CFG.screenSize,16*CFG.screenSize,128*CFG.screenSize,96*CFG.screenSize);
-    }
+  launchTargetSelect = flow => {
+    this.buildTargetSelect(flow);
     this.removeSubMenu(this.currSubMenu);
     this.currSubMenu = 'target';
     this.subMenus[this.currSubMenu].isVisible = true;
-    this.menuCanvas.paintCurrentCursor(this.currDgmnIndex,this.systemAH.fetchImage('cursor'));  // Redraw your current DGMN's Cursor
+
+    if(flow === 'attack'){
+      this.menuCanvas.paintCurrentCursor(this.currDgmnIndex,this.systemAH.fetchImage('cursor'));  // Redraw your current DGMN's Cursor
+    }
+
+    this.menuCanvas.ctx.clearRect(32*CFG.screenSize,16*CFG.screenSize,128*CFG.screenSize,96*CFG.screenSize);
+    this.drawMenu();
+  }
+
+  /**------------------------------------------------------------------------
+   * CLEAR TARGET SELECT
+   * ------------------------------------------------------------------------
+   * Gets rid of the Target Selection List
+   * ------------------------------------------------------------------------
+   * @param {String}  dir   Which way the action is going [forward|back]
+   * ----------------------------------------------------------------------*/
+  clearTargetSelect = (dir) => {
+    this.subMenus.target.clearAllCursors(true);
+    this.removeSubMenu('target');
+
+    if(dir === 'back') this.currIconMenu === 'dgmn' ? this.launchAttackList() : this.launchCannonList();
+
     this.drawMenu();
   }
 
@@ -214,6 +267,22 @@ class BattleMenu extends Menu{
     this.buildCannonList();
     this.currSubMenu = 'cannon';
     this.subMenus.cannon.isVisible = true;
+    this.drawMenu();
+  }
+
+  /**------------------------------------------------------------------------
+   * CLEAR CANNON LIST
+   * ------------------------------------------------------------------------
+   * Gets rid of the Cannon List (moving forward and back)
+   * ------------------------------------------------------------------------
+   * @param {String}  dir Which way the action is going [forward|back]
+   * ----------------------------------------------------------------------*/
+  clearCannonList = dir => {
+    this.removeSubMenu('cannon');
+    this.menuCanvas.ctx.clearRect(32*CFG.screenSize,16*CFG.screenSize,128*CFG.screenSize,96*CFG.screenSize);
+
+    if(dir === 'back') this.buildDigiBeetleMenu();
+
     this.drawMenu();
   }
 
@@ -271,7 +340,7 @@ class BattleMenu extends Menu{
         this.removeSubMenu('beetle');
         this.currDgmnIndex = this.getInitialDgmn();
         this.buildDgmnMenu();
-      } else if(selected === 'cannon'){
+      } else if(selected === 'cannon' && this.digiBeetleAH.getToolBoxItems().length !== 0){
         this.launchCannonList();
       }
     }
@@ -313,15 +382,40 @@ class BattleMenu extends Menu{
    * ----------------------------------------------------------------------*/
   selectListItem = () => {
     let currSubMenuLabel = this.subMenus[this.currSubMenu].label;
-    console.log("CURRENT SUB LABEL ? ",currSubMenuLabel);
     if(currSubMenuLabel === 'attack'){
       this.setCurrentAttack();
-      this.launchTargetSelect();
+      this.launchTargetSelect('attack');
     } else if(currSubMenuLabel === 'target'){
       let targets = this.subMenus.target.hitsAll ? [0,1,2] : [this.subMenus.target.currIndex];
       this.subMenus.target.clearAllCursors(true);
-      this.setCurrentTargets(targets);
+      if(this.currIconMenu === 'beetle'){
+        this.setCurrentCannonTargets(targets,this.subMenus.target.side === 'enemy')
+      } else { this.setCurrentTargets(targets) }
       this.drawMenu();
+    } else if(currSubMenuLabel === 'cannon'){
+      this.setCurrentItem();
+      this.launchTargetSelect('cannon')
+    }
+  }
+
+  /**------------------------------------------------------------------------
+   * GO BACK
+   * ------------------------------------------------------------------------
+   * Handles all actions for going back by hitting the Cancel Button
+   * ----------------------------------------------------------------------*/
+  goBack = () => {
+    switch(this.currSubMenu){
+      case 'cannon':
+        this.clearCannonList('back');
+        break;
+      case 'attack':
+        this.clearAttackList('back');
+        break;
+      case 'target':
+        this.clearTargetSelect('back');
+        break;
+      default:
+        break;
     }
   }
 
@@ -339,6 +433,22 @@ class BattleMenu extends Menu{
     this.currAttackAction.targets = attackData.targets;
     this.currAttackAction.power = attackData.power;
     this.currAttackAction.type = attackData.type;
+    debugLog('    - Attack Selected: ',this.currAttackAction.attackName);
+  }
+
+  /**------------------------------------------------------------------------
+   * SET CURRENT ITEM 
+   * ------------------------------------------------------------------------
+   * Grabs the item chosen in the Cannon menu and stores it so the target
+   * select knows what to do 
+   * ----------------------------------------------------------------------*/
+  setCurrentItem = () => {
+    this.currItem = {
+      index: this.subMenus.cannon.currIndex,
+      name: this.subMenus.cannon.listItems[this.subMenus.cannon.currIndex]
+    }
+
+    debugLog('    - Item Selected: ',this.currItem.name);
   }
 
   /**------------------------------------------------------------------------
@@ -357,6 +467,14 @@ class BattleMenu extends Menu{
     this.battleAH.addAction(this.currDgmnIndex,false,tempAction);
 
     this.gotoNextChoice();  // TODO - name should be switched for something like "wrap up turn"
+  }
+
+  setCurrentCannonTargets = (targets, isEnemy) => {
+    this.removeSubMenu(this.currSubMenu);
+    this.removeSubMenu('beetle');
+    this.drawMenu();
+    this.digiBeetleAH.removeItemFromToolBox(this.currItem.index);
+    this.battleAH.shootCannon(this.currItem,targets);
   }
 
   /**------------------------------------------------------------------------
@@ -511,6 +629,8 @@ class BattleMenu extends Menu{
    * Gets the current state of the Menu 
    * ----------------------------------------------------------------------*/
   getState = () => { return this.currState }
+
+  getMenuLabel = () => { return this.currSubMenu }
 }
 
 export default BattleMenu;

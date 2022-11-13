@@ -8,6 +8,7 @@ class DgmnGrowthMenuAH{
     this.selectHatch = () => { cbObj.selectHatchCB() }
     this.selectEvo = () => { cbObj.selectEvoCB() }
     this.confirmLevelUp = () => { cbObj.confirmLevelUpCB() }
+    this.skipEvo = () => {cbObj.skipEvoCB() }
   }
 }
 

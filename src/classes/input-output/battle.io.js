@@ -36,6 +36,10 @@ class BattleIO extends IO{
     }
   }
 
+  cancelKeyHandler = upDown => {
+    this.menuAH.goBack();
+  }
+
   upKeyHandler = upDown => {
       if(upDown === 'down'){
         if(this.battleAH.getBattleState() === 'battle'){
