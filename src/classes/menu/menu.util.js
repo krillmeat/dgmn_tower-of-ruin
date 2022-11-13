@@ -19,6 +19,24 @@ class MenuUtility{
     }
     return zeroString+number.toString();
   }
+
+  /**------------------------------------------------------------------------
+   * DIM LEADING ZEROS
+   * ------------------------------------------------------------------------
+   * If a number has extra zeros in front, I want them dimmed out
+   * ----------------------------------------------------------------------*/
+  dimLeadingZeros = (char,message,index) => {
+    if(char !== '0') return 'none'
+    if(index === 0 && char === '0') return 'darkGreen'
+
+    // Check all previous numbers to make sure all zeros
+    for(let i = 0; i <= index; i++){
+      if(message[i] !== '0') return 'none'
+      if(i === index) return 'darkGreen'
+
+    }
+    return 'none'
+  }
 }
 
 export default MenuUtility;

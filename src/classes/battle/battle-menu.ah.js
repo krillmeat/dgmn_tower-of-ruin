@@ -10,6 +10,8 @@ class BattleMenuAH{
     this.setTopMessage = () => { cbObj.setTopMessageCB() }
     this.getState = () => { return cbObj.getStateCB() }
     this.levelUpNext = () => cbObj.levelUpNextCB()
+    this.getMenuLabel = () => cbObj.getMenuLabelCB()
+    this.goBack = () => cbObj.goBackCB()
     
   }
 }

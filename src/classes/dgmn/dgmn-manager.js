@@ -7,7 +7,7 @@ import { partyMock, enemyPartyMock } from "../../mock/dgmn.mock";
 import EnemyGenerator from "./enemy-generator";
 import DgmnUtility from "./utility/dgmn.util";
 import { debugLog } from "../../utils/log-utils";
-import TreasureUtility from "../dungeon/utility/treasure.util";
+import TreasureUtility from "../../dungeon/utils/treasure.util";
 
 // TODO - THIS CLASS WILL NEVER WORK LIKE THIS. IT WILL INTERACT HEAVILY WITH THE SAVE DATA TO BUILD OUT THE allDgmn OBJECT
 // TODO - RENAME TO ALL DGMN
@@ -49,7 +49,8 @@ class DgmnManager{
       evolveCB: this.evolve,
       hatchEggCB: this.hatchEgg,
       useItemOnCB: this.useItemOn,
-      giveUpgradeCB: this.giveUpgrade
+      giveUpgradeCB: this.giveUpgrade,
+      getDgmnPartyCB: this.getDgmnParty
     });
 
     this.systemAH = systemAH;
@@ -274,6 +275,7 @@ class DgmnManager{
    * @param {String} reward FP or XP Boost to be rewarded
    * ----------------------------------------------------------------------*/
   giveDgmnReward = (dgmnId,reward) => {
+    debugLog('  - Give '+dgmnId+' reward: '+reward);
     reward === 'XP' ? this.allDgmn[dgmnId].currentXP++ : this.allDgmn[dgmnId].currentFP[reward]++; // TODO - XXP
   }
 
@@ -310,7 +312,7 @@ class DgmnManager{
   evolve = (dgmnId,evoSpecies) => {
     console.log(dgmnId+" is Evolving into "+evoSpecies);
     this.allDgmn[dgmnId].speciesName = evoSpecies;
-    this.allDgmn[dgmnId].levelUpStats();
+    this.allDgmn[dgmnId].levelUpStats(true);
     this.allDgmn[dgmnId].learnAttack();
   }
 
@@ -428,6 +430,7 @@ class DgmnManager{
     this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.stop();
   }
 
+  getDgmnParty = () => this.party
   getTempDgmn = () => { return this.tempDgmn }
 
   /**------------------------------------------------------------------------

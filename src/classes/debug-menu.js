@@ -1,20 +1,37 @@
+import Dungeon from '../dungeon/dungeon';
 import { debugLog } from '../utils/log-utils';
 
 class DebugMenu {
-  constructor(launchBattleCallback,buildDungeonCallback){
-    debugLog('Booting Debug Menu...');
+  constructor(game){
+    debugLog('  - Booting Debug Menu...');
 
     this.elem = document.getElementById("debug-menu");
     this.state = 'active';  // Is the debug menu supposed to be visible or not [active | inactive]
+    this.game = game;
 
     this.activate();
 
     this.launchBattle = () => {
-      launchBattleCallback();
+      // Build Mock Dungeon
+      this.game.dungeon = {
+        floor: {
+          isBossFloor: false,
+          number: 1
+        }
+      }
+      this.game.digiBeetle = {
+        digiBeetleAH: {
+          getToolBoxItems: () => { return ['smallMeat'] },
+          removeItemFromToolBox: () => {}
+        }
+      }
+      this.game.atTitle = false;
+      this.game.startBattle();
+      
     }
 
     this.launchDungeon = () => {
-      buildDungeonCallback();
+      this.game.buildDungeon()
     }
   }
 
@@ -36,7 +53,7 @@ class DebugMenu {
         if(document.body.dataset.view === 'mobile'){
           let windowHeight = window.innerHeight;
           let screenHeight = document.getElementById("game-screen").offsetHeight;
-          mobileControllerElem.style.height = `${windowHeight - screenHeight}px`;
+          // mobileControllerElem.style.height = `${windowHeight - screenHeight}px`;
         }
       }
     })

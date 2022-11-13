@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest",
     "build": "rollup -c",
-    "jsdoc": "jsdoc -c jsdocs.config.json"
+    "jsdoc": "jsdoc -c jsdocs.CFG.json"
   },
   "repository": {
     "type": "git",

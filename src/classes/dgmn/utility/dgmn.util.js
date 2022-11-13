@@ -1,5 +1,6 @@
 import { dgmnDB } from '../../../data/dgmn.db';
 import { digiTamaDB } from '../../../data/digitama.db';
+import { FIELD_STATS } from '../../../data/fields.db';
 
 class DgmnUtility{
   constructor(){
@@ -115,6 +116,11 @@ class DgmnUtility{
     return true;
   }
 
+  getRandomField = () => {
+    const FIELDS = ['DR','NS','WG','JT','DS','ME','VB','NA'];
+    return FIELDS[Math.floor(Math.random() * FIELDS.length)];
+  }
+
   canEvolveInto = (dgmnFP,evoSpecies) => {
     let evoFP = this.getEvoFP(evoSpecies);
     for(let FP in evoFP){
@@ -122,6 +128,13 @@ class DgmnUtility{
         return false;
       }
     } return true;
+  }
+
+  canEvolveIntoAny = (dgmnFP,currSpecies) => {
+    let evolutions = this.getEvolutions(currSpecies);
+    for(let evo of evolutions){
+      if(this.canEvolveInto(dgmnFP,evo)) return true
+    } return false;
   }
 
   canHatchInto = (dgmnFP,hatchSpecies) => {
@@ -135,6 +148,11 @@ class DgmnUtility{
 
   getEggHatches = field => {
     return digiTamaDB[field];
+  }
+
+  calcFPStatBoost = (currentFP,stat) => {
+    const field = FIELD_STATS[stat];
+    return Math.floor(Math.pow(currentFP[field],1/2));
   }
 
 }

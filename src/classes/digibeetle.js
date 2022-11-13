@@ -3,7 +3,7 @@ import DigiBeetleCanvas from "./digibeetle-canvas"
 
 import {digiBeetleImages} from "../data/images.db";
 import { debugLog } from "../utils/log-utils";
-import config from "../config";
+import CFG from "../config";
 import DigiBeetleUtility from "./digibeetle.util";
 
 class DigiBeetle{
@@ -51,7 +51,7 @@ class DigiBeetle{
   }
 
   showCanvas = () => {
-    this.digiBeetleCanvas.x = 64 * config.screenSize;
+    this.digiBeetleCanvas.x = 64 * CFG.screenSize;
   }
 
   addItemToToolBox = item => {
@@ -60,9 +60,8 @@ class DigiBeetle{
   }
 
   removeItemFromToolBox = index => {
-    console.log("INDEX = ",index);
     this.toolBox.items.splice(index,1);
-    debugLog("Toolbox : ",this.toolBox.items);
+    debugLog("Removed Item || Toolbox : ",this.toolBox.items);
   }
 
   isToolBoxFull = () => {

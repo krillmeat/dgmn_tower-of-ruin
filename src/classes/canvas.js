@@ -1,13 +1,25 @@
-import config from "../config";
-import {debugLog} from '../utils/log-utils';
+import CFG from "../config";
 
+/**------------------------------------------------------------------------
+ * GAME CANVAS
+ * ------------------------------------------------------------------------
+ * Parent Class of all other Canvases inside of the Game
+ * ------------------------------------------------------------------------
+ * @param {String}  canvasClass               Class Name for the Canvas
+ * @param {Number}  width                     Width of the Canvas (x Screen Size)
+ * @param {Number}  height                    Height of the Canvas (x Screen Size)
+ * @param {Number}  x                         X Position of the Canvas (x Screen Size)
+ * @param {Number}  y                         Y Position of the Canvas (x Screen Size)
+ * @param {Boolean} hasIdleAnimation          True if Canvas should animate
+ * @param {Func}    gameScreenRedrawCallback  Callback to Redraw Game Canvas
+ * ----------------------------------------------------------------------*/
 class GameCanvas{
   constructor(canvasClass, width, height, x, y, hasIdleAnimation, gameScreenRedrawCallback){
     this.canvasClass = canvasClass;
-    this.x = x * config.screenSize || 0;
-    this.y = y * config.screenSize || 0;
-    this.width = width * config.screenSize;
-    this.height = height * config.screenSize;
+    this.x = x * CFG.screenSize || 0;
+    this.y = y * CFG.screenSize || 0;
+    this.width = width * CFG.screenSize;
+    this.height = height * CFG.screenSize;
     this.elem = this.buildCanvas();
     this.ctx;
 
@@ -137,8 +149,8 @@ class GameCanvas{
    * @param {Boolean} isFlipped Should the Image be reversed (used for Battle DGMN)
    * ----------------------------------------------------------------------*/
   paintImage = (image, x, y, isFlipped) => {
-      let imgHeight = (image.height / 8) * config.screenSize;
-      let imgWidth = (image.width / 8) * config.screenSize;
+      let imgHeight = (image.height / 8) * CFG.screenSize;
+      let imgWidth = (image.width / 8) * CFG.screenSize;
       let imgX = x || 0;
       let imgY = y || 0;
       if(isFlipped){
@@ -159,7 +171,7 @@ class GameCanvas{
   }
 
   clearBottomSection = () => {
-    this.ctx.clearRect(0,14*8*config.screenSize,20*8*config.screenSize,4*8*config.screenSize);
+    this.ctx.clearRect(0,14*8*CFG.screenSize,20*8*CFG.screenSize,4*8*CFG.screenSize);
   }
 }
 

@@ -90,49 +90,49 @@ export const dgmnEncounterDB = {
   Bota: {
     speciesName: 'Bota',
     currentLevel: 2,
-    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 1},
+    currentStats: {HP:2, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 1},
     attacks: [new Attack('bubbles')]
   },
   Yura: {
     speciesName: 'Yura',
     currentLevel: 2,
-    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 2, RES: 2, HIT: 1, AVO: 1, SPD: 1},
+    currentStats: {HP:2, ATK: 2, DEF: 1, INT: 2, RES: 2, HIT: 1, AVO: 1, SPD: 1},
     attacks: [new Attack('bubbles')]
   },
   Zuru: {
     speciesName: 'Zuru',
     currentLevel: 2,
-    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 2, RES: 1, HIT: 1, AVO: 2, SPD: 1},
+    currentStats: {HP:2, ATK: 2, DEF: 1, INT: 2, RES: 1, HIT: 1, AVO: 2, SPD: 1},
     attacks: [new Attack('bubbles')]
   },
   Doki: {
     speciesName: 'Doki',
     currentLevel: 2,
-    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 1, AVO: 2, SPD: 2},
+    currentStats: {HP:2, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 1, AVO: 2, SPD: 2},
     attacks: [new Attack('bubbles')]
   },
   Pururu: {
     speciesName: 'Pururu',
     currentLevel: 2,
-    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 2},
+    currentStats: {HP:2, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 2},
     attacks: [new Attack('bubbles')]
   },
   Choro: {
     speciesName: 'Choro',
     currentLevel: 2,
-    currentStats: {HP:5, ATK: 2, DEF: 2, INT: 1, RES: 2, HIT: 1, AVO: 1, SPD: 1},
+    currentStats: {HP:2, ATK: 2, DEF: 2, INT: 1, RES: 2, HIT: 1, AVO: 1, SPD: 1},
     attacks: [new Attack('bubbles')]
   },
   Pitch: {
     speciesName: 'Pitch',
     currentLevel: 2,
-    currentStats: {HP:5, ATK: 1, DEF: 2, INT: 1, RES: 2, HIT: 1, AVO: 2, SPD: 1},
+    currentStats: {HP:2, ATK: 1, DEF: 2, INT: 1, RES: 2, HIT: 1, AVO: 2, SPD: 1},
     attacks: [new Attack('bubbles')]
   },
   Poyo: {
     speciesName: 'Poyo',
     currentLevel: 2,
-    currentStats: {HP:5, ATK:2, DEF:1, INT:2, RES:2, HIT:1, AVO:1, SPD:1 },
+    currentStats: {HP:2, ATK:2, DEF:1, INT:2, RES:2, HIT:1, AVO:1, SPD:1 },
     attacks: [new Attack('bubbles')]
   },
   Koro: {
@@ -200,7 +200,7 @@ export const bossEncountersDB = {
   Koro: {
     speciesName: 'Koro',
     currentLevel: 4,
-    currentStats: {HP:56, ATK:9, DEF:4, INT:4, RES:4, HIT:9, AVO:4, SPD:9},
+    currentStats: {HP:26, ATK:9, DEF:4, INT:4, RES:4, HIT:9, AVO:4, SPD:9},
     attacks: [new Attack('bubbles')]
   },
   Agu: {

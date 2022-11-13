@@ -13,11 +13,10 @@
         "${workspaceRoot}/node_modules/jest/bin/jest",
         "--runInBand",
         "--detectOpenHandles",
-        "battle"
+        "system"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "disableOptimisticBPs": true,
       "smartStep": false
     }
   ]

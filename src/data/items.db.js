@@ -2,7 +2,8 @@ export const itemsDB = {
   smallMeat: {
     displayName: 'Meat S',
     usable: ['battle','dungeon'],
-    target: 'your-dgmn',
+    target: 'party',
+    hitsAll: false,
     description: 'Heal HP of 1 DGMN by 10',
     effect: {
       type: 'heal',
@@ -13,13 +14,15 @@ export const itemsDB = {
   atkPluginC: {
     displayName: 'ATK+ C',
     usable: ['battle'],
-    target: 'your-dgmn',
+    target: 'party',
+    hitsAll: false,
     description: 'Boost 1 DGMN ATK by 1 in Battle'
   },
   boosterDRs: {
     displayName: '1 DR FP',
     usable: ['dungeon'],
-    target: 'your-dgmn',
+    target: 'party',
+    hitsAll: false,
     description: 'Give 1 DGMN 1 Dragon Roar Field Point',
     effect: {
       type: 'booster',
@@ -39,6 +42,12 @@ export const itemChart = {
   booster: {
     common: ['boosterDRs']
   }
+}
+
+export const itemByName = {
+  "Meat S": 'smallMeat',
+  "ATK+ C": 'atkPluginC',
+  "1 DR FP": 'boosterDRs'
 }
 
 export const treasureChartDB = {

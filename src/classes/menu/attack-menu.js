@@ -1,4 +1,4 @@
-import config from "../../config";
+import CFG from "../../config";
 import TextArea from "../text-area";
 import ListMenu from "./list-menu";
 // import ListMenuCanvas from "./list-menu-canvas";
@@ -33,23 +33,23 @@ class AttackMenu extends ListMenu{
   // Overwrite to avoid black box behind cursor
   drawCursor = index => {
     let spotIndex = index ? index : this.currIndex;
-    this.menuCanvas.paintImage(this.cursorImg,0,(spotIndex % this.itemAmount) * (8 * this.itemHeight) * config.screenSize);
+    this.menuCanvas.paintImage(this.cursorImg,0,(spotIndex % this.itemAmount) * (8 * this.itemHeight) * CFG.screenSize);
   }
 
   drawTypeIcon = (listIndex,type) => {
     this.menuCanvas.paintImage(this.fetchImage(`${type}TypeIcon`), 
-                              ( 88 )*config.screenSize ,this.getYOffsetForIndex(listIndex) + ( 8 * config.screenSize ));
+                              ( 88 )*CFG.screenSize ,this.getYOffsetForIndex(listIndex) + ( 8 * CFG.screenSize ));
   }
 
   drawPowerIcon = (listIndex,power) => {
     this.menuCanvas.paintImage(this.fetchImage(`pwr${power}Icon`), 
-                              ( 96 )*config.screenSize ,this.getYOffsetForIndex(listIndex) + ( 8 * config.screenSize ));
+                              ( 96 )*CFG.screenSize ,this.getYOffsetForIndex(listIndex) + ( 8 * CFG.screenSize ));
   }
 
   drawTargetsIcon = (listIndex,targets) => {
     let imageName = targets === 'single' ? 'targetOne' : 'targetAll';
     this.menuCanvas.paintImage(this.fetchImage(imageName), 
-                              ( 104 )*config.screenSize ,this.getYOffsetForIndex(listIndex) + ( 8 * config.screenSize ));
+                              ( 104 )*CFG.screenSize ,this.getYOffsetForIndex(listIndex) + ( 8 * CFG.screenSize ));
   }
 
   drawHitsIcon = (listIndex,hits) => {
@@ -58,7 +58,7 @@ class AttackMenu extends ListMenu{
         hitCount = hits === 3 ? 'three' : hitCount;
 
     this.menuCanvas.paintImage(this.fetchImage('oneHitIcon'), // TODO - Create the remaining icons 
-                              ( 112 )*config.screenSize ,this.getYOffsetForIndex(listIndex) + ( 8 * config.screenSize ));
+                              ( 112 )*CFG.screenSize ,this.getYOffsetForIndex(listIndex) + ( 8 * CFG.screenSize ));
   }
 
   /**------------------------------------------------------------------------
@@ -77,8 +77,8 @@ class AttackMenu extends ListMenu{
           final = final >= 0 ? 0 : final;
           final = final/25 < -3 ? -100 : final;
       this.menuCanvas.ctx.drawImage(this.fetchImage(`costMeter${100+final}`),
-                                 ((1 + i) * (8 * config.screenSize)), (1+(listIndex*2))*(8*config.screenSize),
-                                 (8*config.screenSize),(8*config.screenSize));
+                                 ((1 + i) * (8 * CFG.screenSize)), (1+(listIndex*2))*(8*CFG.screenSize),
+                                 (8*CFG.screenSize),(8*CFG.screenSize));
       remCount -= 4;
     }
   }

@@ -30,6 +30,8 @@
     this.levelUpNext = () => cbObj.levelUpNextCB()
     this.evolveCurrDgmn = () => cbObj.evolveCurrDgmnCB()
     this.selectBossReward = () => cbObj.selectBossRewardCB()
+    this.closeGrowthMenu = () => cbObj.closeGrowthMenuCB()
+    this.shootCannon = (item,target) => cbObj.shootCannonCB(item,target)
    }
  }
 

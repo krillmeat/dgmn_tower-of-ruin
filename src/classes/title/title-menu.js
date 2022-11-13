@@ -10,11 +10,13 @@ class TitleMenu extends Menu{
   constructor(...args){
     super(...args);
 
-    this.menuCanvas = new MenuCanvas('victory',160,144); 
+    this.menuCanvas = new MenuCanvas('titleMenu',160,144); 
     this.titleAH = new TitleAH({
       startNewGameCB: this.startNewGame
     })
     this.titleMenuIO = new TitleIO();
+
+    this.atTitle = true;                                  // Whether or not the Title Screen is currently showing
   }
 
   init = () => {

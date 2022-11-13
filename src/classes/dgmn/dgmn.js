@@ -1,4 +1,4 @@
-import config from "../../config";
+import CFG from "../../config";
 import { dgmnDB } from "../../data/dgmn.db";
 // import BattleDgmnCanvas from "../battle/canvas/battle-dgmn-canvas";
 import DgmnCanvas from "./canvas/dgmn-canvas";
@@ -58,8 +58,8 @@ class Dgmn {
    * ----------------------------------------------------------------------*/ /* istanbul ignore next */
   initCanvas = (refreshScreenCB,dgmnImageList,battlePosition) => {
     this.dgmnCanvas = new DgmnCanvas(refreshScreenCB,this.speciesName,'dgmn-canvas',32,32);
-    this.dgmnCanvas.x = (24 + (this.isEnemy ? 8 : 72) ) * config.screenSize;
-    this.dgmnCanvas.y = (16 + (battlePosition * 32) ) * config.screenSize;
+    this.dgmnCanvas.x = (24 + (this.isEnemy ? 8 : 72) ) * CFG.screenSize;
+    this.dgmnCanvas.y = (16 + (battlePosition * 32) ) * CFG.screenSize;
     this.dgmnCanvas.frames = dgmnImageList;
     if(this.isEnemy){ this.dgmnCanvas.flip() }
   }
@@ -68,11 +68,13 @@ class Dgmn {
    * START IDLE ANIMATION
    * ------------------------------------------------------------------------
    * Starts the Idle Animation on the DGMN Canvas
+   * TODO - Leave in, but disable for now.
    * ----------------------------------------------------------------------*/
   startIdleAnimation = () => {
-    let speed = 1800 - (Math.floor(this.currentStats.SPD*2) * 33);
-        speed = speed <= 0 ? 33 : speed;
-    this.dgmnCanvas.animate(speed);
+    // let speed = 1800 - (Math.floor(this.currentStats.SPD*2) * 33);
+    //     speed = speed <= 0 ? 33 : speed;
+    // this.dgmnCanvas.animate(speed);
+    this.dgmnCanvas.animate();
   }
 
   showFrame = frame => {
@@ -106,17 +108,10 @@ class Dgmn {
     this.speciesName = species;
     this.currentStats = this.dgmnUtility.buildInitialStats(this.speciesName);
     this.currentHP = this.currentStats.HP;
-    this.setInitialFP();
   }
 
   setInitialFP = () => {
     debugLog("  - Egg Field : ",this.eggField);
-    // let baseFP = this.dgmnUtility.getBaseFP(this.speciesName);
-    // for(let FP in baseFP){
-    //   if(this.currentFP[FP]){
-    //     this.currentFP[FP] += baseFP[FP];
-    //   } else { this.currentFP[FP] = baseFP[FP] }
-    // }
 
     this.currentFP[this.eggField] = 1;
   }
@@ -137,9 +132,11 @@ class Dgmn {
     }
   }
 
-  levelUpStats = () => {
+  levelUpStats = (isEvo=false) => {
     for(let stat in this.currentStats){
-      let growth = this.dgmnUtility.getBaseStat(this.speciesName,stat);
+      let growth = isEvo ? 
+        this.dgmnUtility.getBaseStat(this.speciesName,stat) :
+        this.dgmnUtility.getBaseStat(this.speciesName,stat) + this.dgmnUtility.calcFPStatBoost(this.currentFP,stat);
       this.currentStats[stat] += growth;
     }
 
