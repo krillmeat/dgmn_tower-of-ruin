@@ -9,7 +9,13 @@ export const attacksDB = {
     hits: 1,
     animationFrames: [['bubbles1',1],['bubbles2',1],['bubbles3',1],['bubbles4',1],['bubbles5',1],['bubbles6',1]],
     animationFrameCount: 6,
-    effect: ['buff',1,1,100]
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'ATK',
+      amount: 1,
+      accuracy: 100
+    }
   },
   babyFlame: {
     displayName: 'Baby Flame',

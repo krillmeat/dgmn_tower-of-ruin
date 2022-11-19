@@ -50,7 +50,9 @@ class DgmnManager{
       hatchEggCB: this.hatchEgg,
       useItemOnCB: this.useItemOn,
       giveUpgradeCB: this.giveUpgrade,
-      getDgmnPartyCB: this.getDgmnParty
+      getDgmnPartyCB: this.getDgmnParty,
+      buffDgmnStatCB: this.buffDgmnStat,
+      deBuffDgmnStatCB: this.deBuffDgmnStat
     });
 
     this.systemAH = systemAH;
@@ -365,6 +367,9 @@ class DgmnManager{
     this['upgrade'+upgrade](dgmnId,FP);
   }
 
+  buffDgmnStat = (dgmnId,stat,amount) => { this.allDgmn[dgmnId].buffStat(stat,amount) }
+  deBuffDgmnStat = (dgmnId,stat,amount) => { this.allDgmn[dgmnId].debuffStat(stat,amount) }
+
   /**------------------------------------------------------------------------
    * UPGRADE FP
    * ------------------------------------------------------------------------
@@ -426,9 +431,7 @@ class DgmnManager{
     this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.y = newY;
   }
 
-  stopDgmnCanvas = dgmnId => {
-    this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.stop();
-  }
+  stopDgmnCanvas = dgmnId => { this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.stop(); }
 
   getDgmnParty = () => this.party
   getTempDgmn = () => { return this.tempDgmn }

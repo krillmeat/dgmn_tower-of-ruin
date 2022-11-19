@@ -354,6 +354,12 @@ var DgmnAH = function DgmnAH(cbObj) {
   this.getDgmnParty = function () {
     return cbObj.getDgmnPartyCB();
   };
+  this.buffDgmnStat = function (dgmnId, stat, amount) {
+    return cbObj.buffDgmnStatCB(dgmnId, stat, amount);
+  };
+  this.deBuffDgmnStat = function (dgmnId, stat, amount) {
+    return cbObj.deBuffDgmnStatCB(dgmnId, stat, amount);
+  };
 };
 
 var evolutions = {
@@ -997,7 +1003,13 @@ var attacksDB = {
     hits: 1,
     animationFrames: [['bubbles1', 1], ['bubbles2', 1], ['bubbles3', 1], ['bubbles4', 1], ['bubbles5', 1], ['bubbles6', 1]],
     animationFrameCount: 6,
-    effect: ['buff', 1, 1, 100]
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'ATK',
+      amount: 1,
+      accuracy: 100
+    }
   },
   babyFlame: {
     displayName: 'Baby Flame',
@@ -1155,6 +1167,14 @@ var AttackUtility = function AttackUtility() {
       _iterator.f();
     }
     return dataObj;
+  });
+  _defineProperty(this, "getBuffMessage", function (stat, amount) {
+    var AMOUNT = ['', 'a bit.', 'a lot!'];
+    return "DGMN ".concat(stat, " went up ").concat(AMOUNT[amount]);
+  });
+  _defineProperty(this, "getDeBuffMessage", function (stat, amount) {
+    var AMOUNT = ['.', 'a bit.', 'a lot!'];
+    return "DGMN ".concat(stat, " went down ").concat(AMOUNT[amount]);
   });
   _defineProperty(this, "getDisplayName", function (attackName) {
     return attacksDB[attackName].displayName;
@@ -1463,6 +1483,9 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   _defineProperty(this, "getAllAttacks", function () {
     return _this.attacks;
   });
+  _defineProperty(this, "buffStat", function (stat, amount) {
+    _this.statMods[stat] += amount;
+  });
   _defineProperty(this, "getMaxHP", function () {
     return _this.currentStats.HP;
   });
@@ -1502,6 +1525,16 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
     HIT: 0,
     AVO: 0,
     SPD: 0
+  };
+  this.statMods = {
+    HP: 1,
+    ATK: 1,
+    DEF: 1,
+    INT: 1,
+    RES: 1,
+    HIT: 1,
+    AVO: 1,
+    SPD: 1
   };
   this.currentFP = {
     DR: 0,
@@ -2466,6 +2499,12 @@ var DgmnManager = function DgmnManager(systemAH) {
     var FP = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
     _this['upgrade' + upgrade](dgmnId, FP);
   });
+  _defineProperty(this, "buffDgmnStat", function (dgmnId, stat, amount) {
+    _this.allDgmn[dgmnId].buffStat(stat, amount);
+  });
+  _defineProperty(this, "deBuffDgmnStat", function (dgmnId, stat, amount) {
+    _this.allDgmn[dgmnId].deBuffStat(stat, amount);
+  });
   _defineProperty(this, "upgradeFP", function (dgmnId, FP) {
     debugLog("  Upgrade FP: ", FP);
     _this.allDgmn[dgmnId].upgrades.FP++;
@@ -2544,7 +2583,9 @@ var DgmnManager = function DgmnManager(systemAH) {
     hatchEggCB: this.hatchEgg,
     useItemOnCB: this.useItemOn,
     giveUpgradeCB: this.giveUpgrade,
-    getDgmnPartyCB: this.getDgmnParty
+    getDgmnPartyCB: this.getDgmnParty,
+    buffDgmnStatCB: this.buffDgmnStat,
+    deBuffDgmnStatCB: this.deBuffDgmnStat
   });
   this.systemAH = systemAH;
   this.enemyGenerator = new EnemyGenerator(this.dgmnAH);
@@ -2641,7 +2682,7 @@ var loadingImages = ['Loading/loading0', 'Loading/loading1', 'Loading/loading2',
 var fontImages$1 = ['Fonts/fontsBlack', 'Fonts/fontsWhite', 'Fonts/fontsLightGreen', 'Fonts/fontsDarkGreen'];
 var typeIcons = ['Icons/Types/noneTypeIcon', 'Icons/Types/fireTypeIcon', 'Icons/Types/windTypeIcon', 'Icons/Types/plantTypeIcon', 'Icons/Types/elecTypeIcon', 'Icons/Types/evilTypeIcon', 'Icons/Types/metalTypeIcon'];
 var fieldIcons = ['Icons/Fields/fieldDRIcon', 'Icons/Fields/fieldNSIcon', 'Icons/Fields/fieldWGIcon', 'Icons/Fields/fieldVBIcon', 'Icons/Fields/fieldMEIcon', 'Icons/Fields/fieldJTIcon', 'Icons/Fields/fieldNAIcon', 'Icons/Fields/fieldDSIcon'];
-var battleImages = ['Attacks/blankAttack', 'Battle/battleBackground', 'Battle/Menus/attackDeselected', 'Battle/Menus/attackSelected', 'Battle/Menus/defendDeselected', 'Battle/Menus/defendSelected', 'Battle/Menus/statsDeselected', 'Battle/Menus/statsSelected', 'Icons/Battle/weak0', 'Icons/Battle/weak1', 'Icons/Battle/weak2', 'Icons/Battle/weak3', 'DGMN/dgmnDead', 'Battle/Menus/dgmnBarLightGreen', 'Battle/Menus/dgmnBarDarkGreen', 'Battle/Menus/battleOptionSelectBaseRight', 'Battle/Menus/battleVictoryOverlay', 'Icons/xpIconSmall', 'Icons/xpIconLarge', 'Menus/bossRewardMenu', 'Battle/Menus/dgmnDeselected', 'Battle/Menus/dgmnSelected', 'Battle/Menus/cannonDeselected', 'Battle/Menus/cannonSelected', 'Battle/Menus/runDeselected', 'Battle/Menus/runSelected', 'Battle/Menus/battleCannonOverlay', 'Battle/Menus/cannonDisabled'];
+var battleImages = ['Attacks/blankAttack', 'Battle/battleBackground', 'Battle/Menus/attackDeselected', 'Battle/Menus/attackSelected', 'Battle/Menus/defendDeselected', 'Battle/Menus/defendSelected', 'Battle/Menus/statsDeselected', 'Battle/Menus/statsSelected', 'Icons/Battle/weak0', 'Icons/Battle/weak1', 'Icons/Battle/weak2', 'Icons/Battle/weak3', 'DGMN/dgmnDead', 'Battle/Menus/dgmnBarLightGreen', 'Battle/Menus/dgmnBarDarkGreen', 'Battle/Menus/battleOptionSelectBaseRight', 'Battle/Menus/battleVictoryOverlay', 'Icons/xpIconSmall', 'Icons/xpIconLarge', 'Menus/bossRewardMenu', 'Battle/Menus/dgmnDeselected', 'Battle/Menus/dgmnSelected', 'Battle/Menus/cannonDeselected', 'Battle/Menus/cannonSelected', 'Battle/Menus/runDeselected', 'Battle/Menus/runSelected', 'Battle/Menus/battleCannonOverlay', 'Battle/Menus/cannonDisabled', 'Icons/Battle/statBuff', 'Icons/Battle/statDebuff'];
 
 var toolBoxDB = {
   dodo: {
@@ -2762,8 +2803,8 @@ var BattleAH = function BattleAH(cbObj) {
   this.beginCombat = function () {
     cbObj.beginCombatCB();
   };
-  this.drawActionText = function (species, message) {
-    cbObj.drawActionTextCB(species, message);
+  this.drawActionText = function (species, message, eMessage) {
+    cbObj.drawActionTextCB(species, message, eMessage);
   };
   this.drawAllStatuses = function () {
     return cbObj.drawAllStatusesCB();
@@ -2854,6 +2895,12 @@ var BattleUtility = function BattleUtility() {
   });
   _defineProperty(this, "getXP", function (species) {
     return dgmnDB[species].stage;
+  });
+  _defineProperty(this, "hasBuffedStat", function (statMods) {
+    for (var statMod in statMods) {
+      if (statMods[statMod] > 1) return true;
+    }
+    return false;
   });
 };
 
@@ -4230,7 +4277,7 @@ var AttackManager = function AttackManager() {
           } else {
             _this.battleAH.newTurn();
           }
-        }, 2000);
+        }, 1000);
       }
     }, 200);
   });
@@ -4310,14 +4357,16 @@ var AttackManager = function AttackManager() {
     var dgmnData = _this.dgmnAH.getDgmnData(attacker, ['nickname', 'speciesName'], attacker.charAt(0) === 'e');
     var species = dgmnData.speciesName;
     var message = "";
+    var eMessage = "";
     if (!action.isDefend) {
-      _this.takeAttack(attacker, action, function (attackMessage) {
+      _this.takeAttack(attacker, action, function (attackMessage, effectMessage) {
         message = attackMessage;
+        eMessage = effectMessage;
       });
     } else {
       message = _this.dgmnAH.getDgmnData(attacker, ['nickname'], attacker.charAt(0) === 'e').nickname + ' defends';
     }
-    _this.battleAH.drawActionText(species, message);
+    _this.battleAH.drawActionText(species, message, eMessage);
     setTimeout(function () {
       if (!action.isDefend) {
         _this.dgmnAH.showDgmnFrame(attacker, 'Attack');
@@ -4339,7 +4388,7 @@ var AttackManager = function AttackManager() {
       } else {
         _this.attackActions[attacker].status = 'done';
       }
-    }, 1200);
+    }, (message.length + 16) * 50);
   });
   _defineProperty(this, "buildActionMessage", function (nickname, attackName, accuracy) {
     var message = '';
@@ -4355,16 +4404,17 @@ var AttackManager = function AttackManager() {
   _defineProperty(this, "takeAttack", function (attacker, action, messageCB) {
     debugLog("".concat(attacker, " using ").concat(action.attackName, " on ").concat(action.targets));
     _this.drainEnergy(attacker, action.attackName);
+    var effectMessage = _this.doAttackEffect(action.attackName, attacker, action.targets);
     for (var i in action.targets) {
       for (var h = 0; h < action.hits; h++) {
-        var attackerData = _this.dgmnAH.getDgmnData(attacker, ['currentStats', 'currentLevel', 'nickname'], attacker.charAt(0) === 'e');
-        var targetData = _this.dgmnAH.getDgmnData(action.targets[i], ['currentStats', 'combo', 'speciesName', 'weak', 'isDead'], action.targets[i].charAt(0) === 'e');
+        var attackerData = _this.dgmnAH.getDgmnData(attacker, ['currentStats', 'currentLevel', 'nickname', 'statMods'], attacker.charAt(0) === 'e');
+        var targetData = _this.dgmnAH.getDgmnData(action.targets[i], ['currentStats', 'combo', 'speciesName', 'weak', 'isDead', 'statMods'], action.targets[i].charAt(0) === 'e');
         if (!targetData.isDead) {
-          var attackerATK = _this.attackUtility.getStat(action.attackName) === 'physical' ? attackerData.currentStats.ATK : attackerData.currentStats.INT;
-          var targetDEF = _this.attackUtility.getStat(action.attackName) === 'physical' ? targetData.currentStats.DEF : targetData.currentStats.RES;
+          var attackerATK = _this.attackUtility.getStat(action.attackName) === 'physical' ? attackerData.currentStats.ATK * attackerData.statMods.ATK : attackerData.currentStats.INT * attackerData.statMods.INT;
+          var targetDEF = _this.attackUtility.getStat(action.attackName) === 'physical' ? targetData.currentStats.DEF * targetData.statMods.DEF : targetData.currentStats.RES * targetData.statMods.RES;
           var baseDMG = _this.calcBaseDMG(attackerATK, attackerData.currentLevel, powerRanks[action.power], action.hits, targetDEF);
           var modTotal = 1;
-          var accuracyMod = _this.calculateAccuracy(attackerData.currentStats.HIT, targetData.currentStats.AVO);
+          var accuracyMod = _this.calculateAccuracy(attackerData.currentStats.HIT * attackerData.statMods.HIT, targetData.currentStats.AVO * targetData.statMods.AVO);
           if (accuracyMod !== 0) {
             var typeMod = _this.dgmnUtility.getTypeMod(action.type, targetData.speciesName);
             if (typeMod > 1 && !_this.isDgmnDefending(action.targets[i])) {
@@ -4383,7 +4433,7 @@ var AttackManager = function AttackManager() {
           var finalDMG = accuracyMod === 0 ? 0 : Math.round(baseDMG * modTotal) + rand;
           _this.dealDMG(action.targets[i], finalDMG);
           var message = _this.buildActionMessage(attackerData.nickname, action.attackName, accuracyMod);
-          messageCB(message);
+          messageCB(message, effectMessage);
         } else {
           i++;
         }
@@ -4436,8 +4486,54 @@ var AttackManager = function AttackManager() {
   });
   _defineProperty(this, "calcBaseDMG", function (attackerATK, attackerLV, attackPWR, attackHits, targetDEF) {
     var baseDMG = Math.ceil(attackerATK / targetDEF * (attackerLV / 4) * attackPWR / attackHits);
-    debugLog("  BASE DMG = \u2308( ( (".concat(attackerATK, "/").concat(targetDEF, ") x (").concat(attackerLV, "/2) ) x ").concat(attackPWR, ") / ").concat(attackHits, "\u2309 = ").concat(baseDMG, " "));
+    debugLog("  BASE DMG = \u2308( ( (".concat(attackerATK, "/").concat(targetDEF, ") x (").concat(attackerLV, "/4) ) x ").concat(attackPWR, ") / ").concat(attackHits, "\u2309 = ").concat(baseDMG, " "));
     return baseDMG;
+  });
+  _defineProperty(this, "doAttackEffect", function (attackName, attacker, targets) {
+    console.log("Attacker : ", attacker);
+    console.log("Targets : ", targets);
+    var effect = attacksDB[attackName].effect;
+    var effectTargets = _this.getEffectTarget(effect.target, attacker, targets);
+    var effectMessage = "";
+    var _iterator4 = _createForOfIteratorHelper(effectTargets),
+        _step4;
+    try {
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var effectTarget = _step4.value;
+        var shouldActivate = Math.random() * 100 >= 100 - effect.accuracy;
+        if (effect && shouldActivate) {
+          switch (effect.type) {
+            case 'buff':
+              debugLog("Buffing ".concat(effect.target, " ").concat(effect.stat, " by ").concat(effect.amount));
+              if (_this.dgmnAH.getDgmnData(effectTarget, ['statMods'], false)[effect.stat] >= 3) continue;
+              _this.dgmnAH.buffDgmnStat(effectTarget, effect.stat, effect.amount);
+              effectMessage = _this.attackUtility.getBuffMessage(effect.stat, effect.amount);
+              break;
+            case 'debuff':
+              debugLog("DeBuffing ".concat(effect.target, " ").concat(effect.stat, " by ").concat(effect.amount));
+              if (_this.dgmnAH.getDgmnData(effectTarget, ['statMods'], false)[effect.stat] >= 3) continue;
+              _this.dgmnAH.debuffDgmnStat(effectTarget, effect.stat, effect.amount);
+              effectMessage = _this.attackUtility.getDeBuffMessage(effect.stat, effect.amount);
+              break;
+            default:
+              warningLog("Effect Type Unknown - Check attacks.db.js");
+              continue;
+          }
+        } else {
+          continue;
+        }
+      }
+    } catch (err) {
+      _iterator4.e(err);
+    } finally {
+      _iterator4.f();
+    }
+    return effectMessage;
+  });
+  _defineProperty(this, "getEffectTarget", function (effectTarget, attacker, attackTargets) {
+    if (effectTarget === 'self') return [attacker];
+    if (effectTarget === 'target') return [attackTargets[0]];
+    return [];
   });
   _defineProperty(this, "dealDMG", function (target, dmg) {
     debugLog("  Dealt " + dmg + "DMG to " + target);
@@ -4473,6 +4569,12 @@ var BattleDgmnStatusCanvas = function (_GameCanvas) {
       _this.ctx.fillStyle = barHex;
       _this.ctx.fillRect((xPosition + 4) * CFG.screenSize, (yPosition + 2) * CFG.screenSize, meterLength * CFG.screenSize, 3 * CFG.screenSize);
     });
+    _defineProperty(_assertThisInitialized(_this), "getIconX", function (isEnemy, offset) {
+      return ((isEnemy ? 0 : 17) + offset) * CFG.tileSize;
+    });
+    _defineProperty(_assertThisInitialized(_this), "getIconY", function (dgmnIndex, offset) {
+      return (offset + dgmnIndex * 4) * CFG.tileSize;
+    });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnCombo", function (coord, image) {
       _this.ctx.clearRect(coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
       _this.ctx.drawImage(image, coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
@@ -4480,6 +4582,12 @@ var BattleDgmnStatusCanvas = function (_GameCanvas) {
     _defineProperty(_assertThisInitialized(_this), "drawDgmnWeak", function (coord, image) {
       _this.ctx.clearRect(coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
       _this.ctx.drawImage(image, coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnStatBuff", function (isEnemy, dgmnIndex, image) {
+      var iconX = _this.getIconX(isEnemy, 0);
+      var iconY = _this.getIconY(dgmnIndex, 5);
+      _this.ctx.clearRect(iconX, iconY, CFG.tileSize, CFG.tileSize);
+      _this.ctx.drawImage(image, iconX, iconY, CFG.tileSize, CFG.tileSize);
     });
     return _this;
   }
@@ -5251,8 +5359,8 @@ var Battle = function Battle(isBoss, floorNumber) {
     for (var i = 0; i < order.length; i++) {
       for (var r = 0; r < order.length - 1; r++) {
         var temp = order[r];
-        var currSPD = _this.dgmnAH.getDgmnData(order[r], ['currentStats'], order[r].charAt(0) === 'e').currentStats.SPD;
-        var nextSPD = _this.dgmnAH.getDgmnData(order[r + 1], ['currentStats'], order[r + 1].charAt(0) === 'e').currentStats.SPD;
+        var currSPD = _this.dgmnAH.getDgmnData(order[r], ['currentStats'], order[r].charAt(0) === 'e').currentStats.SPD * _this.dgmnAH.getDgmnData(order[r], ['statMods'], order[r].charAt(0) === 'e').statMods.SPD;
+        var nextSPD = _this.dgmnAH.getDgmnData(order[r + 1], ['currentStats'], order[r + 1].charAt(0) === 'e').currentStats.SPD * _this.dgmnAH.getDgmnData(order[r + 1], ['statMods'], order[r + 1].charAt(0) === 'e').statMods.SPD;
         if (currSPD < nextSPD) {
           order[r] = order[r + 1];
           order[r + 1] = temp;
@@ -5268,11 +5376,12 @@ var Battle = function Battle(isBoss, floorNumber) {
     }
   });
   _defineProperty(this, "updateDgmnStatus", function (isEnemy, dgmnIndex) {
-    var dgmnData = isEnemy ? _this.dgmnAH.getDgmnData(_this.enemyParty[dgmnIndex], ['combo', 'weak', 'isDead'], true) : _this.dgmnAH.getDgmnData(_this.yourParty[dgmnIndex], ['combo', 'weak', 'isDead'], false);
+    var dgmnData = isEnemy ? _this.dgmnAH.getDgmnData(_this.enemyParty[dgmnIndex], ['combo', 'weak', 'isDead', 'statMods'], true) : _this.dgmnAH.getDgmnData(_this.yourParty[dgmnIndex], ['combo', 'weak', 'isDead', 'statMods'], false);
     _this.drawDgmnStatusMeter(isEnemy, dgmnIndex, 'hp');
     _this.drawDgmnStatusMeter(isEnemy, dgmnIndex, 'en');
     _this.drawDgmnStatusCombo(isEnemy, dgmnIndex, dgmnData.combo);
     _this.drawDgmnStatusWeak(isEnemy, dgmnIndex, dgmnData.weak);
+    _this.drawDgmnStatBuff(isEnemy, dgmnIndex, dgmnData.statMods);
   });
   _defineProperty(this, "drawDgmnStatusMeter", function (isEnemy, dgmnIndex, stat) {
     var dgmnData = !isEnemy ? _this.dgmnAH.getDgmnData(_this.yourParty[dgmnIndex], ["current".concat(stat.toUpperCase()), 'currentStats']) : _this.dgmnAH.getDgmnData(_this.enemyParty[dgmnIndex], ["current".concat(stat.toUpperCase()), 'currentStats'], true);
@@ -5295,8 +5404,15 @@ var Battle = function Battle(isBoss, floorNumber) {
     var coord = [2 + partyOffset, 4 + dgmnIndex * 4];
     _this.dgmnStatusCanvas.drawDgmnWeak(coord, _this.systemAH.fetchImage('weak' + weak));
   });
-  _defineProperty(this, "drawActionText", function (species, message) {
+  _defineProperty(this, "drawDgmnStatBuff", function (isEnemy, dgmnIndex, statMods) {
+    if (!_this.battleUtility.hasBuffedStat(statMods)) return;
+    _this.dgmnStatusCanvas.drawDgmnStatBuff(isEnemy, dgmnIndex, _this.systemAH.fetchImage('statBuff'));
+  });
+  _defineProperty(this, "drawActionText", function (species, message, effectMessage) {
     _this.battleMenu.drawActionText(species, message);
+    if (effectMessage) setTimeout(function () {
+      _this.battleMenu.drawActionText(species, effectMessage);
+    }, (message.length + 16) * 50);
   });
   _defineProperty(this, "drawBattleCanvas", function () {
     _this.battleCanvas.drawBattleBase(_this.systemAH.fetchImage('battleBackground'));

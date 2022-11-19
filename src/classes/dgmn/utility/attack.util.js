@@ -35,6 +35,16 @@ class AttackUtility{
     return dataObj;
   }
 
+  getBuffMessage = (stat,amount) => {
+    const AMOUNT = ['','a bit.','a lot!']
+    return `DGMN ${stat} went up ${AMOUNT[amount]}`
+  }
+
+  getDeBuffMessage = (stat,amount) => {
+    const AMOUNT = ['.','a bit.','a lot!'];
+    return `DGMN ${stat} went down ${AMOUNT[amount]}`
+  }
+
   getDisplayName = attackName => { return attacksDB[attackName].displayName }
   getMaxCost = attackName => { return attacksDB[attackName].maxCost }
   getType = attackName => { return attacksDB[attackName].type }

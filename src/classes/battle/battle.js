@@ -207,8 +207,10 @@ class Battle {
     for(let i = 0; i < order.length; i++){
       for(let r = 0; r < order.length - 1; r++){
         let temp = order[r];
-        let currSPD = this.dgmnAH.getDgmnData(order[r],['currentStats'],order[r].charAt(0) === 'e').currentStats.SPD;
-        let nextSPD = this.dgmnAH.getDgmnData(order[r+1],['currentStats'],order[r+1].charAt(0) === 'e').currentStats.SPD;
+        let currSPD = this.dgmnAH.getDgmnData(order[r],['currentStats'],order[r].charAt(0) === 'e').currentStats.SPD *
+                      this.dgmnAH.getDgmnData(order[r],['statMods'],order[r].charAt(0) === 'e').statMods.SPD;
+        let nextSPD = this.dgmnAH.getDgmnData(order[r+1],['currentStats'],order[r+1].charAt(0) === 'e').currentStats.SPD *
+                      this.dgmnAH.getDgmnData(order[r+1],['statMods'],order[r+1].charAt(0) === 'e').statMods.SPD;
         if(currSPD < nextSPD){
           order[r] = order[r+1];
           order[r+1] = temp;
@@ -242,13 +244,15 @@ class Battle {
    * @param {Number}  dgmnIndex Spot in the DGMN Array
    * ----------------------------------------------------------------------*/
   updateDgmnStatus = (isEnemy,dgmnIndex) => {
-    let dgmnData = isEnemy ? this.dgmnAH.getDgmnData(this.enemyParty[dgmnIndex],['combo','weak','isDead'],true) :
-                              this.dgmnAH.getDgmnData(this.yourParty[dgmnIndex],['combo','weak','isDead'],false);
+    let dgmnData = isEnemy ? this.dgmnAH.getDgmnData(this.enemyParty[dgmnIndex],['combo','weak','isDead','statMods'],true) :
+                              this.dgmnAH.getDgmnData(this.yourParty[dgmnIndex],['combo','weak','isDead','statMods'],false);
                               
       this.drawDgmnStatusMeter(isEnemy,dgmnIndex,'hp');
       this.drawDgmnStatusMeter(isEnemy,dgmnIndex,'en');
       this.drawDgmnStatusCombo(isEnemy,dgmnIndex,dgmnData.combo);
       this.drawDgmnStatusWeak(isEnemy,dgmnIndex,dgmnData.weak);
+
+      this.drawDgmnStatBuff(isEnemy,dgmnIndex,dgmnData.statMods);
   }
 
   /**------------------------------------------------------------------------
@@ -256,6 +260,7 @@ class Battle {
    * ------------------------------------------------------------------------
    * Updates the HP or EN meter for a specific DGMN
    * TODO - Why is this in Battle?
+   *        and why am I sending in the coordinates and not an offset?
    * ------------------------------------------------------------------------
    * @param {Boolean} isEnemy   True if Dgmn is an Enemy
    * @param {Number}  dgmnIndex Spot the Dgmn is in
@@ -289,7 +294,7 @@ class Battle {
   }
 
   /**------------------------------------------------------------------------
-   * DRAW DGMN WEAK - COMBO                                        
+   * DRAW DGMN STATUS - WEAK                                       
    * ------------------------------------------------------------------------
    * Draws the WEAK state in the Status Bar for a Dgmn
    * ----------------------------------------------------------------------*/
@@ -300,13 +305,37 @@ class Battle {
   }
 
   /**------------------------------------------------------------------------
+   * DRAW DGMN STATUS - STAT BUFF                                      
+   * ------------------------------------------------------------------------
+   * Draws an Icon if the DGMN has a stat Buffed
+   * ----------------------------------------------------------------------*/
+   drawDgmnStatBuff = (isEnemy,dgmnIndex,statMods) => {
+    if(!this.battleUtility.hasBuffedStat(statMods)) return;
+    this.dgmnStatusCanvas.drawDgmnStatBuff(isEnemy,dgmnIndex,this.systemAH.fetchImage('statBuff'));
+  }
+
+  
+  /**------------------------------------------------------------------------
+   * DRAW DGMN STATUS - STAT DEBUFF                                      
+   * ------------------------------------------------------------------------
+   * Draws an Icon if the DGMN has a stat Debuffed
+   * ----------------------------------------------------------------------*/
+   drawDgmnStatDebuff = (isEnemy,dgmnIndex,statMods) => {
+    if(!this.battleUtility.hasdeBuffedStat(statMods)) return;
+    this.dgmnStatusCanvas.drawDgmnStatDebuff(isEnemy,dgmnIndex,this.systemAH.fetchImage('statDebuff'));
+  }
+
+  /**------------------------------------------------------------------------
    * DRAW ACTION TEXT                                     
    * ------------------------------------------------------------------------
    * Passthrough to the Battle Menu to draw a message
    * TODO - This seems like the wrong place for this
    * ----------------------------------------------------------------------*/
-  drawActionText = (species,message) => {
+  drawActionText = (species,message,effectMessage) => {
     this.battleMenu.drawActionText(species,message);
+    if(effectMessage) setTimeout(()=>{
+      this.battleMenu.drawActionText(species,effectMessage);
+    },(message.length + 16)*50);
   }
 
   /**------------------------------------------------------------------------
