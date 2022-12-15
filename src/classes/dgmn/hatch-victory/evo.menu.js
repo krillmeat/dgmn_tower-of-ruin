@@ -217,8 +217,11 @@ class EvoMenu extends IconMenu{
     this.evoWeakTxt.instantText(this.menuCanvas.ctx,'WEAK','green');
     this.evoResTxt.instantText(this.menuCanvas.ctx,'RES','green');
 
+    let i = 0;
     for(let field in this.dgmnUtility.getBaseFP(species)){
-      this.menuCanvas.paintImage(this.fetchImageCB(`field${field}Icon`),(5+this.dgmnUtility.getAttribute(species).length)*CFG.tileSize,15*CFG.tileSize);
+      this.menuCanvas.paintImage(this.fetchImageCB(`field${field}Icon`),
+        ((5+this.dgmnUtility.getAttribute(species).length)+(i*1))*CFG.tileSize,15*CFG.tileSize);
+      i++;
     }
   }
 

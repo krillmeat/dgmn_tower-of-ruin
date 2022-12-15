@@ -31,6 +31,7 @@ class DgmnAH{
     this.getDgmnParty = () => cbObj.getDgmnPartyCB()
     this.buffDgmnStat = (dgmnId,stat,amount) => cbObj.buffDgmnStatCB(dgmnId,stat,amount)
     this.deBuffDgmnStat = (dgmnId,stat,amount) => cbObj.deBuffDgmnStatCB(dgmnId,stat,amount)
+    this.giveCondition = (dgmnId,condition) => cbObj.giveConditionCB(dgmnId,condition)
   }
 }
 

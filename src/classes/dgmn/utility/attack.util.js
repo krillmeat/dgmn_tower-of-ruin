@@ -1,4 +1,4 @@
-import { attacksDB } from "../../../data/attacks.db";
+import { attacksDB, FULL_CONDITION_TEXT } from "../../../data/attacks.db";
 import { comboRanks } from '../../../data/ranks.db';
 
 class AttackUtility{
@@ -43,6 +43,10 @@ class AttackUtility{
   getDeBuffMessage = (stat,amount) => {
     const AMOUNT = ['.','a bit.','a lot!'];
     return `DGMN ${stat} went down ${AMOUNT[amount]}`
+  }
+
+  getConditionMessage = condition => {
+    return `DGMN was inflicted with ${FULL_CONDITION_TEXT[condition]}`
   }
 
   getDisplayName = attackName => { return attacksDB[attackName].displayName }

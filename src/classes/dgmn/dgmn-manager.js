@@ -52,7 +52,8 @@ class DgmnManager{
       giveUpgradeCB: this.giveUpgrade,
       getDgmnPartyCB: this.getDgmnParty,
       buffDgmnStatCB: this.buffDgmnStat,
-      deBuffDgmnStatCB: this.deBuffDgmnStat
+      deBuffDgmnStatCB: this.deBuffDgmnStat,
+      giveConditionCB: this.giveCondition
     });
 
     this.systemAH = systemAH;
@@ -367,8 +368,15 @@ class DgmnManager{
     this['upgrade'+upgrade](dgmnId,FP);
   }
 
-  buffDgmnStat = (dgmnId,stat,amount) => { this.allDgmn[dgmnId].buffStat(stat,amount) }
-  deBuffDgmnStat = (dgmnId,stat,amount) => { this.allDgmn[dgmnId].debuffStat(stat,amount) }
+  buffDgmnStat = (dgmnId,stat,amount) => { 
+    this.dgmnUtility.isEnemy(dgmnId) ? 
+      this.enemyDgmn[dgmnId].buffStat(stat,amount) : 
+      this.allDgmn[dgmnId].buffStat(stat,amount) }
+
+  deBuffDgmnStat = (dgmnId,stat,amount) => { 
+    this.dgmnUtility.isEnemy(dgmnId) ? 
+      this.enemyDgmn[dgmnId].debuffStat(stat,amount) : 
+      this.allDgmn[dgmnId].debuffStat(stat,amount) }
 
   /**------------------------------------------------------------------------
    * UPGRADE FP
@@ -435,6 +443,8 @@ class DgmnManager{
 
   getDgmnParty = () => this.party
   getTempDgmn = () => { return this.tempDgmn }
+
+  giveCondition = (dgmnId,condition) => this[this.getParty(dgmnId)][dgmnId].giveCondition(condition);
 
   /**------------------------------------------------------------------------
    * TITLE

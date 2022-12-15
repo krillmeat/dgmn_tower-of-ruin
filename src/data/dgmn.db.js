@@ -16,7 +16,7 @@ export const dgmnDB = {
     stats: {HP:2, ATK:2, DEF:0, INT:0, RES:0, HIT:0, AVO:0, SPD:1},
     evolutions: ['Gigi'],
     types: {},
-    fields: {DR: 1},
+    fields: {DR: 1, NA: 1},
     attack: 'bubbles',
     hatchFields: {DR:2,NA:1}
   },
@@ -77,6 +77,15 @@ export const dgmnDB = {
     types: {},
     fields: {VB: 1},
     attack: 'bubbles'
+  },
+  Moku: {
+    stage: 1, attr: 'Free',
+    stats: {HP:2, ATK:0, DEF:0, INT: 1, RES: 1, HIT: 0, AVO: 1, SPD: 0},
+    evolutions: [],
+    types: {},
+    fields: {NA:1,DR:1},
+    attack: 'bubbles',
+    hatchFields: {NA:1,DR:1}
   },
 
   // BABY II

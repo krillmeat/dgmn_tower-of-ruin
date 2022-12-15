@@ -1,5 +1,5 @@
 export const digiTamaDB = {
-  DR: ['Bota','Jyari'],
+  DR: ['Bota','Jyari','Moku'],
   NS: ['Doki'],
   WG: ['Pururu'],
   ME: ['Choro'],

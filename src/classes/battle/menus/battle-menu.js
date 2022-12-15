@@ -11,6 +11,7 @@ import TextArea from "../../text-area";
 import BattleCannonMenu from "./battle-cannon.menu";
 import TreasureUtility from "../../../dungeon/utils/treasure.util"
 import { itemByName, itemsDB } from "../../../data/items.db";
+import { getFullMessageLength } from "../../../utils/common.utils";
 
 /**------------------------------------------------------------------------
  * BATTLE MENU 
@@ -217,10 +218,11 @@ class BattleMenu extends Menu{
       this.drawMenu();
     }
 
-  drawActionText = (species,message) => {
-    this.menuCanvas.clearBottomSection();
-    this.menuCanvas.drawDgmnPortrait(this.systemAH.fetchImage(species.toLowerCase()+'Portrait'));
-    this.actionTxt.timedText(this.menuCanvas.ctx,message,this.drawMenu);
+  drawActionText = (species,messages) => {
+    this.actionTxt.multiText(this.menuCanvas.ctx,messages,this.drawMenu,()=>{
+      this.menuCanvas.clearBottomSection();
+      this.menuCanvas.drawDgmnPortrait(this.systemAH.fetchImage(species.toLowerCase()+'Portrait'));
+    })
   }
 
   /**------------------------------------------------------------------------

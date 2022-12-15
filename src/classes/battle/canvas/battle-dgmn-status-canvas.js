@@ -43,6 +43,13 @@ class BattleDgmnStatusCanvas extends GameCanvas{
     this.ctx.drawImage(image,iconX,iconY,CFG.tileSize,CFG.tileSize);
   }
 
+  drawDgmnCondition = (isEnemy,dgmnIndex,image) => {
+    let iconX = this.getIconX(isEnemy,1);
+    let iconY = this.getIconY(dgmnIndex,5);
+    this.ctx.clearRect(iconX,iconY,CFG.tileSize,CFG.tileSize);
+    this.ctx.drawImage(image,iconX,iconY,CFG.tileSize,CFG.tileSize);
+  }
+
 }
 
 export default BattleDgmnStatusCanvas;

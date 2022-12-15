@@ -10,10 +10,9 @@ export const attacksDB = {
     animationFrames: [['bubbles1',1],['bubbles2',1],['bubbles3',1],['bubbles4',1],['bubbles5',1],['bubbles6',1]],
     animationFrameCount: 6,
     effect: {
-      type: 'buff',
-      target: 'self',
-      stat: 'ATK',
-      amount: 1,
+      type: 'status',
+      target: 'target',
+      status: 'overheat',
       accuracy: 100
     }
   },
@@ -71,7 +70,13 @@ export const attacksDB = {
     hits: 1,
     animationFrames: [['elecRush1',2],['elecRush2',2],['elecRush3',2],['elecRush4',2]],
     animationFrameCount: 4,
-    effect: ['status','paralyze',100]
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'SPD',
+      amount: 1,
+      accuracy: 50
+    }
   },
   petitTwister: {
     displayName: 'Petit Twister',
@@ -115,4 +120,10 @@ export const attacksDB = {
     animationFrames: [['babyFlame1',1],['babyFlame2',1],['babyFlame3',4],['babyFlame2',1],['babyFlame1',1]],
     animationFrameCount: 3
   },
+}
+
+export const FULL_CONDITION_TEXT = {
+  overheat: 'Overheat',
+  freeze: 'Freeze',
+  virus: 'Virus'
 }

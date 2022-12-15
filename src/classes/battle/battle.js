@@ -244,15 +244,18 @@ class Battle {
    * @param {Number}  dgmnIndex Spot in the DGMN Array
    * ----------------------------------------------------------------------*/
   updateDgmnStatus = (isEnemy,dgmnIndex) => {
-    let dgmnData = isEnemy ? this.dgmnAH.getDgmnData(this.enemyParty[dgmnIndex],['combo','weak','isDead','statMods'],true) :
-                              this.dgmnAH.getDgmnData(this.yourParty[dgmnIndex],['combo','weak','isDead','statMods'],false);
+    let dgmnData = isEnemy ? this.dgmnAH.getDgmnData(this.enemyParty[dgmnIndex],['combo','weak','isDead','statMods','condition'],true) :
+                             this.dgmnAH.getDgmnData(this.yourParty[dgmnIndex],['combo','weak','isDead','statMods','condition'],false);
                               
       this.drawDgmnStatusMeter(isEnemy,dgmnIndex,'hp');
       this.drawDgmnStatusMeter(isEnemy,dgmnIndex,'en');
       this.drawDgmnStatusCombo(isEnemy,dgmnIndex,dgmnData.combo);
       this.drawDgmnStatusWeak(isEnemy,dgmnIndex,dgmnData.weak);
 
-      this.drawDgmnStatBuff(isEnemy,dgmnIndex,dgmnData.statMods);
+      if(!dgmnData.isDead){
+        this.drawDgmnStatBuff(isEnemy,dgmnIndex,dgmnData.statMods);
+        this.drawDgmnCondition(isEnemy,dgmnIndex,dgmnData.condition?.type);
+      }
   }
 
   /**------------------------------------------------------------------------
@@ -326,16 +329,23 @@ class Battle {
   }
 
   /**------------------------------------------------------------------------
+   * DRAW DGMN STATUS - CONDITION                                     
+   * ------------------------------------------------------------------------
+   * Draws an Icon if the DGMN has a stat Debuffed
+   * ----------------------------------------------------------------------*/
+   drawDgmnCondition = (isEnemy,dgmnIndex,condition) => {
+    if(!condition) return;
+    this.dgmnStatusCanvas.drawDgmnCondition(isEnemy,dgmnIndex,this.systemAH.fetchImage(condition+'Condition'));
+  }
+
+  /**------------------------------------------------------------------------
    * DRAW ACTION TEXT                                     
    * ------------------------------------------------------------------------
    * Passthrough to the Battle Menu to draw a message
    * TODO - This seems like the wrong place for this
    * ----------------------------------------------------------------------*/
-  drawActionText = (species,message,effectMessage) => {
-    this.battleMenu.drawActionText(species,message);
-    if(effectMessage) setTimeout(()=>{
-      this.battleMenu.drawActionText(species,effectMessage);
-    },(message.length + 16)*50);
+  drawActionText = (species,messages) => {
+    this.battleMenu.drawActionText(species,messages);
   }
 
   /**------------------------------------------------------------------------

@@ -155,6 +155,15 @@ class DgmnUtility{
     return Math.floor(Math.pow(currentFP[field],1/2));
   }
 
+  getConditionMessage = condition => {
+    switch(condition){
+      case 'overheat':
+        return ' is Overheating'
+      default:
+        return ''
+    }
+  }
+
 }
 
 export default DgmnUtility;

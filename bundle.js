@@ -102,6 +102,18 @@ function _createSuper(Derived) {
   };
 }
 
+function _toConsumableArray(arr) {
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+}
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+}
+
+function _iterableToArray(iter) {
+  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+}
+
 function _unsupportedIterableToArray(o, minLen) {
   if (!o) return;
   if (typeof o === "string") return _arrayLikeToArray(o, minLen);
@@ -117,6 +129,10 @@ function _arrayLikeToArray(arr, len) {
   for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
 
   return arr2;
+}
+
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
 function _createForOfIteratorHelper(o, allowArrayLike) {
@@ -360,6 +376,9 @@ var DgmnAH = function DgmnAH(cbObj) {
   this.deBuffDgmnStat = function (dgmnId, stat, amount) {
     return cbObj.deBuffDgmnStatCB(dgmnId, stat, amount);
   };
+  this.giveCondition = function (dgmnId, condition) {
+    return cbObj.giveConditionCB(dgmnId, condition);
+  };
 };
 
 var evolutions = {
@@ -443,7 +462,8 @@ var dgmnDB = {
     evolutions: ['Gigi'],
     types: {},
     fields: {
-      DR: 1
+      DR: 1,
+      NA: 1
     },
     attack: 'bubbles',
     hatchFields: {
@@ -569,6 +589,31 @@ var dgmnDB = {
       VB: 1
     },
     attack: 'bubbles'
+  },
+  Moku: {
+    stage: 1,
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 0,
+      DEF: 0,
+      INT: 1,
+      RES: 1,
+      HIT: 0,
+      AVO: 1,
+      SPD: 0
+    },
+    evolutions: [],
+    types: {},
+    fields: {
+      NA: 1,
+      DR: 1
+    },
+    attack: 'bubbles',
+    hatchFields: {
+      NA: 1,
+      DR: 1
+    }
   },
   Koro: {
     stage: 2,
@@ -1004,10 +1049,9 @@ var attacksDB = {
     animationFrames: [['bubbles1', 1], ['bubbles2', 1], ['bubbles3', 1], ['bubbles4', 1], ['bubbles5', 1], ['bubbles6', 1]],
     animationFrameCount: 6,
     effect: {
-      type: 'buff',
-      target: 'self',
-      stat: 'ATK',
-      amount: 1,
+      type: 'status',
+      target: 'target',
+      status: 'overheat',
       accuracy: 100
     }
   },
@@ -1065,7 +1109,13 @@ var attacksDB = {
     hits: 1,
     animationFrames: [['elecRush1', 2], ['elecRush2', 2], ['elecRush3', 2], ['elecRush4', 2]],
     animationFrameCount: 4,
-    effect: ['status', 'paralyze', 100]
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'SPD',
+      amount: 1,
+      accuracy: 50
+    }
   },
   petitTwister: {
     displayName: 'Petit Twister',
@@ -1109,6 +1159,11 @@ var attacksDB = {
     animationFrames: [['babyFlame1', 1], ['babyFlame2', 1], ['babyFlame3', 4], ['babyFlame2', 1], ['babyFlame1', 1]],
     animationFrameCount: 3
   }
+};
+var FULL_CONDITION_TEXT = {
+  overheat: 'Overheat',
+  freeze: 'Freeze',
+  virus: 'Virus'
 };
 
 var powerRanks = {
@@ -1176,6 +1231,9 @@ var AttackUtility = function AttackUtility() {
     var AMOUNT = ['.', 'a bit.', 'a lot!'];
     return "DGMN ".concat(stat, " went down ").concat(AMOUNT[amount]);
   });
+  _defineProperty(this, "getConditionMessage", function (condition) {
+    return "DGMN was inflicted with ".concat(FULL_CONDITION_TEXT[condition]);
+  });
   _defineProperty(this, "getDisplayName", function (attackName) {
     return attacksDB[attackName].displayName;
   });
@@ -1213,7 +1271,7 @@ var Attack = function Attack(attackName) {
 };
 
 var digiTamaDB = {
-  DR: ['Bota', 'Jyari'],
+  DR: ['Bota', 'Jyari', 'Moku'],
   NS: ['Doki'],
   WG: ['Pururu'],
   ME: ['Choro'],
@@ -1405,6 +1463,14 @@ var DgmnUtility = function DgmnUtility() {
     var field = FIELD_STATS[stat];
     return Math.floor(Math.pow(currentFP[field], 1 / 2));
   });
+  _defineProperty(this, "getConditionMessage", function (condition) {
+    switch (condition) {
+      case 'overheat':
+        return ' is Overheating';
+      default:
+        return '';
+    }
+  });
 };
 
 var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
@@ -1483,8 +1549,20 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   _defineProperty(this, "getAllAttacks", function () {
     return _this.attacks;
   });
+  _defineProperty(this, "giveCondition", function (condition) {
+    _this.condition = {
+      type: condition,
+      turns: 0
+    };
+  });
+  _defineProperty(this, "healCondition", function () {
+    _this.condition = undefined;
+  });
   _defineProperty(this, "buffStat", function (stat, amount) {
     _this.statMods[stat] += amount;
+  });
+  _defineProperty(this, "debuffStat", function (stat, amount) {
+    _this.statMods[stat] -= amount;
   });
   _defineProperty(this, "getMaxHP", function () {
     return _this.currentStats.HP;
@@ -1549,6 +1627,7 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   this.currentXP = 0;
   this.combo = 0;
   this.weak = 0;
+  this.condition;
   this.attackList = ["bubbles", "babyFlame"];
   this.attacks = [new Attack('bubbles')];
   this.isDead = false;
@@ -1852,7 +1931,7 @@ var dgmnEncounterDB = {
     speciesName: 'Koro',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 3,
       ATK: 7,
       DEF: 3,
       INT: 3,
@@ -1867,7 +1946,7 @@ var dgmnEncounterDB = {
     speciesName: 'Capri',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 3,
       ATK: 7,
       DEF: 7,
       INT: 3,
@@ -1882,7 +1961,7 @@ var dgmnEncounterDB = {
     speciesName: 'Bud',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 3,
       ATK: 7,
       DEF: 3,
       INT: 7,
@@ -1897,7 +1976,7 @@ var dgmnEncounterDB = {
     speciesName: 'Puka',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 3,
       ATK: 3,
       DEF: 7,
       INT: 3,
@@ -1912,7 +1991,7 @@ var dgmnEncounterDB = {
     speciesName: 'Bibi',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 3,
       ATK: 7,
       DEF: 3,
       INT: 3,
@@ -1927,7 +2006,7 @@ var dgmnEncounterDB = {
     speciesName: 'Poro',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 3,
       ATK: 7,
       DEF: 3,
       INT: 3,
@@ -1942,7 +2021,7 @@ var dgmnEncounterDB = {
     speciesName: 'Toko',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 3,
       ATK: 7,
       DEF: 3,
       INT: 7,
@@ -1957,7 +2036,7 @@ var dgmnEncounterDB = {
     speciesName: 'Pagu',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 3,
       ATK: 7,
       DEF: 3,
       INT: 7,
@@ -2500,10 +2579,10 @@ var DgmnManager = function DgmnManager(systemAH) {
     _this['upgrade' + upgrade](dgmnId, FP);
   });
   _defineProperty(this, "buffDgmnStat", function (dgmnId, stat, amount) {
-    _this.allDgmn[dgmnId].buffStat(stat, amount);
+    _this.dgmnUtility.isEnemy(dgmnId) ? _this.enemyDgmn[dgmnId].buffStat(stat, amount) : _this.allDgmn[dgmnId].buffStat(stat, amount);
   });
   _defineProperty(this, "deBuffDgmnStat", function (dgmnId, stat, amount) {
-    _this.allDgmn[dgmnId].deBuffStat(stat, amount);
+    _this.dgmnUtility.isEnemy(dgmnId) ? _this.enemyDgmn[dgmnId].debuffStat(stat, amount) : _this.allDgmn[dgmnId].debuffStat(stat, amount);
   });
   _defineProperty(this, "upgradeFP", function (dgmnId, FP) {
     debugLog("  Upgrade FP: ", FP);
@@ -2542,6 +2621,9 @@ var DgmnManager = function DgmnManager(systemAH) {
   });
   _defineProperty(this, "getTempDgmn", function () {
     return _this.tempDgmn;
+  });
+  _defineProperty(this, "giveCondition", function (dgmnId, condition) {
+    return _this[_this.getParty(dgmnId)][dgmnId].giveCondition(condition);
   });
   _defineProperty(this, "getCanvas", function (dgmnId) {
     return !_this.isEnemy(dgmnId) ? _this.allDgmn[dgmnId].dgmnCanvas : _this.enemyDgmn[dgmnId].dgmnCanvas;
@@ -2585,7 +2667,8 @@ var DgmnManager = function DgmnManager(systemAH) {
     giveUpgradeCB: this.giveUpgrade,
     getDgmnPartyCB: this.getDgmnParty,
     buffDgmnStatCB: this.buffDgmnStat,
-    deBuffDgmnStatCB: this.deBuffDgmnStat
+    deBuffDgmnStatCB: this.deBuffDgmnStat,
+    giveConditionCB: this.giveCondition
   });
   this.systemAH = systemAH;
   this.enemyGenerator = new EnemyGenerator(this.dgmnAH);
@@ -2682,7 +2765,7 @@ var loadingImages = ['Loading/loading0', 'Loading/loading1', 'Loading/loading2',
 var fontImages$1 = ['Fonts/fontsBlack', 'Fonts/fontsWhite', 'Fonts/fontsLightGreen', 'Fonts/fontsDarkGreen'];
 var typeIcons = ['Icons/Types/noneTypeIcon', 'Icons/Types/fireTypeIcon', 'Icons/Types/windTypeIcon', 'Icons/Types/plantTypeIcon', 'Icons/Types/elecTypeIcon', 'Icons/Types/evilTypeIcon', 'Icons/Types/metalTypeIcon'];
 var fieldIcons = ['Icons/Fields/fieldDRIcon', 'Icons/Fields/fieldNSIcon', 'Icons/Fields/fieldWGIcon', 'Icons/Fields/fieldVBIcon', 'Icons/Fields/fieldMEIcon', 'Icons/Fields/fieldJTIcon', 'Icons/Fields/fieldNAIcon', 'Icons/Fields/fieldDSIcon'];
-var battleImages = ['Attacks/blankAttack', 'Battle/battleBackground', 'Battle/Menus/attackDeselected', 'Battle/Menus/attackSelected', 'Battle/Menus/defendDeselected', 'Battle/Menus/defendSelected', 'Battle/Menus/statsDeselected', 'Battle/Menus/statsSelected', 'Icons/Battle/weak0', 'Icons/Battle/weak1', 'Icons/Battle/weak2', 'Icons/Battle/weak3', 'DGMN/dgmnDead', 'Battle/Menus/dgmnBarLightGreen', 'Battle/Menus/dgmnBarDarkGreen', 'Battle/Menus/battleOptionSelectBaseRight', 'Battle/Menus/battleVictoryOverlay', 'Icons/xpIconSmall', 'Icons/xpIconLarge', 'Menus/bossRewardMenu', 'Battle/Menus/dgmnDeselected', 'Battle/Menus/dgmnSelected', 'Battle/Menus/cannonDeselected', 'Battle/Menus/cannonSelected', 'Battle/Menus/runDeselected', 'Battle/Menus/runSelected', 'Battle/Menus/battleCannonOverlay', 'Battle/Menus/cannonDisabled', 'Icons/Battle/statBuff', 'Icons/Battle/statDebuff'];
+var battleImages = ['Attacks/blankAttack', 'Battle/battleBackground', 'Battle/Menus/attackDeselected', 'Battle/Menus/attackSelected', 'Battle/Menus/defendDeselected', 'Battle/Menus/defendSelected', 'Battle/Menus/statsDeselected', 'Battle/Menus/statsSelected', 'Icons/Battle/weak0', 'Icons/Battle/weak1', 'Icons/Battle/weak2', 'Icons/Battle/weak3', 'DGMN/dgmnDead', 'Battle/Menus/dgmnBarLightGreen', 'Battle/Menus/dgmnBarDarkGreen', 'Battle/Menus/battleOptionSelectBaseRight', 'Battle/Menus/battleVictoryOverlay', 'Icons/xpIconSmall', 'Icons/xpIconLarge', 'Menus/bossRewardMenu', 'Battle/Menus/dgmnDeselected', 'Battle/Menus/dgmnSelected', 'Battle/Menus/cannonDeselected', 'Battle/Menus/cannonSelected', 'Battle/Menus/runDeselected', 'Battle/Menus/runSelected', 'Battle/Menus/battleCannonOverlay', 'Battle/Menus/cannonDisabled', 'Icons/Battle/statBuff', 'Icons/Battle/statDebuff', 'Icons/Battle/overheatCondition'];
 
 var toolBoxDB = {
   dodo: {
@@ -2899,6 +2982,12 @@ var BattleUtility = function BattleUtility() {
   _defineProperty(this, "hasBuffedStat", function (statMods) {
     for (var statMod in statMods) {
       if (statMods[statMod] > 1) return true;
+    }
+    return false;
+  });
+  _defineProperty(this, "hasDebuffedStat", function (statMods) {
+    for (var statMod in statMods) {
+      if (statMods[statMod] < 1) return true;
     }
     return false;
   });
@@ -3363,6 +3452,15 @@ var TextArea = function TextArea(x, y, width) {
       if (word >= wordArray.length) clearInterval(paintInterval);
     }, CFG.textSpeed * 33);
   });
+  _defineProperty(this, "multiText", function (ctx, messages, drawCB, beforeEach) {
+    beforeEach();
+    var currentMessage = messages[0];
+    _this.timedText(ctx, currentMessage, drawCB);
+    messages.splice(0, 1);
+    setTimeout(function () {
+      if (messages && messages.length !== 0 && messages[0]) _this.multiText(ctx, messages, drawCB, beforeEach);
+    }, (currentMessage.length + 10) * 50);
+  });
   _defineProperty(this, "drawChar", function (ctx, _char2, col, row) {
     var color = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'white';
     var coord = _this.getCharCoordinates(_char2);
@@ -3802,6 +3900,10 @@ var BattleCannonMenu = function (_ListMenu) {
   return BattleCannonMenu;
 }(ListMenu);
 
+var getFullMessageLength = function getFullMessageLength(messages) {
+  return messages.join(" ").length;
+};
+
 var BattleMenu = function (_Menu) {
   _inherits(BattleMenu, _Menu);
   var _super = _createSuper(BattleMenu);
@@ -3901,10 +4003,11 @@ var BattleMenu = function (_Menu) {
       if (dir === 'back') _this.buildDgmnMenu();
       _this.drawMenu();
     });
-    _defineProperty(_assertThisInitialized(_this), "drawActionText", function (species, message) {
-      _this.menuCanvas.clearBottomSection();
-      _this.menuCanvas.drawDgmnPortrait(_this.systemAH.fetchImage(species.toLowerCase() + 'Portrait'));
-      _this.actionTxt.timedText(_this.menuCanvas.ctx, message, _this.drawMenu);
+    _defineProperty(_assertThisInitialized(_this), "drawActionText", function (species, messages) {
+      _this.actionTxt.multiText(_this.menuCanvas.ctx, messages, _this.drawMenu, function () {
+        _this.menuCanvas.clearBottomSection();
+        _this.menuCanvas.drawDgmnPortrait(_this.systemAH.fetchImage(species.toLowerCase() + 'Portrait'));
+      });
     });
     _defineProperty(_assertThisInitialized(_this), "launchTargetSelect", function (flow) {
       _this.buildTargetSelect(flow);
@@ -4263,8 +4366,10 @@ var AttackManager = function AttackManager() {
         } else if (action.status === 'done') {
           i++;
         }
-      } else {
+      } else if (action.status === 'pending') {
         debugLog("No Action for " + attacker);
+        i++;
+      } else if (action.status === 'done') {
         i++;
       }
       if (_this.battleAH.checkBattleCondition() !== 'ongoing' || i >= turnOrder.length) {
@@ -4356,17 +4461,15 @@ var AttackManager = function AttackManager() {
     _this.attackActions[attacker].status = 'acting';
     var dgmnData = _this.dgmnAH.getDgmnData(attacker, ['nickname', 'speciesName'], attacker.charAt(0) === 'e');
     var species = dgmnData.speciesName;
-    var message = "";
-    var eMessage = "";
+    var allMessages = [];
     if (!action.isDefend) {
-      _this.takeAttack(attacker, action, function (attackMessage, effectMessage) {
-        message = attackMessage;
-        eMessage = effectMessage;
+      _this.takeAttack(attacker, action, function (messages) {
+        allMessages = _toConsumableArray(messages);
       });
     } else {
-      message = _this.dgmnAH.getDgmnData(attacker, ['nickname'], attacker.charAt(0) === 'e').nickname + ' defends';
+      allMessages = [_this.dgmnAH.getDgmnData(attacker, ['nickname'], attacker.charAt(0) === 'e').nickname + ' defends'];
     }
-    _this.battleAH.drawActionText(species, message, eMessage);
+    _this.battleAH.drawActionText(species, allMessages);
     setTimeout(function () {
       if (!action.isDefend) {
         _this.dgmnAH.showDgmnFrame(attacker, 'Attack');
@@ -4386,9 +4489,11 @@ var AttackManager = function AttackManager() {
         }
         _this.triggerAnimation(attacker, action.attackName, action.targets);
       } else {
-        _this.attackActions[attacker].status = 'done';
+        setTimeout(function () {
+          _this.attackActions[attacker].status = 'done';
+        }, 1000);
       }
-    }, (message.length + 16) * 50);
+    }, (getFullMessageLength(allMessages) + 15 * allMessages.length) * 50);
   });
   _defineProperty(this, "buildActionMessage", function (nickname, attackName, accuracy) {
     var message = '';
@@ -4404,24 +4509,27 @@ var AttackManager = function AttackManager() {
   _defineProperty(this, "takeAttack", function (attacker, action, messageCB) {
     debugLog("".concat(attacker, " using ").concat(action.attackName, " on ").concat(action.targets));
     _this.drainEnergy(attacker, action.attackName);
-    var effectMessage = _this.doAttackEffect(action.attackName, attacker, action.targets);
+    var allMessages = [_this.doAttackEffect(action.attackName, attacker, action.targets)];
+    allMessages = allMessages[0] !== ' ' && allMessages[0] ? allMessages : [];
     for (var i in action.targets) {
       for (var h = 0; h < action.hits; h++) {
-        var attackerData = _this.dgmnAH.getDgmnData(attacker, ['currentStats', 'currentLevel', 'nickname', 'statMods'], attacker.charAt(0) === 'e');
+        var attackerData = _this.dgmnAH.getDgmnData(attacker, ['currentStats', 'currentLevel', 'nickname', 'statMods', 'condition'], attacker.charAt(0) === 'e');
         var targetData = _this.dgmnAH.getDgmnData(action.targets[i], ['currentStats', 'combo', 'speciesName', 'weak', 'isDead', 'statMods'], action.targets[i].charAt(0) === 'e');
         if (!targetData.isDead) {
+          var _attackerData$conditi2, _attackerData$conditi3;
           var attackerATK = _this.attackUtility.getStat(action.attackName) === 'physical' ? attackerData.currentStats.ATK * attackerData.statMods.ATK : attackerData.currentStats.INT * attackerData.statMods.INT;
           var targetDEF = _this.attackUtility.getStat(action.attackName) === 'physical' ? targetData.currentStats.DEF * targetData.statMods.DEF : targetData.currentStats.RES * targetData.statMods.RES;
           var baseDMG = _this.calcBaseDMG(attackerATK, attackerData.currentLevel, powerRanks[action.power], action.hits, targetDEF);
           var modTotal = 1;
           var accuracyMod = _this.calculateAccuracy(attackerData.currentStats.HIT * attackerData.statMods.HIT, targetData.currentStats.AVO * targetData.statMods.AVO);
           if (accuracyMod !== 0) {
+            var _attackerData$conditi;
             var typeMod = _this.dgmnUtility.getTypeMod(action.type, targetData.speciesName);
             if (typeMod > 1 && !_this.isDgmnDefending(action.targets[i])) {
               _this.dgmnAH.modifyWeak(action.targets[i], 1);
             }
             var weakMod = targetData.weak > 0 ? 1.125 : 1;
-            _this.dgmnAH.modifyCombo(action.targets[i], _this.getComboDelta());
+            if (((_attackerData$conditi = attackerData.condition) === null || _attackerData$conditi === void 0 ? void 0 : _attackerData$conditi.type) !== 'overheat') _this.dgmnAH.modifyCombo(action.targets[i], _this.getComboDelta());
             var comboLetter = _this.attackUtility.getComboLetter(_this.calculateCombo(targetData.combo, typeMod, weakMod > 1));
             var comboMod = _this.attackUtility.getComboMod(comboLetter);
             var defendMod = _this.isDgmnDefending(action.targets[i]) ? .5 : 1;
@@ -4432,8 +4540,9 @@ var AttackManager = function AttackManager() {
           var rand = Math.floor(Math.random() * (3 - 1) + 1);
           var finalDMG = accuracyMod === 0 ? 0 : Math.round(baseDMG * modTotal) + rand;
           _this.dealDMG(action.targets[i], finalDMG);
-          var message = _this.buildActionMessage(attackerData.nickname, action.attackName, accuracyMod);
-          messageCB(message, effectMessage);
+          allMessages.unshift(_this.buildActionMessage(attackerData.nickname, action.attackName, accuracyMod));
+          if ((_attackerData$conditi2 = attackerData.condition) !== null && _attackerData$conditi2 !== void 0 && _attackerData$conditi2.type) allMessages.unshift(attackerData.nickname + "" + _this.dgmnUtility.getConditionMessage((_attackerData$conditi3 = attackerData.condition) === null || _attackerData$conditi3 === void 0 ? void 0 : _attackerData$conditi3.type));
+          messageCB(allMessages);
         } else {
           i++;
         }
@@ -4493,8 +4602,10 @@ var AttackManager = function AttackManager() {
     console.log("Attacker : ", attacker);
     console.log("Targets : ", targets);
     var effect = attacksDB[attackName].effect;
+    if (!effect) return;
     var effectTargets = _this.getEffectTarget(effect.target, attacker, targets);
     var effectMessage = "";
+    var statMods;
     var _iterator4 = _createForOfIteratorHelper(effectTargets),
         _step4;
     try {
@@ -4505,15 +4616,23 @@ var AttackManager = function AttackManager() {
           switch (effect.type) {
             case 'buff':
               debugLog("Buffing ".concat(effect.target, " ").concat(effect.stat, " by ").concat(effect.amount));
-              if (_this.dgmnAH.getDgmnData(effectTarget, ['statMods'], false)[effect.stat] >= 3) continue;
+              statMods = _this.dgmnAH.getDgmnData(effectTarget, ['statMods'], _this.dgmnUtility.isEnemy(effectTarget));
+              if (statMods[effect.stat] >= 3) continue;
               _this.dgmnAH.buffDgmnStat(effectTarget, effect.stat, effect.amount);
               effectMessage = _this.attackUtility.getBuffMessage(effect.stat, effect.amount);
               break;
             case 'debuff':
               debugLog("DeBuffing ".concat(effect.target, " ").concat(effect.stat, " by ").concat(effect.amount));
-              if (_this.dgmnAH.getDgmnData(effectTarget, ['statMods'], false)[effect.stat] >= 3) continue;
+              statMods = _this.dgmnAH.getDgmnData(effectTarget, ['statMods'], _this.dgmnUtility.isEnemy(effectTarget));
+              if (statMods[effect.stat] <= -3) continue;
               _this.dgmnAH.debuffDgmnStat(effectTarget, effect.stat, effect.amount);
               effectMessage = _this.attackUtility.getDeBuffMessage(effect.stat, effect.amount);
+              break;
+            case 'status':
+              debugLog("Hitting ".concat(effect.target, " with ").concat(effect.status));
+              _this.dgmnAH.giveCondition(effectTarget, effect.status);
+              effectMessage = _this.attackUtility.getConditionMessage(effect.status);
+              console.log("Effect message ? ", effectMessage);
               break;
             default:
               warningLog("Effect Type Unknown - Check attacks.db.js");
@@ -4585,6 +4704,12 @@ var BattleDgmnStatusCanvas = function (_GameCanvas) {
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnStatBuff", function (isEnemy, dgmnIndex, image) {
       var iconX = _this.getIconX(isEnemy, 0);
+      var iconY = _this.getIconY(dgmnIndex, 5);
+      _this.ctx.clearRect(iconX, iconY, CFG.tileSize, CFG.tileSize);
+      _this.ctx.drawImage(image, iconX, iconY, CFG.tileSize, CFG.tileSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnCondition", function (isEnemy, dgmnIndex, image) {
+      var iconX = _this.getIconX(isEnemy, 1);
       var iconY = _this.getIconY(dgmnIndex, 5);
       _this.ctx.clearRect(iconX, iconY, CFG.tileSize, CFG.tileSize);
       _this.ctx.drawImage(image, iconX, iconY, CFG.tileSize, CFG.tileSize);
@@ -4790,8 +4915,10 @@ var EvoMenu = function (_IconMenu) {
       _this.evoAttributeTxt.instantText(_this.menuCanvas.ctx, _this.dgmnUtility.getAttribute(species), 'green');
       _this.evoWeakTxt.instantText(_this.menuCanvas.ctx, 'WEAK', 'green');
       _this.evoResTxt.instantText(_this.menuCanvas.ctx, 'RES', 'green');
+      var i = 0;
       for (var field in _this.dgmnUtility.getBaseFP(species)) {
-        _this.menuCanvas.paintImage(_this.fetchImageCB("field".concat(field, "Icon")), (5 + _this.dgmnUtility.getAttribute(species).length) * CFG.tileSize, 15 * CFG.tileSize);
+        _this.menuCanvas.paintImage(_this.fetchImageCB("field".concat(field, "Icon")), (5 + _this.dgmnUtility.getAttribute(species).length + i * 1) * CFG.tileSize, 15 * CFG.tileSize);
+        i++;
       }
     });
     _defineProperty(_assertThisInitialized(_this), "canHatch", function () {
@@ -5376,12 +5503,16 @@ var Battle = function Battle(isBoss, floorNumber) {
     }
   });
   _defineProperty(this, "updateDgmnStatus", function (isEnemy, dgmnIndex) {
-    var dgmnData = isEnemy ? _this.dgmnAH.getDgmnData(_this.enemyParty[dgmnIndex], ['combo', 'weak', 'isDead', 'statMods'], true) : _this.dgmnAH.getDgmnData(_this.yourParty[dgmnIndex], ['combo', 'weak', 'isDead', 'statMods'], false);
+    var dgmnData = isEnemy ? _this.dgmnAH.getDgmnData(_this.enemyParty[dgmnIndex], ['combo', 'weak', 'isDead', 'statMods', 'condition'], true) : _this.dgmnAH.getDgmnData(_this.yourParty[dgmnIndex], ['combo', 'weak', 'isDead', 'statMods', 'condition'], false);
     _this.drawDgmnStatusMeter(isEnemy, dgmnIndex, 'hp');
     _this.drawDgmnStatusMeter(isEnemy, dgmnIndex, 'en');
     _this.drawDgmnStatusCombo(isEnemy, dgmnIndex, dgmnData.combo);
     _this.drawDgmnStatusWeak(isEnemy, dgmnIndex, dgmnData.weak);
-    _this.drawDgmnStatBuff(isEnemy, dgmnIndex, dgmnData.statMods);
+    if (!dgmnData.isDead) {
+      var _dgmnData$condition;
+      _this.drawDgmnStatBuff(isEnemy, dgmnIndex, dgmnData.statMods);
+      _this.drawDgmnCondition(isEnemy, dgmnIndex, (_dgmnData$condition = dgmnData.condition) === null || _dgmnData$condition === void 0 ? void 0 : _dgmnData$condition.type);
+    }
   });
   _defineProperty(this, "drawDgmnStatusMeter", function (isEnemy, dgmnIndex, stat) {
     var dgmnData = !isEnemy ? _this.dgmnAH.getDgmnData(_this.yourParty[dgmnIndex], ["current".concat(stat.toUpperCase()), 'currentStats']) : _this.dgmnAH.getDgmnData(_this.enemyParty[dgmnIndex], ["current".concat(stat.toUpperCase()), 'currentStats'], true);
@@ -5408,11 +5539,16 @@ var Battle = function Battle(isBoss, floorNumber) {
     if (!_this.battleUtility.hasBuffedStat(statMods)) return;
     _this.dgmnStatusCanvas.drawDgmnStatBuff(isEnemy, dgmnIndex, _this.systemAH.fetchImage('statBuff'));
   });
-  _defineProperty(this, "drawActionText", function (species, message, effectMessage) {
-    _this.battleMenu.drawActionText(species, message);
-    if (effectMessage) setTimeout(function () {
-      _this.battleMenu.drawActionText(species, effectMessage);
-    }, (message.length + 16) * 50);
+  _defineProperty(this, "drawDgmnStatDebuff", function (isEnemy, dgmnIndex, statMods) {
+    if (!_this.battleUtility.hasdeBuffedStat(statMods)) return;
+    _this.dgmnStatusCanvas.drawDgmnStatDebuff(isEnemy, dgmnIndex, _this.systemAH.fetchImage('statDebuff'));
+  });
+  _defineProperty(this, "drawDgmnCondition", function (isEnemy, dgmnIndex, condition) {
+    if (!condition) return;
+    _this.dgmnStatusCanvas.drawDgmnCondition(isEnemy, dgmnIndex, _this.systemAH.fetchImage(condition + 'Condition'));
+  });
+  _defineProperty(this, "drawActionText", function (species, messages) {
+    _this.battleMenu.drawActionText(species, messages);
   });
   _defineProperty(this, "drawBattleCanvas", function () {
     _this.battleCanvas.drawBattleBase(_this.systemAH.fetchImage('battleBackground'));
@@ -5676,7 +5812,7 @@ var Floor = function Floor(_floorNumber) {
     _this.dungeonAH = actionHandler;
   });
   _defineProperty(this, "initCanvas", function () {
-    _this.floorCanvas = new FloorCanvas('floor-canvas', _this.roomMatrix.length * 128, _this.roomMatrix[0].length * 128);
+    _this.floorCanvas = new FloorCanvas('floor-canvas', _this.roomMatrix[0].length * 128, _this.roomMatrix.length * 128);
   });
   _defineProperty(this, "generateFloor", function () {
     _this.roomMatrix = _this.buildRoomMatrix(_this.number);
