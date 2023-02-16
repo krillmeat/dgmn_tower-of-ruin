@@ -64,6 +64,8 @@ class DungeonIO extends IO{
         this.menuAH.giveCurrReward('right');
       } else if(this.menuAH.getState() === 'hatch-choice'){
         this.menuAH.nextHatch();
+      } else if(this.menuAH.getState() === 'evo-choice'){
+        this.menuAH.nextEvo();
       }
     } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
       if(this.menuAH.getState() === 'main'){
@@ -93,6 +95,8 @@ class DungeonIO extends IO{
         this.menuAH.giveCurrReward('left');
       } else if(this.menuAH.getState() === 'hatch-choice'){
         this.menuAH.prevHatch();
+      } else if(this.menuAH.getState() === 'evo-choice'){
+        this.menuAH.prevEvo();
       }
     } else if(this.dungeonAH.getDungeonState() === 'main-menu'){
       if(this.menuAH.getState() === 'main'){

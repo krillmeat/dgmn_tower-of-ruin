@@ -11,7 +11,6 @@ import TextArea from "../../text-area";
 import BattleCannonMenu from "./battle-cannon.menu";
 import TreasureUtility from "../../../dungeon/utils/treasure.util"
 import { itemByName, itemsDB } from "../../../data/items.db";
-import { getFullMessageLength } from "../../../utils/common.utils";
 
 /**------------------------------------------------------------------------
  * BATTLE MENU 
@@ -134,15 +133,16 @@ class BattleMenu extends Menu{
     let side = flow === 'attack' ? 'enemy' : itemsDB[itemByName[this.currItem.name]].target;
     let hitsAll = flow === 'attack' ? this.currAttackAction.targets === 'all' : itemsDB[itemByName[this.currItem.name]].hitsAll;
     let xOffset = side === 'enemy' ? 0 : 2;
+    let cursorImg = side === 'enemy' ? this.systemAH.fetchImage('cursorLeft') : this.systemAH.fetchImage('cursorRight');
     
     this.addSubMenu('target',new TargetSelect(side,hitsAll,this.dgmnIsDeadCB,this.menuCanvas.ctx,
-      [8+xOffset,2],3,3,4,['one','two','three'],this.systemAH.fetchImage('cursorLeft'),null,'target'));
+      [8+xOffset,2],3,3,4,['one','two','three'],cursorImg,null,'target'));
     this.subMenus.target.currIndex = this.getStartingTarget();
     this.subMenus.target.drawMenu(this.getStartingTarget());
   }
 
     // Used above ^
-    dgmnIsDeadCB = index => { return this.battleAH.getDgmnDataByIndex(index,['isDead'],true).isDead }
+    dgmnIsDeadCB = (index,side) => { return this.battleAH.getDgmnDataByIndex(index,['isDead'],side === 'enemy').isDead }
 
   /**------------------------------------------------------------------------
    * BUILD CANNON LIST 
@@ -471,6 +471,11 @@ class BattleMenu extends Menu{
     this.gotoNextChoice();  // TODO - name should be switched for something like "wrap up turn"
   }
 
+  /**------------------------------------------------------------------------
+   * SET CURRENT CANNON TARGETS
+   * ------------------------------------------------------------------------
+   * Adds Target Data to the current Cannon Options
+   * ----------------------------------------------------------------------*/
   setCurrentCannonTargets = (targets, isEnemy) => {
     this.removeSubMenu(this.currSubMenu);
     this.removeSubMenu('beetle');
@@ -484,7 +489,6 @@ class BattleMenu extends Menu{
    * ------------------------------------------------------------------------
    * After one Digimon is done, should go to the next one
    * TODO - This logic should be somehow merged with the initial drawing
-   * TODO - Getting too big, needs to be split out
    * ----------------------------------------------------------------------*/
   gotoNextChoice = () => {
     debugLog("  - Next Dgmn...");

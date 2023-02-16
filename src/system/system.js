@@ -11,7 +11,7 @@ import DebugMenu from "../classes/debug-menu";
 import ImageHandler from "../classes/image-handler";
 import LoadManager from "../classes/load-manager";
 
-import { fontImages, genericImages, loadingImages } from "../data/images.db";
+import { fontImages, genericImages, loadingImages, typeIcons } from "../data/images.db";
 import { fontImages as globalFontImages} from "../data/font.db";
 
 /**------------------------------------------------------------------------
@@ -61,7 +61,7 @@ class System{
       this.debugMenu = new DebugMenu(this.game); // Unusual for me to do this, but pass the WHOLE game in
 
     // Load Base Images - Run game once that is all done | TODO - Maybe split out the onDone
-    this.imageHandler.addToQueue(genericImages.concat(fontImages).concat(loadingImages),this.onGenericImagesLoaded);
+    this.imageHandler.addToQueue(genericImages.concat(fontImages).concat(loadingImages).concat(typeIcons),this.onGenericImagesLoaded);
   }; 
 
     onGenericImagesLoaded = () => {

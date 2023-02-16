@@ -31,7 +31,7 @@ class BattleIO extends IO{
       } else if(this.menuAH.getState() === 'evo-choice'){
         this.menuAH.selectEvo();
       } else if(this.menuAH.getState() === 'boss-reward'){
-        // this.battleAH.selectBossReward();
+        this.menuAH.selectBossReward();
       }
     }
   }
@@ -49,19 +49,20 @@ class BattleIO extends IO{
         } else if(this.battleAH.getBattleState() === 'victory'){
           if(this.menuAH.getState() === 'rewards'){
             this.menuAH.giveCurrReward('up');
-          } else if(this.menuAH.getState() === 'boss-reward'){ this.menuAH.navUp() }
+          } else if(this.menuAH.getState() === 'boss-reward'){ this.menuAH.prevBossReward() }
         }
       }
   }
 
-  rightKeyHandler = upDown => { 
+  rightKeyHandler = upDown => {
     if(upDown === 'down'){
       if(this.battleAH.getBattleState() === 'battle'){
         if(this.menuAH.getCurrMenuType() === 'icon'){
           this.menuAH.nextIcon();
         }    
       } else if(this.battleAH.getBattleState() === 'victory'){
-        if(this.menuAH.getState() === 'rewards') this.menuAH.giveCurrReward('right');
+        if(this.menuAH.getState() === 'rewards') {this.menuAH.giveCurrReward('right');
+        } else if(this.menuAH.getState() === 'evo-choice') this.menuAH.nextEvo();
       }
     }
   }
@@ -73,7 +74,7 @@ class BattleIO extends IO{
           this.menuAH.nextListItem();
         }
       } else if(this.battleAH.getBattleState() === 'victory'){
-        if(this.menuAH.getState() === 'boss-reward') this.menuAH.navDown()
+        if(this.menuAH.getState() === 'boss-reward') this.menuAH.nextBossReward();
       }
     }
   }
@@ -85,7 +86,8 @@ class BattleIO extends IO{
           this.menuAH.prevIcon();
         }
       } else if(this.battleAH.getBattleState() === 'victory'){
-        if(this.menuAH.getState() === 'rewards') this.menuAH.giveCurrReward('left');
+        if(this.menuAH.getState() === 'rewards'){ this.menuAH.giveCurrReward('left');
+        } else if(this.menuAH.getState() === 'evo-choice') this.menuAH.prevEvo();
       }
     }
   }

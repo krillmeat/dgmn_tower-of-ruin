@@ -51,6 +51,8 @@ class DgmnUtility{
     return dgmnDB[speciesName].stage;
   }
 
+  getTypeAffinities = speciesName => dgmnDB[speciesName].types
+
   getAttribute = species => {
     return dgmnDB[species].attr;
   }

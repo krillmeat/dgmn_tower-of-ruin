@@ -160,14 +160,20 @@ class EvoMenu extends IconMenu{
 
     for(let i = 0; i < this.choices.length; i++){
       let img;
-      if( this.dgmnUtility.canHatchInto(dgmnFP,this.choices[i]) ){
+      let available = this.type === 'hatch' ? 
+        this.dgmnUtility.canHatchInto(dgmnFP,this.choices[i]) : 
+        this.dgmnUtility.canEvolveInto(dgmnFP,this.choices[i]);
+      if( available ){
         possibleHatches.push(this.choices[i]);
         img = this.fetchImageCB('evoIconPositive');
       } else{ img = this.fetchImageCB('evoIconNegative') }
       this.menuCanvas.paintImage(img,iconsOffset[0]+(i*CFG.tileSize),iconsOffset[1]);
     }
 
-    this.menuCanvas.ctx.fillStyle = this.dgmnUtility.canHatchInto(dgmnFP,this.choices[this.currChoice]) ? "#C4CFA1" : "#1D5A4A";
+    let currAvailable = this.type === 'hatch' ? 
+      this.dgmnUtility.canHatchInto(dgmnFP,this.choices[this.currChoice]) : 
+      this.dgmnUtility.canEvolveInto(dgmnFP,this.choices[this.currChoice]);
+    this.menuCanvas.ctx.fillStyle = currAvailable ? "#C4CFA1" : "#1D5A4A";
     this.menuCanvas.ctx.fillRect(iconsOffset[0]+(this.currChoice*CFG.tileSize)+3,iconsOffset[1]+3,5*CFG.screenSize,4*CFG.screenSize);
   }
 
@@ -217,33 +223,46 @@ class EvoMenu extends IconMenu{
     this.evoWeakTxt.instantText(this.menuCanvas.ctx,'WEAK','green');
     this.evoResTxt.instantText(this.menuCanvas.ctx,'RES','green');
 
+    // FIELDS
     let i = 0;
     for(let field in this.dgmnUtility.getBaseFP(species)){
       this.menuCanvas.paintImage(this.fetchImageCB(`field${field}Icon`),
         ((5+this.dgmnUtility.getAttribute(species).length)+(i*1))*CFG.tileSize,15*CFG.tileSize);
       i++;
     }
+
+    // WEAK / RESIST
+    let typeAffinities = this.dgmnUtility.getTypeAffinities(species);
+    let w = 0; let r = 0; // Tracks how many W/R there are, so they move over
+    for(let type in typeAffinities){
+      if(typeAffinities[type] < 1){
+        this.menuCanvas.paintImage(this.fetchImageCB(`${type}TypeIcon`),
+          (8+r)*CFG.tileSize,16*CFG.tileSize ); r++;
+      } else if(typeAffinities[type] > 1){ this.menuCanvas.paintImage(this.fetchImageCB(`${type}TypeIcon`),
+          (15+w)*CFG.tileSize,16*CFG.tileSize ); w++; }
+    }
   }
 
   /**------------------------------------------------------------------------
-   * CAN HATCH
+   * CAN HATCH + EVOLVE
    * ------------------------------------------------------------------------
-   * Check to see if the current DGMN Selection is able to hatch
+   * Check to see if the current DGMN Selection is able to Hatch/Evolve
    * ----------------------------------------------------------------------*/
   canHatch = () => { return this.dgmnUtility.canHatchInto(this.dgmnData.currentFP,this.choices[this.currChoice]) }
+  canEvolve = () => { return this.dgmnUtility.canEvolveInto(this.dgmnData.currentFP,this.choices[this.currChoice]) }
 
   nextChoice = () => {
     if(this.currChoice < this.choices.length - 1){
       this.currChoice++;
       this.selectedDgmn = this.choices[this.currChoice];
-      this.drawHatchScreen();
+      this.type === 'hatch' ? this.drawHatchScreen() : this.drawEvoScreen();
     }
   }
   prevChoice = () => {
     if(this.currChoice > 0){
       this.currChoice--;
       this.selectedDgmn = this.choices[this.currChoice];
-      this.drawHatchScreen();
+      this.type === 'hatch' ? this.drawHatchScreen() : this.drawEvoScreen();
     }
   }
 }

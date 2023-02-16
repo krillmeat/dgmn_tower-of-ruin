@@ -5,9 +5,14 @@ class DgmnGrowthMenuAH{
     this.giveCurrReward = dir => { cbObj.giveCurrRewardCB(dir) }
     this.prevHatch = () => { cbObj.prevHatchCB() }
     this.nextHatch = () => { cbObj.nextHatchCB() }
+    this.prevEvo = () => { cbObj.prevEvoCB() }
+    this.nextEvo = () => { cbObj.nextEvoCB() }
     this.selectHatch = () => { cbObj.selectHatchCB() }
     this.selectEvo = () => { cbObj.selectEvoCB() }
     this.confirmLevelUp = () => { cbObj.confirmLevelUpCB() }
+    this.nextBossReward = () => { cbObj.nextBossRewardCB() }
+    this.prevBossReward = () => { cbObj.prevBossRewardCB() }
+    this.selectBossReward = () => { cbObj.selectBossRewardCB() }
     this.skipEvo = () => {cbObj.skipEvoCB() }
   }
 }

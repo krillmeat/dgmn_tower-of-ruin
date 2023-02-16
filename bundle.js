@@ -436,7 +436,7 @@ var dgmnDB = {
       AVO: 0,
       SPD: 1
     },
-    evolutions: evolutions['Bota'],
+    evolutions: ['Koro'],
     types: {},
     fields: {
       DR: 1
@@ -519,7 +519,7 @@ var dgmnDB = {
   Pururu: {
     stage: 1,
     attr: 'Free',
-    stats: [2, 1, 0, 0, 0, 1, 0, 1],
+    stats: [2, 1, 0, 0, 0, 1, 1, 0],
     evolutions: [],
     types: {},
     fields: {
@@ -628,7 +628,7 @@ var dgmnDB = {
       AVO: 1,
       SPD: 2
     },
-    evolutions: ['Agu'],
+    evolutions: ['Agu', 'ToyAgu'],
     types: {},
     fields: {
       DR: 2
@@ -718,7 +718,7 @@ var dgmnDB = {
       AVO: 1,
       SPD: 1
     },
-    evolutions: ['Haguru'],
+    evolutions: ['Haguru', 'ToyAgu', 'Kote'],
     types: {},
     fields: {
       ME: 2
@@ -885,6 +885,56 @@ var dgmnDB = {
     },
     attack: 'darknessGear'
   },
+  ToyAgu: {
+    stage: 3,
+    attr: 'Vaccine',
+    stats: {
+      HP: 5,
+      ATK: 5,
+      DEF: 5,
+      INT: 5,
+      RES: 5,
+      HIT: 5,
+      AVO: 5,
+      SPD: 5
+    },
+    evolutions: [],
+    types: {},
+    fields: {
+      ME: 2,
+      DR: 1
+    },
+    evoFields: {
+      ME: 3,
+      DR: 2
+    },
+    attack: 'toyFlame'
+  },
+  Kote: {
+    stage: 3,
+    attr: 'Data',
+    stats: {
+      HP: 5,
+      ATK: 5,
+      DEF: 5,
+      INT: 5,
+      RES: 5,
+      HIT: 5,
+      AVO: 5,
+      SPD: 5
+    },
+    evolutions: [],
+    types: {},
+    fields: {
+      ME: 2,
+      VB: 1
+    },
+    evoFields: {
+      ME: 3,
+      VB: 2
+    },
+    attack: 'bubbles'
+  },
   PicoDevi: {
     stage: 3,
     "class": 'Virus',
@@ -897,7 +947,7 @@ var dgmnDB = {
   },
   Grey: {
     stage: 4,
-    "class": 'vaccine',
+    "class": 'Vaccine',
     stats: [6, 5, 5, 5, 5, 5, 5, 6],
     evolutions: evolutions['agu'],
     types: {
@@ -1047,13 +1097,7 @@ var attacksDB = {
     targets: 'single',
     hits: 1,
     animationFrames: [['bubbles1', 1], ['bubbles2', 1], ['bubbles3', 1], ['bubbles4', 1], ['bubbles5', 1], ['bubbles6', 1]],
-    animationFrameCount: 6,
-    effect: {
-      type: 'status',
-      target: 'target',
-      status: 'overheat',
-      accuracy: 100
-    }
+    animationFrameCount: 6
   },
   babyFlame: {
     displayName: 'Baby Flame',
@@ -1158,12 +1202,48 @@ var attacksDB = {
     hits: 1,
     animationFrames: [['babyFlame1', 1], ['babyFlame2', 1], ['babyFlame3', 4], ['babyFlame2', 1], ['babyFlame1', 1]],
     animationFrameCount: 3
+  },
+  toyFlame: {
+    displayName: 'Toy Flame',
+    power: 'F',
+    maxCost: 8,
+    type: 'fire',
+    stat: 'physical',
+    targets: 'single',
+    hits: 1,
+    animationFrames: [['toyFlame1', 1], ['toyFlame2', 1], ['toyFlame3', 1], ['toyFlame4', 1]],
+    animationFrameCount: 4,
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'DEF',
+      amount: 1,
+      accuracy: 25
+    }
+  },
+  thunderKote: {
+    displayName: 'ThunderKote',
+    power: 'F',
+    maxCost: 8,
+    type: 'elec',
+    targets: 'single',
+    hits: 1,
+    animationFrames: [['thunderKote1', 2], ['thunderKote2', 2], ['thunderKote3', 2], ['thunderKote4', 2], ['thunderKote5', 2], ['thunderKote6', 1], ['thunderKote7', 1], ['thunderKote8', 1], ['thunderKote9', 1], ['thunderKote10', 1], ['thunderKote11', 1], ['thunderKote12', 1]],
+    animationFrameCount: 12,
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'HIT',
+      amount: 1,
+      accuracy: 25
+    }
   }
 };
 var FULL_CONDITION_TEXT = {
   overheat: 'Overheat',
   freeze: 'Freeze',
-  virus: 'Virus'
+  virus: 'Virus',
+  surge: 'Surge'
 };
 
 var powerRanks = {
@@ -1349,6 +1429,9 @@ var DgmnUtility = function DgmnUtility() {
   });
   _defineProperty(this, "getStage", function (speciesName) {
     return dgmnDB[speciesName].stage;
+  });
+  _defineProperty(this, "getTypeAffinities", function (speciesName) {
+    return dgmnDB[speciesName].types;
   });
   _defineProperty(this, "getAttribute", function (species) {
     return dgmnDB[species].attr;
@@ -1931,7 +2014,7 @@ var dgmnEncounterDB = {
     speciesName: 'Koro',
     currentLevel: 3,
     currentStats: {
-      HP: 3,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 3,
@@ -1946,7 +2029,7 @@ var dgmnEncounterDB = {
     speciesName: 'Capri',
     currentLevel: 3,
     currentStats: {
-      HP: 3,
+      HP: 10,
       ATK: 7,
       DEF: 7,
       INT: 3,
@@ -1961,7 +2044,7 @@ var dgmnEncounterDB = {
     speciesName: 'Bud',
     currentLevel: 3,
     currentStats: {
-      HP: 3,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 7,
@@ -1976,7 +2059,7 @@ var dgmnEncounterDB = {
     speciesName: 'Puka',
     currentLevel: 3,
     currentStats: {
-      HP: 3,
+      HP: 10,
       ATK: 3,
       DEF: 7,
       INT: 3,
@@ -1991,7 +2074,7 @@ var dgmnEncounterDB = {
     speciesName: 'Bibi',
     currentLevel: 3,
     currentStats: {
-      HP: 3,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 3,
@@ -2006,7 +2089,7 @@ var dgmnEncounterDB = {
     speciesName: 'Poro',
     currentLevel: 3,
     currentStats: {
-      HP: 3,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 3,
@@ -2021,7 +2104,7 @@ var dgmnEncounterDB = {
     speciesName: 'Toko',
     currentLevel: 3,
     currentStats: {
-      HP: 3,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 7,
@@ -2036,7 +2119,7 @@ var dgmnEncounterDB = {
     speciesName: 'Pagu',
     currentLevel: 3,
     currentStats: {
-      HP: 3,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 7,
@@ -2051,7 +2134,7 @@ var dgmnEncounterDB = {
     speciesName: 'Agu',
     currentLevel: 4,
     currentStats: {
-      HP: 32,
+      HP: 102,
       ATK: 12,
       DEF: 6,
       INT: 6,
@@ -2097,7 +2180,7 @@ var bossEncountersDB = {
     speciesName: 'Agu',
     currentLevel: 5,
     currentStats: {
-      HP: 38,
+      HP: 108,
       ATK: 15,
       DEF: 8,
       INT: 8,
@@ -2420,7 +2503,7 @@ var DgmnManager = function DgmnManager(systemAH) {
   });
   _defineProperty(this, "createDgmn", function (index, data, isEnemy) {
     if (isEnemy) {
-      _this.enemyDgmn["edId".concat(index)] = new Dgmn(index, "ENEMY", data.speciesName);
+      _this.enemyDgmn["edId".concat(index)] = new Dgmn(index, "Enemy", data.speciesName);
       _this.enemyDgmn["edId".concat(index)].isEnemy = true;
       _this.enemyDgmn["edId".concat(index)].currentLevel = data.currentLevel;
       _this.enemyDgmn["edId".concat(index)].currentStats = data.currentStats;
@@ -2535,7 +2618,7 @@ var DgmnManager = function DgmnManager(systemAH) {
     return false;
   });
   _defineProperty(this, "levelUp", function (dgmnId) {
-    _this.allDgmn[dgmnId].currentXP = 0;
+    _this.allDgmn[dgmnId].currentXP = _this.allDgmn[dgmnId].currentXP - _this.dgmnUtility.checkLevelReq(_this.allDgmn[dgmnId].currentLevel);
     _this.allDgmn[dgmnId].currentLevel++;
     _this.allDgmn[dgmnId].levelUpStats();
     _this.allDgmn[dgmnId].levelUpFP();
@@ -2760,10 +2843,10 @@ var DigiBeetleCanvas = function (_GameCanvas) {
 
 var dungeonImages = ['Dungeon/startTile', 'Dungeon/endTile', 'Dungeon/enemyTile', 'Dungeon/treasureTile', 'Dungeon/treasureTileOpen', 'Menus/dungeonPauseOverlay'];
 var digiBeetleImages = ['Dungeon/DigiBeetle/digiBeetleDown0', 'Dungeon/DigiBeetle/digiBeetleDown1', 'Dungeon/DigiBeetle/digiBeetleUp0', 'Dungeon/DigiBeetle/digiBeetleUp1', 'Dungeon/DigiBeetle/digiBeetleRight0', 'Dungeon/DigiBeetle/digiBeetleRight1', 'Dungeon/DigiBeetle/digiBeetleLeft0', 'Dungeon/DigiBeetle/digiBeetleLeft1'];
-var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/pwrDIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay', 'Menus/textBox', 'Menus/basicMenu', 'Icons/Pause/itemsSelected', 'Icons/Pause/itemsDeselected', 'Icons/Pause/beetleDeselected', 'Icons/Pause/beetleSelected', 'Menus/itemsTargetOverlay', 'Icons/rewardIconDeselected', 'Icons/rewardIconSelected', 'Icons/rewardIconNull', 'Icons/rewardIconFull', 'Menus/bossRewardFieldChoice', 'Menus/titleScreen', 'DGMN/beetlePortrait'];
+var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Menus/cursorRight', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/pwrDIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay', 'Menus/textBox', 'Menus/basicMenu', 'Icons/Pause/itemsSelected', 'Icons/Pause/itemsDeselected', 'Icons/Pause/itemsDisabled', 'Icons/Pause/beetleDeselected', 'Icons/Pause/beetleSelected', 'Menus/itemsTargetOverlay', 'Icons/rewardIconDeselected', 'Icons/rewardIconSelected', 'Icons/rewardIconNull', 'Icons/rewardIconFull', 'Menus/bossRewardFieldChoice', 'Menus/titleScreen', 'DGMN/beetlePortrait', 'Menus/bossRewardMenu'];
 var loadingImages = ['Loading/loading0', 'Loading/loading1', 'Loading/loading2', 'Loading/loading3', 'Loading/loading4', 'Loading/loading5', 'Loading/loading6', 'Loading/loading7', 'Loading/loading8', 'Loading/loading9', 'Loading/loading10'];
 var fontImages$1 = ['Fonts/fontsBlack', 'Fonts/fontsWhite', 'Fonts/fontsLightGreen', 'Fonts/fontsDarkGreen'];
-var typeIcons = ['Icons/Types/noneTypeIcon', 'Icons/Types/fireTypeIcon', 'Icons/Types/windTypeIcon', 'Icons/Types/plantTypeIcon', 'Icons/Types/elecTypeIcon', 'Icons/Types/evilTypeIcon', 'Icons/Types/metalTypeIcon'];
+var typeIcons = ['Icons/Types/noneTypeIcon', 'Icons/Types/fireTypeIcon', 'Icons/Types/windTypeIcon', 'Icons/Types/plantTypeIcon', 'Icons/Types/elecTypeIcon', 'Icons/Types/evilTypeIcon', 'Icons/Types/metalTypeIcon', 'Icons/Types/waterTypeIcon'];
 var fieldIcons = ['Icons/Fields/fieldDRIcon', 'Icons/Fields/fieldNSIcon', 'Icons/Fields/fieldWGIcon', 'Icons/Fields/fieldVBIcon', 'Icons/Fields/fieldMEIcon', 'Icons/Fields/fieldJTIcon', 'Icons/Fields/fieldNAIcon', 'Icons/Fields/fieldDSIcon'];
 var battleImages = ['Attacks/blankAttack', 'Battle/battleBackground', 'Battle/Menus/attackDeselected', 'Battle/Menus/attackSelected', 'Battle/Menus/defendDeselected', 'Battle/Menus/defendSelected', 'Battle/Menus/statsDeselected', 'Battle/Menus/statsSelected', 'Icons/Battle/weak0', 'Icons/Battle/weak1', 'Icons/Battle/weak2', 'Icons/Battle/weak3', 'DGMN/dgmnDead', 'Battle/Menus/dgmnBarLightGreen', 'Battle/Menus/dgmnBarDarkGreen', 'Battle/Menus/battleOptionSelectBaseRight', 'Battle/Menus/battleVictoryOverlay', 'Icons/xpIconSmall', 'Icons/xpIconLarge', 'Menus/bossRewardMenu', 'Battle/Menus/dgmnDeselected', 'Battle/Menus/dgmnSelected', 'Battle/Menus/cannonDeselected', 'Battle/Menus/cannonSelected', 'Battle/Menus/runDeselected', 'Battle/Menus/runSelected', 'Battle/Menus/battleCannonOverlay', 'Battle/Menus/cannonDisabled', 'Icons/Battle/statBuff', 'Icons/Battle/statDebuff', 'Icons/Battle/overheatCondition'];
 
@@ -2933,7 +3016,7 @@ var BattleAH = function BattleAH(cbObj) {
 var BattleUtility = function BattleUtility() {
   _classCallCheck(this, BattleUtility);
   _defineProperty(this, "getDefaultBattleImages", function () {
-    return battleImages.concat(typeIcons).concat(fieldIcons);
+    return battleImages.concat(fieldIcons);
   });
   _defineProperty(this, "calculateTurnOrder", function (idList) {
     var order = [];
@@ -3071,7 +3154,9 @@ var BattleIO = function (_IO) {
           _this.menuAH.confirmLevelUp();
         } else if (_this.menuAH.getState() === 'evo-choice') {
           _this.menuAH.selectEvo();
-        } else if (_this.menuAH.getState() === 'boss-reward') ;
+        } else if (_this.menuAH.getState() === 'boss-reward') {
+          _this.menuAH.selectBossReward();
+        }
       }
     });
     _defineProperty(_assertThisInitialized(_this), "cancelKeyHandler", function (upDown) {
@@ -3087,7 +3172,7 @@ var BattleIO = function (_IO) {
           if (_this.menuAH.getState() === 'rewards') {
             _this.menuAH.giveCurrReward('up');
           } else if (_this.menuAH.getState() === 'boss-reward') {
-            _this.menuAH.navUp();
+            _this.menuAH.prevBossReward();
           }
         }
       }
@@ -3099,7 +3184,9 @@ var BattleIO = function (_IO) {
             _this.menuAH.nextIcon();
           }
         } else if (_this.battleAH.getBattleState() === 'victory') {
-          if (_this.menuAH.getState() === 'rewards') _this.menuAH.giveCurrReward('right');
+          if (_this.menuAH.getState() === 'rewards') {
+            _this.menuAH.giveCurrReward('right');
+          } else if (_this.menuAH.getState() === 'evo-choice') _this.menuAH.nextEvo();
         }
       }
     });
@@ -3110,7 +3197,7 @@ var BattleIO = function (_IO) {
             _this.menuAH.nextListItem();
           }
         } else if (_this.battleAH.getBattleState() === 'victory') {
-          if (_this.menuAH.getState() === 'boss-reward') _this.menuAH.navDown();
+          if (_this.menuAH.getState() === 'boss-reward') _this.menuAH.nextBossReward();
         }
       }
     });
@@ -3121,7 +3208,9 @@ var BattleIO = function (_IO) {
             _this.menuAH.prevIcon();
           }
         } else if (_this.battleAH.getBattleState() === 'victory') {
-          if (_this.menuAH.getState() === 'rewards') _this.menuAH.giveCurrReward('left');
+          if (_this.menuAH.getState() === 'rewards') {
+            _this.menuAH.giveCurrReward('left');
+          } else if (_this.menuAH.getState() === 'evo-choice') _this.menuAH.prevEvo();
         }
       }
     });
@@ -3900,10 +3989,6 @@ var BattleCannonMenu = function (_ListMenu) {
   return BattleCannonMenu;
 }(ListMenu);
 
-var getFullMessageLength = function getFullMessageLength(messages) {
-  return messages.join(" ").length;
-};
-
 var BattleMenu = function (_Menu) {
   _inherits(BattleMenu, _Menu);
   var _super = _createSuper(BattleMenu);
@@ -3957,12 +4042,13 @@ var BattleMenu = function (_Menu) {
       var side = flow === 'attack' ? 'enemy' : itemsDB[itemByName[_this.currItem.name]].target;
       var hitsAll = flow === 'attack' ? _this.currAttackAction.targets === 'all' : itemsDB[itemByName[_this.currItem.name]].hitsAll;
       var xOffset = side === 'enemy' ? 0 : 2;
-      _this.addSubMenu('target', new TargetSelect(side, hitsAll, _this.dgmnIsDeadCB, _this.menuCanvas.ctx, [8 + xOffset, 2], 3, 3, 4, ['one', 'two', 'three'], _this.systemAH.fetchImage('cursorLeft'), null, 'target'));
+      var cursorImg = side === 'enemy' ? _this.systemAH.fetchImage('cursorLeft') : _this.systemAH.fetchImage('cursorRight');
+      _this.addSubMenu('target', new TargetSelect(side, hitsAll, _this.dgmnIsDeadCB, _this.menuCanvas.ctx, [8 + xOffset, 2], 3, 3, 4, ['one', 'two', 'three'], cursorImg, null, 'target'));
       _this.subMenus.target.currIndex = _this.getStartingTarget();
       _this.subMenus.target.drawMenu(_this.getStartingTarget());
     });
-    _defineProperty(_assertThisInitialized(_this), "dgmnIsDeadCB", function (index) {
-      return _this.battleAH.getDgmnDataByIndex(index, ['isDead'], true).isDead;
+    _defineProperty(_assertThisInitialized(_this), "dgmnIsDeadCB", function (index, side) {
+      return _this.battleAH.getDgmnDataByIndex(index, ['isDead'], side === 'enemy').isDead;
     });
     _defineProperty(_assertThisInitialized(_this), "buildCannonList", function () {
       debugLog("  - Selecting Ammo...");
@@ -4311,6 +4397,8 @@ var AttackCanvas = function (_GameCanvas) {
         if (i >= images.length) {
           if (t === targets.length - 1) {
             if (!isTargetEnemy) _this.flip();
+            _this.clearCanvas();
+            _this.drawCB();
             clearInterval(animationInterval);
             callback();
           } else {
@@ -4319,7 +4407,7 @@ var AttackCanvas = function (_GameCanvas) {
             i = 0;
           }
         }
-      }, 66);
+      }, 50);
     });
     _defineProperty(_assertThisInitialized(_this), "paintAttackFrame", function (targetIndex, frame) {
       _this.clearCanvas();
@@ -4333,6 +4421,10 @@ var AttackCanvas = function (_GameCanvas) {
   }
   return AttackCanvas;
 }(GameCanvas);
+
+var getFullMessageLength = function getFullMessageLength(messages) {
+  return messages.join(" ").length;
+};
 
 var AttackManager = function AttackManager() {
   var _this = this;
@@ -4455,7 +4547,7 @@ var AttackManager = function AttackManager() {
     _this.attackCanvas.clearCanvas();
     setTimeout(function () {
       _this.attackActions[attacker].status = 'done';
-    }, 500);
+    }, 1000);
   });
   _defineProperty(this, "takeAction", function (attacker, action) {
     _this.attackActions[attacker].status = 'acting';
@@ -4469,7 +4561,7 @@ var AttackManager = function AttackManager() {
     } else {
       allMessages = [_this.dgmnAH.getDgmnData(attacker, ['nickname'], attacker.charAt(0) === 'e').nickname + ' defends'];
     }
-    _this.battleAH.drawActionText(species, allMessages);
+    if (allMessages.length > 0) _this.battleAH.drawActionText(species, allMessages);
     setTimeout(function () {
       if (!action.isDefend) {
         _this.dgmnAH.showDgmnFrame(attacker, 'Attack');
@@ -4513,7 +4605,7 @@ var AttackManager = function AttackManager() {
     allMessages = allMessages[0] !== ' ' && allMessages[0] ? allMessages : [];
     for (var i in action.targets) {
       for (var h = 0; h < action.hits; h++) {
-        var attackerData = _this.dgmnAH.getDgmnData(attacker, ['currentStats', 'currentLevel', 'nickname', 'statMods', 'condition'], attacker.charAt(0) === 'e');
+        var attackerData = _this.dgmnAH.getDgmnData(attacker, ['speciesName', 'currentStats', 'currentLevel', 'nickname', 'statMods', 'condition'], attacker.charAt(0) === 'e');
         var targetData = _this.dgmnAH.getDgmnData(action.targets[i], ['currentStats', 'combo', 'speciesName', 'weak', 'isDead', 'statMods'], action.targets[i].charAt(0) === 'e');
         if (!targetData.isDead) {
           var _attackerData$conditi2, _attackerData$conditi3;
@@ -4540,7 +4632,15 @@ var AttackManager = function AttackManager() {
           var rand = Math.floor(Math.random() * (3 - 1) + 1);
           var finalDMG = accuracyMod === 0 ? 0 : Math.round(baseDMG * modTotal) + rand;
           _this.dealDMG(action.targets[i], finalDMG);
-          allMessages.unshift(_this.buildActionMessage(attackerData.nickname, action.attackName, accuracyMod));
+          var compiledName = attackerData.nickname !== 'Enemy' ? attackerData.nickname : 'Enemy ' + attackerData.speciesName + '.MON';
+          var nextMessage = _this.buildActionMessage(compiledName, action.attackName, accuracyMod);
+          if (i == 0 && h == 0) {
+            allMessages.unshift(nextMessage);
+          } else if (i !== 0 || h !== 0) {
+            if (nextMessage.indexOf("CRIT") !== -1 || nextMessage.indexOf("missed") !== -1) {
+              allMessages.push(nextMessage.indexOf("CRIT") !== -1 ? "One was a CRITICAL HIT!" : "One missed...");
+            }
+          }
           if ((_attackerData$conditi2 = attackerData.condition) !== null && _attackerData$conditi2 !== void 0 && _attackerData$conditi2.type) allMessages.unshift(attackerData.nickname + "" + _this.dgmnUtility.getConditionMessage((_attackerData$conditi3 = attackerData.condition) === null || _attackerData$conditi3 === void 0 ? void 0 : _attackerData$conditi3.type));
           messageCB(allMessages);
         } else {
@@ -4599,8 +4699,6 @@ var AttackManager = function AttackManager() {
     return baseDMG;
   });
   _defineProperty(this, "doAttackEffect", function (attackName, attacker, targets) {
-    console.log("Attacker : ", attacker);
-    console.log("Targets : ", targets);
     var effect = attacksDB[attackName].effect;
     if (!effect) return;
     var effectTargets = _this.getEffectTarget(effect.target, attacker, targets);
@@ -4770,6 +4868,12 @@ var DgmnGrowthMenuAH = function DgmnGrowthMenuAH(cbObj) {
   this.nextHatch = function () {
     cbObj.nextHatchCB();
   };
+  this.prevEvo = function () {
+    cbObj.prevEvoCB();
+  };
+  this.nextEvo = function () {
+    cbObj.nextEvoCB();
+  };
   this.selectHatch = function () {
     cbObj.selectHatchCB();
   };
@@ -4778,6 +4882,15 @@ var DgmnGrowthMenuAH = function DgmnGrowthMenuAH(cbObj) {
   };
   this.confirmLevelUp = function () {
     cbObj.confirmLevelUpCB();
+  };
+  this.nextBossReward = function () {
+    cbObj.nextBossRewardCB();
+  };
+  this.prevBossReward = function () {
+    cbObj.prevBossRewardCB();
+  };
+  this.selectBossReward = function () {
+    cbObj.selectBossRewardCB();
   };
   this.skipEvo = function () {
     cbObj.skipEvoCB();
@@ -4817,7 +4930,7 @@ var MenuCanvas = function (_GameCanvas) {
 var EvoMenu = function (_IconMenu) {
   _inherits(EvoMenu, _IconMenu);
   var _super = _createSuper(EvoMenu);
-  function EvoMenu(type) {
+  function EvoMenu(_type) {
     var _this;
     _classCallCheck(this, EvoMenu);
     for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -4883,7 +4996,8 @@ var EvoMenu = function (_IconMenu) {
       _this.menuCanvas.ctx.fillRect(iconsOffset[0], iconsOffset[1], 11 * CFG.tileSize, 7 * CFG.screenSize);
       for (var i = 0; i < _this.choices.length; i++) {
         var img = void 0;
-        if (_this.dgmnUtility.canHatchInto(dgmnFP, _this.choices[i])) {
+        var available = _this.type === 'hatch' ? _this.dgmnUtility.canHatchInto(dgmnFP, _this.choices[i]) : _this.dgmnUtility.canEvolveInto(dgmnFP, _this.choices[i]);
+        if (available) {
           possibleHatches.push(_this.choices[i]);
           img = _this.fetchImageCB('evoIconPositive');
         } else {
@@ -4891,7 +5005,8 @@ var EvoMenu = function (_IconMenu) {
         }
         _this.menuCanvas.paintImage(img, iconsOffset[0] + i * CFG.tileSize, iconsOffset[1]);
       }
-      _this.menuCanvas.ctx.fillStyle = _this.dgmnUtility.canHatchInto(dgmnFP, _this.choices[_this.currChoice]) ? "#C4CFA1" : "#1D5A4A";
+      var currAvailable = _this.type === 'hatch' ? _this.dgmnUtility.canHatchInto(dgmnFP, _this.choices[_this.currChoice]) : _this.dgmnUtility.canEvolveInto(dgmnFP, _this.choices[_this.currChoice]);
+      _this.menuCanvas.ctx.fillStyle = currAvailable ? "#C4CFA1" : "#1D5A4A";
       _this.menuCanvas.ctx.fillRect(iconsOffset[0] + _this.currChoice * CFG.tileSize + 3, iconsOffset[1] + 3, 5 * CFG.screenSize, 4 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawHatchStats", function (stats) {
@@ -4920,25 +5035,40 @@ var EvoMenu = function (_IconMenu) {
         _this.menuCanvas.paintImage(_this.fetchImageCB("field".concat(field, "Icon")), (5 + _this.dgmnUtility.getAttribute(species).length + i * 1) * CFG.tileSize, 15 * CFG.tileSize);
         i++;
       }
+      var typeAffinities = _this.dgmnUtility.getTypeAffinities(species);
+      var w = 0;
+      var r = 0;
+      for (var type in typeAffinities) {
+        if (typeAffinities[type] < 1) {
+          _this.menuCanvas.paintImage(_this.fetchImageCB("".concat(type, "TypeIcon")), (8 + r) * CFG.tileSize, 16 * CFG.tileSize);
+          r++;
+        } else if (typeAffinities[type] > 1) {
+          _this.menuCanvas.paintImage(_this.fetchImageCB("".concat(type, "TypeIcon")), (15 + w) * CFG.tileSize, 16 * CFG.tileSize);
+          w++;
+        }
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "canHatch", function () {
       return _this.dgmnUtility.canHatchInto(_this.dgmnData.currentFP, _this.choices[_this.currChoice]);
+    });
+    _defineProperty(_assertThisInitialized(_this), "canEvolve", function () {
+      return _this.dgmnUtility.canEvolveInto(_this.dgmnData.currentFP, _this.choices[_this.currChoice]);
     });
     _defineProperty(_assertThisInitialized(_this), "nextChoice", function () {
       if (_this.currChoice < _this.choices.length - 1) {
         _this.currChoice++;
         _this.selectedDgmn = _this.choices[_this.currChoice];
-        _this.drawHatchScreen();
+        _this.type === 'hatch' ? _this.drawHatchScreen() : _this.drawEvoScreen();
       }
     });
     _defineProperty(_assertThisInitialized(_this), "prevChoice", function () {
       if (_this.currChoice > 0) {
         _this.currChoice--;
         _this.selectedDgmn = _this.choices[_this.currChoice];
-        _this.drawHatchScreen();
+        _this.type === 'hatch' ? _this.drawHatchScreen() : _this.drawEvoScreen();
       }
     });
-    _this.type = type;
+    _this.type = _type;
     _this.currChoice = 0;
     _this.dgmnData;
     _this.choices = [];
@@ -5039,14 +5169,90 @@ var LevelUpMenu = function (_SubMenu) {
   return LevelUpMenu;
 }(SubMenu);
 
+var BossVictoryMenu = function (_ListMenu) {
+  _inherits(BossVictoryMenu, _ListMenu);
+  var _super = _createSuper(BossVictoryMenu);
+  function BossVictoryMenu(currFloor) {
+    var _this;
+    _classCallCheck(this, BossVictoryMenu);
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "drawList", function () {
+      for (var i = 0; i < _this.listItems.length; i++) {
+        for (var r = 0; r < 8; r++) {
+          var image = 'rewardIconDeselected';
+          if (r > _this.mapUtility.getBossRewardLevel(_this.currFloor)) image = 'rewardIconNull';
+          _this.drawIcon(i, r, image);
+        }
+      }
+      _this.drawIcon(_this.currIndex, _this.currUpgradeIndex, 'rewardIconSelected');
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      _this.drawList();
+      if (_this.inFPSelection) {
+        _this.drawFPMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawFPMenu", function () {
+      _this.menuCanvas.paintImage(_this.fetchImageCB('bossRewardFieldChoice'), 0, 0);
+      _this.menuCanvas.paintImage(_this.fetchImageCB('miniCursor'), 0, 0);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawIcon", function (row, col, image) {
+      _this.menuCanvas.paintImage(_this.fetchImageCB(image), (col + 11) * CFG.tileSize, (2 * row + 2) * CFG.tileSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "launchFPSelection", function () {
+      _this.inFPSelection = true;
+      _this.drawMenu();
+      _this.redrawParentCB();
+    });
+    _defineProperty(_assertThisInitialized(_this), "prevChoice", function () {
+      if (!_this.inFPSelection) {
+        if (_this.currIndex > 0) {
+          _this.currIndex--;
+          _this.drawMenu();
+          _this.redrawParentCB();
+        }
+      } else {
+        if (_this.FPIndex > 0) _this.FPIndex--;
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "nextChoice", function () {
+      if (!_this.inFPSelection) {
+        if (_this.currIndex < 2) {
+          _this.currIndex++;
+          _this.drawMenu();
+          _this.redrawParentCB();
+        }
+      } else {
+        if (_this.FPIndex < 8) _this.FPIndex++;
+      }
+    });
+    _this.currFloor = currFloor;
+    _this.dgmnIndex = 0;
+    _this.currUpgradeIndex = 0;
+    _this.mapUtility = new MapUtility();
+    _this.menuCanvas = new MenuCanvas("".concat(_this.label, "-menu"), 160, 144);
+    _this.inFPSelection = false;
+    _this.FPIndex = 0;
+    _this.learnedAttackTxt = new TextArea(1, 12, 18, 1);
+    _this.fetchImageCB;
+    _this.redrawParentCB;
+    _this.onDone;
+    return _this;
+  }
+  return BossVictoryMenu;
+}(ListMenu);
+
 var DgmnGrowthMenu = function (_Menu) {
   _inherits(DgmnGrowthMenu, _Menu);
   var _super = _createSuper(DgmnGrowthMenu);
-  function DgmnGrowthMenu(origin, dgmnAH) {
+  function DgmnGrowthMenu(origin, dgmnAH, isBoss) {
     var _this;
     _classCallCheck(this, DgmnGrowthMenu);
-    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-      args[_key - 2] = arguments[_key];
+    for (var _len = arguments.length, args = new Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+      args[_key - 3] = arguments[_key];
     }
     _this = _super.call.apply(_super, [this].concat(args));
     _defineProperty(_assertThisInitialized(_this), "gotoRewards", function (rewards) {
@@ -5108,7 +5314,14 @@ var DgmnGrowthMenu = function (_Menu) {
       }, 500);
     });
     _defineProperty(_assertThisInitialized(_this), "gotoBossRewards", function (dgmnData) {
-      console.log("BOSS REWARDS SCREEN");
+      _this.currState = 'boss-reward';
+      _this.drawBackground('bossRewardMenu');
+      _this.topTxt.instantText(_this.menuCanvas.ctx, 'Choose Boss Reward!');
+      _this.addSubMenu('bossReward', new BossVictoryMenu(5, [0, 0], 3, 8, 2, ['fp', 'xp', 'en'], _this.systemAH.fetchImage('miniCursor'), null, 'bossReward'));
+      _this.subMenus.bossReward.isVisible = true;
+      _this.attachImageCallbacks('bossReward');
+      _this.subMenus.bossReward.drawList();
+      _this.drawMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
       for (var key in _this.subMenus) {
@@ -5151,8 +5364,7 @@ var DgmnGrowthMenu = function (_Menu) {
           return;
         } else {
           _this.systemAH.loadImages(nextImages, function () {
-            _this.removeSubMenu('rewards');
-            _this.gotoHatch(currDgmnData);
+            _this.gotoNextScreen();
           });
         }
       });
@@ -5172,10 +5384,14 @@ var DgmnGrowthMenu = function (_Menu) {
       _this.removeSubMenu('rewards');
       var currDgmnData = _this.getCurrDgmnData();
       var canLevelUp = _this.dgmnAH.checkLevelUp(_this.dgmnAH.getDgmnParty()[_this.currDgmnIndex]);
-      if (canLevelUp) {
+      if (_this.origin === 'victory') {
+        _this.gotoBossRewards(currDgmnData);
+      } else if (_this.origin === 'hatch') {
+        _this.gotoHatch(currDgmnData);
+      } else if (canLevelUp) {
         _this.gotoLevelUp(currDgmnData);
       } else {
-        _this.wrapUpLevelUp();
+        _this.wrapUpLevelUp(false);
       }
     });
     _defineProperty(_assertThisInitialized(_this), "wrapUpLevelUp", function () {
@@ -5243,9 +5459,14 @@ var DgmnGrowthMenu = function (_Menu) {
         });
       }
     });
+    _defineProperty(_assertThisInitialized(_this), "wrapUpBossReward", function () {
+      console.log("Go To...");
+    });
     _defineProperty(_assertThisInitialized(_this), "gotoNextScreen", function () {
       if (_this.origin === 'hatch') {
-        if (_this.subMenus.hatch) {
+        if (_this.subMenus.rewards) {
+          _this.wrapUpRewards();
+        } else if (_this.subMenus.hatch) {
           _this.wrapUpHatch();
         } else if (_this.subMenus.evolve) {
           _this.wrapUpEvolution();
@@ -5295,11 +5516,47 @@ var DgmnGrowthMenu = function (_Menu) {
       _this.subMenus.evolve.prevChoice();
     });
     _defineProperty(_assertThisInitialized(_this), "selectEvo", function () {
-      _this.evolveIntoDgmn();
-      _this.gotoNextScreen();
+      if (_this.subMenus.evolve.canEvolve()) {
+        _this.evolveIntoDgmn();
+        _this.gotoNextScreen();
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "skipEvo", function () {
       _this.gotoNextScreen();
+    });
+    _defineProperty(_assertThisInitialized(_this), "prevBossReward", function () {
+      _this.subMenus.bossReward.prevChoice();
+    });
+    _defineProperty(_assertThisInitialized(_this), "nextBossReward", function () {
+      _this.subMenus.bossReward.nextChoice();
+    });
+    _defineProperty(_assertThisInitialized(_this), "selectBossReward", function () {
+      var currBossReward = _this.subMenus.bossReward.listItems[_this.subMenus.bossReward.currIndex];
+      var currDgmn = _this.dgmnAH.getDgmnParty()[_this.currDgmnIndex];
+      var currDgmnData = _this.getCurrDgmnData();
+      var upgradeMessage = '';
+      if (currBossReward === 'fp') {
+        if (_this.subMenus.bossReward.inFPSelection) {
+          _this.dgmnAH.giveUpgrade(currDgmn, 'FP', 'DR');
+          upgradeMessage = "".concat(currDgmnData.nickname, " permanently gained 1 DR FP!");
+        } else {
+          _this.subMenus.bossReward.launchFPSelection();
+          upgradeMessage = "Select an FP to gain!";
+        }
+      } else if (currBossReward === 'xp') {
+        _this.dgmnAH.giveUpgrade(currDgmn, 'XP');
+        upgradeMessage = "".concat(currDgmnData.nickname, " will now gain XP faster!");
+      } else if (currBossReward === 'en') {
+        _this.dgmnAH.giveUpgrade(currDgmn, 'EN');
+        upgradeMessage = "".concat(currDgmnData.nickname, " has more EN now!");
+      }
+      _this.subMenus.bossReward.menuCanvas.clearBottomSection();
+      _this.actionTxt.timedText(_this.menuCanvas.ctx, upgradeMessage, _this.drawMenu);
+      if (currBossReward !== 'fp' || upgradeMessage.indexOf("FP!") !== -1) {
+        setTimeout(function () {
+          _this.wrapUpBossReward();
+        }, 2000);
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "confirmLevelUp", function () {
       _this.gotoNextScreen();
@@ -5307,6 +5564,7 @@ var DgmnGrowthMenu = function (_Menu) {
     _this.origin = origin;
     _this.currDgmnIndex = 0;
     _this.rewards = [];
+    _this.isBoss = isBoss;
     _this.topTxt = new TextArea(0, 0, 20, 1);
     _this.subTopTxt = new TextArea(0, 1, 20, 1);
     _this.actionTxt = new TextArea(2, 15, 16, 2);
@@ -5317,6 +5575,11 @@ var DgmnGrowthMenu = function (_Menu) {
       giveCurrRewardCB: _this.giveCurrReward,
       nextHatchCB: _this.nextHatch,
       prevHatchCB: _this.prevHatch,
+      prevEvoCB: _this.prevEvo,
+      nextEvoCB: _this.nextEvo,
+      prevBossRewardCB: _this.prevBossReward,
+      nextBossRewardCB: _this.nextBossReward,
+      selectBossRewardCB: _this.selectBossReward,
       selectHatchCB: _this.selectHatch,
       selectEvoCB: _this.selectEvo,
       confirmLevelUpCB: _this.confirmLevelUp,
@@ -5623,7 +5886,7 @@ var Battle = function Battle(isBoss, floorNumber) {
     _this.battleMenu.menuCanvas.clearCanvas();
     _this.battleMenu = null;
     _this.stopDgmnBattleCanvas();
-    _this.dgmnGrowthMenu = new DgmnGrowthMenu('victory', _this.dgmnAH, _this.systemAH, _this.gameAH, _this.battleAH, 'victory');
+    _this.dgmnGrowthMenu = new DgmnGrowthMenu('victory', _this.dgmnAH, _this.isBoss, _this.systemAH, _this.gameAH, _this.battleAH, 'victory');
     _this.battleIO.setMenuAH(_this.dgmnGrowthMenu.dgmnGrowthMenuAH);
     _this.dgmnGrowthMenu.gotoRewards(_this.battleRewards);
   });
@@ -5682,6 +5945,9 @@ var Battle = function Battle(isBoss, floorNumber) {
   });
   _defineProperty(this, "getBattleState", function () {
     return _this.battleState;
+  });
+  _defineProperty(this, "getIsBoss", function () {
+    return _this.isBoss;
   });
   this.battleActive = true;
   this.turn = 0;
@@ -6298,6 +6564,8 @@ var DungeonIO = function (_IO) {
           _this.menuAH.giveCurrReward('right');
         } else if (_this.menuAH.getState() === 'hatch-choice') {
           _this.menuAH.nextHatch();
+        } else if (_this.menuAH.getState() === 'evo-choice') {
+          _this.menuAH.nextEvo();
         }
       } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
         if (_this.menuAH.getState() === 'main') {
@@ -6324,6 +6592,8 @@ var DungeonIO = function (_IO) {
           _this.menuAH.giveCurrReward('left');
         } else if (_this.menuAH.getState() === 'hatch-choice') {
           _this.menuAH.prevHatch();
+        } else if (_this.menuAH.getState() === 'evo-choice') {
+          _this.menuAH.prevEvo();
         }
       } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
         if (_this.menuAH.getState() === 'main') {
@@ -6503,6 +6773,7 @@ var PauseMenu = function (_Menu) {
       _this.addSubMenu('main', new IconMenu([16, 16], ['items', 'beetle'], 'pause-main'));
       _this.currSubMenu = 'main';
       _this.subMenus.main.isVisible = true;
+      if (_this.digiBeetleAH.getToolBoxItems().length === 0) _this.subMenus.main.disabledIcons.push('items');
       _this.subMenus.main.images = _this.buildIconImages(_this.subMenus.main.iconList);
       _this.subMenus.main.drawIcons(0);
       _this.drawMenu();
@@ -6543,6 +6814,10 @@ var PauseMenu = function (_Menu) {
       _this.refreshItemMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "refreshItemMenu", function () {
+      if (_this.digiBeetleAH.getToolBoxItems().length === 0) {
+        _this.closeItemMenu();
+        return;
+      }
       _this.drawTopText('Select an Item');
       _this.subMenus.items.currIndex = 0;
       _this.subMenus.items.drawMenu();
@@ -6727,7 +7002,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     _this.yourParty = _this.gameAH.getDgmnParty();
     _this.systemAH.startLoading(function () {
       _this.gameAH.addCanvasObject(_this.dungeonCanvas);
-      _this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch', _this.dgmnAH, _this.systemAH, _this.gameAH, _this.dungeonAH, 'hatching');
+      _this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch', _this.dgmnAH, false, _this.systemAH, _this.gameAH, _this.dungeonAH, 'hatching');
       _this.dungeonIO.setMenuAH(_this.dgmnGrowthMenu.dgmnGrowthMenuAH);
       _this.pauseMenu = new PauseMenu(_this.yourParty, _this.dgmnAH, _this.digiBeetleAH, _this.systemAH, _this.gameAH, _this.dungeonAH);
       _this.systemAH.loadImages(fieldIcons, function () {
@@ -7390,7 +7665,7 @@ var System = function System() {
     debugLog("Starting System...");
     _this.pluginController();
     if (inDebug()) _this.debugMenu = new DebugMenu(_this.game);
-    _this.imageHandler.addToQueue(genericImages.concat(fontImages$1).concat(loadingImages), _this.onGenericImagesLoaded);
+    _this.imageHandler.addToQueue(genericImages.concat(fontImages$1).concat(loadingImages).concat(typeIcons), _this.onGenericImagesLoaded);
   });
   _defineProperty(this, "onGenericImagesLoaded", function () {
     _this.game.bootGame();

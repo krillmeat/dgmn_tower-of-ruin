@@ -95,7 +95,7 @@ class DgmnManager{
    * ----------------------------------------------------------------------*/
   createDgmn = (index,data,isEnemy) => {
     if(isEnemy){ // Generating a new Enemy
-      this.enemyDgmn[`edId${index}`] = new Dgmn(index,"ENEMY",data.speciesName);
+      this.enemyDgmn[`edId${index}`] = new Dgmn(index,"Enemy",data.speciesName);
       this.enemyDgmn[`edId${index}`].isEnemy = true;
       this.enemyDgmn[`edId${index}`].currentLevel = data.currentLevel;
       this.enemyDgmn[`edId${index}`].currentStats = data.currentStats;
@@ -304,7 +304,7 @@ class DgmnManager{
   }
 
   levelUp = dgmnId => {
-    this.allDgmn[dgmnId].currentXP = 0;
+    this.allDgmn[dgmnId].currentXP = this.allDgmn[dgmnId].currentXP - this.dgmnUtility.checkLevelReq(this.allDgmn[dgmnId].currentLevel); 
     this.allDgmn[dgmnId].currentLevel++;
     this.allDgmn[dgmnId].levelUpStats();
     this.allDgmn[dgmnId].levelUpFP();

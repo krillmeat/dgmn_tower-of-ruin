@@ -182,7 +182,7 @@ class AttackManager{
     this.battleAH.drawAllStatuses();
     this.attackCanvas.clearCanvas();
 
-    setTimeout(()=>{ this.attackActions[attacker].status = 'done'; },500) // Pause, for dramatic effect TODO - Calculate this...
+    setTimeout(()=>{ this.attackActions[attacker].status = 'done'; },1000) // Pause, for dramatic effect TODO - Calculate this...
   }
 
   /**------------------------------------------------------------------------
@@ -208,7 +208,7 @@ class AttackManager{
       allMessages = [this.dgmnAH.getDgmnData(attacker,['nickname'],attacker.charAt(0) === 'e').nickname+' defends'];
     }
     
-    this.battleAH.drawActionText(species,allMessages);
+    if(allMessages.length > 0) this.battleAH.drawActionText(species,allMessages);
     setTimeout(()=>{ // Wait a second for the text to display before starting the animation
       if(!action.isDefend){
         this.dgmnAH.showDgmnFrame(attacker,'Attack');
@@ -261,12 +261,13 @@ class AttackManager{
     // Drain DGMN Energy TODO - Is this right? Can't happen per target or hit
     this.drainEnergy(attacker,action.attackName);
 
+    // TODO - Doing attack effect up here is going to cause negative effects message only once.
     let allMessages = [this.doAttackEffect(action.attackName,attacker,action.targets)];
         allMessages = allMessages[0] !== ' ' && allMessages[0] ? allMessages : [];
 
     for(let i in action.targets ){ // Multi-target
       for(let h = 0; h < action.hits; h++){  // Multi-hit
-        let attackerData = this.dgmnAH.getDgmnData(attacker,['currentStats','currentLevel','nickname','statMods','condition'],attacker.charAt(0) === 'e');
+        let attackerData = this.dgmnAH.getDgmnData(attacker,['speciesName','currentStats','currentLevel','nickname','statMods','condition'],attacker.charAt(0) === 'e');
         let targetData = this.dgmnAH.getDgmnData(action.targets[i],['currentStats','combo','speciesName','weak','isDead','statMods'],action.targets[i].charAt(0) === 'e');
 
         if(!targetData.isDead){ // Only do the Attack if the Target hasn't already died
@@ -318,10 +319,20 @@ class AttackManager{
           let finalDMG = accuracyMod === 0 ? 0 : ( Math.round(baseDMG * modTotal) + rand );
           this.dealDMG(action.targets[i],finalDMG);
   
-          allMessages.unshift(this.buildActionMessage(attackerData.nickname,action.attackName,accuracyMod));
-          if(attackerData.condition?.type) allMessages.unshift(attackerData.nickname+""+this.dgmnUtility.getConditionMessage(attackerData.condition?.type)) // Show that DGMN is afflicted by a condition
-          messageCB(allMessages);
+          // Manage Messaging
+          let compiledName = attackerData.nickname !== 'Enemy' ? attackerData.nickname : 'Enemy '+attackerData.speciesName+'.MON';
+          let nextMessage = this.buildActionMessage(compiledName,action.attackName,accuracyMod);
+          if(i == 0 && h == 0){
+            allMessages.unshift(nextMessage);
+          }else if(i !== 0 || h !== 0){
+            if(nextMessage.indexOf("CRIT") !== -1 || nextMessage.indexOf("missed") !== -1){
+              allMessages.push(nextMessage.indexOf("CRIT") !== -1 ? "One was a CRITICAL HIT!" : "One missed...");
+            } 
+          } 
 
+          if(attackerData.condition?.type) 
+            allMessages.unshift(attackerData.nickname+""+this.dgmnUtility.getConditionMessage(attackerData.condition?.type)) // Show that DGMN is afflicted by a condition
+          messageCB(allMessages);
         } else { i++ } // If they're Dead, move on
       }
     }
@@ -410,8 +421,6 @@ class AttackManager{
    * @returns {String}  The message for the Effect
    * ----------------------------------------------------------------------*/
   doAttackEffect = (attackName,attacker,targets) => {
-    console.log("Attacker : ",attacker);
-    console.log("Targets : ",targets);
 
     let effect = attacksDB[attackName].effect;
     if(!effect) return; // If there is no effect for an Attack, get out!

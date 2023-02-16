@@ -7,7 +7,7 @@ class BattleUtility{
   }
 
   getDefaultBattleImages = () => {
-    return battleImages.concat(typeIcons).concat(fieldIcons);
+    return battleImages.concat(fieldIcons);
   }
 
   /**------------------------------------------------------------------------
