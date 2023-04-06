@@ -560,12 +560,16 @@ class BattleMenu extends Menu{
    * DRAW VICTORY REWARDS 
    * ------------------------------------------------------------------------
    *  Draws the FP (and bonus XP) gained from a Battle on the Victory Screen
+   * ------------------------------------------------------------------------
+   * @param {Array} rewards List of all Rewards gained
+   * @param {Func}  callback  Runs when done (sets state and draws cursor)
    * ----------------------------------------------------------------------*/
   drawVictoryRewards = (rewards,callback) => {
     let i = 0;
     let rewardInterval = setInterval(()=>{
       let image = rewards[i] === 'XP' ? 'xpIconSmall' : `field${rewards[i]}Icon`;
       this.menuCanvas.paintImage(this.systemAH.fetchImage(image),(2+i)*CFG.tileSize,5*CFG.tileSize);
+      this.drawMenu();
       if(i >= rewards.length-1){
         clearInterval(rewardInterval);
         setTimeout(()=>{callback()},500)

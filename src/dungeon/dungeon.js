@@ -84,6 +84,8 @@ class Dungeon{
 
       this.systemAH.loadImages(fieldIcons, ()=>{
         this.dgmnGrowthMenu.gotoRewards([this.dgmnUtility.getRandomField()]);
+
+        this.dungeonCanvas.blackFill(); // Gets rid of all of the remaining Town Screen images
         this.drawDungeon();
         this.systemAH.stopLoading();
       });

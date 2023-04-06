@@ -215,7 +215,7 @@ class EvoMenu extends IconMenu{
    * @param {String} species  Name of the DGMN Species
    * -------------------------------------------*/ /* istanbul ignore next */
   drawDgmnInfo = species => {
-    this.menuCanvas.clearBottomSection();
+    // this.menuCanvas.clearBottomSection(); TODO - This colors OVER the parent's bottom section (used for continue cursor)
     this.menuCanvas.drawDgmnPortrait(this.fetchImageCB(`${species.toLowerCase()}Portrait`));
 
     this.evoNameTxt.instantText(this.menuCanvas.ctx, `${species}.MON`,'white');

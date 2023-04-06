@@ -53,7 +53,8 @@ class DebugMenu {
         if(document.body.dataset.view === 'mobile'){
           let windowHeight = window.innerHeight;
           let screenHeight = document.getElementById("game-screen").offsetHeight;
-          // mobileControllerElem.style.height = `${windowHeight - screenHeight}px`;
+          mobileControllerElem.style.height = `${windowHeight - screenHeight}px`;
+          mobileControllerElem.style.top = `${screenHeight+80}px`;
         }
       }
     })

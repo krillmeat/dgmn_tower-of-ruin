@@ -1,4 +1,5 @@
 import CFG from "../../config";
+import { FIELD_LABELS } from "../../data/fields.db";
 import MapUtility from "../../dungeon/utils/map.util";
 import TextArea from "../text-area";
 import ListMenu from "./list-menu";
@@ -18,6 +19,17 @@ class BossVictoryMenu extends ListMenu{
     this.inFPSelection = false;
     this.FPIndex = 0;
     this.learnedAttackTxt = new TextArea(1,12,18,1);
+
+    this.FPText = [
+      new TextArea(10,3,2,1),
+      new TextArea(10,4,2,1),
+      new TextArea(10,5,2,1),
+      new TextArea(10,6,2,1),
+      new TextArea(10,7,2,1),
+      new TextArea(10,8,2,1),
+      new TextArea(10,9,2,1),
+      new TextArea(10,10,2,1)
+    ]
 
     this.fetchImageCB;
     this.redrawParentCB;
@@ -43,7 +55,10 @@ class BossVictoryMenu extends ListMenu{
 
   drawFPMenu = () => {
     this.menuCanvas.paintImage(this.fetchImageCB('bossRewardFieldChoice'),0,0);
-    this.menuCanvas.paintImage(this.fetchImageCB('miniCursor'),0,0);
+    this.menuCanvas.paintImage(this.fetchImageCB('miniCursor'),7*CFG.tileSize,((this.FPIndex)+3)*CFG.tileSize);
+    for(let i in this.FPText){
+      this.FPText[i].instantText(this.menuCanvas.ctx,FIELD_LABELS[i],'white');
+    }
   }
 
   drawIcon = (row,col,image) => {
@@ -58,27 +73,32 @@ class BossVictoryMenu extends ListMenu{
 
   prevChoice = () => {
     if(!this.inFPSelection){
-      if(this.currIndex > 0){
-        this.currIndex--;
-        this.drawMenu();
-        this.redrawParentCB();
-      }
+      if(this.currIndex > 0) this.currIndex--; 
     } else{ 
       if(this.FPIndex > 0) this.FPIndex--;
     }
+
+    this.drawMenu();
+    this.redrawParentCB();
   }
 
   nextChoice = () => {
     if(!this.inFPSelection){
       if(this.currIndex < 2){ // TODO - Might make sense to make this dynamic
         this.currIndex++;
-        this.drawMenu();
-        this.redrawParentCB();
       }
     } else{ 
       if(this.FPIndex < 8) this.FPIndex++;
     }
+
+    this.drawMenu();
+        this.redrawParentCB();
   }
+
+  drawDgmnPortrait = portraitImg => {
+    this.menuCanvas.ctx.drawImage(portraitImg,0,0,256,248,
+      0, 112 * CFG.screenSize,32*CFG.screenSize,(32-1)*CFG.screenSize);
+}
 }
 
 export default BossVictoryMenu;
