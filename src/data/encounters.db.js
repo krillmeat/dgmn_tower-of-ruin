@@ -1,6 +1,9 @@
 // Organized by Stage (1-7) and then by Field
 // preXX marks where certain DGMN will begin to appear, based on your highest floor level (only goes in 5s)
+const FREE_WINS = true;
+
 import Attack from "../classes/dgmn/attack"; // Should i do this???
+
 export const dgmnEncounterChartDB = {
   1: {
     DR: {

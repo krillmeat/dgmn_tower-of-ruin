@@ -5,6 +5,19 @@ import TextArea from "../text-area";
 import ListMenu from "./list-menu";
 import MenuCanvas from "./menu-canvas";
 
+const REWARD_MESSAGES = [
+  "Permanently upgrade FP",
+  "Permanently upgrade XP",
+  "Permanently upgrade EN",
+]
+
+
+  /**------------------------------------------------------------------------
+   * BOSS VICTORY MENU
+   * ------------------------------------------------------------------------
+   * Menu for the Boss Rewards Screen
+   * @param {Number} currFloor  Dungeon's Current Floor
+   * ----------------------------------------------------------------------*/
 class BossVictoryMenu extends ListMenu{
   constructor(currFloor,...args){
     super(...args);
@@ -18,6 +31,7 @@ class BossVictoryMenu extends ListMenu{
 
     this.inFPSelection = false;
     this.FPIndex = 0;
+    this.infoTxt = new TextArea(4,14,16,4);
     this.learnedAttackTxt = new TextArea(1,12,18,1);
 
     this.FPText = [
@@ -34,8 +48,25 @@ class BossVictoryMenu extends ListMenu{
     this.fetchImageCB;
     this.redrawParentCB;
     this.onDone;
+
+    this.init();
   }
 
+  init = () => {
+    this.infoTxt.instantText(this.menuCanvas.ctx,REWARD_MESSAGES[0])
+  }
+
+  clearInfoTxt = () => {
+    console.log("?");
+    this.menuCanvas.ctx.fillStyle = "#00131A";
+    this.menuCanvas.ctx.fillRect(4*CFG.tileSize,14*CFG.tileSize,16*CFG.tileSize,4*CFG.tileSize);
+  }
+
+  /**------------------------------------------------------------------------
+   * DRAW LIST                                                     [OVERRIDE]
+   * ------------------------------------------------------------------------
+   * Draws the "List" of Icons for the Reward Grid
+   * ----------------------------------------------------------------------*/
   drawList = () => { 
     for(let i = 0; i < this.listItems.length; i++){
       for(let r = 0; r < 8; r++){
@@ -73,7 +104,11 @@ class BossVictoryMenu extends ListMenu{
 
   prevChoice = () => {
     if(!this.inFPSelection){
-      if(this.currIndex > 0) this.currIndex--; 
+      if(this.currIndex > 0){
+        this.currIndex--;
+        this.clearInfoTxt();
+        this.infoTxt.instantText(this.menuCanvas.ctx,REWARD_MESSAGES[this.currIndex]);
+      }
     } else{ 
       if(this.FPIndex > 0) this.FPIndex--;
     }
@@ -86,6 +121,8 @@ class BossVictoryMenu extends ListMenu{
     if(!this.inFPSelection){
       if(this.currIndex < 2){ // TODO - Might make sense to make this dynamic
         this.currIndex++;
+        this.clearInfoTxt();
+        this.infoTxt.instantText(this.menuCanvas.ctx,REWARD_MESSAGES[this.currIndex]);
       }
     } else{ 
       if(this.FPIndex < 8) this.FPIndex++;
@@ -93,6 +130,12 @@ class BossVictoryMenu extends ListMenu{
 
     this.drawMenu();
         this.redrawParentCB();
+  }
+
+  selectChoice = (message,onDone) => {
+    this.clearInfoTxt();
+    this.infoTxt.timedText(this.menuCanvas.ctx,message,this.drawMenu);
+    setTimeout(()=>{ onDone() },3000);
   }
 
   drawDgmnPortrait = portraitImg => {

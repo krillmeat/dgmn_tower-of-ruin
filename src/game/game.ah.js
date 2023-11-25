@@ -22,6 +22,7 @@ class GameAH{
         this.getDgmnParty = () => { return cbObj.getDgmnPartyCB() }
         this.endBattle = () => cbObj.endBattleCB()
         this.buildDungeon = () => cbObj.buildDungeonCB()
+        this.clearDungeon = () => cbObj.clearDungeonCB()
         this.startNewGame = () => cbObj.startNewGameCB()
     }
 }

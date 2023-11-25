@@ -314,6 +314,9 @@ var GameAH = function GameAH(cbObj) {
   this.buildDungeon = function () {
     return cbObj.buildDungeonCB();
   };
+  this.clearDungeon = function () {
+    return cbObj.clearDungeonCB();
+  };
   this.startNewGame = function () {
     return cbObj.startNewGameCB();
   };
@@ -2402,18 +2405,108 @@ var MapUtility = function MapUtility() {
   });
 };
 
+var FREE_TEAM = [{
+  speciesName: 'Bota',
+  currentLevel: 2,
+  currentStats: {
+    HP: 5,
+    ATK: 2,
+    DEF: 1,
+    INT: 1,
+    RES: 1,
+    HIT: 2,
+    AVO: 1,
+    SPD: 1
+  },
+  attacks: [new Attack('bubbles')]
+}, {
+  speciesName: 'Yura',
+  currentLevel: 2,
+  currentStats: {
+    HP: 5,
+    ATK: 2,
+    DEF: 1,
+    INT: 2,
+    RES: 2,
+    HIT: 1,
+    AVO: 1,
+    SPD: 1
+  },
+  attacks: [new Attack('bubbles')]
+}, {
+  speciesName: 'Zuru',
+  currentLevel: 2,
+  currentStats: {
+    HP: 5,
+    ATK: 2,
+    DEF: 1,
+    INT: 2,
+    RES: 1,
+    HIT: 1,
+    AVO: 2,
+    SPD: 1
+  },
+  attacks: [new Attack('bubbles')]
+}];
+var DEBUG_DGMN = FREE_TEAM;
+var DEBUG_YOUR_TEAM = [{
+  speciesName: 'Bota',
+  currentStats: {
+    HP: 500,
+    ATK: 200,
+    DEF: 100,
+    INT: 200,
+    RES: 100,
+    HIT: 100,
+    AVO: 200,
+    SPD: 100
+  }
+}, {
+  speciesName: 'Yura',
+  currentStats: {
+    HP: 500,
+    ATK: 200,
+    DEF: 100,
+    INT: 200,
+    RES: 100,
+    HIT: 100,
+    AVO: 200,
+    SPD: 100
+  }
+}, {
+  speciesName: 'Choro',
+  currentStats: {
+    HP: 500,
+    ATK: 200,
+    DEF: 100,
+    INT: 200,
+    RES: 100,
+    HIT: 100,
+    AVO: 200,
+    SPD: 100
+  }
+}];
+
+var DEBUG_EASY_WINS = true;
 var EnemyGenerator = function EnemyGenerator(dgmnAH) {
   var _this = this;
   _classCallCheck(this, EnemyGenerator);
   _defineProperty(this, "generate", function (currFloor, maxFloor) {
     var enemies = {};
     console.log("Generating Enemies on Floor ", currFloor);
-    for (var i = 0; i < 3; i++) {
+    if (currFloor === 0 && inDebug()) {
+      for (var i = 0; i < 3; i++) {
+        _this.dgmnAH.createDgmn(i, DEBUG_DGMN[i], true);
+      }
+      return;
+    }
+    for (var _i = 0; _i < 3; _i++) {
       var stage = _this.calcDgmnStage(currFloor);
       var field = _this.calcDgmnField();
-      var dgmnName = _this.mapUtility.isBossFloor(currFloor) ? bossEncountersChartDB[bossEncoutnersMapDB.indexOf(currFloor)][i] : _this.calcDgmnName(stage, field);
+      var dgmnName = _this.mapUtility.isBossFloor(currFloor) ? bossEncountersChartDB[bossEncoutnersMapDB.indexOf(currFloor)][_i] : _this.calcDgmnName(stage, field);
       var dgmnData = _this.mapUtility.isBossFloor(currFloor) ? bossEncountersDB[dgmnName] : dgmnEncounterDB[dgmnName];
-      _this.dgmnAH.createDgmn(i, dgmnData, true);
+      if (inDebug() && DEBUG_EASY_WINS) dgmnData.currentStats.HP = 1;
+      _this.dgmnAH.createDgmn(_i, dgmnData, true);
     }
     return enemies;
   });
@@ -4131,6 +4224,7 @@ var BattleMenu = function (_Menu) {
       _this.currSubMenu = 'beetle';
       _this.menuCanvas.beetleNicknameTxt.instantText(_this.menuCanvas.ctx, 'GUNNER', 'white');
       _this.menuCanvas.beetleTxt.instantText(_this.menuCanvas.ctx, 'DigiBeetle', 'green');
+      _this.menuCanvas.drawDgmnPortrait(_this.systemAH.fetchImage('beetlePortrait'));
     });
     _defineProperty(_assertThisInitialized(_this), "buildDgmnMenu", function () {
       _this.menuCanvas.setTopMessage("Attack");
@@ -5031,6 +5125,11 @@ var MenuCanvas = function (_GameCanvas) {
       _this.ctx.fillStyle = "#00131A";
       _this.ctx.fillRect(0, 14 * CFG.tileSize, 20 * CFG.tileSize, 4 * CFG.tileSize);
     });
+    _defineProperty(_assertThisInitialized(_this), "clearBottomSectionIgnoreCursor", function () {
+      _this.ctx.fillStyle = "#00131A";
+      _this.ctx.fillRect(0, 14 * CFG.tileSize, 20 * CFG.tileSize, 3 * CFG.tileSize);
+      _this.ctx.fillRect(0, 17 * CFG.tileSize, 18 * CFG.tileSize, 1 * CFG.tileSize);
+    });
     _defineProperty(_assertThisInitialized(_this), "setTopMessage", function (message) {
       _this.clearTopMessage();
       _this.topTxt.instantText(_this.ctx, message, 'white');
@@ -5141,6 +5240,7 @@ var EvoMenu = function (_IconMenu) {
       }
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnInfo", function (species) {
+      _this.menuCanvas.clearBottomSectionIgnoreCursor();
       _this.menuCanvas.drawDgmnPortrait(_this.fetchImageCB("".concat(species.toLowerCase(), "Portrait")));
       _this.evoNameTxt.instantText(_this.menuCanvas.ctx, "".concat(species, ".MON"), 'white');
       _this.evoAttributeTxt.instantText(_this.menuCanvas.ctx, _this.dgmnUtility.getAttribute(species), 'green');
@@ -5285,6 +5385,7 @@ var LevelUpMenu = function (_SubMenu) {
   return LevelUpMenu;
 }(SubMenu);
 
+var REWARD_MESSAGES = ["Permanently upgrade FP", "Permanently upgrade XP", "Permanently upgrade EN"];
 var BossVictoryMenu = function (_ListMenu) {
   _inherits(BossVictoryMenu, _ListMenu);
   var _super = _createSuper(BossVictoryMenu);
@@ -5295,6 +5396,14 @@ var BossVictoryMenu = function (_ListMenu) {
       args[_key - 1] = arguments[_key];
     }
     _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "init", function () {
+      _this.infoTxt.instantText(_this.menuCanvas.ctx, REWARD_MESSAGES[0]);
+    });
+    _defineProperty(_assertThisInitialized(_this), "clearInfoTxt", function () {
+      console.log("?");
+      _this.menuCanvas.ctx.fillStyle = "#00131A";
+      _this.menuCanvas.ctx.fillRect(4 * CFG.tileSize, 14 * CFG.tileSize, 16 * CFG.tileSize, 4 * CFG.tileSize);
+    });
     _defineProperty(_assertThisInitialized(_this), "drawList", function () {
       for (var i = 0; i < _this.listItems.length; i++) {
         for (var r = 0; r < 8; r++) {
@@ -5328,7 +5437,11 @@ var BossVictoryMenu = function (_ListMenu) {
     });
     _defineProperty(_assertThisInitialized(_this), "prevChoice", function () {
       if (!_this.inFPSelection) {
-        if (_this.currIndex > 0) _this.currIndex--;
+        if (_this.currIndex > 0) {
+          _this.currIndex--;
+          _this.clearInfoTxt();
+          _this.infoTxt.instantText(_this.menuCanvas.ctx, REWARD_MESSAGES[_this.currIndex]);
+        }
       } else {
         if (_this.FPIndex > 0) _this.FPIndex--;
       }
@@ -5339,12 +5452,21 @@ var BossVictoryMenu = function (_ListMenu) {
       if (!_this.inFPSelection) {
         if (_this.currIndex < 2) {
           _this.currIndex++;
+          _this.clearInfoTxt();
+          _this.infoTxt.instantText(_this.menuCanvas.ctx, REWARD_MESSAGES[_this.currIndex]);
         }
       } else {
         if (_this.FPIndex < 8) _this.FPIndex++;
       }
       _this.drawMenu();
       _this.redrawParentCB();
+    });
+    _defineProperty(_assertThisInitialized(_this), "selectChoice", function (message, onDone) {
+      _this.clearInfoTxt();
+      _this.infoTxt.timedText(_this.menuCanvas.ctx, message, _this.drawMenu);
+      setTimeout(function () {
+        onDone();
+      }, 3000);
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnPortrait", function (portraitImg) {
       _this.menuCanvas.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * CFG.screenSize, 32 * CFG.screenSize, (32 - 1) * CFG.screenSize);
@@ -5356,11 +5478,13 @@ var BossVictoryMenu = function (_ListMenu) {
     _this.menuCanvas = new MenuCanvas("".concat(_this.label, "-menu"), 160, 144);
     _this.inFPSelection = false;
     _this.FPIndex = 0;
+    _this.infoTxt = new TextArea(4, 14, 16, 4);
     _this.learnedAttackTxt = new TextArea(1, 12, 18, 1);
     _this.FPText = [new TextArea(10, 3, 2, 1), new TextArea(10, 4, 2, 1), new TextArea(10, 5, 2, 1), new TextArea(10, 6, 2, 1), new TextArea(10, 7, 2, 1), new TextArea(10, 8, 2, 1), new TextArea(10, 9, 2, 1), new TextArea(10, 10, 2, 1)];
     _this.fetchImageCB;
     _this.redrawParentCB;
     _this.onDone;
+    _this.init();
     return _this;
   }
   return BossVictoryMenu;
@@ -5681,13 +5805,21 @@ var DgmnGrowthMenu = function (_Menu) {
     _defineProperty(_assertThisInitialized(_this), "skipEvo", function () {
       _this.gotoNextScreen();
     });
+    _defineProperty(_assertThisInitialized(_this), "updateBossRewardText", function (message, timing) {
+      if (timing === 'instant') {
+        _this.bossRewardActionTxt.instantText(_this.menuCanvas.ctx, message);
+      } else {
+        _this.bossRewardActionTxt.instantText(_this.menuCanvas.ctx, message, _this.drawMenu);
+      }
+    });
     _defineProperty(_assertThisInitialized(_this), "prevBossReward", function () {
-      _this.subMenus.bossReward.prevChoice();
+      _this.subMenus.bossReward.prevChoice(_this.updateBossRewardText);
     });
     _defineProperty(_assertThisInitialized(_this), "nextBossReward", function () {
-      _this.subMenus.bossReward.nextChoice();
+      _this.subMenus.bossReward.nextChoice(_this.updateBossRewardText);
     });
     _defineProperty(_assertThisInitialized(_this), "selectBossReward", function () {
+      if (_this.state === 'loading') return;
       _this.state = 'loading';
       var currBossReward = _this.subMenus.bossReward.listItems[_this.subMenus.bossReward.currIndex];
       var currDgmn = _this.dgmnAH.getDgmnParty()[_this.currDgmnIndex];
@@ -5708,12 +5840,13 @@ var DgmnGrowthMenu = function (_Menu) {
         _this.dgmnAH.giveUpgrade(currDgmn, 'EN');
         upgradeMessage = "".concat(currDgmnData.nickname, " has more EN now!");
       }
-      _this.menuCanvas.clearBottomSection();
-      _this.bossRewardActionTxt.timedText(_this.menuCanvas.ctx, upgradeMessage, _this.drawMenu);
       if (currBossReward !== 'fp' || upgradeMessage.indexOf("FP!") !== -1) {
-        setTimeout(function () {
+        console.log("SHOULD BE CLEARING?");
+        _this.subMenus.bossReward.selectChoice(upgradeMessage, function () {
           _this.wrapUpBossReward();
-        }, 2500);
+        });
+      } else {
+        _this.subMenus.bossReward.selectChoice(upgradeMessage, function () {});
       }
     });
     _defineProperty(_assertThisInitialized(_this), "confirmLevelUp", function () {
@@ -5722,7 +5855,7 @@ var DgmnGrowthMenu = function (_Menu) {
     _this.origin = origin;
     _this.currDgmnIndex = 0;
     _this.rewards = [];
-    _this.isBoss = isBoss;
+    _this.isBoss = true;
     _this.levelUps = {};
     _this.topTxt = new TextArea(0, 0, 20, 1);
     _this.subTopTxt = new TextArea(0, 1, 20, 1);
@@ -5802,7 +5935,7 @@ var CannonManager = function CannonManager() {
   this.dgmnUtility = new DgmnUtility();
 };
 
-var Battle = function Battle(isBoss, floorNumber) {
+var Battle = function Battle(isBoss, isDebug) {
   var _this = this;
   _classCallCheck(this, Battle);
   _defineProperty(this, "init", function () {
@@ -5900,7 +6033,7 @@ var Battle = function Battle(isBoss, floorNumber) {
     }
   });
   _defineProperty(this, "generateEnemyParty", function () {
-    var currentFloor = _this.dungeonAH ? _this.dungeonAH.getCurrentFloor() : 1;
+    var currentFloor = !_this.isDebug ? _this.dungeonAH.getCurrentFloor() : 0;
     _this.dgmnAH.generateEnemies(currentFloor, 3);
   });
   _defineProperty(this, "calcTurnOrder", function () {
@@ -6108,6 +6241,7 @@ var Battle = function Battle(isBoss, floorNumber) {
   _defineProperty(this, "getIsBoss", function () {
     return _this.isBoss;
   });
+  this.isDebug = isDebug;
   this.battleActive = true;
   this.turn = 0;
   this.yourParty;
@@ -7249,6 +7383,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   _defineProperty(this, "goUpFloor", function () {
     if (_this.floorNumber === 5) {
       debugLog("Dungeon Clear!");
+      _this.goBackToTown();
     } else {
       debugLog("Ascending Floor...");
       _this.moving = 'none';
@@ -7269,6 +7404,12 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
         });
       });
     }
+  });
+  _defineProperty(this, "goBackToTown", function () {
+    debugLog("Returning to town...");
+    _this.systemAH.startLoading(function () {
+      _this.gameAH.clearDungeon();
+    });
   });
   _defineProperty(this, "startBattle", function () {
     debugLog("Starting Battle...");
@@ -7603,10 +7744,10 @@ var Game = function Game(systemAH) {
       _this.buildTown();
     }, 500);
   });
-  _defineProperty(this, "startBattle", function () {
+  _defineProperty(this, "startBattle", function (isDebug) {
     var _this$dungeon, _this$digiBeetle;
     debugLog("Starting Battle...");
-    _this.battle = new Battle(_this.dungeon.floor.isBossFloor, _this.dungeon.floor.number);
+    _this.battle = new Battle(_this.dungeon.floor.isBossFloor, isDebug);
     _this.battle.initAH(_this.systemAH, _this.gameAH, _this.yourDgmn.dgmnAH, (_this$dungeon = _this.dungeon) === null || _this$dungeon === void 0 ? void 0 : _this$dungeon.dungeonAH, (_this$digiBeetle = _this.digiBeetle) === null || _this$digiBeetle === void 0 ? void 0 : _this$digiBeetle.digiBeetleAH);
     _this.battle.init();
   });
@@ -7648,6 +7789,11 @@ var Game = function Game(systemAH) {
   _defineProperty(this, "onDungeonLoad", function () {
     debugLog("Dungeon Loaded...");
     _this.drawGameScreen();
+  });
+  _defineProperty(this, "clearDungeon", function () {
+    debugLog("Clearing Dungeon...");
+    _this.dungeon = null;
+    _this.buildTown();
   });
   _defineProperty(this, "addToObjectList", function (newObject) {
     if (_this.objectList.indexOf(newObject) === -1) {
@@ -7780,7 +7926,8 @@ var Game = function Game(systemAH) {
     getDgmnPartyCB: this.getDgmnParty,
     endBattleCB: this.endBattle,
     buildDungeonCB: this.buildDungeon,
-    startNewGameCB: this.startNewGame
+    startNewGameCB: this.startNewGame,
+    clearDungeonCB: this.clearDungeon
   });
   this.systemAH = systemAH;
   this.yourDgmn = new DgmnManager(this.systemAH);
@@ -7906,6 +8053,12 @@ var DebugMenu = function DebugMenu(game) {
   this.game = game;
   this.activate();
   this.launchBattle = function () {
+    for (var i = 0; i < 3; i++) {
+      _this.game.yourDgmn.allDgmn['dId' + i].hatchSetup();
+      _this.game.yourDgmn.allDgmn['dId' + i].speciesName = DEBUG_YOUR_TEAM[i].speciesName;
+      _this.game.yourDgmn.allDgmn['dId' + i].currentStats = DEBUG_YOUR_TEAM[i].currentStats;
+      _this.game.yourDgmn.allDgmn['dId' + i].currentHP = DEBUG_YOUR_TEAM[i].currentStats.HP;
+    }
     _this.game.dungeon = {
       floor: {
         isBossFloor: false,
@@ -7921,7 +8074,7 @@ var DebugMenu = function DebugMenu(game) {
       }
     };
     _this.game.atTitle = false;
-    _this.game.startBattle();
+    _this.game.startBattle(true);
   };
   this.launchDungeon = function () {
     _this.game.buildDungeon();

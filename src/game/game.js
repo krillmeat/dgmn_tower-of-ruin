@@ -29,7 +29,8 @@ class Game{
       getDgmnPartyCB: this.getDgmnParty,
       endBattleCB: this.endBattle,
       buildDungeonCB: this.buildDungeon,
-      startNewGameCB: this.startNewGame
+      startNewGameCB: this.startNewGame,
+      clearDungeonCB: this.clearDungeon
     });
     this.systemAH = systemAH;                                   // Action Handlers used by this Class
 
@@ -89,9 +90,9 @@ class Game{
    * ------------------------------------------------------------------------
    * Gathers up needed data and starts a battle.
    * ----------------------------------------------------------------------*/
-  startBattle = () => {
+  startBattle = isDebug => {
     debugLog("Starting Battle...");
-    this.battle = new Battle(this.dungeon.floor.isBossFloor,this.dungeon.floor.number);
+    this.battle = new Battle(this.dungeon.floor.isBossFloor,isDebug);
     this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,this.dungeon?.dungeonAH,this.digiBeetle?.digiBeetleAH);
     this.battle.init();
   }
@@ -177,6 +178,19 @@ class Game{
   onDungeonLoad = () => {
     debugLog("Dungeon Loaded...");
     this.drawGameScreen();
+  }
+
+  /**------------------------------------------------------------------------
+   * CLEAR DUNGEON                                               [[EXPORTED]]
+   * ------------------------------------------------------------------------
+   * Gets rid of the Dungeon and takes you back to Town
+   * ------------------------------------------------------------------------
+   * @param {Object} newObject  New item to add to the list
+   * ----------------------------------------------------------------------*/
+  clearDungeon = () => {
+    debugLog("Clearing Dungeon...");
+    this.dungeon = null;
+    this.buildTown();
   }
 
   /**------------------------------------------------------------------------

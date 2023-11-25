@@ -68,6 +68,11 @@ class CannonManager{
     setTimeout(()=>{
       this.battleAH.drawActionText('beetle',effectMessage);
     },1600);
+
+    // setInterval for actual animation
+
+    // getItemAnimation(item) 
+
     setTimeout(()=>{
       this.battleAH.drawAllStatuses();
       onDone('dgmn')

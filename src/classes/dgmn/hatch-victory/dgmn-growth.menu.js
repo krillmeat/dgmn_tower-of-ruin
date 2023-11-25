@@ -17,7 +17,8 @@ class DgmnGrowthMenu extends Menu{
     this.origin = origin;   // Where the Menu is launched from [hatch|victory]
     this.currDgmnIndex = 0; // Which DGMN in the Party is Currently in-menu
     this.rewards = [];
-    this.isBoss = isBoss;
+    // this.isBoss = isBoss;
+    this.isBoss = true; // TEMP
 
     this.levelUps = {};
 
@@ -51,6 +52,7 @@ class DgmnGrowthMenu extends Menu{
    * GO TO REWARDS
    * ------------------------------------------------------------------------
    * Sets up the Giving Rewards Screen
+   * TODO - Figure out how to make this modular, so each goto isn't so long
    * -------------------------------------------*/ /* istanbul ignore next */
    gotoRewards = rewards => {
     this.currState = 'loading';
@@ -165,7 +167,8 @@ class DgmnGrowthMenu extends Menu{
     this.topTxt.instantText(this.menuCanvas.ctx,'Choose Boss Reward!');
 
     // Add Boss Reward SubMenu
-    this.addSubMenu('bossReward', new BossVictoryMenu(5,[0,0],3,8,2,['fp','xp','en'],this.systemAH.fetchImage('miniCursor'),null,'bossReward')); // TODO - The 5 is temporary
+    this.addSubMenu('bossReward', 
+      new BossVictoryMenu(5,[0,0],3,8,2,['fp','xp','en'],this.systemAH.fetchImage('miniCursor'),null,'bossReward')); // TODO - The 5 is temporary
     this.subMenus.bossReward.isVisible = true;
     this.attachImageCallbacks('bossReward');
     this.subMenus.bossReward.drawList();
@@ -503,15 +506,37 @@ class DgmnGrowthMenu extends Menu{
     }
   }
 
+  /**------------------------------------------------------------------------
+   * SKIP EVO
+   * ------------------------------------------------------------------------
+   * Go straight to the next Screen
+   * ----------------------------------------------------------------------*/
   skipEvo = () => { this.gotoNextScreen() }
+
+  /**------------------------------------------------------------------------
+   * UPDATE BOSS REWARD TEXT
+   * ------------------------------------------------------------------------
+   * On the Boss Reward screen, there is a Text Area that is often rewritten,
+   * this helps handle that
+   * TODO - Move to a Util?
+   * @param {String}  message Text to display
+   * @param {String}  timing  Timing of the Message [instant|timed]
+   * ----------------------------------------------------------------------*/
+  updateBossRewardText = (message,timing) => {
+    if(timing === 'instant'){
+      this.bossRewardActionTxt.instantText(this.menuCanvas.ctx,message);
+    }else{
+      this.bossRewardActionTxt.instantText(this.menuCanvas.ctx,message,this.drawMenu);
+    }
+  }
 
   /**------------------------------------------------------------------------
    * NEXT/PREV BOSS REWARD                                         [EXPORTED]
    * ------------------------------------------------------------------------
    * Change current selection on the Boss Reward Screen
    * ----------------------------------------------------------------------*/
-  prevBossReward = () => { this.subMenus.bossReward.prevChoice() }
-  nextBossReward = () => { this.subMenus.bossReward.nextChoice() }
+  prevBossReward = () => { this.subMenus.bossReward.prevChoice(this.updateBossRewardText) }
+  nextBossReward = () => { this.subMenus.bossReward.nextChoice(this.updateBossRewardText) }
 
   /**------------------------------------------------------------------------
    * SELECT BOSS REWARD                                            [EXPORTED]
@@ -519,7 +544,9 @@ class DgmnGrowthMenu extends Menu{
    * Select the currently chosen Reward
    * TODO - Cleanup
    * ----------------------------------------------------------------------*/
-  selectBossReward = () => { 
+  selectBossReward = () => {
+    if(this.state === 'loading') return;
+
     this.state = 'loading';
     let currBossReward = this.subMenus.bossReward.listItems[this.subMenus.bossReward.currIndex];
     let currDgmn = this.dgmnAH.getDgmnParty()[this.currDgmnIndex];
@@ -542,13 +569,19 @@ class DgmnGrowthMenu extends Menu{
       upgradeMessage = `${currDgmnData.nickname} has more EN now!`;
     }
 
-    this.menuCanvas.clearBottomSection();
-    this.bossRewardActionTxt.timedText(this.menuCanvas.ctx, upgradeMessage, this.drawMenu);
+    // this.menuCanvas.clearBottomSection();
+    // this.bossRewardActionTxt.timedText(this.menuCanvas.ctx, upgradeMessage, this.drawMenu);
+    // this.updateBossRewardText(upgradeMessage,'timed');
+    // this.subMenus.bossReward.selectChoice(upgradeMessage,()=>{})
 
     if(currBossReward !== 'fp' || upgradeMessage.indexOf("FP!") !== -1) {
-      setTimeout(()=>{
-        this.wrapUpBossReward();
-      },2500)
+      // setTimeout(()=>{
+      //   this.wrapUpBossReward();
+      // },2500)
+      console.log("SHOULD BE CLEARING?")
+      this.subMenus.bossReward.selectChoice(upgradeMessage,()=>{this.wrapUpBossReward()})
+    } else{
+      this.subMenus.bossReward.selectChoice(upgradeMessage,()=>{});
     }
     
    }

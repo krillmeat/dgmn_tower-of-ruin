@@ -83,6 +83,7 @@ class EvoMenu extends IconMenu{
    * Handles drawing all of the necessary info on the canvas when hatching
    * -------------------------------------------*/ /* istanbul ignore next */
   drawHatchScreen = () => {
+    
     this.drawDgmnCanvas(this.choices[this.currChoice],[5,4]);
     this.drawEvoRequirements('hatch',this.choices[this.currChoice]);
     this.drawHatchStats(this.dgmnUtility.buildInitialStats(this.choices[this.currChoice]));
@@ -216,6 +217,7 @@ class EvoMenu extends IconMenu{
    * -------------------------------------------*/ /* istanbul ignore next */
   drawDgmnInfo = species => {
     // this.menuCanvas.clearBottomSection(); TODO - This colors OVER the parent's bottom section (used for continue cursor)
+    this.menuCanvas.clearBottomSectionIgnoreCursor();
     this.menuCanvas.drawDgmnPortrait(this.fetchImageCB(`${species.toLowerCase()}Portrait`));
 
     this.evoNameTxt.instantText(this.menuCanvas.ctx, `${species}.MON`,'white');

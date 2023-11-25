@@ -81,6 +81,8 @@ class BattleMenu extends Menu{
 
     this.menuCanvas.beetleNicknameTxt.instantText(this.menuCanvas.ctx,'GUNNER','white'); // TODO - Actual Nickname
     this.menuCanvas.beetleTxt.instantText(this.menuCanvas.ctx,'DigiBeetle','green'); // TODO - Beetle "Rank"
+
+    this.menuCanvas.drawDgmnPortrait(this.systemAH.fetchImage('beetlePortrait'))
   }
 
   /**------------------------------------------------------------------------

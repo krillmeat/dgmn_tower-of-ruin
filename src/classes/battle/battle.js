@@ -16,7 +16,8 @@ import CannonManager from "../../battle/components/cannon-manager";
 // TODO - Do I have too many "pass-throughs"? Functions in here that only serve to call a Child Class function
 
 class Battle {
-  constructor(isBoss,floorNumber){ // TODO - Needs floor and mods to determine enemies
+  constructor(isBoss,isDebug){ // TODO - Needs floor and mods to determine enemies
+   this.isDebug = isDebug;                        // Used so I can test specific battles
     this.battleActive = true;
     this.turn = 0;                               // Which Turn it currently is
     this.yourParty;                              // Your Dgmn : TODO - gameAH Reference to fetch this
@@ -191,7 +192,7 @@ class Battle {
    * ----------------------------------------------------------------------*/
   generateEnemyParty = () => {
     // TODO - I need to save/get max floor (but for now, set to 3)
-  let currentFloor = this.dungeonAH ? this.dungeonAH.getCurrentFloor() : 1; // TODO - Only for debug
+  let currentFloor = !this.isDebug ? this.dungeonAH.getCurrentFloor() : 0;
   this.dgmnAH.generateEnemies(currentFloor,3);
   }
 

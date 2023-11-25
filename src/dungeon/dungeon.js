@@ -249,6 +249,7 @@ class Dungeon{
   goUpFloor = () => {
     if(this.floorNumber === 5){ // TODO - This number should change
       debugLog("Dungeon Clear!");
+      this.goBackToTown();
     } else{
       debugLog("Ascending Floor...");
       this.moving = 'none';
@@ -271,7 +272,20 @@ class Dungeon{
         });
       })
     }
-    
+  }
+
+  
+  /**------------------------------------------------------------------------
+   * GO BACK TO TOWN                                               
+   * ------------------------------------------------------------------------
+   * Clears all of the Dungeon data and sends you back to the Town
+   * TODO - Also needs to reset your DGMN
+   * ----------------------------------------------------------------------*/
+  goBackToTown = () => {
+    debugLog("Returning to town...");
+    this.systemAH.startLoading(()=>{
+      this.gameAH.clearDungeon();
+    })
   }
 
   /**------------------------------------------------------------------------
