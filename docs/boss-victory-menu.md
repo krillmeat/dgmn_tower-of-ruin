@@ -98,4 +98,4 @@ Draws the Portrait of the Currently Shown DGMN
 
 | NAME | TYPE | DESCRIPTION |
 | --------- | ---- | ----------- |
-|
+| portraitImg | Image | Fetched Image of the DGMN's Portrait |

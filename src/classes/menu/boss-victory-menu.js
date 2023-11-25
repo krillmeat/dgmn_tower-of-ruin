@@ -184,6 +184,8 @@ const REWARD_MESSAGES = [
    * SELECT CHOICE
    * --------------------------------------------------------------------------------------------
    * Handles the action for the A Button. Used for both the main Menu, as well as the FP Menu
+   * @param {string}    message Message to write after selection is made
+   * @param {function}  onDone  Callback for when the message is done writing
    * ------------------------------------------------------------------------------------------*/
   selectChoice = (message,onDone) => {
     if(!this.inFPSelection){ // Main Menu
