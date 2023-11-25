@@ -37,11 +37,13 @@ class AttackCanvas extends GameCanvas{
       if(i >= images.length){ // Last frame
         if(t === targets.length - 1){ // At last target wrap up
           if(!isTargetEnemy) this.flip();
+          this.clearCanvas();
+          this.drawCB();
           clearInterval(animationInterval);
           callback();
         } else { t++; f = 0; i = 0 } // Go up 1 target, reset frames
       }
-    },66);
+    },50);
   }
 
   /**------------------------------------------------------------------------

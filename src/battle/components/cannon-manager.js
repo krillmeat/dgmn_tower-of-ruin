@@ -34,7 +34,6 @@ class CannonManager{
    * @param {Func}    onDone  Callback for when Animation is Done
    * ----------------------------------------------------------------------*/
   shoot = (item,side,target,onDone) => {
-    console.log("GET ITEM EFFECT: ",itemsDB[itemByName[item.name]].effect)
     const effect = itemsDB[itemByName[item.name]].effect;
     let effectMessage = '';
 
@@ -48,7 +47,7 @@ class CannonManager{
         break;
     }
 
-    this.runCannonAnimation(item.name,effectMessage,onDone)
+    this.runCannonAnimation(item.name,[effectMessage],onDone)
     
   }
 
@@ -65,10 +64,15 @@ class CannonManager{
    * @param {Func}    onDone        Callback for when Animation is Done
    * ----------------------------------------------------------------------*/
   runCannonAnimation = (item, effectMessage,onDone) => {
-    this.battleAH.drawActionText('beetle',`Gunnar fired ${item}!`)
+    this.battleAH.drawActionText('beetle',[`Gunnar fired ${item}!`])
     setTimeout(()=>{
       this.battleAH.drawActionText('beetle',effectMessage);
     },1600);
+
+    // setInterval for actual animation
+
+    // getItemAnimation(item) 
+
     setTimeout(()=>{
       this.battleAH.drawAllStatuses();
       onDone('dgmn')

@@ -1,5 +1,8 @@
 import Dungeon from '../dungeon/dungeon';
 import { debugLog } from '../utils/log-utils';
+import { DEBUG_DGMN, DEBUG_YOUR_TEAM } from '../debug/dgmn.mock';
+
+// TODO - This whole thing is a mess...
 
 class DebugMenu {
   constructor(game){
@@ -12,6 +15,17 @@ class DebugMenu {
     this.activate();
 
     this.launchBattle = () => {
+      
+      // Mock DGMN
+      for(let i = 0; i < 3; i++){ 
+        this.game.yourDgmn.allDgmn['dId'+i].hatchSetup();
+        // this.game.yourDgmn.allDgmn['dId'+i].hatch(DEBUG_YOUR_TEAM[i].speciesName);
+
+        this.game.yourDgmn.allDgmn['dId'+i].speciesName = DEBUG_YOUR_TEAM[i].speciesName;
+        this.game.yourDgmn.allDgmn['dId'+i].currentStats = DEBUG_YOUR_TEAM[i].currentStats;
+        this.game.yourDgmn.allDgmn['dId'+i].currentHP = DEBUG_YOUR_TEAM[i].currentStats.HP;
+      }
+
       // Build Mock Dungeon
       this.game.dungeon = {
         floor: {
@@ -26,8 +40,7 @@ class DebugMenu {
         }
       }
       this.game.atTitle = false;
-      this.game.startBattle();
-      
+      this.game.startBattle(true);
     }
 
     this.launchDungeon = () => {
@@ -53,7 +66,8 @@ class DebugMenu {
         if(document.body.dataset.view === 'mobile'){
           let windowHeight = window.innerHeight;
           let screenHeight = document.getElementById("game-screen").offsetHeight;
-          // mobileControllerElem.style.height = `${windowHeight - screenHeight}px`;
+          mobileControllerElem.style.height = `${windowHeight - screenHeight}px`;
+          mobileControllerElem.style.top = `${screenHeight+80}px`;
         }
       }
     })

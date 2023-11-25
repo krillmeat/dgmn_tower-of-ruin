@@ -84,6 +84,7 @@ class HatchingEggMenu extends IconMenu{
    * @param {String} species  Name of the DGMN Species
    * ----------------------------------------------------------------------*/
   drawDgmnInfo = species => {
+    console.log("DRAWING DGMN INFO?");
     this.menuCanvas.ctx.fillStyle = "#00131A";
     this.menuCanvas.ctx.fillRect(0*CFG.tileSize,14*CFG.tileSize,20*CFG.tileSize,4*CFG.tileSize);
 

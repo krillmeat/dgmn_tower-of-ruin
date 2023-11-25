@@ -14,6 +14,17 @@ window.onload = function(){
   init();
 }
 
+const setIsMobile = () => {
+  if(navigator.userAgent.match(/Android/i)){
+    document.body.dataset.view = 'mobile';
+    let mobileControllerElem = document.querySelector(".mobile-controls");
+    let windowHeight = window.innerHeight;
+    let screenHeight = document.getElementById("game-screen").offsetHeight;
+    mobileControllerElem.style.height = `${windowHeight - screenHeight}px`;
+    mobileControllerElem.style.top = `${screenHeight}px`;
+  }
+}
+
 /**------------------------------------------------------------------------
  * INITIALIZE
  * ------------------------------------------------------------------------
@@ -25,5 +36,6 @@ function init(){
   let system = new System();
   setTimeout(()=> {
     system.start();
+    setIsMobile();
   },1000);
 }

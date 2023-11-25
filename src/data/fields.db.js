@@ -16,3 +16,5 @@ export const FIELD_STATS = {
   AVO: 'DS',
   SPD: 'NS'
 }
+
+export const FIELD_LABELS = ['DR','NS','DS','JT','NA','ME','WG','VB'];

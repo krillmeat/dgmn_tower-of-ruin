@@ -7,19 +7,26 @@ import DgmnUtility from "../utility/dgmn.util";
 import { debugLog } from "../../../utils/log-utils";
 import EvoMenu from "./evo.menu";
 import LevelUpMenu from "./level-up.menu";
+import BossVictoryMenu from "../../menu/boss-victory-menu";
+import { FIELD_LABELS } from "../../../data/fields.db";
 
 class DgmnGrowthMenu extends Menu{
-  constructor(origin,dgmnAH,...args){
+  constructor(origin,dgmnAH,isBoss,...args){
     super(...args);
 
     this.origin = origin;   // Where the Menu is launched from [hatch|victory]
     this.currDgmnIndex = 0; // Which DGMN in the Party is Currently in-menu
     this.rewards = [];
+    // this.isBoss = isBoss;
+    this.isBoss = true; // TEMP
+
+    this.levelUps = {};
 
     // Text Areas
     this.topTxt = new TextArea(0,0,20,1);
     this.subTopTxt = new TextArea(0,1,20,1);
     this.actionTxt = new TextArea(2,15,16,2);
+    this.bossRewardActionTxt = new TextArea(4,14,14,4);
 
     this.dgmnUtility = new DgmnUtility();
 
@@ -29,6 +36,11 @@ class DgmnGrowthMenu extends Menu{
       giveCurrRewardCB: this.giveCurrReward,
       nextHatchCB: this.nextHatch,
       prevHatchCB: this.prevHatch,
+      prevEvoCB: this.prevEvo,
+      nextEvoCB: this.nextEvo,
+      prevBossRewardCB: this.prevBossReward,
+      nextBossRewardCB: this.nextBossReward,
+      selectBossRewardCB: this.selectBossReward,
       selectHatchCB: this.selectHatch,
       selectEvoCB: this.selectEvo,
       confirmLevelUpCB: this.confirmLevelUp,
@@ -40,6 +52,7 @@ class DgmnGrowthMenu extends Menu{
    * GO TO REWARDS
    * ------------------------------------------------------------------------
    * Sets up the Giving Rewards Screen
+   * TODO - Figure out how to make this modular, so each goto isn't so long
    * -------------------------------------------*/ /* istanbul ignore next */
    gotoRewards = rewards => {
     this.currState = 'loading';
@@ -146,45 +159,22 @@ class DgmnGrowthMenu extends Menu{
    * ------------------------------------------------------------------------
    * Sets up the Boss Rewards Screen
    * -------------------------------------------*/ /* istanbul ignore next */
-  gotoBossRewards = dgmnData => {
-    console.log("BOSS REWARDS SCREEN");
-  }
+  gotoBossRewards = (dgmnData) => {
+    this.currState = 'boss-reward';
 
-  /**------------------------------------------------------------------------
-   * DRAW MENU
-   * ------------------------------------------------------------------------
-   * Draws all of the currently Visible Menus' Canvases
-   * ----------------------------------------------------------------------*/
-   drawMenu = () => {
-    for(let key in this.subMenus){
-      if(this.subMenus[key].isVisible){
-        this.menuCanvas.paintCanvas(this.subMenus[key].menuCanvas);
-      }
-    }
+    // Prep Screen
+    this.drawBackground('bossRewardMenu');
+    this.topTxt.instantText(this.menuCanvas.ctx,'Choose Boss Reward!');
 
-    this.origin === 'hatch' ? this.parentAH.drawDungeon() : this.parentAH.drawBattleCanvas();
-  }
-
-  /**------------------------------------------------------------------------
-   * DRAW EGGS
-   * ------------------------------------------------------------------------
-   * Draws the 3 Sprites of the Eggs onto the Screen
-   * TODO - Hard coded right now, eventually need to send in the three
-   *        Eggs and draw those specifically
-   * ----------------------------------------------------------------------*/
-  drawEggs = () => {
-    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggDR'),2*CFG.tileSize,8*CFG.tileSize);
-    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggJT'),8*CFG.tileSize,8*CFG.tileSize);
-    this.menuCanvas.paintImage(this.systemAH.fetchImage('eggME'),14*CFG.tileSize,8*CFG.tileSize);
-  }
-
-  drawDgmn = () => {
-    let i = 0;
-    for(let dgmn of this.dgmnAH.getDgmnParty()){
-      let species = this.dgmnAH.getDgmnData(dgmn,['speciesName']).speciesName;
-      this.menuCanvas.paintImage(this.systemAH.fetchImage(`${species.toLowerCase()}Idle0`),((2+(i*6)))*CFG.tileSize,8*CFG.tileSize);
-      i++;
-    }
+    // Add Boss Reward SubMenu
+    this.addSubMenu('bossReward', 
+      new BossVictoryMenu(5,[0,0],3,8,2,['fp','xp','en'],this.systemAH.fetchImage('miniCursor'),null,'bossReward')); // TODO - The 5 is temporary
+    this.subMenus.bossReward.isVisible = true;
+    this.attachImageCallbacks('bossReward');
+    this.subMenus.bossReward.drawList();
+    this.subMenus.bossReward.drawDgmnPortrait( this.systemAH.fetchImage(`${dgmnData.speciesName.toLowerCase()}Portrait`) );
+    
+    this.drawMenu();
   }
 
   /**------------------------------------------------------------------------
@@ -195,7 +185,7 @@ class DgmnGrowthMenu extends Menu{
    * ----------------------------------------------------------------------*/
   updateRewardsList = () => {
     const currDgmnData = this.getCurrDgmnData();
-    const nextImages = this.origin === 'hatch' ? this.dgmnUtility.getAllHatchImages(currDgmnData.eggField) : [];
+    const nextImages = this.origin === 'hatch' ? this.dgmnUtility.getAllHatchImages(currDgmnData.eggField) : []; // TODO - Why?
 
     this.drawBackground('battleVictoryRewardsOverlay');
     this.origin === 'hatch' ? this.drawEggs() : this.drawDgmn(); // Draw Eggs or DGMN, depending on Origin
@@ -204,10 +194,9 @@ class DgmnGrowthMenu extends Menu{
       if(nextImages.length === 0){
         this.gotoNextScreen()
         return;
-      } else{ // TODO - Move to wrapUpRewards
+      } else{
         this.systemAH.loadImages(nextImages,()=>{
-          this.removeSubMenu('rewards');
-          this.gotoHatch(currDgmnData);
+          this.gotoNextScreen();
         })
       }
     });
@@ -239,12 +228,17 @@ class DgmnGrowthMenu extends Menu{
    * ----------------------------------------------------------------------*/
   wrapUpRewards = () => {
     this.removeSubMenu('rewards');
+    let currDgmn = this.dgmnAH.getDgmnParty()[this.currDgmnIndex];
     let currDgmnData = this.getCurrDgmnData();
-    let canLevelUp = this.dgmnAH.checkLevelUp(this.dgmnAH.getDgmnParty()[this.currDgmnIndex])
-    
-    if(canLevelUp){
+    this.checkAllLevelUps();
+
+    if(this.origin === 'victory' && this.isBoss){ // BOSS VICTORY
+      this.gotoBossRewards(currDgmnData);
+    } else if(this.origin === 'hatch'){ // Hatch Menu should always go straight to Hatch
+      this.gotoHatch(currDgmnData);
+    } else if(this.levelUps[currDgmn]){ // If the First DGMN Leveled Up, go to Level Up Screen
       this.gotoLevelUp(currDgmnData);
-    } else{ this.wrapUpLevelUp() }
+     } else{ this.wrapUpLevelUp(true) } // Skip the Level Up altogether
   }
 
   /**------------------------------------------------------------------------
@@ -252,22 +246,28 @@ class DgmnGrowthMenu extends Menu{
    * ------------------------------------------------------------------------
    * When the Level Up Menu is done, determines where to go
    * ----------------------------------------------------------------------*/
-   wrapUpLevelUp = () => {
+   wrapUpLevelUp = (skipEvolve = false) => {
+    this.continueCursor?.remove();
     this.removeSubMenu('level');
     let currDgmnData = this.getCurrDgmnData();
-    const canEvolve = this.dgmnUtility.canEvolveIntoAny(currDgmnData.currentFP,currDgmnData.speciesName);
+    let canEvolve = !skipEvolve ? 
+      this.dgmnUtility.canEvolveIntoAny(currDgmnData.currentFP,currDgmnData.speciesName) : 
+      false;
+
     const direction = canEvolve ? 'evolve' : 'level';
     if(!canEvolve) this.currDgmnIndex++;
+    let nextDgmn = this.dgmnAH.getDgmnParty()[this.currDgmnIndex];
 
     if(this.currDgmnIndex > 2){ this.parentAH.closeGrowthMenu()
     } else {
       if(direction === 'level'){
         const nextDgmnData = this.getCurrDgmnData();
-        const canLevelUp = this.dgmnAH.checkLevelUp(this.dgmnAH.getDgmnParty()[this.currDgmnIndex]);
-        if(canLevelUp){ 
+        if(this.origin === 'victory' && this.isBoss){
+          this.gotoBossRewards(nextDgmnData);
+        } else if(this.levelUps[nextDgmn]){ // If the next DGMN Leveled Up
           this.gotoLevelUp(nextDgmnData)
         } else { this.wrapUpLevelUp() } // If they can't evolve OR level up, just run this again on the next DGMN
-      } else {
+      } else { // Going to the Evolution Screen, get things ready
         const evoImages = this.dgmnUtility.getAllEvoImages(currDgmnData.speciesName);
         this.systemAH.loadImages(evoImages, () => { this.gotoEvolution(currDgmnData)});
       }
@@ -280,6 +280,7 @@ class DgmnGrowthMenu extends Menu{
    * Clears out the Hatch Screen
    * -------------------------------------------*/ /* istanbul ignore next */
    wrapUpHatch = () => {
+    this.continueCursor?.remove();
     let currDgmnData = this.getCurrDgmnData();
     const canEvolve = this.dgmnUtility.canEvolveIntoAny(currDgmnData.currentFP,currDgmnData.speciesName);
     let direction = canEvolve ? 'evolve' : 'hatch';
@@ -309,32 +310,52 @@ class DgmnGrowthMenu extends Menu{
     }
   }
 
-    /**------------------------------------------------------------------------
+  /**------------------------------------------------------------------------
    * WRAP UP EVOLUTION
    * ------------------------------------------------------------------------
    * Clears out the Evolution Screen
+   * TODO - Need to check potential Double Evolution
    * -------------------------------------------*/ /* istanbul ignore next */
    wrapUpEvolution = () => {
       // TODO - Check if Can Evolve Again...
-      // TODO - Need to consider Boss Reward
 
       this.currDgmnIndex++;
       if(this.currDgmnIndex > 2) { // If that was the last DGMN
         this.parentAH.closeGrowthMenu();
       } else{
         const currDgmnData = this.getCurrDgmnData();
+        // This shouldn't be happening for Evo
         const nextImages = this.dgmnUtility.getAllHatchImages(currDgmnData.eggField);
         this.systemAH.loadImages(nextImages,()=>{
           this.removeSubMenu('evolve');
           if(this.origin === 'hatch') this.gotoHatch(currDgmnData);
           if(this.origin === 'victory'){
-            // TODO - Possible to go to Boss Rewards
-            // TODO - While I THINK this is working okay, might need to run some test scenarios
-            this.currDgmnIndex--;
-            this.wrapUpLevelUp();
+            if(this.isBoss){ 
+              this.gotoBossRewards(currDgmnData);
+            } else{ // TODO - Why is this -- here?
+              this.currDgmnIndex--;
+              this.wrapUpLevelUp();
+            }            
           }
         })
       }
+   }
+
+   /**------------------------------------------------------------------------
+   * WRAP UP BOSS REWARD
+   * ------------------------------------------------------------------------
+   * Clears out the Boss Reward Screen
+   * -------------------------------------------*/ /* istanbul ignore next */
+   wrapUpBossReward = () => {
+    this.removeSubMenu('bossReward');
+    let currDgmn = this.dgmnAH.getDgmnParty()[this.currDgmnIndex];
+    let currDgmnData = this.getCurrDgmnData();
+
+    console.log("All Level Ups ? ",this.levelUps);
+    console.log("Can Level Up ? ",this.levelUps[currDgmn]);
+    
+    if(this.levelUps[currDgmn]){ this.gotoLevelUp(currDgmnData) } 
+      else{ this.wrapUpLevelUp(false) }
    }
 
   /**------------------------------------------------------------------------
@@ -345,7 +366,9 @@ class DgmnGrowthMenu extends Menu{
    * ----------------------------------------------------------------------*/
   gotoNextScreen = () => {
     if(this.origin === 'hatch'){
-      if(this.subMenus.hatch){
+      if(this.subMenus.rewards){
+        this.wrapUpRewards();
+      }else if(this.subMenus.hatch){
         this.wrapUpHatch();
       } else if(this.subMenus.evolve){
         this.wrapUpEvolution();
@@ -358,6 +381,19 @@ class DgmnGrowthMenu extends Menu{
       } else if(this.subMenus.evolve){
         this.wrapUpEvolution();
       }
+    }
+  }
+
+  
+  /**------------------------------------------------------------------------
+   * CHECK ALL LEVEL UPS
+   * ------------------------------------------------------------------------
+   * Loops through all of the DGMN and sees who can level up
+   * TODO - Add this to a helper file instead
+   * ----------------------------------------------------------------------*/
+  checkAllLevelUps = () => {
+    for(let dgmn of this.dgmnAH.getDgmnParty()){
+      if( this.dgmnAH.checkLevelUp(dgmn) ) this.levelUps[dgmn] = true
     }
   }
 
@@ -392,6 +428,43 @@ class DgmnGrowthMenu extends Menu{
     const evolution = this.subMenus.evolve.selectedDgmn;
     this.dgmnAH.evolve(this.dgmnAH.getDgmnParty()[this.currDgmnIndex],evolution)
   }
+
+    /**------------------------------------------------------------------------
+   * DRAW MENU
+   * ------------------------------------------------------------------------
+   * Draws all of the currently Visible Menus' Canvases
+   * ----------------------------------------------------------------------*/
+    drawMenu = () => {
+      for(let key in this.subMenus){
+        if(this.subMenus[key].isVisible){
+          this.menuCanvas.paintCanvas(this.subMenus[key].menuCanvas);
+        }
+      }
+  
+      this.origin === 'hatch' ? this.parentAH.drawDungeon() : this.parentAH.drawBattleCanvas();
+    }
+  
+    /**------------------------------------------------------------------------
+     * DRAW EGGS
+     * ------------------------------------------------------------------------
+     * Draws the 3 Sprites of the Eggs onto the Screen
+     * TODO - Hard coded right now, eventually need to send in the three
+     *        Eggs and draw those specifically
+     * ----------------------------------------------------------------------*/
+    drawEggs = () => {
+      this.menuCanvas.paintImage(this.systemAH.fetchImage('eggDR'),2*CFG.tileSize,8*CFG.tileSize);
+      this.menuCanvas.paintImage(this.systemAH.fetchImage('eggJT'),8*CFG.tileSize,8*CFG.tileSize);
+      this.menuCanvas.paintImage(this.systemAH.fetchImage('eggME'),14*CFG.tileSize,8*CFG.tileSize);
+    }
+  
+    drawDgmn = () => {
+      let i = 0;
+      for(let dgmn of this.dgmnAH.getDgmnParty()){
+        let species = this.dgmnAH.getDgmnData(dgmn,['speciesName']).speciesName;
+        this.menuCanvas.paintImage(this.systemAH.fetchImage(`${species.toLowerCase()}Idle0`),((2+(i*6)))*CFG.tileSize,8*CFG.tileSize);
+        i++;
+      }
+    }
   
   /**------------------------------------------------------------------------
    * NEXT/PREV HATCH                                               [EXPORTED]
@@ -427,12 +500,91 @@ class DgmnGrowthMenu extends Menu{
    * Select the currently chosen DGMN to Evolve into
    * ----------------------------------------------------------------------*/
   selectEvo = () => {
-    // TODO - Check to make sure Evo is allowed
-    this.evolveIntoDgmn();
-    this.gotoNextScreen()
+    if(this.subMenus.evolve.canEvolve()){
+      this.evolveIntoDgmn();
+      this.gotoNextScreen()
+    }
   }
 
+  /**------------------------------------------------------------------------
+   * SKIP EVO
+   * ------------------------------------------------------------------------
+   * Go straight to the next Screen
+   * ----------------------------------------------------------------------*/
   skipEvo = () => { this.gotoNextScreen() }
+
+  /**------------------------------------------------------------------------
+   * UPDATE BOSS REWARD TEXT
+   * ------------------------------------------------------------------------
+   * On the Boss Reward screen, there is a Text Area that is often rewritten,
+   * this helps handle that
+   * TODO - Move to a Util?
+   * @param {String}  message Text to display
+   * @param {String}  timing  Timing of the Message [instant|timed]
+   * ----------------------------------------------------------------------*/
+  updateBossRewardText = (message,timing) => {
+    if(timing === 'instant'){
+      this.bossRewardActionTxt.instantText(this.menuCanvas.ctx,message);
+    }else{
+      this.bossRewardActionTxt.instantText(this.menuCanvas.ctx,message,this.drawMenu);
+    }
+  }
+
+  /**------------------------------------------------------------------------
+   * NEXT/PREV BOSS REWARD                                         [EXPORTED]
+   * ------------------------------------------------------------------------
+   * Change current selection on the Boss Reward Screen
+   * ----------------------------------------------------------------------*/
+  prevBossReward = () => { this.subMenus.bossReward.prevChoice(this.updateBossRewardText) }
+  nextBossReward = () => { this.subMenus.bossReward.nextChoice(this.updateBossRewardText) }
+
+  /**------------------------------------------------------------------------
+   * SELECT BOSS REWARD                                            [EXPORTED]
+   * ------------------------------------------------------------------------
+   * Select the currently chosen Reward
+   * TODO - Cleanup
+   * ----------------------------------------------------------------------*/
+  selectBossReward = () => {
+    if(this.state === 'loading') return;
+
+    this.state = 'loading';
+    let currBossReward = this.subMenus.bossReward.listItems[this.subMenus.bossReward.currIndex];
+    let currDgmn = this.dgmnAH.getDgmnParty()[this.currDgmnIndex];
+    let currDgmnData = this.getCurrDgmnData();
+    let upgradeMessage = '';
+
+    if(currBossReward === 'fp'){
+      if(this.subMenus.bossReward.inFPSelection){
+        this.dgmnAH.giveUpgrade(currDgmn,'FP',FIELD_LABELS[this.subMenus.bossReward.FPIndex]);
+        upgradeMessage = `${currDgmnData.nickname} permanently gained 1 ${FIELD_LABELS[this.subMenus.bossReward.FPIndex]} FP!`
+      } else{
+        this.subMenus.bossReward.launchFPSelection();
+        upgradeMessage = "Select an FP to gain!"
+      }
+    }else if(currBossReward === 'xp'){
+      this.dgmnAH.giveUpgrade(currDgmn,'XP');
+      upgradeMessage = `${currDgmnData.nickname} will now gain XP faster!`;
+    } else if(currBossReward === 'en'){
+      this.dgmnAH.giveUpgrade(currDgmn,'EN');
+      upgradeMessage = `${currDgmnData.nickname} has more EN now!`;
+    }
+
+    // this.menuCanvas.clearBottomSection();
+    // this.bossRewardActionTxt.timedText(this.menuCanvas.ctx, upgradeMessage, this.drawMenu);
+    // this.updateBossRewardText(upgradeMessage,'timed');
+    // this.subMenus.bossReward.selectChoice(upgradeMessage,()=>{})
+
+    if(currBossReward !== 'fp' || upgradeMessage.indexOf("FP!") !== -1) {
+      // setTimeout(()=>{
+      //   this.wrapUpBossReward();
+      // },2500)
+      console.log("SHOULD BE CLEARING?")
+      this.subMenus.bossReward.selectChoice(upgradeMessage,()=>{this.wrapUpBossReward()})
+    } else{
+      this.subMenus.bossReward.selectChoice(upgradeMessage,()=>{});
+    }
+    
+   }
 
   /**------------------------------------------------------------------------
    * CONFIRM LEVEL UP                                              [EXPORTED]

@@ -1,9 +1,10 @@
 import { attacksDB } from "../../data/attacks.db";
 import { powerRanks } from "../../data/ranks.db";
-import { debugLog } from "../../utils/log-utils";
+import { debugLog, warningLog } from "../../utils/log-utils";
 import AttackCanvas from "./canvas/attack-canvas";
 import AttackUtility from "../dgmn/utility/attack.util";
 import DgmnUtility from "../dgmn/utility/dgmn.util";
+import { getFullMessageLength } from "../../utils/common.utils";
 
 /**------------------------------------------------------------------------
 * ATTACK MANAGER
@@ -80,10 +81,11 @@ class AttackManager{
         !this.dgmnAH.getIsDead(attacker)){ // And the ATTACKER isn't Dead...
         if(action.status === 'pending'){ // Action hasn't been run yet
           this.takeAction(attacker,action);
-        } else if(action.status === 'done'){ // Action is finished, move on
+        } else if(action.status === 'done'){ // Action is Done, move on
           i++;
         }
-      } else{ debugLog("No Action for "+attacker); i++  } // Dgmn has no Action, move on
+      } else if(action.status === 'pending'){ debugLog("No Action for "+attacker); i++ // Dgmn has no Action, move on
+      } else if(action.status === 'done'){ i++ } // Action is Done, move on
 
       if(this.battleAH.checkBattleCondition() !== 'ongoing' || i >= turnOrder.length){
         clearInterval(attackInterval);
@@ -94,7 +96,7 @@ class AttackManager{
           } else if(this.battleAH.checkBattleCondition() === 'lose'){
             this.battleAH.battleLose();
           } else{ this.battleAH.newTurn() }
-        },2000);
+        },1000);
       }
     }, 200);
   }
@@ -180,7 +182,7 @@ class AttackManager{
     this.battleAH.drawAllStatuses();
     this.attackCanvas.clearCanvas();
 
-    setTimeout(()=>{ this.attackActions[attacker].status = 'done'; },500) // Pause, for dramatic effect
+    setTimeout(()=>{ this.attackActions[attacker].status = 'done'; },1000) // Pause, for dramatic effect TODO - Calculate this...
   }
 
   /**------------------------------------------------------------------------
@@ -196,18 +198,17 @@ class AttackManager{
     this.attackActions[attacker].status = 'acting';
     let dgmnData = this.dgmnAH.getDgmnData(attacker,['nickname','speciesName'],attacker.charAt(0) === 'e');
     let species = dgmnData.speciesName;
-    let message = "";
+    let allMessages = [];
 
     if(!action.isDefend){
-      this.takeAttack(attacker,action,(attackMessage)=>{
-        message = attackMessage;
+      this.takeAttack(attacker,action,messages=>{
+        allMessages = [...messages]
       });
     } else{
-      message = this.dgmnAH.getDgmnData(attacker,['nickname'],attacker.charAt(0) === 'e').nickname+' defends';
+      allMessages = [this.dgmnAH.getDgmnData(attacker,['nickname'],attacker.charAt(0) === 'e').nickname+' defends'];
     }
     
-    
-    this.battleAH.drawActionText(species,message);
+    if(allMessages.length > 0) this.battleAH.drawActionText(species,allMessages);
     setTimeout(()=>{ // Wait a second for the text to display before starting the animation
       if(!action.isDefend){
         this.dgmnAH.showDgmnFrame(attacker,'Attack');
@@ -217,11 +218,21 @@ class AttackManager{
           }  
         }
         this.triggerAnimation(attacker,action.attackName,action.targets);
-      } else { this.attackActions[attacker].status = 'done'; }
-    },1200);
+      } else { setTimeout(()=>{this.attackActions[attacker].status = 'done';},1000) } // Delay when Defending
+    }, (getFullMessageLength(allMessages) + (15*allMessages.length))*50); // Delay the timeout by how long the message is
   }
 
-  // TODO - Needs to know if it's multi-hit/multi-target
+
+  /**------------------------------------------------------------------------
+   * BUILD ACTION MESSAGE
+   * ------------------------------------------------------------------------
+   * Builds the message that shows when the DGMN takes an Action
+   * ------------------------------------------------------------------------
+   * @param {String}  nickname  DGMNs given name
+   * @param {String}  attackName  Name of the selected Attack
+   * @param {String}  Accuracy    Number used for accuracy of Attack [0|1|2]
+   * @return Message to display while Action is taking place
+   * ----------------------------------------------------------------------*/
   buildActionMessage = (nickname,attackName,accuracy) => {
     let message = '';
     if(accuracy === 1 ){ // Normal Accuracy
@@ -239,6 +250,7 @@ class AttackManager{
    * TAKE ATTACK
    * ------------------------------------------------------------------------
    * Runs the Attack Action Steps
+   * TODO - So long...
    * ------------------------------------------------------------------------
    * @param {String}  attacker  dgmnID of actor (TODO - change name)
    * @param {Object}  action    Collection of necessary data for Action
@@ -249,21 +261,31 @@ class AttackManager{
     // Drain DGMN Energy TODO - Is this right? Can't happen per target or hit
     this.drainEnergy(attacker,action.attackName);
 
+    // TODO - Doing attack effect up here is going to cause negative effects message only once.
+    let allMessages = [this.doAttackEffect(action.attackName,attacker,action.targets)];
+        allMessages = allMessages[0] !== ' ' && allMessages[0] ? allMessages : [];
+
     for(let i in action.targets ){ // Multi-target
       for(let h = 0; h < action.hits; h++){  // Multi-hit
-        let attackerData = this.dgmnAH.getDgmnData(attacker,['currentStats','currentLevel','nickname'],attacker.charAt(0) === 'e');
-        let targetData = this.dgmnAH.getDgmnData(action.targets[i],['currentStats','combo','speciesName','weak','isDead'],action.targets[i].charAt(0) === 'e');
+        let attackerData = this.dgmnAH.getDgmnData(attacker,['speciesName','currentStats','currentLevel','nickname','statMods','condition'],attacker.charAt(0) === 'e');
+        let targetData = this.dgmnAH.getDgmnData(action.targets[i],['currentStats','combo','speciesName','weak','isDead','statMods'],action.targets[i].charAt(0) === 'e');
 
-        if(!targetData.isDead){
+        if(!targetData.isDead){ // Only do the Attack if the Target hasn't already died
 
-          let attackerATK = this.attackUtility.getStat(action.attackName) === 'physical' ? attackerData.currentStats.ATK : attackerData.currentStats.INT;
-          let targetDEF = this.attackUtility.getStat(action.attackName) === 'physical' ? targetData.currentStats.DEF : targetData.currentStats.RES;
+          let attackerATK = this.attackUtility.getStat(action.attackName) === 'physical' ? 
+              (attackerData.currentStats.ATK * attackerData.statMods.ATK) : 
+              (attackerData.currentStats.INT * attackerData.statMods.INT);
+          let targetDEF = this.attackUtility.getStat(action.attackName) === 'physical' ? 
+              (targetData.currentStats.DEF * targetData.statMods.DEF) : 
+              (targetData.currentStats.RES * targetData.statMods.RES);
 
-          let baseDMG = this.calcBaseDMG( attackerATK, attackerData.currentLevel, powerRanks[action.power], action.hits,  targetDEF); // TODO - ATK/INT and DEF/RES
+          let baseDMG = this.calcBaseDMG( attackerATK, attackerData.currentLevel, powerRanks[action.power], action.hits,  targetDEF);
           let modTotal = 1;
   
           // Miss & Crit
-          let accuracyMod = this.calculateAccuracy(attackerData.currentStats.HIT,targetData.currentStats.AVO);
+          let accuracyMod = this.calculateAccuracy((attackerData.currentStats.HIT * attackerData.statMods.HIT),
+                                                   (targetData.currentStats.AVO * targetData.statMods.AVO));
+          // TODO - Effect can cause a higher CRIT chance, check that here
       
           if(accuracyMod !== 0){ // Don't run any special mods or anything if you Miss
             // Type
@@ -276,14 +298,15 @@ class AttackManager{
             let weakMod = targetData.weak > 0 ? 1.125 : 1;
   
             // Combo
-            this.dgmnAH.modifyCombo(action.targets[i],this.getComboDelta());
+            // DGMN who are Overheating cannot increase Combo
+            if(attackerData.condition?.type !== 'overheat') this.dgmnAH.modifyCombo(action.targets[i],this.getComboDelta());
             let comboLetter = this.attackUtility.getComboLetter(this.calculateCombo(targetData.combo,typeMod,weakMod > 1));
             let comboMod = this.attackUtility.getComboMod(comboLetter);
 
             // Defending
             let defendMod = this.isDgmnDefending(action.targets[i]) ? .5 : 1;
 
-            // Early Stage Mod
+            // Early Stage Mod - Makes early enemies weaker against you in the beginning to prevent early loss
             let earlyStageMod = this.dgmnUtility.isEnemy(attacker) ? this.calcEarlyStageMod( targetData.speciesName ) : 1;
   
             modTotal = comboMod * typeMod * weakMod * accuracyMod * defendMod * earlyStageMod;
@@ -296,10 +319,20 @@ class AttackManager{
           let finalDMG = accuracyMod === 0 ? 0 : ( Math.round(baseDMG * modTotal) + rand );
           this.dealDMG(action.targets[i],finalDMG);
   
-          let message = this.buildActionMessage(attackerData.nickname,action.attackName,accuracyMod);
-          messageCB(message);
-  
-          // TODO - Effects go here
+          // Manage Messaging
+          let compiledName = attackerData.nickname !== 'Enemy' ? attackerData.nickname : 'Enemy '+attackerData.speciesName+'.MON';
+          let nextMessage = this.buildActionMessage(compiledName,action.attackName,accuracyMod);
+          if(i == 0 && h == 0){
+            allMessages.unshift(nextMessage);
+          }else if(i !== 0 || h !== 0){
+            if(nextMessage.indexOf("CRIT") !== -1 || nextMessage.indexOf("missed") !== -1){
+              allMessages.push(nextMessage.indexOf("CRIT") !== -1 ? "One was a CRITICAL HIT!" : "One missed...");
+            } 
+          } 
+
+          if(attackerData.condition?.type) 
+            allMessages.unshift(attackerData.nickname+""+this.dgmnUtility.getConditionMessage(attackerData.condition?.type)) // Show that DGMN is afflicted by a condition
+          messageCB(allMessages);
         } else { i++ } // If they're Dead, move on
       }
     }
@@ -369,13 +402,74 @@ class AttackManager{
    * @returns Calculated DMG Number
    * ----------------------------------------------------------------------*/
   calcBaseDMG = (attackerATK, attackerLV, attackPWR, attackHits, targetDEF) => {
-    // FORMULA: ⌈( ( ATK / DEF ) * (LV / 2 ) ) * PWR⌉
-    // The reason you have /2 is because the "weight" of that variable needs to be weaker
+    // FORMULA: ⌈( ( ATK / DEF ) * (LV / 4 ) ) * PWR⌉
+    // The reason you have /4 is because the "weight" of that variable needs to be weaker
     let baseDMG = Math.ceil(( ( (attackerATK / targetDEF) * (attackerLV/4) ) * attackPWR ) / attackHits);
 
-    debugLog(`  BASE DMG = ⌈( ( (${attackerATK}/${targetDEF}) x (${attackerLV}/2) ) x ${attackPWR}) / ${attackHits}⌉ = ${baseDMG} `);
+    debugLog(`  BASE DMG = ⌈( ( (${attackerATK}/${targetDEF}) x (${attackerLV}/4) ) x ${attackPWR}) / ${attackHits}⌉ = ${baseDMG} `);
     return baseDMG;
   }
+
+  
+  /**------------------------------------------------------------------------
+   * DO ATTACK EFFECT
+   * ------------------------------------------------------------------------
+   * Handles the Effect of an Attack
+   * ------------------------------------------------------------------------
+   * @param {String}  attackName  Name of the used Attack
+   * @param {Array}   targets     List of attack 
+   * @returns {String}  The message for the Effect
+   * ----------------------------------------------------------------------*/
+  doAttackEffect = (attackName,attacker,targets) => {
+
+    let effect = attacksDB[attackName].effect;
+    if(!effect) return; // If there is no effect for an Attack, get out!
+    let effectTargets = this.getEffectTarget(effect.target,attacker,targets);
+    let effectMessage = "";
+    let statMods;
+
+    for(let effectTarget of effectTargets){
+      let shouldActivate = (Math.random() * 100) >= (100 - effect.accuracy);
+
+      if(effect && shouldActivate){
+        switch(effect.type){
+          case 'buff':
+            debugLog(`Buffing ${effect.target} ${effect.stat} by ${effect.amount}`);
+            statMods = this.dgmnAH.getDgmnData(effectTarget,['statMods'],this.dgmnUtility.isEnemy(effectTarget));
+            if(statMods[effect.stat] >= 3) continue; // If Stat is maxed out already, skip the Effect
+            this.dgmnAH.buffDgmnStat(effectTarget,effect.stat,effect.amount);
+            effectMessage = this.attackUtility.getBuffMessage(effect.stat,effect.amount);
+            break;
+          case 'debuff':
+            debugLog(`DeBuffing ${effect.target} ${effect.stat} by ${effect.amount}`);
+            statMods = this.dgmnAH.getDgmnData(effectTarget,['statMods'],this.dgmnUtility.isEnemy(effectTarget));
+            if(statMods[effect.stat] <= -3) continue; // If Stat is maxed out already, skip the Effect
+            this.dgmnAH.debuffDgmnStat(effectTarget,effect.stat,effect.amount);
+            effectMessage = this.attackUtility.getDeBuffMessage(effect.stat,effect.amount);
+            break;
+          case 'status':
+            debugLog(`Hitting ${effect.target} with ${effect.status}`);
+            this.dgmnAH.giveCondition(effectTarget,effect.status);
+            effectMessage = this.attackUtility.getConditionMessage(effect.status);
+            console.log("Effect message ? ",effectMessage);
+            break;
+          default:
+            warningLog("Effect Type Unknown - Check attacks.db.js");
+            continue;
+        }
+      } else{ continue; }
+    }
+
+    return effectMessage;
+  }
+
+    getEffectTarget = (effectTarget,attacker,attackTargets) => {
+      if(effectTarget === 'self') return [attacker]
+      if(effectTarget === 'target') return [attackTargets[0]] // Only happens if there's 1 Target on the Attack
+      // if(effectTarget === 'all-party') return []
+      // if(effectTarget === 'all-enemy') return []
+      return []
+    }
 
   /**------------------------------------------------------------------------
    * DEAL DAMAGE

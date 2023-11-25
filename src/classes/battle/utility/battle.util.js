@@ -7,7 +7,7 @@ class BattleUtility{
   }
 
   getDefaultBattleImages = () => {
-    return battleImages.concat(typeIcons).concat(fieldIcons);
+    return battleImages.concat(fieldIcons);
   }
 
   /**------------------------------------------------------------------------
@@ -67,6 +67,18 @@ class BattleUtility{
 
   getXP = species => {
     return dgmnDB[species].stage;
+  }
+
+  hasBuffedStat = statMods => {
+    for(let statMod in statMods){
+      if(statMods[statMod] > 1) return true
+    } return false
+  }
+
+  hasDebuffedStat = statMods => {
+    for(let statMod in statMods){
+      if(statMods[statMod] < 1) return true
+    } return false
   }
 }
 

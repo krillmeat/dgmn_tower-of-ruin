@@ -1,5 +1,46 @@
-import Attack from "../classes/battle/attack";
+// import Attack from "../classes/battle/attack";
 import Dgmn from "../classes/dgmn/dgmn";
+import Attack from "../classes/dgmn/attack";
+
+
+const FREE_TEAM = [
+  {
+    speciesName: 'Bota',
+    currentLevel: 2,
+    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 1, RES: 1, HIT: 2, AVO: 1, SPD: 1},
+    attacks: [new Attack('bubbles')]
+  },
+  {
+    speciesName: 'Yura',
+    currentLevel: 2,
+    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 2, RES: 2, HIT: 1, AVO: 1, SPD: 1},
+    attacks: [new Attack('bubbles')]
+  },
+  {
+    speciesName: 'Zuru',
+    currentLevel: 2,
+    currentStats: {HP:5, ATK: 2, DEF: 1, INT: 2, RES: 1, HIT: 1, AVO: 2, SPD: 1},
+    attacks: [new Attack('bubbles')]
+  }
+]
+
+
+
+export const DEBUG_DGMN = FREE_TEAM;
+
+export const DEBUG_YOUR_TEAM = [{
+  speciesName: 'Bota',
+  currentStats: {HP:500, ATK: 200, DEF: 100, INT: 200, RES: 100, HIT: 100, AVO: 200, SPD: 100}
+},
+{
+  speciesName: 'Yura',
+  currentStats: {HP:500, ATK: 200, DEF: 100, INT: 200, RES: 100, HIT: 100, AVO: 200, SPD: 100}
+},
+{
+  speciesName: 'Choro',
+  currentStats: {HP:500, ATK: 200, DEF: 100, INT: 200, RES: 100, HIT: 100, AVO: 200, SPD: 100}
+}]
+
 
 export const setupMockDgmn = () => {
   let dgmnList = [ new Dgmn(0,'FLARE','Agu',0),

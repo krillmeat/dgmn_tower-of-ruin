@@ -1,10 +1,10 @@
 export const digiTamaDB = {
-  DR: ['Bota','Jyari'],
+  DR: ['Bota','Jyari','Moku'],
   NS: ['Doki'],
   WG: ['Pururu'],
-  ME: ['Choro'],
+  ME: ['Choro','Bom','Bubb'],
   VB: ['Poyo'],
   NA: ['Zuru'],
-  JT: ['Yura'],
+  JT: ['Yura','Bubb'],
   DS: ['Pitch']
 }

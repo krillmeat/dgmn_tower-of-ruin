@@ -1,0 +1,1 @@
+export const getFullMessageLength = messages => messages.join(" ").length

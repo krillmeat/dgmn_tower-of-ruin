@@ -48,7 +48,7 @@ class Floor{
    * Sets up the Floor Canvas
    * ----------------------------------------------------------------------*/
     initCanvas = () => { 
-      this.floorCanvas = new FloorCanvas('floor-canvas',this.roomMatrix.length*128,this.roomMatrix[0].length*128);
+      this.floorCanvas = new FloorCanvas('floor-canvas',this.roomMatrix[0].length*128,this.roomMatrix.length*128);
     }
 
   /**------------------------------------------------------------------------

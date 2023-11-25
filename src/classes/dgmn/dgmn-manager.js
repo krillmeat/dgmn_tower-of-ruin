@@ -50,7 +50,10 @@ class DgmnManager{
       hatchEggCB: this.hatchEgg,
       useItemOnCB: this.useItemOn,
       giveUpgradeCB: this.giveUpgrade,
-      getDgmnPartyCB: this.getDgmnParty
+      getDgmnPartyCB: this.getDgmnParty,
+      buffDgmnStatCB: this.buffDgmnStat,
+      deBuffDgmnStatCB: this.deBuffDgmnStat,
+      giveConditionCB: this.giveCondition
     });
 
     this.systemAH = systemAH;
@@ -92,7 +95,7 @@ class DgmnManager{
    * ----------------------------------------------------------------------*/
   createDgmn = (index,data,isEnemy) => {
     if(isEnemy){ // Generating a new Enemy
-      this.enemyDgmn[`edId${index}`] = new Dgmn(index,"ENEMY",data.speciesName);
+      this.enemyDgmn[`edId${index}`] = new Dgmn(index,"Enemy",data.speciesName);
       this.enemyDgmn[`edId${index}`].isEnemy = true;
       this.enemyDgmn[`edId${index}`].currentLevel = data.currentLevel;
       this.enemyDgmn[`edId${index}`].currentStats = data.currentStats;
@@ -301,7 +304,7 @@ class DgmnManager{
   }
 
   levelUp = dgmnId => {
-    this.allDgmn[dgmnId].currentXP = 0;
+    this.allDgmn[dgmnId].currentXP = this.allDgmn[dgmnId].currentXP - this.dgmnUtility.checkLevelReq(this.allDgmn[dgmnId].currentLevel); 
     this.allDgmn[dgmnId].currentLevel++;
     this.allDgmn[dgmnId].levelUpStats();
     this.allDgmn[dgmnId].levelUpFP();
@@ -365,6 +368,16 @@ class DgmnManager{
     this['upgrade'+upgrade](dgmnId,FP);
   }
 
+  buffDgmnStat = (dgmnId,stat,amount) => { 
+    this.dgmnUtility.isEnemy(dgmnId) ? 
+      this.enemyDgmn[dgmnId].buffStat(stat,amount) : 
+      this.allDgmn[dgmnId].buffStat(stat,amount) }
+
+  deBuffDgmnStat = (dgmnId,stat,amount) => { 
+    this.dgmnUtility.isEnemy(dgmnId) ? 
+      this.enemyDgmn[dgmnId].debuffStat(stat,amount) : 
+      this.allDgmn[dgmnId].debuffStat(stat,amount) }
+
   /**------------------------------------------------------------------------
    * UPGRADE FP
    * ------------------------------------------------------------------------
@@ -426,12 +439,12 @@ class DgmnManager{
     this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.y = newY;
   }
 
-  stopDgmnCanvas = dgmnId => {
-    this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.stop();
-  }
+  stopDgmnCanvas = dgmnId => { this[this.getParty(dgmnId)][dgmnId].dgmnCanvas.stop(); }
 
   getDgmnParty = () => this.party
   getTempDgmn = () => { return this.tempDgmn }
+
+  giveCondition = (dgmnId,condition) => this[this.getParty(dgmnId)][dgmnId].giveCondition(condition);
 
   /**------------------------------------------------------------------------
    * TITLE

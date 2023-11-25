@@ -7,9 +7,8 @@ export const attacksDB = {
     stat: 'physical',
     targets: 'single',
     hits: 1,
-    animationFrames: [['bubbles1',1],['bubbles2',1],['bubbles3',1],['bubbles4',1],['bubbles5',1],['bubbles6',1]],
-    animationFrameCount: 6,
-    effect: ['buff',1,1,100]
+    animationFrames: [['bubbles1',1],['bubbles2',1],['bubbles3',1],['bubbles4',1],['bubbles5',3],['bubbles6',1],['bubbles7',1],['bubbles8',1],['blankAttack',2]],
+    animationFrameCount: 8
   },
   babyFlame: {
     displayName: 'Baby Flame',
@@ -65,7 +64,13 @@ export const attacksDB = {
     hits: 1,
     animationFrames: [['elecRush1',2],['elecRush2',2],['elecRush3',2],['elecRush4',2]],
     animationFrameCount: 4,
-    effect: ['status','paralyze',100]
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'SPD',
+      amount: 1,
+      accuracy: 50
+    }
   },
   petitTwister: {
     displayName: 'Petit Twister',
@@ -109,4 +114,46 @@ export const attacksDB = {
     animationFrames: [['babyFlame1',1],['babyFlame2',1],['babyFlame3',4],['babyFlame2',1],['babyFlame1',1]],
     animationFrameCount: 3
   },
+  toyFlame: {
+    displayName: 'Toy Flame',
+    power: 'F',
+    maxCost: 8,
+    type: 'fire',
+    stat: 'physical',
+    targets: 'single',
+    hits: 1,
+    animationFrames: [['toyFlame1',1],['toyFlame2',1],['toyFlame3',1],['toyFlame4',1]],
+    animationFrameCount: 4,
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'DEF',
+      amount: 1,
+      accuracy: 25
+    }
+  },
+  thunderKote: {
+    displayName: 'ThunderKote',
+    power: 'F',
+    maxCost: 8,
+    type: 'elec',
+    targets: 'single',
+    hits: 1,
+    animationFrames: [['thunderKote1',2],['thunderKote2',2],['thunderKote3',2],['thunderKote4',2],['thunderKote5',2],['thunderKote6',1],['thunderKote7',1],['thunderKote8',1],['thunderKote9',1],['thunderKote10',1],['thunderKote11',1],['thunderKote12',1]],
+    animationFrameCount: 12,
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'HIT',
+      amount: 1,
+      accuracy: 25
+    }
+  }
+}
+
+export const FULL_CONDITION_TEXT = {
+  overheat: 'Overheat',
+  freeze: 'Freeze',
+  virus: 'Virus',
+  surge: 'Surge'
 }

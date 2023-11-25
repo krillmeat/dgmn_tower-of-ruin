@@ -35,11 +35,13 @@ class Dgmn {
     this.currentHP = 23;
     this.currentEN = this.maxEnergy;
     this.currentStats = { HP: 13, ATK: 0, DEF: 0, INT: 0, RES: 0, HIT: 0, AVO: 0, SPD: 0 }
+    this.statMods = { HP:1, ATK:1, DEF:1, INT:1, RES:1, HIT:1, AVO:1, SPD:1 }
     this.currentFP = { DR:0, NS:0, WG:0, ME:0, DS:0, JT:0, VB:0, NA:0 }
     this.currentXP = 0;
 
     this.combo = 0;
     this.weak = 0;
+    this.condition;
 
     this.attackList = ["bubbles","babyFlame"];
     this.attacks = [new Attack('bubbles')] // Every DGMN Starts with Bubbles
@@ -161,6 +163,27 @@ class Dgmn {
 
   getAllAttacks = () => { return this.attacks }
 
+  /**------------------------------------------------------------------------
+   * CONDITIONS
+   * ------------------------------------------------------------------------
+   * Everything related to Status Conditions
+   * ----------------------------------------------------------------------*/
+  giveCondition = condition => { this.condition = {type: condition, turns: 0 } }
+  healCondition = () => { this.condition = undefined }
+
+  /**------------------------------------------------------------------------
+   * STAT MODIFIERS
+   * ------------------------------------------------------------------------
+   * Everything related to Buffing and Debuffing your stats
+   * ----------------------------------------------------------------------*/
+  buffStat = (stat,amount) => { this.statMods[stat] += amount }
+  debuffStat = (stat,amount) => { this.statMods[stat] -= amount }
+
+  /**------------------------------------------------------------------------
+   * GET STATS
+   * ------------------------------------------------------------------------
+   * Grab a specific Stat
+   * ----------------------------------------------------------------------*/
   getMaxHP = () => { return this.currentStats.HP }
   getATK = () => { return this.currentStats.ATK }
 }

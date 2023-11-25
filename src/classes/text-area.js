@@ -93,6 +93,26 @@ class TextArea{
   }
 
   /**------------------------------------------------------------------------
+   * MULTI TEXT
+   * ------------------------------------------------------------------------
+   * Takes an array of Messages, and prints them all, one by one
+   * ------------------------------------------------------------------------
+   * @param {Canvas.ctx}  ctx         Canvas ctx to draw on
+   * @param {Array}       messages    List of Messages
+   * @param {Function}    drawCB      Parent's Draw Callback
+   * @param {Function}    beforeEach  Function to run before each iteration
+   * ----------------------------------------------------------------------*/
+  multiText = (ctx,messages,drawCB,beforeEach) => {
+    beforeEach();
+    let currentMessage = messages[0];
+    this.timedText(ctx,currentMessage,drawCB); // Timed Text draw the message
+    messages.splice(0,1); // Remove currently printing message
+
+    // If not done with messages, run it again after the delay
+    setTimeout(()=>{if(messages && messages.length !== 0 && messages[0]) this.multiText(ctx,messages,drawCB,beforeEach)}, (currentMessage.length + 10) * 50);
+  }
+
+  /**------------------------------------------------------------------------
    * DRAW CHARACTER
    * ------------------------------------------------------------------------
    * Draws a Character to the Text Area Canvas
@@ -127,6 +147,7 @@ class TextArea{
    * ------------------------------------------------------------------------
    * Goes through a Message and replaces Special Characters so it can be
    * split up easily
+   * TODO - Has to be a Regex way to do this way cleaner
    * ------------------------------------------------------------------------
    * @param {String}  message  Text to be printed
    * @returns Message with the special characters swapped out
@@ -148,6 +169,7 @@ class TextArea{
    * ------------------------------------------------------------------------
    * Goes through the split up Char Array and puts the special characters
    * back so they are useable
+   * TODO - Has to be a Regex way to do this way cleaner
    * ------------------------------------------------------------------------
    * @param {Array} charArray Array of individual characters
    * @returns Char Array with the special characters swapped out

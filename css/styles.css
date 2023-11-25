@@ -49,6 +49,8 @@ body[data-view='mobile']{
   width: 100vw; height: 100vh;
 }
 
+.mobile-controls * {box-sizing: border-box}
+
 body[data-view='mobile'] .mobile-controls{
   display: block;
   padding-top: 32px;
@@ -57,38 +59,37 @@ body[data-view='mobile'] .mobile-controls{
 .mobile-controls .d-pad{
   position: absolute;
   left: 0px; top: 80px;
-  width: 30vw; height: 200px;
-  background: green;
+  width: 50vw;
+  background-image: url('../images/dpad.svg')
 }
+
+.mobile-controls .d-pad::before{ content:""; display:block; padding-top:100%; }
 
   .mobile-controls .d-pad > div{
     position: absolute;
-    background: yellow;
-    width: 80px;
-    height: 80px;
   }
 
-  #dpad-up{ top: 0px; left: calc(15vw - 40px); }
-  #dpad-right{ top: 60px; right: 0px; }
-  #dpad-down{ bottom: 0px; left: calc(15vw - 40px); }
-  #dpad-left{ top: 60px; left: 0px; }
+  #dpad-up{ top: 0px; left: 33.333%; width: 33.333%; height: 33.333%; }
+  #dpad-right{ top: 33.333%; right: 0px; width: 33.333%; height: 33.333%; }
+  #dpad-down{ bottom: 0px; left: 33.333%; width: 33.333%; height: 33.333%; }
+  #dpad-left{ top: 33.333%; left: 0px; width: 33.333%; height: 33.333%; }
 
 .mobile-controls .ab-buttons{
   position: absolute;
   right: 0px; top: 80px;
-  width: 30vw; height: 200px;
-  background: pink;
+  width: 50vw;
+  background-image: url('../images/ab.svg')
 }
+
+  .mobile-controls .ab-buttons::before{ content:""; display:block; padding-top:100%; }
 
   .mobile-controls .ab-buttons > div{
     position: absolute;
-    background: red;
-    width: 80px; height: 80px;
-    border-radius: 50%;
+    width: 50%; height: 50%;
   }
 
-  #action{ top: 32px; right: 32px; }
-  #cancel{ bottom: 32px; left: 32px; }
+  #action{ top: 0px; right: 0px; }
+  #cancel{ bottom: 0px; left: 0px; }
 
 .mobile-controls .ss-buttons{
   position: absolute;

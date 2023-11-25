@@ -1,5 +1,43 @@
 'use strict';
 
+function ownKeys(object, enumerableOnly) {
+  var keys = Object.keys(object);
+
+  if (Object.getOwnPropertySymbols) {
+    var symbols = Object.getOwnPropertySymbols(object);
+
+    if (enumerableOnly) {
+      symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      });
+    }
+
+    keys.push.apply(keys, symbols);
+  }
+
+  return keys;
+}
+
+function _objectSpread2(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+
+    if (i % 2) {
+      ownKeys(Object(source), true).forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    } else if (Object.getOwnPropertyDescriptors) {
+      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+    } else {
+      ownKeys(Object(source)).forEach(function (key) {
+        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+      });
+    }
+  }
+
+  return target;
+}
+
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -102,6 +140,18 @@ function _createSuper(Derived) {
   };
 }
 
+function _toConsumableArray(arr) {
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+}
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+}
+
+function _iterableToArray(iter) {
+  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+}
+
 function _unsupportedIterableToArray(o, minLen) {
   if (!o) return;
   if (typeof o === "string") return _arrayLikeToArray(o, minLen);
@@ -117,6 +167,10 @@ function _arrayLikeToArray(arr, len) {
   for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
 
   return arr2;
+}
+
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
 function _createForOfIteratorHelper(o, allowArrayLike) {
@@ -260,6 +314,9 @@ var GameAH = function GameAH(cbObj) {
   this.buildDungeon = function () {
     return cbObj.buildDungeonCB();
   };
+  this.clearDungeon = function () {
+    return cbObj.clearDungeonCB();
+  };
   this.startNewGame = function () {
     return cbObj.startNewGameCB();
   };
@@ -354,6 +411,258 @@ var DgmnAH = function DgmnAH(cbObj) {
   this.getDgmnParty = function () {
     return cbObj.getDgmnPartyCB();
   };
+  this.buffDgmnStat = function (dgmnId, stat, amount) {
+    return cbObj.buffDgmnStatCB(dgmnId, stat, amount);
+  };
+  this.deBuffDgmnStat = function (dgmnId, stat, amount) {
+    return cbObj.deBuffDgmnStatCB(dgmnId, stat, amount);
+  };
+  this.giveCondition = function (dgmnId, condition) {
+    return cbObj.giveConditionCB(dgmnId, condition);
+  };
+};
+
+var BABY_I_DB = {
+  Bota: {
+    stage: 1,
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 1,
+      DEF: 0,
+      INT: 0,
+      RES: 0,
+      HIT: 1,
+      AVO: 0,
+      SPD: 1
+    },
+    evolutions: ['Koro'],
+    types: {},
+    fields: {
+      DR: 1
+    },
+    attack: 'bubbles',
+    hatchFields: {
+      DR: 1
+    }
+  },
+  Jyari: {
+    stage: 1,
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 2,
+      DEF: 0,
+      INT: 0,
+      RES: 0,
+      HIT: 0,
+      AVO: 0,
+      SPD: 1
+    },
+    evolutions: ['Gigi'],
+    types: {},
+    fields: {
+      DR: 1,
+      NA: 1
+    },
+    attack: 'bubbles',
+    hatchFields: {
+      DR: 2,
+      NA: 1
+    }
+  },
+  Yura: {
+    stage: 1,
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 1,
+      DEF: 0,
+      INT: 1,
+      RES: 1,
+      HIT: 0,
+      AVO: 0,
+      SPD: 0
+    },
+    evolutions: ['Bud'],
+    types: {},
+    fields: {
+      JT: 1
+    },
+    attack: 'bubbles',
+    hatchFields: {
+      JT: 1
+    }
+  },
+  Bubb: {
+    stage: 1,
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 0,
+      DEF: 1,
+      INT: 1,
+      RES: 0,
+      HIT: 0,
+      AVO: 0,
+      SPD: 1
+    },
+    evolutions: [],
+    types: {},
+    fields: {
+      JT: 1,
+      ME: 0
+    },
+    attack: 'bubbles',
+    hatchFields: {
+      JT: 1,
+      ME: 1
+    }
+  },
+  Doki: {
+    stage: 1,
+    attr: 'Free',
+    stats: [2, 1, 0, 0, 0, 0, 1, 1],
+    evolutions: [],
+    types: {},
+    fields: {
+      NS: 1
+    },
+    attack: 'bubbles'
+  },
+  Zuru: {
+    stage: 1,
+    attr: 'Free',
+    stats: [2, 1, 0, 1, 0, 0, 1, 0],
+    evolutions: [],
+    types: {},
+    fields: {
+      NA: 1
+    },
+    attack: 'bubbles'
+  },
+  Moku: {
+    stage: 1,
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 0,
+      DEF: 0,
+      INT: 1,
+      RES: 1,
+      HIT: 0,
+      AVO: 1,
+      SPD: 0
+    },
+    evolutions: ['PetiMera'],
+    types: {},
+    fields: {
+      NA: 1,
+      DR: 1
+    },
+    attack: 'bubbles',
+    hatchFields: {
+      NA: 1,
+      DR: 1
+    }
+  },
+  Pururu: {
+    stage: 1,
+    attr: 'Free',
+    stats: [2, 1, 0, 0, 0, 1, 1, 0],
+    evolutions: [],
+    types: {},
+    fields: {
+      WG: 1
+    },
+    attack: 'bubbles'
+  },
+  Choro: {
+    stage: 1,
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 1,
+      DEF: 1,
+      INT: 0,
+      RES: 1,
+      HIT: 0,
+      AVO: 0,
+      SPD: 0
+    },
+    evolutions: ['Capri'],
+    types: {},
+    fields: {
+      ME: 1
+    },
+    attack: 'bubbles',
+    hatchFields: {
+      ME: 1
+    }
+  },
+  Bom: {
+    stage: 1,
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 2,
+      DEF: 1,
+      INT: 0,
+      RES: 0,
+      HIT: 0,
+      AVO: 0,
+      SPD: 0
+    },
+    evolutions: [],
+    types: {},
+    fields: {
+      ME: 1
+    },
+    attack: 'bubbles',
+    hatchFields: {
+      ME: 2
+    }
+  },
+  Pitch: {
+    stage: 1,
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 0,
+      DEF: 1,
+      INT: 0,
+      RES: 1,
+      HIT: 0,
+      AVO: 1,
+      SPD: 0
+    },
+    evolutions: [],
+    types: {},
+    fields: {
+      DS: 1
+    },
+    attack: 'bubbles'
+  },
+  Poyo: {
+    stage: 1,
+    attr: 'Free',
+    stats: {
+      HP: 2,
+      ATK: 1,
+      DEF: 0,
+      INT: 1,
+      RES: 1,
+      HIT: 0,
+      AVO: 0,
+      SPD: 0
+    },
+    evolutions: [],
+    types: {},
+    fields: {
+      VB: 1
+    },
+    attack: 'bubbles'
+  }
 };
 
 var evolutions = {
@@ -397,173 +706,7 @@ var evolutions = {
   }]
 };
 
-var dgmnDB = {
-  Bota: {
-    stage: 1,
-    attr: 'Free',
-    stats: {
-      HP: 2,
-      ATK: 1,
-      DEF: 0,
-      INT: 0,
-      RES: 0,
-      HIT: 1,
-      AVO: 0,
-      SPD: 1
-    },
-    evolutions: evolutions['Bota'],
-    types: {},
-    fields: {
-      DR: 1
-    },
-    attack: 'bubbles',
-    hatchFields: {
-      DR: 1
-    }
-  },
-  Jyari: {
-    stage: 1,
-    attr: 'Free',
-    stats: {
-      HP: 2,
-      ATK: 2,
-      DEF: 0,
-      INT: 0,
-      RES: 0,
-      HIT: 0,
-      AVO: 0,
-      SPD: 1
-    },
-    evolutions: ['Gigi'],
-    types: {},
-    fields: {
-      DR: 1
-    },
-    attack: 'bubbles',
-    hatchFields: {
-      DR: 2,
-      NA: 1
-    }
-  },
-  Yura: {
-    stage: 1,
-    attr: 'Free',
-    stats: {
-      HP: 2,
-      ATK: 1,
-      DEF: 0,
-      INT: 1,
-      RES: 1,
-      HIT: 0,
-      AVO: 0,
-      SPD: 0
-    },
-    evolutions: ['Bud'],
-    types: {},
-    fields: {
-      JT: 1
-    },
-    attack: 'bubbles',
-    hatchFields: {
-      JT: 1
-    }
-  },
-  Doki: {
-    stage: 1,
-    attr: 'Free',
-    stats: [2, 1, 0, 0, 0, 0, 1, 1],
-    evolutions: [],
-    types: {},
-    fields: {
-      NS: 1
-    },
-    attack: 'bubbles'
-  },
-  Zuru: {
-    stage: 1,
-    attr: 'Free',
-    stats: [2, 1, 0, 1, 0, 0, 1, 0],
-    evolutions: [],
-    types: {},
-    fields: {
-      NA: 1
-    },
-    attack: 'bubbles'
-  },
-  Pururu: {
-    stage: 1,
-    attr: 'Free',
-    stats: [2, 1, 0, 0, 0, 1, 0, 1],
-    evolutions: [],
-    types: {},
-    fields: {
-      WG: 1
-    },
-    attack: 'bubbles'
-  },
-  Choro: {
-    stage: 1,
-    attr: 'Free',
-    stats: {
-      HP: 2,
-      ATK: 1,
-      DEF: 1,
-      INT: 0,
-      RES: 1,
-      HIT: 0,
-      AVO: 0,
-      SPD: 0
-    },
-    evolutions: ['Capri'],
-    types: {},
-    fields: {
-      ME: 1
-    },
-    attack: 'bubbles',
-    hatchFields: {
-      ME: 1
-    }
-  },
-  Pitch: {
-    stage: 1,
-    attr: 'Free',
-    stats: {
-      HP: 2,
-      ATK: 0,
-      DEF: 1,
-      INT: 0,
-      RES: 1,
-      HIT: 0,
-      AVO: 1,
-      SPD: 0
-    },
-    evolutions: [],
-    types: {},
-    fields: {
-      DS: 1
-    },
-    attack: 'bubbles'
-  },
-  Poyo: {
-    stage: 1,
-    attr: 'Free',
-    stats: {
-      HP: 2,
-      ATK: 1,
-      DEF: 0,
-      INT: 1,
-      RES: 1,
-      HIT: 0,
-      AVO: 0,
-      SPD: 0
-    },
-    evolutions: [],
-    types: {},
-    fields: {
-      VB: 1
-    },
-    attack: 'bubbles'
-  },
+var dgmnDB = _objectSpread2(_objectSpread2({}, BABY_I_DB), {}, {
   Koro: {
     stage: 2,
     attr: 'Free',
@@ -577,7 +720,7 @@ var dgmnDB = {
       AVO: 1,
       SPD: 2
     },
-    evolutions: ['Agu'],
+    evolutions: ['Agu', 'ToyAgu'],
     types: {},
     fields: {
       DR: 2
@@ -667,7 +810,7 @@ var dgmnDB = {
       AVO: 1,
       SPD: 1
     },
-    evolutions: ['Haguru'],
+    evolutions: ['Haguru', 'ToyAgu', 'Kote'],
     types: {},
     fields: {
       ME: 2
@@ -718,6 +861,30 @@ var dgmnDB = {
     },
     evoFields: {
       VB: 2
+    }
+  },
+  PetiMera: {
+    stage: 2,
+    attr: 'Free',
+    stats: {
+      HP: 4,
+      ATK: 1,
+      DEF: 1,
+      INT: 2,
+      RES: 2,
+      HIT: 1,
+      AVO: 2,
+      SPD: 1
+    },
+    evolutions: ['Agu'],
+    types: {},
+    fields: {
+      DR: 1,
+      NA: 1
+    },
+    evoFields: {
+      DR: 1,
+      NA: 2
     }
   },
   Agu: {
@@ -834,6 +1001,56 @@ var dgmnDB = {
     },
     attack: 'darknessGear'
   },
+  ToyAgu: {
+    stage: 3,
+    attr: 'Vaccine',
+    stats: {
+      HP: 5,
+      ATK: 5,
+      DEF: 5,
+      INT: 5,
+      RES: 5,
+      HIT: 5,
+      AVO: 5,
+      SPD: 5
+    },
+    evolutions: [],
+    types: {},
+    fields: {
+      ME: 2,
+      DR: 1
+    },
+    evoFields: {
+      ME: 3,
+      DR: 2
+    },
+    attack: 'toyFlame'
+  },
+  Kote: {
+    stage: 3,
+    attr: 'Data',
+    stats: {
+      HP: 5,
+      ATK: 5,
+      DEF: 5,
+      INT: 5,
+      RES: 5,
+      HIT: 5,
+      AVO: 5,
+      SPD: 5
+    },
+    evolutions: [],
+    types: {},
+    fields: {
+      ME: 2,
+      VB: 1
+    },
+    evoFields: {
+      ME: 3,
+      VB: 2
+    },
+    attack: 'bubbles'
+  },
   PicoDevi: {
     stage: 3,
     "class": 'Virus',
@@ -846,7 +1063,7 @@ var dgmnDB = {
   },
   Grey: {
     stage: 4,
-    "class": 'vaccine',
+    "class": 'Vaccine',
     stats: [6, 5, 5, 5, 5, 5, 5, 6],
     evolutions: evolutions['agu'],
     types: {
@@ -856,7 +1073,7 @@ var dgmnDB = {
       evil: 2
     }
   }
-};
+});
 
 var GameCanvas = function GameCanvas(canvasClass, width, height, _x, _y, hasIdleAnimation, gameScreenRedrawCallback) {
   var _this = this;
@@ -995,9 +1212,8 @@ var attacksDB = {
     stat: 'physical',
     targets: 'single',
     hits: 1,
-    animationFrames: [['bubbles1', 1], ['bubbles2', 1], ['bubbles3', 1], ['bubbles4', 1], ['bubbles5', 1], ['bubbles6', 1]],
-    animationFrameCount: 6,
-    effect: ['buff', 1, 1, 100]
+    animationFrames: [['bubbles1', 1], ['bubbles2', 1], ['bubbles3', 1], ['bubbles4', 1], ['bubbles5', 3], ['bubbles6', 1], ['bubbles7', 1], ['bubbles8', 1], ['blankAttack', 2]],
+    animationFrameCount: 8
   },
   babyFlame: {
     displayName: 'Baby Flame',
@@ -1053,7 +1269,13 @@ var attacksDB = {
     hits: 1,
     animationFrames: [['elecRush1', 2], ['elecRush2', 2], ['elecRush3', 2], ['elecRush4', 2]],
     animationFrameCount: 4,
-    effect: ['status', 'paralyze', 100]
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'SPD',
+      amount: 1,
+      accuracy: 50
+    }
   },
   petitTwister: {
     displayName: 'Petit Twister',
@@ -1096,7 +1318,48 @@ var attacksDB = {
     hits: 1,
     animationFrames: [['babyFlame1', 1], ['babyFlame2', 1], ['babyFlame3', 4], ['babyFlame2', 1], ['babyFlame1', 1]],
     animationFrameCount: 3
+  },
+  toyFlame: {
+    displayName: 'Toy Flame',
+    power: 'F',
+    maxCost: 8,
+    type: 'fire',
+    stat: 'physical',
+    targets: 'single',
+    hits: 1,
+    animationFrames: [['toyFlame1', 1], ['toyFlame2', 1], ['toyFlame3', 1], ['toyFlame4', 1]],
+    animationFrameCount: 4,
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'DEF',
+      amount: 1,
+      accuracy: 25
+    }
+  },
+  thunderKote: {
+    displayName: 'ThunderKote',
+    power: 'F',
+    maxCost: 8,
+    type: 'elec',
+    targets: 'single',
+    hits: 1,
+    animationFrames: [['thunderKote1', 2], ['thunderKote2', 2], ['thunderKote3', 2], ['thunderKote4', 2], ['thunderKote5', 2], ['thunderKote6', 1], ['thunderKote7', 1], ['thunderKote8', 1], ['thunderKote9', 1], ['thunderKote10', 1], ['thunderKote11', 1], ['thunderKote12', 1]],
+    animationFrameCount: 12,
+    effect: {
+      type: 'buff',
+      target: 'self',
+      stat: 'HIT',
+      amount: 1,
+      accuracy: 25
+    }
   }
+};
+var FULL_CONDITION_TEXT = {
+  overheat: 'Overheat',
+  freeze: 'Freeze',
+  virus: 'Virus',
+  surge: 'Surge'
 };
 
 var powerRanks = {
@@ -1156,6 +1419,17 @@ var AttackUtility = function AttackUtility() {
     }
     return dataObj;
   });
+  _defineProperty(this, "getBuffMessage", function (stat, amount) {
+    var AMOUNT = ['', 'a bit.', 'a lot!'];
+    return "DGMN ".concat(stat, " went up ").concat(AMOUNT[amount]);
+  });
+  _defineProperty(this, "getDeBuffMessage", function (stat, amount) {
+    var AMOUNT = ['.', 'a bit.', 'a lot!'];
+    return "DGMN ".concat(stat, " went down ").concat(AMOUNT[amount]);
+  });
+  _defineProperty(this, "getConditionMessage", function (condition) {
+    return "DGMN was inflicted with ".concat(FULL_CONDITION_TEXT[condition]);
+  });
   _defineProperty(this, "getDisplayName", function (attackName) {
     return attacksDB[attackName].displayName;
   });
@@ -1193,13 +1467,13 @@ var Attack = function Attack(attackName) {
 };
 
 var digiTamaDB = {
-  DR: ['Bota', 'Jyari'],
+  DR: ['Bota', 'Jyari', 'Moku'],
   NS: ['Doki'],
   WG: ['Pururu'],
-  ME: ['Choro'],
+  ME: ['Choro', 'Bom', 'Bubb'],
   VB: ['Poyo'],
   NA: ['Zuru'],
-  JT: ['Yura'],
+  JT: ['Yura', 'Bubb'],
   DS: ['Pitch']
 };
 
@@ -1221,6 +1495,7 @@ var FIELD_STATS = {
   AVO: 'DS',
   SPD: 'NS'
 };
+var FIELD_LABELS = ['DR', 'NS', 'DS', 'JT', 'NA', 'ME', 'WG', 'VB'];
 
 var DgmnUtility = function DgmnUtility() {
   var _this = this;
@@ -1271,6 +1546,9 @@ var DgmnUtility = function DgmnUtility() {
   });
   _defineProperty(this, "getStage", function (speciesName) {
     return dgmnDB[speciesName].stage;
+  });
+  _defineProperty(this, "getTypeAffinities", function (speciesName) {
+    return dgmnDB[speciesName].types;
   });
   _defineProperty(this, "getAttribute", function (species) {
     return dgmnDB[species].attr;
@@ -1385,6 +1663,14 @@ var DgmnUtility = function DgmnUtility() {
     var field = FIELD_STATS[stat];
     return Math.floor(Math.pow(currentFP[field], 1 / 2));
   });
+  _defineProperty(this, "getConditionMessage", function (condition) {
+    switch (condition) {
+      case 'overheat':
+        return ' is Overheating';
+      default:
+        return '';
+    }
+  });
 };
 
 var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
@@ -1463,6 +1749,21 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   _defineProperty(this, "getAllAttacks", function () {
     return _this.attacks;
   });
+  _defineProperty(this, "giveCondition", function (condition) {
+    _this.condition = {
+      type: condition,
+      turns: 0
+    };
+  });
+  _defineProperty(this, "healCondition", function () {
+    _this.condition = undefined;
+  });
+  _defineProperty(this, "buffStat", function (stat, amount) {
+    _this.statMods[stat] += amount;
+  });
+  _defineProperty(this, "debuffStat", function (stat, amount) {
+    _this.statMods[stat] -= amount;
+  });
   _defineProperty(this, "getMaxHP", function () {
     return _this.currentStats.HP;
   });
@@ -1503,6 +1804,16 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
     AVO: 0,
     SPD: 0
   };
+  this.statMods = {
+    HP: 1,
+    ATK: 1,
+    DEF: 1,
+    INT: 1,
+    RES: 1,
+    HIT: 1,
+    AVO: 1,
+    SPD: 1
+  };
   this.currentFP = {
     DR: 0,
     NS: 0,
@@ -1516,6 +1827,7 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   this.currentXP = 0;
   this.combo = 0;
   this.weak = 0;
+  this.condition;
   this.attackList = ["bubbles", "babyFlame"];
   this.attacks = [new Attack('bubbles')];
   this.isDead = false;
@@ -1699,7 +2011,7 @@ var dgmnEncounterDB = {
     speciesName: 'Bota',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1714,7 +2026,7 @@ var dgmnEncounterDB = {
     speciesName: 'Yura',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 2,
@@ -1729,7 +2041,7 @@ var dgmnEncounterDB = {
     speciesName: 'Zuru',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 2,
@@ -1744,7 +2056,7 @@ var dgmnEncounterDB = {
     speciesName: 'Doki',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1759,7 +2071,7 @@ var dgmnEncounterDB = {
     speciesName: 'Pururu',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 1,
@@ -1774,7 +2086,7 @@ var dgmnEncounterDB = {
     speciesName: 'Choro',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 2,
       INT: 1,
@@ -1789,7 +2101,7 @@ var dgmnEncounterDB = {
     speciesName: 'Pitch',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 1,
       DEF: 2,
       INT: 1,
@@ -1804,7 +2116,7 @@ var dgmnEncounterDB = {
     speciesName: 'Poyo',
     currentLevel: 2,
     currentStats: {
-      HP: 2,
+      HP: 5,
       ATK: 2,
       DEF: 1,
       INT: 2,
@@ -1819,7 +2131,7 @@ var dgmnEncounterDB = {
     speciesName: 'Koro',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 3,
@@ -1834,7 +2146,7 @@ var dgmnEncounterDB = {
     speciesName: 'Capri',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 10,
       ATK: 7,
       DEF: 7,
       INT: 3,
@@ -1849,7 +2161,7 @@ var dgmnEncounterDB = {
     speciesName: 'Bud',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 7,
@@ -1864,7 +2176,7 @@ var dgmnEncounterDB = {
     speciesName: 'Puka',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 10,
       ATK: 3,
       DEF: 7,
       INT: 3,
@@ -1879,7 +2191,7 @@ var dgmnEncounterDB = {
     speciesName: 'Bibi',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 3,
@@ -1894,7 +2206,7 @@ var dgmnEncounterDB = {
     speciesName: 'Poro',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 3,
@@ -1909,7 +2221,7 @@ var dgmnEncounterDB = {
     speciesName: 'Toko',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 7,
@@ -1924,7 +2236,7 @@ var dgmnEncounterDB = {
     speciesName: 'Pagu',
     currentLevel: 3,
     currentStats: {
-      HP: 12,
+      HP: 10,
       ATK: 7,
       DEF: 3,
       INT: 7,
@@ -1939,7 +2251,7 @@ var dgmnEncounterDB = {
     speciesName: 'Agu',
     currentLevel: 4,
     currentStats: {
-      HP: 32,
+      HP: 102,
       ATK: 12,
       DEF: 6,
       INT: 6,
@@ -1970,7 +2282,7 @@ var bossEncountersDB = {
     speciesName: 'Koro',
     currentLevel: 4,
     currentStats: {
-      HP: 26,
+      HP: 56,
       ATK: 9,
       DEF: 4,
       INT: 4,
@@ -1985,7 +2297,7 @@ var bossEncountersDB = {
     speciesName: 'Agu',
     currentLevel: 5,
     currentStats: {
-      HP: 38,
+      HP: 108,
       ATK: 15,
       DEF: 8,
       INT: 8,
@@ -2093,18 +2405,108 @@ var MapUtility = function MapUtility() {
   });
 };
 
+var FREE_TEAM = [{
+  speciesName: 'Bota',
+  currentLevel: 2,
+  currentStats: {
+    HP: 5,
+    ATK: 2,
+    DEF: 1,
+    INT: 1,
+    RES: 1,
+    HIT: 2,
+    AVO: 1,
+    SPD: 1
+  },
+  attacks: [new Attack('bubbles')]
+}, {
+  speciesName: 'Yura',
+  currentLevel: 2,
+  currentStats: {
+    HP: 5,
+    ATK: 2,
+    DEF: 1,
+    INT: 2,
+    RES: 2,
+    HIT: 1,
+    AVO: 1,
+    SPD: 1
+  },
+  attacks: [new Attack('bubbles')]
+}, {
+  speciesName: 'Zuru',
+  currentLevel: 2,
+  currentStats: {
+    HP: 5,
+    ATK: 2,
+    DEF: 1,
+    INT: 2,
+    RES: 1,
+    HIT: 1,
+    AVO: 2,
+    SPD: 1
+  },
+  attacks: [new Attack('bubbles')]
+}];
+var DEBUG_DGMN = FREE_TEAM;
+var DEBUG_YOUR_TEAM = [{
+  speciesName: 'Bota',
+  currentStats: {
+    HP: 500,
+    ATK: 200,
+    DEF: 100,
+    INT: 200,
+    RES: 100,
+    HIT: 100,
+    AVO: 200,
+    SPD: 100
+  }
+}, {
+  speciesName: 'Yura',
+  currentStats: {
+    HP: 500,
+    ATK: 200,
+    DEF: 100,
+    INT: 200,
+    RES: 100,
+    HIT: 100,
+    AVO: 200,
+    SPD: 100
+  }
+}, {
+  speciesName: 'Choro',
+  currentStats: {
+    HP: 500,
+    ATK: 200,
+    DEF: 100,
+    INT: 200,
+    RES: 100,
+    HIT: 100,
+    AVO: 200,
+    SPD: 100
+  }
+}];
+
+var DEBUG_EASY_WINS = true;
 var EnemyGenerator = function EnemyGenerator(dgmnAH) {
   var _this = this;
   _classCallCheck(this, EnemyGenerator);
   _defineProperty(this, "generate", function (currFloor, maxFloor) {
     var enemies = {};
     console.log("Generating Enemies on Floor ", currFloor);
-    for (var i = 0; i < 3; i++) {
+    if (currFloor === 0 && inDebug()) {
+      for (var i = 0; i < 3; i++) {
+        _this.dgmnAH.createDgmn(i, DEBUG_DGMN[i], true);
+      }
+      return;
+    }
+    for (var _i = 0; _i < 3; _i++) {
       var stage = _this.calcDgmnStage(currFloor);
       var field = _this.calcDgmnField();
-      var dgmnName = _this.mapUtility.isBossFloor(currFloor) ? bossEncountersChartDB[bossEncoutnersMapDB.indexOf(currFloor)][i] : _this.calcDgmnName(stage, field);
+      var dgmnName = _this.mapUtility.isBossFloor(currFloor) ? bossEncountersChartDB[bossEncoutnersMapDB.indexOf(currFloor)][_i] : _this.calcDgmnName(stage, field);
       var dgmnData = _this.mapUtility.isBossFloor(currFloor) ? bossEncountersDB[dgmnName] : dgmnEncounterDB[dgmnName];
-      _this.dgmnAH.createDgmn(i, dgmnData, true);
+      if (inDebug() && DEBUG_EASY_WINS) dgmnData.currentStats.HP = 1;
+      _this.dgmnAH.createDgmn(_i, dgmnData, true);
     }
     return enemies;
   });
@@ -2308,7 +2710,7 @@ var DgmnManager = function DgmnManager(systemAH) {
   });
   _defineProperty(this, "createDgmn", function (index, data, isEnemy) {
     if (isEnemy) {
-      _this.enemyDgmn["edId".concat(index)] = new Dgmn(index, "ENEMY", data.speciesName);
+      _this.enemyDgmn["edId".concat(index)] = new Dgmn(index, "Enemy", data.speciesName);
       _this.enemyDgmn["edId".concat(index)].isEnemy = true;
       _this.enemyDgmn["edId".concat(index)].currentLevel = data.currentLevel;
       _this.enemyDgmn["edId".concat(index)].currentStats = data.currentStats;
@@ -2423,7 +2825,7 @@ var DgmnManager = function DgmnManager(systemAH) {
     return false;
   });
   _defineProperty(this, "levelUp", function (dgmnId) {
-    _this.allDgmn[dgmnId].currentXP = 0;
+    _this.allDgmn[dgmnId].currentXP = _this.allDgmn[dgmnId].currentXP - _this.dgmnUtility.checkLevelReq(_this.allDgmn[dgmnId].currentLevel);
     _this.allDgmn[dgmnId].currentLevel++;
     _this.allDgmn[dgmnId].levelUpStats();
     _this.allDgmn[dgmnId].levelUpFP();
@@ -2466,6 +2868,12 @@ var DgmnManager = function DgmnManager(systemAH) {
     var FP = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
     _this['upgrade' + upgrade](dgmnId, FP);
   });
+  _defineProperty(this, "buffDgmnStat", function (dgmnId, stat, amount) {
+    _this.dgmnUtility.isEnemy(dgmnId) ? _this.enemyDgmn[dgmnId].buffStat(stat, amount) : _this.allDgmn[dgmnId].buffStat(stat, amount);
+  });
+  _defineProperty(this, "deBuffDgmnStat", function (dgmnId, stat, amount) {
+    _this.dgmnUtility.isEnemy(dgmnId) ? _this.enemyDgmn[dgmnId].debuffStat(stat, amount) : _this.allDgmn[dgmnId].debuffStat(stat, amount);
+  });
   _defineProperty(this, "upgradeFP", function (dgmnId, FP) {
     debugLog("  Upgrade FP: ", FP);
     _this.allDgmn[dgmnId].upgrades.FP++;
@@ -2503,6 +2911,9 @@ var DgmnManager = function DgmnManager(systemAH) {
   });
   _defineProperty(this, "getTempDgmn", function () {
     return _this.tempDgmn;
+  });
+  _defineProperty(this, "giveCondition", function (dgmnId, condition) {
+    return _this[_this.getParty(dgmnId)][dgmnId].giveCondition(condition);
   });
   _defineProperty(this, "getCanvas", function (dgmnId) {
     return !_this.isEnemy(dgmnId) ? _this.allDgmn[dgmnId].dgmnCanvas : _this.enemyDgmn[dgmnId].dgmnCanvas;
@@ -2544,7 +2955,10 @@ var DgmnManager = function DgmnManager(systemAH) {
     hatchEggCB: this.hatchEgg,
     useItemOnCB: this.useItemOn,
     giveUpgradeCB: this.giveUpgrade,
-    getDgmnPartyCB: this.getDgmnParty
+    getDgmnPartyCB: this.getDgmnParty,
+    buffDgmnStatCB: this.buffDgmnStat,
+    deBuffDgmnStatCB: this.deBuffDgmnStat,
+    giveConditionCB: this.giveCondition
   });
   this.systemAH = systemAH;
   this.enemyGenerator = new EnemyGenerator(this.dgmnAH);
@@ -2636,12 +3050,14 @@ var DigiBeetleCanvas = function (_GameCanvas) {
 
 var dungeonImages = ['Dungeon/startTile', 'Dungeon/endTile', 'Dungeon/enemyTile', 'Dungeon/treasureTile', 'Dungeon/treasureTileOpen', 'Menus/dungeonPauseOverlay'];
 var digiBeetleImages = ['Dungeon/DigiBeetle/digiBeetleDown0', 'Dungeon/DigiBeetle/digiBeetleDown1', 'Dungeon/DigiBeetle/digiBeetleUp0', 'Dungeon/DigiBeetle/digiBeetleUp1', 'Dungeon/DigiBeetle/digiBeetleRight0', 'Dungeon/DigiBeetle/digiBeetleRight1', 'Dungeon/DigiBeetle/digiBeetleLeft0', 'Dungeon/DigiBeetle/digiBeetleLeft1'];
-var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/pwrDIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay', 'Menus/textBox', 'Menus/basicMenu', 'Icons/Pause/itemsSelected', 'Icons/Pause/itemsDeselected', 'Icons/Pause/beetleDeselected', 'Icons/Pause/beetleSelected', 'Menus/itemsTargetOverlay', 'Icons/rewardIconDeselected', 'Icons/rewardIconSelected', 'Icons/rewardIconNull', 'Icons/rewardIconFull', 'Menus/bossRewardFieldChoice', 'Menus/titleScreen', 'DGMN/beetlePortrait'];
+var genericImages = ['Menus/miniCursor', 'Menus/cursor', 'Menus/cursorLeft', 'Menus/cursorRight', 'Icons/targetAll', 'Icons/targetOne', 'Icons/comboFIcon', 'Icons/pwrFIcon', 'Icons/pwrEIcon', 'Icons/pwrDIcon', 'Icons/pwrCIcon', 'Icons/oneHitIcon', 'Icons/costMeter100', 'Icons/costMeter75', 'Icons/costMeter50', 'Icons/costMeter25', 'Icons/costMeter0', 'Menus/continueCursor', 'Battle/Menus/evoIconPositive', 'Battle/Menus/evoIconNegative', 'Battle/Menus/battleLevelUpOverlay', 'Battle/Menus/battleEvolutionOverlay', 'Battle/Menus/battleVictoryRewardsOverlay', 'Eggs/eggDR', 'Eggs/eggJT', 'Eggs/eggME', 'Menus/hatchingEggOverlay', 'Menus/textBox', 'Menus/basicMenu', 'Icons/Pause/itemsSelected', 'Icons/Pause/itemsDeselected', 'Icons/Pause/itemsDisabled', 'Icons/Pause/beetleDeselected', 'Icons/Pause/beetleSelected', 'Menus/itemsTargetOverlay', 'Icons/rewardIconDeselected', 'Icons/rewardIconSelected', 'Icons/rewardIconNull', 'Icons/rewardIconFull', 'Menus/bossRewardFieldChoice', 'Menus/titleScreen', 'DGMN/beetlePortrait', 'Menus/bossRewardMenu'];
 var loadingImages = ['Loading/loading0', 'Loading/loading1', 'Loading/loading2', 'Loading/loading3', 'Loading/loading4', 'Loading/loading5', 'Loading/loading6', 'Loading/loading7', 'Loading/loading8', 'Loading/loading9', 'Loading/loading10'];
 var fontImages$1 = ['Fonts/fontsBlack', 'Fonts/fontsWhite', 'Fonts/fontsLightGreen', 'Fonts/fontsDarkGreen'];
-var typeIcons = ['Icons/Types/noneTypeIcon', 'Icons/Types/fireTypeIcon', 'Icons/Types/windTypeIcon', 'Icons/Types/plantTypeIcon', 'Icons/Types/elecTypeIcon', 'Icons/Types/evilTypeIcon', 'Icons/Types/metalTypeIcon'];
+var typeIcons = ['Icons/Types/noneTypeIcon', 'Icons/Types/fireTypeIcon', 'Icons/Types/windTypeIcon', 'Icons/Types/plantTypeIcon', 'Icons/Types/elecTypeIcon', 'Icons/Types/evilTypeIcon', 'Icons/Types/metalTypeIcon', 'Icons/Types/waterTypeIcon'];
 var fieldIcons = ['Icons/Fields/fieldDRIcon', 'Icons/Fields/fieldNSIcon', 'Icons/Fields/fieldWGIcon', 'Icons/Fields/fieldVBIcon', 'Icons/Fields/fieldMEIcon', 'Icons/Fields/fieldJTIcon', 'Icons/Fields/fieldNAIcon', 'Icons/Fields/fieldDSIcon'];
-var battleImages = ['Attacks/blankAttack', 'Battle/battleBackground', 'Battle/Menus/attackDeselected', 'Battle/Menus/attackSelected', 'Battle/Menus/defendDeselected', 'Battle/Menus/defendSelected', 'Battle/Menus/statsDeselected', 'Battle/Menus/statsSelected', 'Icons/Battle/weak0', 'Icons/Battle/weak1', 'Icons/Battle/weak2', 'Icons/Battle/weak3', 'DGMN/dgmnDead', 'Battle/Menus/dgmnBarLightGreen', 'Battle/Menus/dgmnBarDarkGreen', 'Battle/Menus/battleOptionSelectBaseRight', 'Battle/Menus/battleVictoryOverlay', 'Icons/xpIconSmall', 'Icons/xpIconLarge', 'Menus/bossRewardMenu', 'Battle/Menus/dgmnDeselected', 'Battle/Menus/dgmnSelected', 'Battle/Menus/cannonDeselected', 'Battle/Menus/cannonSelected', 'Battle/Menus/runDeselected', 'Battle/Menus/runSelected', 'Battle/Menus/battleCannonOverlay', 'Battle/Menus/cannonDisabled'];
+var battleImages = ['Attacks/blankAttack', 'Battle/battleBackground', 'Battle/Menus/attackDeselected', 'Battle/Menus/attackSelected', 'Battle/Menus/defendDeselected', 'Battle/Menus/defendSelected', 'Battle/Menus/statsDeselected', 'Battle/Menus/statsSelected', 'Icons/Battle/weak0', 'Icons/Battle/weak1', 'Icons/Battle/weak2', 'Icons/Battle/weak3', 'DGMN/dgmnDead', 'Battle/Menus/dgmnBarLightGreen', 'Battle/Menus/dgmnBarDarkGreen', 'Battle/Menus/battleOptionSelectBaseRight', 'Battle/Menus/battleVictoryOverlay', 'Icons/xpIconSmall', 'Icons/xpIconLarge', 'Menus/bossRewardMenu', 'Battle/Menus/dgmnDeselected', 'Battle/Menus/dgmnSelected', 'Battle/Menus/cannonDeselected', 'Battle/Menus/cannonSelected', 'Battle/Menus/runDeselected', 'Battle/Menus/runSelected', 'Battle/Menus/battleCannonOverlay', 'Battle/Menus/cannonDisabled', 'Icons/Battle/statBuff', 'Icons/Battle/statDebuff', 'Icons/Battle/overheatCondition'];
+var townImages = ['Town/Menus/town_menu_background'];
+var townDgmnPortraits = ['DGMN/tokoPortrait'];
 
 var toolBoxDB = {
   dodo: {
@@ -2762,8 +3178,8 @@ var BattleAH = function BattleAH(cbObj) {
   this.beginCombat = function () {
     cbObj.beginCombatCB();
   };
-  this.drawActionText = function (species, message) {
-    cbObj.drawActionTextCB(species, message);
+  this.drawActionText = function (species, message, eMessage) {
+    cbObj.drawActionTextCB(species, message, eMessage);
   };
   this.drawAllStatuses = function () {
     return cbObj.drawAllStatusesCB();
@@ -2809,7 +3225,7 @@ var BattleAH = function BattleAH(cbObj) {
 var BattleUtility = function BattleUtility() {
   _classCallCheck(this, BattleUtility);
   _defineProperty(this, "getDefaultBattleImages", function () {
-    return battleImages.concat(typeIcons).concat(fieldIcons);
+    return battleImages.concat(fieldIcons);
   });
   _defineProperty(this, "calculateTurnOrder", function (idList) {
     var order = [];
@@ -2854,6 +3270,18 @@ var BattleUtility = function BattleUtility() {
   });
   _defineProperty(this, "getXP", function (species) {
     return dgmnDB[species].stage;
+  });
+  _defineProperty(this, "hasBuffedStat", function (statMods) {
+    for (var statMod in statMods) {
+      if (statMods[statMod] > 1) return true;
+    }
+    return false;
+  });
+  _defineProperty(this, "hasDebuffedStat", function (statMods) {
+    for (var statMod in statMods) {
+      if (statMods[statMod] < 1) return true;
+    }
+    return false;
   });
 };
 
@@ -2935,7 +3363,9 @@ var BattleIO = function (_IO) {
           _this.menuAH.confirmLevelUp();
         } else if (_this.menuAH.getState() === 'evo-choice') {
           _this.menuAH.selectEvo();
-        } else if (_this.menuAH.getState() === 'boss-reward') ;
+        } else if (_this.menuAH.getState() === 'boss-reward') {
+          _this.menuAH.selectBossReward();
+        }
       }
     });
     _defineProperty(_assertThisInitialized(_this), "cancelKeyHandler", function (upDown) {
@@ -2951,7 +3381,7 @@ var BattleIO = function (_IO) {
           if (_this.menuAH.getState() === 'rewards') {
             _this.menuAH.giveCurrReward('up');
           } else if (_this.menuAH.getState() === 'boss-reward') {
-            _this.menuAH.navUp();
+            _this.menuAH.prevBossReward();
           }
         }
       }
@@ -2963,7 +3393,9 @@ var BattleIO = function (_IO) {
             _this.menuAH.nextIcon();
           }
         } else if (_this.battleAH.getBattleState() === 'victory') {
-          if (_this.menuAH.getState() === 'rewards') _this.menuAH.giveCurrReward('right');
+          if (_this.menuAH.getState() === 'rewards') {
+            _this.menuAH.giveCurrReward('right');
+          } else if (_this.menuAH.getState() === 'evo-choice') _this.menuAH.nextEvo();
         }
       }
     });
@@ -2974,7 +3406,7 @@ var BattleIO = function (_IO) {
             _this.menuAH.nextListItem();
           }
         } else if (_this.battleAH.getBattleState() === 'victory') {
-          if (_this.menuAH.getState() === 'boss-reward') _this.menuAH.navDown();
+          if (_this.menuAH.getState() === 'boss-reward') _this.menuAH.nextBossReward();
         }
       }
     });
@@ -2985,7 +3417,9 @@ var BattleIO = function (_IO) {
             _this.menuAH.prevIcon();
           }
         } else if (_this.battleAH.getBattleState() === 'victory') {
-          if (_this.menuAH.getState() === 'rewards') _this.menuAH.giveCurrReward('left');
+          if (_this.menuAH.getState() === 'rewards') {
+            _this.menuAH.giveCurrReward('left');
+          } else if (_this.menuAH.getState() === 'evo-choice') _this.menuAH.prevEvo();
         }
       }
     });
@@ -3315,6 +3749,15 @@ var TextArea = function TextArea(x, y, width) {
       }
       if (word >= wordArray.length) clearInterval(paintInterval);
     }, CFG.textSpeed * 33);
+  });
+  _defineProperty(this, "multiText", function (ctx, messages, drawCB, beforeEach) {
+    beforeEach();
+    var currentMessage = messages[0];
+    _this.timedText(ctx, currentMessage, drawCB);
+    messages.splice(0, 1);
+    setTimeout(function () {
+      if (messages && messages.length !== 0 && messages[0]) _this.multiText(ctx, messages, drawCB, beforeEach);
+    }, (currentMessage.length + 10) * 50);
   });
   _defineProperty(this, "drawChar", function (ctx, _char2, col, row) {
     var color = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'white';
@@ -3781,6 +4224,7 @@ var BattleMenu = function (_Menu) {
       _this.currSubMenu = 'beetle';
       _this.menuCanvas.beetleNicknameTxt.instantText(_this.menuCanvas.ctx, 'GUNNER', 'white');
       _this.menuCanvas.beetleTxt.instantText(_this.menuCanvas.ctx, 'DigiBeetle', 'green');
+      _this.menuCanvas.drawDgmnPortrait(_this.systemAH.fetchImage('beetlePortrait'));
     });
     _defineProperty(_assertThisInitialized(_this), "buildDgmnMenu", function () {
       _this.menuCanvas.setTopMessage("Attack");
@@ -3808,12 +4252,13 @@ var BattleMenu = function (_Menu) {
       var side = flow === 'attack' ? 'enemy' : itemsDB[itemByName[_this.currItem.name]].target;
       var hitsAll = flow === 'attack' ? _this.currAttackAction.targets === 'all' : itemsDB[itemByName[_this.currItem.name]].hitsAll;
       var xOffset = side === 'enemy' ? 0 : 2;
-      _this.addSubMenu('target', new TargetSelect(side, hitsAll, _this.dgmnIsDeadCB, _this.menuCanvas.ctx, [8 + xOffset, 2], 3, 3, 4, ['one', 'two', 'three'], _this.systemAH.fetchImage('cursorLeft'), null, 'target'));
+      var cursorImg = side === 'enemy' ? _this.systemAH.fetchImage('cursorLeft') : _this.systemAH.fetchImage('cursorRight');
+      _this.addSubMenu('target', new TargetSelect(side, hitsAll, _this.dgmnIsDeadCB, _this.menuCanvas.ctx, [8 + xOffset, 2], 3, 3, 4, ['one', 'two', 'three'], cursorImg, null, 'target'));
       _this.subMenus.target.currIndex = _this.getStartingTarget();
       _this.subMenus.target.drawMenu(_this.getStartingTarget());
     });
-    _defineProperty(_assertThisInitialized(_this), "dgmnIsDeadCB", function (index) {
-      return _this.battleAH.getDgmnDataByIndex(index, ['isDead'], true).isDead;
+    _defineProperty(_assertThisInitialized(_this), "dgmnIsDeadCB", function (index, side) {
+      return _this.battleAH.getDgmnDataByIndex(index, ['isDead'], side === 'enemy').isDead;
     });
     _defineProperty(_assertThisInitialized(_this), "buildCannonList", function () {
       debugLog("  - Selecting Ammo...");
@@ -3854,10 +4299,11 @@ var BattleMenu = function (_Menu) {
       if (dir === 'back') _this.buildDgmnMenu();
       _this.drawMenu();
     });
-    _defineProperty(_assertThisInitialized(_this), "drawActionText", function (species, message) {
-      _this.menuCanvas.clearBottomSection();
-      _this.menuCanvas.drawDgmnPortrait(_this.systemAH.fetchImage(species.toLowerCase() + 'Portrait'));
-      _this.actionTxt.timedText(_this.menuCanvas.ctx, message, _this.drawMenu);
+    _defineProperty(_assertThisInitialized(_this), "drawActionText", function (species, messages) {
+      _this.actionTxt.multiText(_this.menuCanvas.ctx, messages, _this.drawMenu, function () {
+        _this.menuCanvas.clearBottomSection();
+        _this.menuCanvas.drawDgmnPortrait(_this.systemAH.fetchImage(species.toLowerCase() + 'Portrait'));
+      });
     });
     _defineProperty(_assertThisInitialized(_this), "launchTargetSelect", function (flow) {
       _this.buildTargetSelect(flow);
@@ -4058,6 +4504,7 @@ var BattleMenu = function (_Menu) {
       var rewardInterval = setInterval(function () {
         var image = rewards[i] === 'XP' ? 'xpIconSmall' : "field".concat(rewards[i], "Icon");
         _this.menuCanvas.paintImage(_this.systemAH.fetchImage(image), (2 + i) * CFG.tileSize, 5 * CFG.tileSize);
+        _this.drawMenu();
         if (i >= rewards.length - 1) {
           clearInterval(rewardInterval);
           setTimeout(function () {
@@ -4161,6 +4608,8 @@ var AttackCanvas = function (_GameCanvas) {
         if (i >= images.length) {
           if (t === targets.length - 1) {
             if (!isTargetEnemy) _this.flip();
+            _this.clearCanvas();
+            _this.drawCB();
             clearInterval(animationInterval);
             callback();
           } else {
@@ -4169,7 +4618,7 @@ var AttackCanvas = function (_GameCanvas) {
             i = 0;
           }
         }
-      }, 66);
+      }, 50);
     });
     _defineProperty(_assertThisInitialized(_this), "paintAttackFrame", function (targetIndex, frame) {
       _this.clearCanvas();
@@ -4183,6 +4632,10 @@ var AttackCanvas = function (_GameCanvas) {
   }
   return AttackCanvas;
 }(GameCanvas);
+
+var getFullMessageLength = function getFullMessageLength(messages) {
+  return messages.join(" ").length;
+};
 
 var AttackManager = function AttackManager() {
   var _this = this;
@@ -4216,8 +4669,10 @@ var AttackManager = function AttackManager() {
         } else if (action.status === 'done') {
           i++;
         }
-      } else {
+      } else if (action.status === 'pending') {
         debugLog("No Action for " + attacker);
+        i++;
+      } else if (action.status === 'done') {
         i++;
       }
       if (_this.battleAH.checkBattleCondition() !== 'ongoing' || i >= turnOrder.length) {
@@ -4230,7 +4685,7 @@ var AttackManager = function AttackManager() {
           } else {
             _this.battleAH.newTurn();
           }
-        }, 2000);
+        }, 1000);
       }
     }, 200);
   });
@@ -4303,21 +4758,21 @@ var AttackManager = function AttackManager() {
     _this.attackCanvas.clearCanvas();
     setTimeout(function () {
       _this.attackActions[attacker].status = 'done';
-    }, 500);
+    }, 1000);
   });
   _defineProperty(this, "takeAction", function (attacker, action) {
     _this.attackActions[attacker].status = 'acting';
     var dgmnData = _this.dgmnAH.getDgmnData(attacker, ['nickname', 'speciesName'], attacker.charAt(0) === 'e');
     var species = dgmnData.speciesName;
-    var message = "";
+    var allMessages = [];
     if (!action.isDefend) {
-      _this.takeAttack(attacker, action, function (attackMessage) {
-        message = attackMessage;
+      _this.takeAttack(attacker, action, function (messages) {
+        allMessages = _toConsumableArray(messages);
       });
     } else {
-      message = _this.dgmnAH.getDgmnData(attacker, ['nickname'], attacker.charAt(0) === 'e').nickname + ' defends';
+      allMessages = [_this.dgmnAH.getDgmnData(attacker, ['nickname'], attacker.charAt(0) === 'e').nickname + ' defends'];
     }
-    _this.battleAH.drawActionText(species, message);
+    if (allMessages.length > 0) _this.battleAH.drawActionText(species, allMessages);
     setTimeout(function () {
       if (!action.isDefend) {
         _this.dgmnAH.showDgmnFrame(attacker, 'Attack');
@@ -4337,9 +4792,11 @@ var AttackManager = function AttackManager() {
         }
         _this.triggerAnimation(attacker, action.attackName, action.targets);
       } else {
-        _this.attackActions[attacker].status = 'done';
+        setTimeout(function () {
+          _this.attackActions[attacker].status = 'done';
+        }, 1000);
       }
-    }, 1200);
+    }, (getFullMessageLength(allMessages) + 15 * allMessages.length) * 50);
   });
   _defineProperty(this, "buildActionMessage", function (nickname, attackName, accuracy) {
     var message = '';
@@ -4355,23 +4812,27 @@ var AttackManager = function AttackManager() {
   _defineProperty(this, "takeAttack", function (attacker, action, messageCB) {
     debugLog("".concat(attacker, " using ").concat(action.attackName, " on ").concat(action.targets));
     _this.drainEnergy(attacker, action.attackName);
+    var allMessages = [_this.doAttackEffect(action.attackName, attacker, action.targets)];
+    allMessages = allMessages[0] !== ' ' && allMessages[0] ? allMessages : [];
     for (var i in action.targets) {
       for (var h = 0; h < action.hits; h++) {
-        var attackerData = _this.dgmnAH.getDgmnData(attacker, ['currentStats', 'currentLevel', 'nickname'], attacker.charAt(0) === 'e');
-        var targetData = _this.dgmnAH.getDgmnData(action.targets[i], ['currentStats', 'combo', 'speciesName', 'weak', 'isDead'], action.targets[i].charAt(0) === 'e');
+        var attackerData = _this.dgmnAH.getDgmnData(attacker, ['speciesName', 'currentStats', 'currentLevel', 'nickname', 'statMods', 'condition'], attacker.charAt(0) === 'e');
+        var targetData = _this.dgmnAH.getDgmnData(action.targets[i], ['currentStats', 'combo', 'speciesName', 'weak', 'isDead', 'statMods'], action.targets[i].charAt(0) === 'e');
         if (!targetData.isDead) {
-          var attackerATK = _this.attackUtility.getStat(action.attackName) === 'physical' ? attackerData.currentStats.ATK : attackerData.currentStats.INT;
-          var targetDEF = _this.attackUtility.getStat(action.attackName) === 'physical' ? targetData.currentStats.DEF : targetData.currentStats.RES;
+          var _attackerData$conditi2, _attackerData$conditi3;
+          var attackerATK = _this.attackUtility.getStat(action.attackName) === 'physical' ? attackerData.currentStats.ATK * attackerData.statMods.ATK : attackerData.currentStats.INT * attackerData.statMods.INT;
+          var targetDEF = _this.attackUtility.getStat(action.attackName) === 'physical' ? targetData.currentStats.DEF * targetData.statMods.DEF : targetData.currentStats.RES * targetData.statMods.RES;
           var baseDMG = _this.calcBaseDMG(attackerATK, attackerData.currentLevel, powerRanks[action.power], action.hits, targetDEF);
           var modTotal = 1;
-          var accuracyMod = _this.calculateAccuracy(attackerData.currentStats.HIT, targetData.currentStats.AVO);
+          var accuracyMod = _this.calculateAccuracy(attackerData.currentStats.HIT * attackerData.statMods.HIT, targetData.currentStats.AVO * targetData.statMods.AVO);
           if (accuracyMod !== 0) {
+            var _attackerData$conditi;
             var typeMod = _this.dgmnUtility.getTypeMod(action.type, targetData.speciesName);
             if (typeMod > 1 && !_this.isDgmnDefending(action.targets[i])) {
               _this.dgmnAH.modifyWeak(action.targets[i], 1);
             }
             var weakMod = targetData.weak > 0 ? 1.125 : 1;
-            _this.dgmnAH.modifyCombo(action.targets[i], _this.getComboDelta());
+            if (((_attackerData$conditi = attackerData.condition) === null || _attackerData$conditi === void 0 ? void 0 : _attackerData$conditi.type) !== 'overheat') _this.dgmnAH.modifyCombo(action.targets[i], _this.getComboDelta());
             var comboLetter = _this.attackUtility.getComboLetter(_this.calculateCombo(targetData.combo, typeMod, weakMod > 1));
             var comboMod = _this.attackUtility.getComboMod(comboLetter);
             var defendMod = _this.isDgmnDefending(action.targets[i]) ? .5 : 1;
@@ -4382,8 +4843,17 @@ var AttackManager = function AttackManager() {
           var rand = Math.floor(Math.random() * (3 - 1) + 1);
           var finalDMG = accuracyMod === 0 ? 0 : Math.round(baseDMG * modTotal) + rand;
           _this.dealDMG(action.targets[i], finalDMG);
-          var message = _this.buildActionMessage(attackerData.nickname, action.attackName, accuracyMod);
-          messageCB(message);
+          var compiledName = attackerData.nickname !== 'Enemy' ? attackerData.nickname : 'Enemy ' + attackerData.speciesName + '.MON';
+          var nextMessage = _this.buildActionMessage(compiledName, action.attackName, accuracyMod);
+          if (i == 0 && h == 0) {
+            allMessages.unshift(nextMessage);
+          } else if (i !== 0 || h !== 0) {
+            if (nextMessage.indexOf("CRIT") !== -1 || nextMessage.indexOf("missed") !== -1) {
+              allMessages.push(nextMessage.indexOf("CRIT") !== -1 ? "One was a CRITICAL HIT!" : "One missed...");
+            }
+          }
+          if ((_attackerData$conditi2 = attackerData.condition) !== null && _attackerData$conditi2 !== void 0 && _attackerData$conditi2.type) allMessages.unshift(attackerData.nickname + "" + _this.dgmnUtility.getConditionMessage((_attackerData$conditi3 = attackerData.condition) === null || _attackerData$conditi3 === void 0 ? void 0 : _attackerData$conditi3.type));
+          messageCB(allMessages);
         } else {
           i++;
         }
@@ -4436,8 +4906,62 @@ var AttackManager = function AttackManager() {
   });
   _defineProperty(this, "calcBaseDMG", function (attackerATK, attackerLV, attackPWR, attackHits, targetDEF) {
     var baseDMG = Math.ceil(attackerATK / targetDEF * (attackerLV / 4) * attackPWR / attackHits);
-    debugLog("  BASE DMG = \u2308( ( (".concat(attackerATK, "/").concat(targetDEF, ") x (").concat(attackerLV, "/2) ) x ").concat(attackPWR, ") / ").concat(attackHits, "\u2309 = ").concat(baseDMG, " "));
+    debugLog("  BASE DMG = \u2308( ( (".concat(attackerATK, "/").concat(targetDEF, ") x (").concat(attackerLV, "/4) ) x ").concat(attackPWR, ") / ").concat(attackHits, "\u2309 = ").concat(baseDMG, " "));
     return baseDMG;
+  });
+  _defineProperty(this, "doAttackEffect", function (attackName, attacker, targets) {
+    var effect = attacksDB[attackName].effect;
+    if (!effect) return;
+    var effectTargets = _this.getEffectTarget(effect.target, attacker, targets);
+    var effectMessage = "";
+    var statMods;
+    var _iterator4 = _createForOfIteratorHelper(effectTargets),
+        _step4;
+    try {
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var effectTarget = _step4.value;
+        var shouldActivate = Math.random() * 100 >= 100 - effect.accuracy;
+        if (effect && shouldActivate) {
+          switch (effect.type) {
+            case 'buff':
+              debugLog("Buffing ".concat(effect.target, " ").concat(effect.stat, " by ").concat(effect.amount));
+              statMods = _this.dgmnAH.getDgmnData(effectTarget, ['statMods'], _this.dgmnUtility.isEnemy(effectTarget));
+              if (statMods[effect.stat] >= 3) continue;
+              _this.dgmnAH.buffDgmnStat(effectTarget, effect.stat, effect.amount);
+              effectMessage = _this.attackUtility.getBuffMessage(effect.stat, effect.amount);
+              break;
+            case 'debuff':
+              debugLog("DeBuffing ".concat(effect.target, " ").concat(effect.stat, " by ").concat(effect.amount));
+              statMods = _this.dgmnAH.getDgmnData(effectTarget, ['statMods'], _this.dgmnUtility.isEnemy(effectTarget));
+              if (statMods[effect.stat] <= -3) continue;
+              _this.dgmnAH.debuffDgmnStat(effectTarget, effect.stat, effect.amount);
+              effectMessage = _this.attackUtility.getDeBuffMessage(effect.stat, effect.amount);
+              break;
+            case 'status':
+              debugLog("Hitting ".concat(effect.target, " with ").concat(effect.status));
+              _this.dgmnAH.giveCondition(effectTarget, effect.status);
+              effectMessage = _this.attackUtility.getConditionMessage(effect.status);
+              console.log("Effect message ? ", effectMessage);
+              break;
+            default:
+              warningLog("Effect Type Unknown - Check attacks.db.js");
+              continue;
+          }
+        } else {
+          continue;
+        }
+      }
+    } catch (err) {
+      _iterator4.e(err);
+    } finally {
+      _iterator4.f();
+    }
+    return effectMessage;
+  });
+  _defineProperty(this, "getEffectTarget", function (effectTarget, attacker, attackTargets) {
+    if (effectTarget === 'self') return [attacker];
+    if (effectTarget === 'target') return [attackTargets[0]];
+    return [];
   });
   _defineProperty(this, "dealDMG", function (target, dmg) {
     debugLog("  Dealt " + dmg + "DMG to " + target);
@@ -4473,6 +4997,12 @@ var BattleDgmnStatusCanvas = function (_GameCanvas) {
       _this.ctx.fillStyle = barHex;
       _this.ctx.fillRect((xPosition + 4) * CFG.screenSize, (yPosition + 2) * CFG.screenSize, meterLength * CFG.screenSize, 3 * CFG.screenSize);
     });
+    _defineProperty(_assertThisInitialized(_this), "getIconX", function (isEnemy, offset) {
+      return ((isEnemy ? 0 : 17) + offset) * CFG.tileSize;
+    });
+    _defineProperty(_assertThisInitialized(_this), "getIconY", function (dgmnIndex, offset) {
+      return (offset + dgmnIndex * 4) * CFG.tileSize;
+    });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnCombo", function (coord, image) {
       _this.ctx.clearRect(coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
       _this.ctx.drawImage(image, coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
@@ -4480,6 +5010,18 @@ var BattleDgmnStatusCanvas = function (_GameCanvas) {
     _defineProperty(_assertThisInitialized(_this), "drawDgmnWeak", function (coord, image) {
       _this.ctx.clearRect(coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
       _this.ctx.drawImage(image, coord[0] * CFG.tileSize, coord[1] * CFG.tileSize, CFG.tileSize, CFG.tileSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnStatBuff", function (isEnemy, dgmnIndex, image) {
+      var iconX = _this.getIconX(isEnemy, 0);
+      var iconY = _this.getIconY(dgmnIndex, 5);
+      _this.ctx.clearRect(iconX, iconY, CFG.tileSize, CFG.tileSize);
+      _this.ctx.drawImage(image, iconX, iconY, CFG.tileSize, CFG.tileSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnCondition", function (isEnemy, dgmnIndex, image) {
+      var iconX = _this.getIconX(isEnemy, 1);
+      var iconY = _this.getIconY(dgmnIndex, 5);
+      _this.ctx.clearRect(iconX, iconY, CFG.tileSize, CFG.tileSize);
+      _this.ctx.drawImage(image, iconX, iconY, CFG.tileSize, CFG.tileSize);
     });
     return _this;
   }
@@ -4537,6 +5079,12 @@ var DgmnGrowthMenuAH = function DgmnGrowthMenuAH(cbObj) {
   this.nextHatch = function () {
     cbObj.nextHatchCB();
   };
+  this.prevEvo = function () {
+    cbObj.prevEvoCB();
+  };
+  this.nextEvo = function () {
+    cbObj.nextEvoCB();
+  };
   this.selectHatch = function () {
     cbObj.selectHatchCB();
   };
@@ -4545,6 +5093,15 @@ var DgmnGrowthMenuAH = function DgmnGrowthMenuAH(cbObj) {
   };
   this.confirmLevelUp = function () {
     cbObj.confirmLevelUpCB();
+  };
+  this.nextBossReward = function () {
+    cbObj.nextBossRewardCB();
+  };
+  this.prevBossReward = function () {
+    cbObj.prevBossRewardCB();
+  };
+  this.selectBossReward = function () {
+    cbObj.selectBossRewardCB();
   };
   this.skipEvo = function () {
     cbObj.skipEvoCB();
@@ -4568,6 +5125,11 @@ var MenuCanvas = function (_GameCanvas) {
       _this.ctx.fillStyle = "#00131A";
       _this.ctx.fillRect(0, 14 * CFG.tileSize, 20 * CFG.tileSize, 4 * CFG.tileSize);
     });
+    _defineProperty(_assertThisInitialized(_this), "clearBottomSectionIgnoreCursor", function () {
+      _this.ctx.fillStyle = "#00131A";
+      _this.ctx.fillRect(0, 14 * CFG.tileSize, 20 * CFG.tileSize, 3 * CFG.tileSize);
+      _this.ctx.fillRect(0, 17 * CFG.tileSize, 18 * CFG.tileSize, 1 * CFG.tileSize);
+    });
     _defineProperty(_assertThisInitialized(_this), "setTopMessage", function (message) {
       _this.clearTopMessage();
       _this.topTxt.instantText(_this.ctx, message, 'white');
@@ -4584,7 +5146,7 @@ var MenuCanvas = function (_GameCanvas) {
 var EvoMenu = function (_IconMenu) {
   _inherits(EvoMenu, _IconMenu);
   var _super = _createSuper(EvoMenu);
-  function EvoMenu(type) {
+  function EvoMenu(_type) {
     var _this;
     _classCallCheck(this, EvoMenu);
     for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -4650,7 +5212,8 @@ var EvoMenu = function (_IconMenu) {
       _this.menuCanvas.ctx.fillRect(iconsOffset[0], iconsOffset[1], 11 * CFG.tileSize, 7 * CFG.screenSize);
       for (var i = 0; i < _this.choices.length; i++) {
         var img = void 0;
-        if (_this.dgmnUtility.canHatchInto(dgmnFP, _this.choices[i])) {
+        var available = _this.type === 'hatch' ? _this.dgmnUtility.canHatchInto(dgmnFP, _this.choices[i]) : _this.dgmnUtility.canEvolveInto(dgmnFP, _this.choices[i]);
+        if (available) {
           possibleHatches.push(_this.choices[i]);
           img = _this.fetchImageCB('evoIconPositive');
         } else {
@@ -4658,7 +5221,8 @@ var EvoMenu = function (_IconMenu) {
         }
         _this.menuCanvas.paintImage(img, iconsOffset[0] + i * CFG.tileSize, iconsOffset[1]);
       }
-      _this.menuCanvas.ctx.fillStyle = _this.dgmnUtility.canHatchInto(dgmnFP, _this.choices[_this.currChoice]) ? "#C4CFA1" : "#1D5A4A";
+      var currAvailable = _this.type === 'hatch' ? _this.dgmnUtility.canHatchInto(dgmnFP, _this.choices[_this.currChoice]) : _this.dgmnUtility.canEvolveInto(dgmnFP, _this.choices[_this.currChoice]);
+      _this.menuCanvas.ctx.fillStyle = currAvailable ? "#C4CFA1" : "#1D5A4A";
       _this.menuCanvas.ctx.fillRect(iconsOffset[0] + _this.currChoice * CFG.tileSize + 3, iconsOffset[1] + 3, 5 * CFG.screenSize, 4 * CFG.screenSize);
     });
     _defineProperty(_assertThisInitialized(_this), "drawHatchStats", function (stats) {
@@ -4676,34 +5240,51 @@ var EvoMenu = function (_IconMenu) {
       }
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnInfo", function (species) {
-      _this.menuCanvas.clearBottomSection();
+      _this.menuCanvas.clearBottomSectionIgnoreCursor();
       _this.menuCanvas.drawDgmnPortrait(_this.fetchImageCB("".concat(species.toLowerCase(), "Portrait")));
       _this.evoNameTxt.instantText(_this.menuCanvas.ctx, "".concat(species, ".MON"), 'white');
       _this.evoAttributeTxt.instantText(_this.menuCanvas.ctx, _this.dgmnUtility.getAttribute(species), 'green');
       _this.evoWeakTxt.instantText(_this.menuCanvas.ctx, 'WEAK', 'green');
       _this.evoResTxt.instantText(_this.menuCanvas.ctx, 'RES', 'green');
+      var i = 0;
       for (var field in _this.dgmnUtility.getBaseFP(species)) {
-        _this.menuCanvas.paintImage(_this.fetchImageCB("field".concat(field, "Icon")), (5 + _this.dgmnUtility.getAttribute(species).length) * CFG.tileSize, 15 * CFG.tileSize);
+        _this.menuCanvas.paintImage(_this.fetchImageCB("field".concat(field, "Icon")), (5 + _this.dgmnUtility.getAttribute(species).length + i * 1) * CFG.tileSize, 15 * CFG.tileSize);
+        i++;
+      }
+      var typeAffinities = _this.dgmnUtility.getTypeAffinities(species);
+      var w = 0;
+      var r = 0;
+      for (var type in typeAffinities) {
+        if (typeAffinities[type] < 1) {
+          _this.menuCanvas.paintImage(_this.fetchImageCB("".concat(type, "TypeIcon")), (8 + r) * CFG.tileSize, 16 * CFG.tileSize);
+          r++;
+        } else if (typeAffinities[type] > 1) {
+          _this.menuCanvas.paintImage(_this.fetchImageCB("".concat(type, "TypeIcon")), (15 + w) * CFG.tileSize, 16 * CFG.tileSize);
+          w++;
+        }
       }
     });
     _defineProperty(_assertThisInitialized(_this), "canHatch", function () {
       return _this.dgmnUtility.canHatchInto(_this.dgmnData.currentFP, _this.choices[_this.currChoice]);
     });
+    _defineProperty(_assertThisInitialized(_this), "canEvolve", function () {
+      return _this.dgmnUtility.canEvolveInto(_this.dgmnData.currentFP, _this.choices[_this.currChoice]);
+    });
     _defineProperty(_assertThisInitialized(_this), "nextChoice", function () {
       if (_this.currChoice < _this.choices.length - 1) {
         _this.currChoice++;
         _this.selectedDgmn = _this.choices[_this.currChoice];
-        _this.drawHatchScreen();
+        _this.type === 'hatch' ? _this.drawHatchScreen() : _this.drawEvoScreen();
       }
     });
     _defineProperty(_assertThisInitialized(_this), "prevChoice", function () {
       if (_this.currChoice > 0) {
         _this.currChoice--;
         _this.selectedDgmn = _this.choices[_this.currChoice];
-        _this.drawHatchScreen();
+        _this.type === 'hatch' ? _this.drawHatchScreen() : _this.drawEvoScreen();
       }
     });
-    _this.type = type;
+    _this.type = _type;
     _this.currChoice = 0;
     _this.dgmnData;
     _this.choices = [];
@@ -4804,14 +5385,119 @@ var LevelUpMenu = function (_SubMenu) {
   return LevelUpMenu;
 }(SubMenu);
 
+var REWARD_MESSAGES = ["Permanently upgrade FP", "Permanently upgrade XP", "Permanently upgrade EN"];
+var BossVictoryMenu = function (_ListMenu) {
+  _inherits(BossVictoryMenu, _ListMenu);
+  var _super = _createSuper(BossVictoryMenu);
+  function BossVictoryMenu(currFloor) {
+    var _this;
+    _classCallCheck(this, BossVictoryMenu);
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "init", function () {
+      _this.infoTxt.instantText(_this.menuCanvas.ctx, REWARD_MESSAGES[0]);
+    });
+    _defineProperty(_assertThisInitialized(_this), "clearInfoTxt", function () {
+      console.log("?");
+      _this.menuCanvas.ctx.fillStyle = "#00131A";
+      _this.menuCanvas.ctx.fillRect(4 * CFG.tileSize, 14 * CFG.tileSize, 16 * CFG.tileSize, 4 * CFG.tileSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawList", function () {
+      for (var i = 0; i < _this.listItems.length; i++) {
+        for (var r = 0; r < 8; r++) {
+          var image = 'rewardIconDeselected';
+          if (r > _this.mapUtility.getBossRewardLevel(_this.currFloor)) image = 'rewardIconNull';
+          _this.drawIcon(i, r, image);
+        }
+      }
+      _this.drawIcon(_this.currIndex, _this.currUpgradeIndex, 'rewardIconSelected');
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      _this.drawList();
+      if (_this.inFPSelection) {
+        _this.drawFPMenu();
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawFPMenu", function () {
+      _this.menuCanvas.paintImage(_this.fetchImageCB('bossRewardFieldChoice'), 0, 0);
+      _this.menuCanvas.paintImage(_this.fetchImageCB('miniCursor'), 7 * CFG.tileSize, (_this.FPIndex + 3) * CFG.tileSize);
+      for (var i in _this.FPText) {
+        _this.FPText[i].instantText(_this.menuCanvas.ctx, FIELD_LABELS[i], 'white');
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawIcon", function (row, col, image) {
+      _this.menuCanvas.paintImage(_this.fetchImageCB(image), (col + 11) * CFG.tileSize, (2 * row + 2) * CFG.tileSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "launchFPSelection", function () {
+      _this.inFPSelection = true;
+      _this.drawMenu();
+      _this.redrawParentCB();
+    });
+    _defineProperty(_assertThisInitialized(_this), "prevChoice", function () {
+      if (!_this.inFPSelection) {
+        if (_this.currIndex > 0) {
+          _this.currIndex--;
+          _this.clearInfoTxt();
+          _this.infoTxt.instantText(_this.menuCanvas.ctx, REWARD_MESSAGES[_this.currIndex]);
+        }
+      } else {
+        if (_this.FPIndex > 0) _this.FPIndex--;
+      }
+      _this.drawMenu();
+      _this.redrawParentCB();
+    });
+    _defineProperty(_assertThisInitialized(_this), "nextChoice", function () {
+      if (!_this.inFPSelection) {
+        if (_this.currIndex < 2) {
+          _this.currIndex++;
+          _this.clearInfoTxt();
+          _this.infoTxt.instantText(_this.menuCanvas.ctx, REWARD_MESSAGES[_this.currIndex]);
+        }
+      } else {
+        if (_this.FPIndex < 8) _this.FPIndex++;
+      }
+      _this.drawMenu();
+      _this.redrawParentCB();
+    });
+    _defineProperty(_assertThisInitialized(_this), "selectChoice", function (message, onDone) {
+      _this.clearInfoTxt();
+      _this.infoTxt.timedText(_this.menuCanvas.ctx, message, _this.drawMenu);
+      setTimeout(function () {
+        onDone();
+      }, 3000);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnPortrait", function (portraitImg) {
+      _this.menuCanvas.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * CFG.screenSize, 32 * CFG.screenSize, (32 - 1) * CFG.screenSize);
+    });
+    _this.currFloor = currFloor;
+    _this.dgmnIndex = 0;
+    _this.currUpgradeIndex = 0;
+    _this.mapUtility = new MapUtility();
+    _this.menuCanvas = new MenuCanvas("".concat(_this.label, "-menu"), 160, 144);
+    _this.inFPSelection = false;
+    _this.FPIndex = 0;
+    _this.infoTxt = new TextArea(4, 14, 16, 4);
+    _this.learnedAttackTxt = new TextArea(1, 12, 18, 1);
+    _this.FPText = [new TextArea(10, 3, 2, 1), new TextArea(10, 4, 2, 1), new TextArea(10, 5, 2, 1), new TextArea(10, 6, 2, 1), new TextArea(10, 7, 2, 1), new TextArea(10, 8, 2, 1), new TextArea(10, 9, 2, 1), new TextArea(10, 10, 2, 1)];
+    _this.fetchImageCB;
+    _this.redrawParentCB;
+    _this.onDone;
+    _this.init();
+    return _this;
+  }
+  return BossVictoryMenu;
+}(ListMenu);
+
 var DgmnGrowthMenu = function (_Menu) {
   _inherits(DgmnGrowthMenu, _Menu);
   var _super = _createSuper(DgmnGrowthMenu);
-  function DgmnGrowthMenu(origin, dgmnAH) {
+  function DgmnGrowthMenu(origin, dgmnAH, isBoss) {
     var _this;
     _classCallCheck(this, DgmnGrowthMenu);
-    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-      args[_key - 2] = arguments[_key];
+    for (var _len = arguments.length, args = new Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+      args[_key - 3] = arguments[_key];
     }
     _this = _super.call.apply(_super, [this].concat(args));
     _defineProperty(_assertThisInitialized(_this), "gotoRewards", function (rewards) {
@@ -4873,37 +5559,15 @@ var DgmnGrowthMenu = function (_Menu) {
       }, 500);
     });
     _defineProperty(_assertThisInitialized(_this), "gotoBossRewards", function (dgmnData) {
-      console.log("BOSS REWARDS SCREEN");
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
-      for (var key in _this.subMenus) {
-        if (_this.subMenus[key].isVisible) {
-          _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
-        }
-      }
-      _this.origin === 'hatch' ? _this.parentAH.drawDungeon() : _this.parentAH.drawBattleCanvas();
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawEggs", function () {
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggDR'), 2 * CFG.tileSize, 8 * CFG.tileSize);
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggJT'), 8 * CFG.tileSize, 8 * CFG.tileSize);
-      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggME'), 14 * CFG.tileSize, 8 * CFG.tileSize);
-    });
-    _defineProperty(_assertThisInitialized(_this), "drawDgmn", function () {
-      var i = 0;
-      var _iterator = _createForOfIteratorHelper(_this.dgmnAH.getDgmnParty()),
-          _step;
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var dgmn = _step.value;
-          var species = _this.dgmnAH.getDgmnData(dgmn, ['speciesName']).speciesName;
-          _this.menuCanvas.paintImage(_this.systemAH.fetchImage("".concat(species.toLowerCase(), "Idle0")), (2 + i * 6) * CFG.tileSize, 8 * CFG.tileSize);
-          i++;
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
+      _this.currState = 'boss-reward';
+      _this.drawBackground('bossRewardMenu');
+      _this.topTxt.instantText(_this.menuCanvas.ctx, 'Choose Boss Reward!');
+      _this.addSubMenu('bossReward', new BossVictoryMenu(5, [0, 0], 3, 8, 2, ['fp', 'xp', 'en'], _this.systemAH.fetchImage('miniCursor'), null, 'bossReward'));
+      _this.subMenus.bossReward.isVisible = true;
+      _this.attachImageCallbacks('bossReward');
+      _this.subMenus.bossReward.drawList();
+      _this.subMenus.bossReward.drawDgmnPortrait(_this.systemAH.fetchImage("".concat(dgmnData.speciesName.toLowerCase(), "Portrait")));
+      _this.drawMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "updateRewardsList", function () {
       var currDgmnData = _this.getCurrDgmnData();
@@ -4916,8 +5580,7 @@ var DgmnGrowthMenu = function (_Menu) {
           return;
         } else {
           _this.systemAH.loadImages(nextImages, function () {
-            _this.removeSubMenu('rewards');
-            _this.gotoHatch(currDgmnData);
+            _this.gotoNextScreen();
           });
         }
       });
@@ -4935,27 +5598,37 @@ var DgmnGrowthMenu = function (_Menu) {
     });
     _defineProperty(_assertThisInitialized(_this), "wrapUpRewards", function () {
       _this.removeSubMenu('rewards');
+      var currDgmn = _this.dgmnAH.getDgmnParty()[_this.currDgmnIndex];
       var currDgmnData = _this.getCurrDgmnData();
-      var canLevelUp = _this.dgmnAH.checkLevelUp(_this.dgmnAH.getDgmnParty()[_this.currDgmnIndex]);
-      if (canLevelUp) {
+      _this.checkAllLevelUps();
+      if (_this.origin === 'victory' && _this.isBoss) {
+        _this.gotoBossRewards(currDgmnData);
+      } else if (_this.origin === 'hatch') {
+        _this.gotoHatch(currDgmnData);
+      } else if (_this.levelUps[currDgmn]) {
         _this.gotoLevelUp(currDgmnData);
       } else {
-        _this.wrapUpLevelUp();
+        _this.wrapUpLevelUp(true);
       }
     });
     _defineProperty(_assertThisInitialized(_this), "wrapUpLevelUp", function () {
+      var _this$continueCursor;
+      var skipEvolve = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      (_this$continueCursor = _this.continueCursor) === null || _this$continueCursor === void 0 ? void 0 : _this$continueCursor.remove();
       _this.removeSubMenu('level');
       var currDgmnData = _this.getCurrDgmnData();
-      var canEvolve = _this.dgmnUtility.canEvolveIntoAny(currDgmnData.currentFP, currDgmnData.speciesName);
+      var canEvolve = !skipEvolve ? _this.dgmnUtility.canEvolveIntoAny(currDgmnData.currentFP, currDgmnData.speciesName) : false;
       var direction = canEvolve ? 'evolve' : 'level';
       if (!canEvolve) _this.currDgmnIndex++;
+      var nextDgmn = _this.dgmnAH.getDgmnParty()[_this.currDgmnIndex];
       if (_this.currDgmnIndex > 2) {
         _this.parentAH.closeGrowthMenu();
       } else {
         if (direction === 'level') {
           var nextDgmnData = _this.getCurrDgmnData();
-          var canLevelUp = _this.dgmnAH.checkLevelUp(_this.dgmnAH.getDgmnParty()[_this.currDgmnIndex]);
-          if (canLevelUp) {
+          if (_this.origin === 'victory' && _this.isBoss) {
+            _this.gotoBossRewards(nextDgmnData);
+          } else if (_this.levelUps[nextDgmn]) {
             _this.gotoLevelUp(nextDgmnData);
           } else {
             _this.wrapUpLevelUp();
@@ -4969,6 +5642,8 @@ var DgmnGrowthMenu = function (_Menu) {
       }
     });
     _defineProperty(_assertThisInitialized(_this), "wrapUpHatch", function () {
+      var _this$continueCursor2;
+      (_this$continueCursor2 = _this.continueCursor) === null || _this$continueCursor2 === void 0 ? void 0 : _this$continueCursor2.remove();
       var currDgmnData = _this.getCurrDgmnData();
       var canEvolve = _this.dgmnUtility.canEvolveIntoAny(currDgmnData.currentFP, currDgmnData.speciesName);
       var direction = canEvolve ? 'evolve' : 'hatch';
@@ -5002,15 +5677,33 @@ var DgmnGrowthMenu = function (_Menu) {
           _this.removeSubMenu('evolve');
           if (_this.origin === 'hatch') _this.gotoHatch(currDgmnData);
           if (_this.origin === 'victory') {
-            _this.currDgmnIndex--;
-            _this.wrapUpLevelUp();
+            if (_this.isBoss) {
+              _this.gotoBossRewards(currDgmnData);
+            } else {
+              _this.currDgmnIndex--;
+              _this.wrapUpLevelUp();
+            }
           }
         });
       }
     });
+    _defineProperty(_assertThisInitialized(_this), "wrapUpBossReward", function () {
+      _this.removeSubMenu('bossReward');
+      var currDgmn = _this.dgmnAH.getDgmnParty()[_this.currDgmnIndex];
+      var currDgmnData = _this.getCurrDgmnData();
+      console.log("All Level Ups ? ", _this.levelUps);
+      console.log("Can Level Up ? ", _this.levelUps[currDgmn]);
+      if (_this.levelUps[currDgmn]) {
+        _this.gotoLevelUp(currDgmnData);
+      } else {
+        _this.wrapUpLevelUp(false);
+      }
+    });
     _defineProperty(_assertThisInitialized(_this), "gotoNextScreen", function () {
       if (_this.origin === 'hatch') {
-        if (_this.subMenus.hatch) {
+        if (_this.subMenus.rewards) {
+          _this.wrapUpRewards();
+        } else if (_this.subMenus.hatch) {
           _this.wrapUpHatch();
         } else if (_this.subMenus.evolve) {
           _this.wrapUpEvolution();
@@ -5023,6 +5716,20 @@ var DgmnGrowthMenu = function (_Menu) {
         } else if (_this.subMenus.evolve) {
           _this.wrapUpEvolution();
         }
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "checkAllLevelUps", function () {
+      var _iterator = _createForOfIteratorHelper(_this.dgmnAH.getDgmnParty()),
+          _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var dgmn = _step.value;
+          if (_this.dgmnAH.checkLevelUp(dgmn)) _this.levelUps[dgmn] = true;
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
       }
     });
     _defineProperty(_assertThisInitialized(_this), "getCurrDgmnData", function () {
@@ -5038,6 +5745,36 @@ var DgmnGrowthMenu = function (_Menu) {
     _defineProperty(_assertThisInitialized(_this), "evolveIntoDgmn", function () {
       var evolution = _this.subMenus.evolve.selectedDgmn;
       _this.dgmnAH.evolve(_this.dgmnAH.getDgmnParty()[_this.currDgmnIndex], evolution);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      for (var key in _this.subMenus) {
+        if (_this.subMenus[key].isVisible) {
+          _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
+        }
+      }
+      _this.origin === 'hatch' ? _this.parentAH.drawDungeon() : _this.parentAH.drawBattleCanvas();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawEggs", function () {
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggDR'), 2 * CFG.tileSize, 8 * CFG.tileSize);
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggJT'), 8 * CFG.tileSize, 8 * CFG.tileSize);
+      _this.menuCanvas.paintImage(_this.systemAH.fetchImage('eggME'), 14 * CFG.tileSize, 8 * CFG.tileSize);
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmn", function () {
+      var i = 0;
+      var _iterator2 = _createForOfIteratorHelper(_this.dgmnAH.getDgmnParty()),
+          _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var dgmn = _step2.value;
+          var species = _this.dgmnAH.getDgmnData(dgmn, ['speciesName']).speciesName;
+          _this.menuCanvas.paintImage(_this.systemAH.fetchImage("".concat(species.toLowerCase(), "Idle0")), (2 + i * 6) * CFG.tileSize, 8 * CFG.tileSize);
+          i++;
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "nextHatch", function () {
       _this.subMenus.hatch.nextChoice();
@@ -5060,11 +5797,57 @@ var DgmnGrowthMenu = function (_Menu) {
       _this.subMenus.evolve.prevChoice();
     });
     _defineProperty(_assertThisInitialized(_this), "selectEvo", function () {
-      _this.evolveIntoDgmn();
-      _this.gotoNextScreen();
+      if (_this.subMenus.evolve.canEvolve()) {
+        _this.evolveIntoDgmn();
+        _this.gotoNextScreen();
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "skipEvo", function () {
       _this.gotoNextScreen();
+    });
+    _defineProperty(_assertThisInitialized(_this), "updateBossRewardText", function (message, timing) {
+      if (timing === 'instant') {
+        _this.bossRewardActionTxt.instantText(_this.menuCanvas.ctx, message);
+      } else {
+        _this.bossRewardActionTxt.instantText(_this.menuCanvas.ctx, message, _this.drawMenu);
+      }
+    });
+    _defineProperty(_assertThisInitialized(_this), "prevBossReward", function () {
+      _this.subMenus.bossReward.prevChoice(_this.updateBossRewardText);
+    });
+    _defineProperty(_assertThisInitialized(_this), "nextBossReward", function () {
+      _this.subMenus.bossReward.nextChoice(_this.updateBossRewardText);
+    });
+    _defineProperty(_assertThisInitialized(_this), "selectBossReward", function () {
+      if (_this.state === 'loading') return;
+      _this.state = 'loading';
+      var currBossReward = _this.subMenus.bossReward.listItems[_this.subMenus.bossReward.currIndex];
+      var currDgmn = _this.dgmnAH.getDgmnParty()[_this.currDgmnIndex];
+      var currDgmnData = _this.getCurrDgmnData();
+      var upgradeMessage = '';
+      if (currBossReward === 'fp') {
+        if (_this.subMenus.bossReward.inFPSelection) {
+          _this.dgmnAH.giveUpgrade(currDgmn, 'FP', FIELD_LABELS[_this.subMenus.bossReward.FPIndex]);
+          upgradeMessage = "".concat(currDgmnData.nickname, " permanently gained 1 ").concat(FIELD_LABELS[_this.subMenus.bossReward.FPIndex], " FP!");
+        } else {
+          _this.subMenus.bossReward.launchFPSelection();
+          upgradeMessage = "Select an FP to gain!";
+        }
+      } else if (currBossReward === 'xp') {
+        _this.dgmnAH.giveUpgrade(currDgmn, 'XP');
+        upgradeMessage = "".concat(currDgmnData.nickname, " will now gain XP faster!");
+      } else if (currBossReward === 'en') {
+        _this.dgmnAH.giveUpgrade(currDgmn, 'EN');
+        upgradeMessage = "".concat(currDgmnData.nickname, " has more EN now!");
+      }
+      if (currBossReward !== 'fp' || upgradeMessage.indexOf("FP!") !== -1) {
+        console.log("SHOULD BE CLEARING?");
+        _this.subMenus.bossReward.selectChoice(upgradeMessage, function () {
+          _this.wrapUpBossReward();
+        });
+      } else {
+        _this.subMenus.bossReward.selectChoice(upgradeMessage, function () {});
+      }
     });
     _defineProperty(_assertThisInitialized(_this), "confirmLevelUp", function () {
       _this.gotoNextScreen();
@@ -5072,9 +5855,12 @@ var DgmnGrowthMenu = function (_Menu) {
     _this.origin = origin;
     _this.currDgmnIndex = 0;
     _this.rewards = [];
+    _this.isBoss = true;
+    _this.levelUps = {};
     _this.topTxt = new TextArea(0, 0, 20, 1);
     _this.subTopTxt = new TextArea(0, 1, 20, 1);
     _this.actionTxt = new TextArea(2, 15, 16, 2);
+    _this.bossRewardActionTxt = new TextArea(4, 14, 14, 4);
     _this.dgmnUtility = new DgmnUtility();
     _this.dgmnAH = dgmnAH;
     _this.dgmnGrowthMenuAH = new DgmnGrowthMenuAH({
@@ -5082,6 +5868,11 @@ var DgmnGrowthMenu = function (_Menu) {
       giveCurrRewardCB: _this.giveCurrReward,
       nextHatchCB: _this.nextHatch,
       prevHatchCB: _this.prevHatch,
+      prevEvoCB: _this.prevEvo,
+      nextEvoCB: _this.nextEvo,
+      prevBossRewardCB: _this.prevBossReward,
+      nextBossRewardCB: _this.nextBossReward,
+      selectBossRewardCB: _this.selectBossReward,
       selectHatchCB: _this.selectHatch,
       selectEvoCB: _this.selectEvo,
       confirmLevelUpCB: _this.confirmLevelUp,
@@ -5114,7 +5905,6 @@ var CannonManager = function CannonManager() {
     _this.cannonCanvas = new CannonCanvas(_this.battleAH.drawBattleCanvas, 'cannon', 96, 96, 32, 16);
   });
   _defineProperty(this, "shoot", function (item, side, target, onDone) {
-    console.log("GET ITEM EFFECT: ", itemsDB[itemByName[item.name]].effect);
     var effect = itemsDB[itemByName[item.name]].effect;
     var effectMessage = '';
     switch (effect.type) {
@@ -5126,10 +5916,10 @@ var CannonManager = function CannonManager() {
         effectMessage = 'Used an Item but it did bad';
         break;
     }
-    _this.runCannonAnimation(item.name, effectMessage, onDone);
+    _this.runCannonAnimation(item.name, [effectMessage], onDone);
   });
   _defineProperty(this, "runCannonAnimation", function (item, effectMessage, onDone) {
-    _this.battleAH.drawActionText('beetle', "Gunnar fired ".concat(item, "!"));
+    _this.battleAH.drawActionText('beetle', ["Gunnar fired ".concat(item, "!")]);
     setTimeout(function () {
       _this.battleAH.drawActionText('beetle', effectMessage);
     }, 1600);
@@ -5145,7 +5935,7 @@ var CannonManager = function CannonManager() {
   this.dgmnUtility = new DgmnUtility();
 };
 
-var Battle = function Battle(isBoss, floorNumber) {
+var Battle = function Battle(isBoss, isDebug) {
   var _this = this;
   _classCallCheck(this, Battle);
   _defineProperty(this, "init", function () {
@@ -5243,7 +6033,7 @@ var Battle = function Battle(isBoss, floorNumber) {
     }
   });
   _defineProperty(this, "generateEnemyParty", function () {
-    var currentFloor = _this.dungeonAH ? _this.dungeonAH.getCurrentFloor() : 1;
+    var currentFloor = !_this.isDebug ? _this.dungeonAH.getCurrentFloor() : 0;
     _this.dgmnAH.generateEnemies(currentFloor, 3);
   });
   _defineProperty(this, "calcTurnOrder", function () {
@@ -5251,8 +6041,8 @@ var Battle = function Battle(isBoss, floorNumber) {
     for (var i = 0; i < order.length; i++) {
       for (var r = 0; r < order.length - 1; r++) {
         var temp = order[r];
-        var currSPD = _this.dgmnAH.getDgmnData(order[r], ['currentStats'], order[r].charAt(0) === 'e').currentStats.SPD;
-        var nextSPD = _this.dgmnAH.getDgmnData(order[r + 1], ['currentStats'], order[r + 1].charAt(0) === 'e').currentStats.SPD;
+        var currSPD = _this.dgmnAH.getDgmnData(order[r], ['currentStats'], order[r].charAt(0) === 'e').currentStats.SPD * _this.dgmnAH.getDgmnData(order[r], ['statMods'], order[r].charAt(0) === 'e').statMods.SPD;
+        var nextSPD = _this.dgmnAH.getDgmnData(order[r + 1], ['currentStats'], order[r + 1].charAt(0) === 'e').currentStats.SPD * _this.dgmnAH.getDgmnData(order[r + 1], ['statMods'], order[r + 1].charAt(0) === 'e').statMods.SPD;
         if (currSPD < nextSPD) {
           order[r] = order[r + 1];
           order[r + 1] = temp;
@@ -5268,11 +6058,16 @@ var Battle = function Battle(isBoss, floorNumber) {
     }
   });
   _defineProperty(this, "updateDgmnStatus", function (isEnemy, dgmnIndex) {
-    var dgmnData = isEnemy ? _this.dgmnAH.getDgmnData(_this.enemyParty[dgmnIndex], ['combo', 'weak', 'isDead'], true) : _this.dgmnAH.getDgmnData(_this.yourParty[dgmnIndex], ['combo', 'weak', 'isDead'], false);
+    var dgmnData = isEnemy ? _this.dgmnAH.getDgmnData(_this.enemyParty[dgmnIndex], ['combo', 'weak', 'isDead', 'statMods', 'condition'], true) : _this.dgmnAH.getDgmnData(_this.yourParty[dgmnIndex], ['combo', 'weak', 'isDead', 'statMods', 'condition'], false);
     _this.drawDgmnStatusMeter(isEnemy, dgmnIndex, 'hp');
     _this.drawDgmnStatusMeter(isEnemy, dgmnIndex, 'en');
     _this.drawDgmnStatusCombo(isEnemy, dgmnIndex, dgmnData.combo);
     _this.drawDgmnStatusWeak(isEnemy, dgmnIndex, dgmnData.weak);
+    if (!dgmnData.isDead) {
+      var _dgmnData$condition;
+      _this.drawDgmnStatBuff(isEnemy, dgmnIndex, dgmnData.statMods);
+      _this.drawDgmnCondition(isEnemy, dgmnIndex, (_dgmnData$condition = dgmnData.condition) === null || _dgmnData$condition === void 0 ? void 0 : _dgmnData$condition.type);
+    }
   });
   _defineProperty(this, "drawDgmnStatusMeter", function (isEnemy, dgmnIndex, stat) {
     var dgmnData = !isEnemy ? _this.dgmnAH.getDgmnData(_this.yourParty[dgmnIndex], ["current".concat(stat.toUpperCase()), 'currentStats']) : _this.dgmnAH.getDgmnData(_this.enemyParty[dgmnIndex], ["current".concat(stat.toUpperCase()), 'currentStats'], true);
@@ -5295,8 +6090,20 @@ var Battle = function Battle(isBoss, floorNumber) {
     var coord = [2 + partyOffset, 4 + dgmnIndex * 4];
     _this.dgmnStatusCanvas.drawDgmnWeak(coord, _this.systemAH.fetchImage('weak' + weak));
   });
-  _defineProperty(this, "drawActionText", function (species, message) {
-    _this.battleMenu.drawActionText(species, message);
+  _defineProperty(this, "drawDgmnStatBuff", function (isEnemy, dgmnIndex, statMods) {
+    if (!_this.battleUtility.hasBuffedStat(statMods)) return;
+    _this.dgmnStatusCanvas.drawDgmnStatBuff(isEnemy, dgmnIndex, _this.systemAH.fetchImage('statBuff'));
+  });
+  _defineProperty(this, "drawDgmnStatDebuff", function (isEnemy, dgmnIndex, statMods) {
+    if (!_this.battleUtility.hasdeBuffedStat(statMods)) return;
+    _this.dgmnStatusCanvas.drawDgmnStatDebuff(isEnemy, dgmnIndex, _this.systemAH.fetchImage('statDebuff'));
+  });
+  _defineProperty(this, "drawDgmnCondition", function (isEnemy, dgmnIndex, condition) {
+    if (!condition) return;
+    _this.dgmnStatusCanvas.drawDgmnCondition(isEnemy, dgmnIndex, _this.systemAH.fetchImage(condition + 'Condition'));
+  });
+  _defineProperty(this, "drawActionText", function (species, messages) {
+    _this.battleMenu.drawActionText(species, messages);
   });
   _defineProperty(this, "drawBattleCanvas", function () {
     _this.battleCanvas.drawBattleBase(_this.systemAH.fetchImage('battleBackground'));
@@ -5371,7 +6178,7 @@ var Battle = function Battle(isBoss, floorNumber) {
     _this.battleMenu.menuCanvas.clearCanvas();
     _this.battleMenu = null;
     _this.stopDgmnBattleCanvas();
-    _this.dgmnGrowthMenu = new DgmnGrowthMenu('victory', _this.dgmnAH, _this.systemAH, _this.gameAH, _this.battleAH, 'victory');
+    _this.dgmnGrowthMenu = new DgmnGrowthMenu('victory', _this.dgmnAH, _this.isBoss, _this.systemAH, _this.gameAH, _this.battleAH, 'victory');
     _this.battleIO.setMenuAH(_this.dgmnGrowthMenu.dgmnGrowthMenuAH);
     _this.dgmnGrowthMenu.gotoRewards(_this.battleRewards);
   });
@@ -5431,6 +6238,10 @@ var Battle = function Battle(isBoss, floorNumber) {
   _defineProperty(this, "getBattleState", function () {
     return _this.battleState;
   });
+  _defineProperty(this, "getIsBoss", function () {
+    return _this.isBoss;
+  });
+  this.isDebug = isDebug;
   this.battleActive = true;
   this.turn = 0;
   this.yourParty;
@@ -5560,7 +6371,7 @@ var Floor = function Floor(_floorNumber) {
     _this.dungeonAH = actionHandler;
   });
   _defineProperty(this, "initCanvas", function () {
-    _this.floorCanvas = new FloorCanvas('floor-canvas', _this.roomMatrix.length * 128, _this.roomMatrix[0].length * 128);
+    _this.floorCanvas = new FloorCanvas('floor-canvas', _this.roomMatrix[0].length * 128, _this.roomMatrix.length * 128);
   });
   _defineProperty(this, "generateFloor", function () {
     _this.roomMatrix = _this.buildRoomMatrix(_this.number);
@@ -6046,6 +6857,8 @@ var DungeonIO = function (_IO) {
           _this.menuAH.giveCurrReward('right');
         } else if (_this.menuAH.getState() === 'hatch-choice') {
           _this.menuAH.nextHatch();
+        } else if (_this.menuAH.getState() === 'evo-choice') {
+          _this.menuAH.nextEvo();
         }
       } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
         if (_this.menuAH.getState() === 'main') {
@@ -6072,6 +6885,8 @@ var DungeonIO = function (_IO) {
           _this.menuAH.giveCurrReward('left');
         } else if (_this.menuAH.getState() === 'hatch-choice') {
           _this.menuAH.prevHatch();
+        } else if (_this.menuAH.getState() === 'evo-choice') {
+          _this.menuAH.prevEvo();
         }
       } else if (_this.dungeonAH.getDungeonState() === 'main-menu') {
         if (_this.menuAH.getState() === 'main') {
@@ -6251,6 +7066,7 @@ var PauseMenu = function (_Menu) {
       _this.addSubMenu('main', new IconMenu([16, 16], ['items', 'beetle'], 'pause-main'));
       _this.currSubMenu = 'main';
       _this.subMenus.main.isVisible = true;
+      if (_this.digiBeetleAH.getToolBoxItems().length === 0) _this.subMenus.main.disabledIcons.push('items');
       _this.subMenus.main.images = _this.buildIconImages(_this.subMenus.main.iconList);
       _this.subMenus.main.drawIcons(0);
       _this.drawMenu();
@@ -6291,6 +7107,10 @@ var PauseMenu = function (_Menu) {
       _this.refreshItemMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "refreshItemMenu", function () {
+      if (_this.digiBeetleAH.getToolBoxItems().length === 0) {
+        _this.closeItemMenu();
+        return;
+      }
       _this.drawTopText('Select an Item');
       _this.subMenus.items.currIndex = 0;
       _this.subMenus.items.drawMenu();
@@ -6475,11 +7295,12 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     _this.yourParty = _this.gameAH.getDgmnParty();
     _this.systemAH.startLoading(function () {
       _this.gameAH.addCanvasObject(_this.dungeonCanvas);
-      _this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch', _this.dgmnAH, _this.systemAH, _this.gameAH, _this.dungeonAH, 'hatching');
+      _this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch', _this.dgmnAH, false, _this.systemAH, _this.gameAH, _this.dungeonAH, 'hatching');
       _this.dungeonIO.setMenuAH(_this.dgmnGrowthMenu.dgmnGrowthMenuAH);
       _this.pauseMenu = new PauseMenu(_this.yourParty, _this.dgmnAH, _this.digiBeetleAH, _this.systemAH, _this.gameAH, _this.dungeonAH);
       _this.systemAH.loadImages(fieldIcons, function () {
         _this.dgmnGrowthMenu.gotoRewards([_this.dgmnUtility.getRandomField()]);
+        _this.dungeonCanvas.blackFill();
         _this.drawDungeon();
         _this.systemAH.stopLoading();
       });
@@ -6562,6 +7383,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   _defineProperty(this, "goUpFloor", function () {
     if (_this.floorNumber === 5) {
       debugLog("Dungeon Clear!");
+      _this.goBackToTown();
     } else {
       debugLog("Ascending Floor...");
       _this.moving = 'none';
@@ -6582,6 +7404,12 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
         });
       });
     }
+  });
+  _defineProperty(this, "goBackToTown", function () {
+    debugLog("Returning to town...");
+    _this.systemAH.startLoading(function () {
+      _this.gameAH.clearDungeon();
+    });
   });
   _defineProperty(this, "startBattle", function () {
     debugLog("Starting Battle...");
@@ -6774,6 +7602,131 @@ var TitleMenu = function (_Menu) {
   return TitleMenu;
 }(Menu);
 
+var TownAH = function TownAH(cbObj) {
+  _classCallCheck(this, TownAH);
+  this.drawTown = function () {
+    cbObj.drawTownCB();
+  };
+  this.enterTower = function () {
+    cbObj.enterTowerCB();
+  };
+};
+
+var TOWN_SCENE_CHOICES = {
+  tower: ['Enter', 'Chat', 'Leave']
+};
+var TOWN_DGMN_TALKER = {
+  tower: ['toko']
+};
+var TOWN_DGMN_DIALOG = {
+  tower: {
+    INTRO: ['Hi there! Your DigiBeetle is prepped and ready to go!']
+  }
+};
+var TOWN_TOP_TEXT = {
+  tower: ['Enter the Tower!', 'Talk to someone', 'Back to Town Map']
+};
+
+var TownMenu = function (_Menu) {
+  _inherits(TownMenu, _Menu);
+  var _super = _createSuper(TownMenu);
+  function TownMenu() {
+    var _this;
+    _classCallCheck(this, TownMenu);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "buildScene", function (currScene, locationLevel) {
+      var optionCount = TOWN_SCENE_CHOICES[currScene].length;
+      _this.drawBackground('town_menu_background');
+      _this.topTxt.instantText(_this.menuCanvas.ctx, TOWN_TOP_TEXT[currScene][0]);
+      _this.chatTxt.timedText(_this.menuCanvas.ctx, TOWN_DGMN_DIALOG[currScene].INTRO[locationLevel], _this.drawMenu);
+      _this.addSubMenu(currScene, new ListMenu([12, 13 - optionCount], optionCount, 6, 1, TOWN_SCENE_CHOICES[currScene], _this.systemAH.fetchImage('miniCursor'), null, currScene));
+      _this.subMenus.tower.isVisible = true;
+      _this.subMenus.tower.drawMenu();
+      _this.drawDgmnPortrait(_this.systemAH.fetchImage(TOWN_DGMN_TALKER[currScene][locationLevel] + 'Portrait'));
+      _this.drawMenu();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawMenu", function () {
+      for (var key in _this.subMenus) {
+        if (_this.subMenus[key].isVisible) {
+          _this.menuCanvas.paintCanvas(_this.subMenus[key].menuCanvas);
+        }
+      }
+      _this.parentAH.drawTown();
+    });
+    _defineProperty(_assertThisInitialized(_this), "drawDgmnPortrait", function (portraitImg) {
+      _this.menuCanvas.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * CFG.screenSize, 32 * CFG.screenSize, (32 - 1) * CFG.screenSize);
+    });
+    _this.sceneMenu;
+    _this.topTxt = new TextArea(0, 0, 20, 1);
+    _this.chatTxt = new TextArea(4, 14, 16, 4);
+    return _this;
+  }
+  return TownMenu;
+}(Menu);
+
+var TownIO = function (_IO) {
+  _inherits(TownIO, _IO);
+  var _super = _createSuper(TownIO);
+  function TownIO(townAH) {
+    var _this;
+    _classCallCheck(this, TownIO);
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "actionKeyHandler", function (upDown) {
+      _this.townAH.enterTower();
+    });
+    _this.townAH = townAH;
+    _this.menuAH;
+    return _this;
+  }
+  return TownIO;
+}(IO);
+
+var Town = function Town(systemAH, gameAH) {
+  var _this = this;
+  _classCallCheck(this, Town);
+  _defineProperty(this, "init", function () {
+    _this.systemAH.startLoading(function () {
+      _this.gameAH.addCanvasObject(_this.townCanvas);
+      _this.systemAH.loadImages(townImages.concat(townDgmnPortraits), function () {
+        _this.inTown = true;
+        _this.townMenu.buildScene('tower', _this.townLevels.tower);
+        _this.drawTown();
+        _this.systemAH.stopLoading();
+      });
+    });
+  });
+  _defineProperty(this, "enterTower", function () {
+    debugLog("Entering Tower...");
+    _this.inTown = false;
+    _this.gameAH.buildDungeon();
+  });
+  _defineProperty(this, "drawTown", function () {
+    _this.townCanvas.paintCanvas(_this.townMenu.menuCanvas);
+    _this.gameAH.refreshScreen();
+  });
+  this.systemAH = systemAH;
+  this.gameAH = gameAH;
+  this.state = 'tower';
+  this.inTown = false;
+  this.townAH = new TownAH({
+    drawTownCB: this.drawTown,
+    enterTowerCB: this.enterTower
+  });
+  this.townIO = new TownIO(this.townAH);
+  this.townCanvas = new GameCanvas('dungeon-canvas', 160, 144);
+  this.townMenu = new TownMenu(systemAH, gameAH, this.townAH, 'town');
+  this.townLevels = {
+    tower: 0
+  };
+}
+;
+
 var Game = function Game(systemAH) {
   var _this = this;
   _classCallCheck(this, Game);
@@ -6788,13 +7741,13 @@ var Game = function Game(systemAH) {
   _defineProperty(this, "startNewGame", function () {
     _this.atTitle = false;
     setTimeout(function () {
-      _this.buildDungeon();
+      _this.buildTown();
     }, 500);
   });
-  _defineProperty(this, "startBattle", function () {
+  _defineProperty(this, "startBattle", function (isDebug) {
     var _this$dungeon, _this$digiBeetle;
     debugLog("Starting Battle...");
-    _this.battle = new Battle(_this.dungeon.floor.isBossFloor, _this.dungeon.floor.number);
+    _this.battle = new Battle(_this.dungeon.floor.isBossFloor, isDebug);
     _this.battle.initAH(_this.systemAH, _this.gameAH, _this.yourDgmn.dgmnAH, (_this$dungeon = _this.dungeon) === null || _this$dungeon === void 0 ? void 0 : _this$dungeon.dungeonAH, (_this$digiBeetle = _this.digiBeetle) === null || _this$digiBeetle === void 0 ? void 0 : _this$digiBeetle.digiBeetleAH);
     _this.battle.init();
   });
@@ -6821,6 +7774,11 @@ var Game = function Game(systemAH) {
     _this.dungeon.initAH(_this.systemAH, _this.gameAH, _this.digiBeetle.digiBeetleAH, _this.yourDgmn.dgmnAH);
     _this.dungeon.init();
   });
+  _defineProperty(this, "buildTown", function () {
+    _this.atTitle = false;
+    _this.town = new Town(_this.systemAH, _this.gameAH);
+    _this.town.init();
+  });
   _defineProperty(this, "setupPartyDgmn", function () {
     _this.yourDgmn.buildPartyEggs();
   });
@@ -6831,6 +7789,11 @@ var Game = function Game(systemAH) {
   _defineProperty(this, "onDungeonLoad", function () {
     debugLog("Dungeon Loaded...");
     _this.drawGameScreen();
+  });
+  _defineProperty(this, "clearDungeon", function () {
+    debugLog("Clearing Dungeon...");
+    _this.dungeon = null;
+    _this.buildTown();
   });
   _defineProperty(this, "addToObjectList", function (newObject) {
     if (_this.objectList.indexOf(newObject) === -1) {
@@ -6899,21 +7862,33 @@ var Game = function Game(systemAH) {
     }
   });
   _defineProperty(this, "keyManager", function (key, upDown) {
-    var _this$battle, _this$dungeon2;
+    var _this$town, _this$battle, _this$dungeon2;
     _this.keyTimers[key]++;
     if (_this.atTitle) {
       _this.titleKeyManager(key, upDown);
+      return;
+    }
+    if ((_this$town = _this.town) !== null && _this$town !== void 0 && _this$town.inTown) {
+      _this.townKeyManager(key, upDown);
+      return;
     }
     if ((_this$battle = _this.battle) !== null && _this$battle !== void 0 && _this$battle.battleActive) {
       _this.battleKeyManager(key, upDown);
+      return;
     }
     if (((_this$dungeon2 = _this.dungeon) === null || _this$dungeon2 === void 0 ? void 0 : _this$dungeon2.dungeonState) !== 'loading') {
       _this.dungeonKeyManager(key, upDown);
+      return;
     }
   });
   _defineProperty(this, "titleKeyManager", function (key, upDown) {
     if (_this.keyTimers[key] === 2) {
       _this.titleMenu.titleMenuIO.keyTriage(key, upDown);
+    }
+  });
+  _defineProperty(this, "townKeyManager", function (key, upDown) {
+    if (_this.keyTimers[key] == 2) {
+      _this.town.townIO.keyTriage(key, upDown);
     }
   });
   _defineProperty(this, "battleKeyManager", function (key, upDown) {
@@ -6951,7 +7926,8 @@ var Game = function Game(systemAH) {
     getDgmnPartyCB: this.getDgmnParty,
     endBattleCB: this.endBattle,
     buildDungeonCB: this.buildDungeon,
-    startNewGameCB: this.startNewGame
+    startNewGameCB: this.startNewGame,
+    clearDungeonCB: this.clearDungeon
   });
   this.systemAH = systemAH;
   this.yourDgmn = new DgmnManager(this.systemAH);
@@ -6960,6 +7936,7 @@ var Game = function Game(systemAH) {
   this.atTitle = true;
   this.battle;
   this.dungeon;
+  this.town;
   this.gameCanvas = new GameCanvas('game-canvas', 160, 144);
   this.objectList = [];
   this.keyState = {};
@@ -6991,6 +7968,42 @@ var Controller = function Controller(setKeyState) {
     });
     document.getElementById('action').addEventListener('touchend', function (e) {
       _this.setKeyState('ArrowRight', false);
+    });
+    document.getElementById('cancel').addEventListener('touchstart', function (e) {
+      _this.setKeyState('ArrowDown', true);
+    });
+    document.getElementById('cancel').addEventListener('touchend', function (e) {
+      _this.setKeyState('ArrowDown', false);
+    });
+    document.getElementById('dpad-up').addEventListener('touchstart', function (e) {
+      _this.setKeyState('w', true);
+    });
+    document.getElementById('dpad-up').addEventListener('touchend', function (e) {
+      _this.setKeyState('w', false);
+    });
+    document.getElementById('dpad-right').addEventListener('touchstart', function (e) {
+      _this.setKeyState('d', true);
+    });
+    document.getElementById('dpad-right').addEventListener('touchend', function (e) {
+      _this.setKeyState('d', false);
+    });
+    document.getElementById('dpad-down').addEventListener('touchstart', function (e) {
+      _this.setKeyState('s', true);
+    });
+    document.getElementById('dpad-down').addEventListener('touchend', function (e) {
+      _this.setKeyState('s', false);
+    });
+    document.getElementById('dpad-left').addEventListener('touchstart', function (e) {
+      _this.setKeyState('a', true);
+    });
+    document.getElementById('dpad-left').addEventListener('touchend', function (e) {
+      _this.setKeyState('a', false);
+    });
+    document.getElementById('start').addEventListener('touchstart', function (e) {
+      _this.setKeyState('Shift', true);
+    });
+    document.getElementById('start').addEventListener('touchend', function (e) {
+      _this.setKeyState('Shift', false);
     });
   });
   _defineProperty(this, "connectEventListener", function () {
@@ -7024,9 +8037,12 @@ var DebugMenu = function DebugMenu(game) {
       var newValue = document.body.dataset.view === 'mobile' ? 'dotcom' : 'mobile';
       document.body.dataset.view = newValue;
       if (newValue === 'mobile') {
-        document.querySelector(".mobile-controls");
+        var mobileControllerElem = document.querySelector(".mobile-controls");
         if (document.body.dataset.view === 'mobile') {
-          document.getElementById("game-screen").offsetHeight;
+          var windowHeight = window.innerHeight;
+          var screenHeight = document.getElementById("game-screen").offsetHeight;
+          mobileControllerElem.style.height = "".concat(windowHeight - screenHeight, "px");
+          mobileControllerElem.style.top = "".concat(screenHeight + 80, "px");
         }
       }
     });
@@ -7037,6 +8053,12 @@ var DebugMenu = function DebugMenu(game) {
   this.game = game;
   this.activate();
   this.launchBattle = function () {
+    for (var i = 0; i < 3; i++) {
+      _this.game.yourDgmn.allDgmn['dId' + i].hatchSetup();
+      _this.game.yourDgmn.allDgmn['dId' + i].speciesName = DEBUG_YOUR_TEAM[i].speciesName;
+      _this.game.yourDgmn.allDgmn['dId' + i].currentStats = DEBUG_YOUR_TEAM[i].currentStats;
+      _this.game.yourDgmn.allDgmn['dId' + i].currentHP = DEBUG_YOUR_TEAM[i].currentStats.HP;
+    }
     _this.game.dungeon = {
       floor: {
         isBossFloor: false,
@@ -7052,7 +8074,7 @@ var DebugMenu = function DebugMenu(game) {
       }
     };
     _this.game.atTitle = false;
-    _this.game.startBattle();
+    _this.game.startBattle(true);
   };
   this.launchDungeon = function () {
     _this.game.buildDungeon();
@@ -7138,7 +8160,7 @@ var System = function System() {
     debugLog("Starting System...");
     _this.pluginController();
     if (inDebug()) _this.debugMenu = new DebugMenu(_this.game);
-    _this.imageHandler.addToQueue(genericImages.concat(fontImages$1).concat(loadingImages), _this.onGenericImagesLoaded);
+    _this.imageHandler.addToQueue(genericImages.concat(fontImages$1).concat(loadingImages).concat(typeIcons), _this.onGenericImagesLoaded);
   });
   _defineProperty(this, "onGenericImagesLoaded", function () {
     _this.game.bootGame();
@@ -7219,10 +8241,21 @@ var System = function System() {
 window.onload = function () {
   init();
 };
+var setIsMobile = function setIsMobile() {
+  if (navigator.userAgent.match(/Android/i)) {
+    document.body.dataset.view = 'mobile';
+    var mobileControllerElem = document.querySelector(".mobile-controls");
+    var windowHeight = window.innerHeight;
+    var screenHeight = document.getElementById("game-screen").offsetHeight;
+    mobileControllerElem.style.height = "".concat(windowHeight - screenHeight, "px");
+    mobileControllerElem.style.top = "".concat(screenHeight, "px");
+  }
+};
 function init() {
   debugLog("Booting for ".concat(CFG.userName, "..."));
   var system = new System();
   setTimeout(function () {
     system.start();
+    setIsMobile();
   }, 1000);
 }

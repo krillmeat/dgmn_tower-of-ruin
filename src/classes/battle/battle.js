@@ -16,7 +16,8 @@ import CannonManager from "../../battle/components/cannon-manager";
 // TODO - Do I have too many "pass-throughs"? Functions in here that only serve to call a Child Class function
 
 class Battle {
-  constructor(isBoss,floorNumber){ // TODO - Needs floor and mods to determine enemies
+  constructor(isBoss,isDebug){ // TODO - Needs floor and mods to determine enemies
+   this.isDebug = isDebug;                        // Used so I can test specific battles
     this.battleActive = true;
     this.turn = 0;                               // Which Turn it currently is
     this.yourParty;                              // Your Dgmn : TODO - gameAH Reference to fetch this
@@ -191,7 +192,7 @@ class Battle {
    * ----------------------------------------------------------------------*/
   generateEnemyParty = () => {
     // TODO - I need to save/get max floor (but for now, set to 3)
-  let currentFloor = this.dungeonAH ? this.dungeonAH.getCurrentFloor() : 1; // TODO - Only for debug
+  let currentFloor = !this.isDebug ? this.dungeonAH.getCurrentFloor() : 0;
   this.dgmnAH.generateEnemies(currentFloor,3);
   }
 
@@ -207,8 +208,10 @@ class Battle {
     for(let i = 0; i < order.length; i++){
       for(let r = 0; r < order.length - 1; r++){
         let temp = order[r];
-        let currSPD = this.dgmnAH.getDgmnData(order[r],['currentStats'],order[r].charAt(0) === 'e').currentStats.SPD;
-        let nextSPD = this.dgmnAH.getDgmnData(order[r+1],['currentStats'],order[r+1].charAt(0) === 'e').currentStats.SPD;
+        let currSPD = this.dgmnAH.getDgmnData(order[r],['currentStats'],order[r].charAt(0) === 'e').currentStats.SPD *
+                      this.dgmnAH.getDgmnData(order[r],['statMods'],order[r].charAt(0) === 'e').statMods.SPD;
+        let nextSPD = this.dgmnAH.getDgmnData(order[r+1],['currentStats'],order[r+1].charAt(0) === 'e').currentStats.SPD *
+                      this.dgmnAH.getDgmnData(order[r+1],['statMods'],order[r+1].charAt(0) === 'e').statMods.SPD;
         if(currSPD < nextSPD){
           order[r] = order[r+1];
           order[r+1] = temp;
@@ -242,13 +245,18 @@ class Battle {
    * @param {Number}  dgmnIndex Spot in the DGMN Array
    * ----------------------------------------------------------------------*/
   updateDgmnStatus = (isEnemy,dgmnIndex) => {
-    let dgmnData = isEnemy ? this.dgmnAH.getDgmnData(this.enemyParty[dgmnIndex],['combo','weak','isDead'],true) :
-                              this.dgmnAH.getDgmnData(this.yourParty[dgmnIndex],['combo','weak','isDead'],false);
+    let dgmnData = isEnemy ? this.dgmnAH.getDgmnData(this.enemyParty[dgmnIndex],['combo','weak','isDead','statMods','condition'],true) :
+                             this.dgmnAH.getDgmnData(this.yourParty[dgmnIndex],['combo','weak','isDead','statMods','condition'],false);
                               
       this.drawDgmnStatusMeter(isEnemy,dgmnIndex,'hp');
       this.drawDgmnStatusMeter(isEnemy,dgmnIndex,'en');
       this.drawDgmnStatusCombo(isEnemy,dgmnIndex,dgmnData.combo);
       this.drawDgmnStatusWeak(isEnemy,dgmnIndex,dgmnData.weak);
+
+      if(!dgmnData.isDead){
+        this.drawDgmnStatBuff(isEnemy,dgmnIndex,dgmnData.statMods);
+        this.drawDgmnCondition(isEnemy,dgmnIndex,dgmnData.condition?.type);
+      }
   }
 
   /**------------------------------------------------------------------------
@@ -256,6 +264,7 @@ class Battle {
    * ------------------------------------------------------------------------
    * Updates the HP or EN meter for a specific DGMN
    * TODO - Why is this in Battle?
+   *        and why am I sending in the coordinates and not an offset?
    * ------------------------------------------------------------------------
    * @param {Boolean} isEnemy   True if Dgmn is an Enemy
    * @param {Number}  dgmnIndex Spot the Dgmn is in
@@ -289,7 +298,7 @@ class Battle {
   }
 
   /**------------------------------------------------------------------------
-   * DRAW DGMN WEAK - COMBO                                        
+   * DRAW DGMN STATUS - WEAK                                       
    * ------------------------------------------------------------------------
    * Draws the WEAK state in the Status Bar for a Dgmn
    * ----------------------------------------------------------------------*/
@@ -300,13 +309,44 @@ class Battle {
   }
 
   /**------------------------------------------------------------------------
+   * DRAW DGMN STATUS - STAT BUFF                                      
+   * ------------------------------------------------------------------------
+   * Draws an Icon if the DGMN has a stat Buffed
+   * ----------------------------------------------------------------------*/
+   drawDgmnStatBuff = (isEnemy,dgmnIndex,statMods) => {
+    if(!this.battleUtility.hasBuffedStat(statMods)) return;
+    this.dgmnStatusCanvas.drawDgmnStatBuff(isEnemy,dgmnIndex,this.systemAH.fetchImage('statBuff'));
+  }
+
+  
+  /**------------------------------------------------------------------------
+   * DRAW DGMN STATUS - STAT DEBUFF                                      
+   * ------------------------------------------------------------------------
+   * Draws an Icon if the DGMN has a stat Debuffed
+   * ----------------------------------------------------------------------*/
+   drawDgmnStatDebuff = (isEnemy,dgmnIndex,statMods) => {
+    if(!this.battleUtility.hasdeBuffedStat(statMods)) return;
+    this.dgmnStatusCanvas.drawDgmnStatDebuff(isEnemy,dgmnIndex,this.systemAH.fetchImage('statDebuff'));
+  }
+
+  /**------------------------------------------------------------------------
+   * DRAW DGMN STATUS - CONDITION                                     
+   * ------------------------------------------------------------------------
+   * Draws an Icon if the DGMN has a stat Debuffed
+   * ----------------------------------------------------------------------*/
+   drawDgmnCondition = (isEnemy,dgmnIndex,condition) => {
+    if(!condition) return;
+    this.dgmnStatusCanvas.drawDgmnCondition(isEnemy,dgmnIndex,this.systemAH.fetchImage(condition+'Condition'));
+  }
+
+  /**------------------------------------------------------------------------
    * DRAW ACTION TEXT                                     
    * ------------------------------------------------------------------------
    * Passthrough to the Battle Menu to draw a message
    * TODO - This seems like the wrong place for this
    * ----------------------------------------------------------------------*/
-  drawActionText = (species,message) => {
-    this.battleMenu.drawActionText(species,message);
+  drawActionText = (species,messages) => {
+    this.battleMenu.drawActionText(species,messages);
   }
 
   /**------------------------------------------------------------------------
@@ -446,7 +486,7 @@ class Battle {
     this.battleMenu = null;
     this.stopDgmnBattleCanvas();  // Get rid of the Animating DGMN Party
 
-    this.dgmnGrowthMenu = new DgmnGrowthMenu('victory',this.dgmnAH,this.systemAH,this.gameAH,this.battleAH,'victory');
+    this.dgmnGrowthMenu = new DgmnGrowthMenu('victory',this.dgmnAH,this.isBoss,this.systemAH,this.gameAH,this.battleAH,'victory');
         this.battleIO.setMenuAH(this.dgmnGrowthMenu.dgmnGrowthMenuAH);
     this.dgmnGrowthMenu.gotoRewards(this.battleRewards);
     // }
@@ -566,6 +606,8 @@ class Battle {
   }
 
   getBattleState = () => { return this.battleState }
+  
+  getIsBoss = () => this.isBoss;
 
 }
 

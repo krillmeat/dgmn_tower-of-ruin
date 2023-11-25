@@ -9,6 +9,7 @@ import Battle from "../classes/battle/battle";
 import Dungeon from "../dungeon/dungeon";
 import GameCanvas from "../classes/canvas";
 import TitleMenu from "../classes/title/title-menu";
+import Town from "../town/town";
 
 /**------------------------------------------------------------------------
  * GAME
@@ -28,7 +29,8 @@ class Game{
       getDgmnPartyCB: this.getDgmnParty,
       endBattleCB: this.endBattle,
       buildDungeonCB: this.buildDungeon,
-      startNewGameCB: this.startNewGame
+      startNewGameCB: this.startNewGame,
+      clearDungeonCB: this.clearDungeon
     });
     this.systemAH = systemAH;                                   // Action Handlers used by this Class
 
@@ -37,7 +39,7 @@ class Game{
 
     this.titleMenu = new TitleMenu(this.systemAH,this.gameAH);  // Initial Menu at the Boot of the Game
     this.atTitle = true;                                        // TODO - Find a way to not have this here (move to Title Menu)
-    this.battle; this.dungeon;                                  // Major Components inside of the Game
+    this.battle; this.dungeon; this.town;                       // Major Components inside of the Game
 
     this.gameCanvas = new GameCanvas('game-canvas',160,144);    // Everything inside of the Game is drawn here  
     this.objectList = [];                                       // All of the Canvases inside of the Game that should be drawn at a given time
@@ -79,7 +81,8 @@ class Game{
    * ----------------------------------------------------------------------*/
   startNewGame = () => {
     this.atTitle = false;
-    setTimeout(()=>{ this.buildDungeon() },500);
+    // setTimeout(()=>{ this.buildDungeon() },500); TODO - TOWN
+    setTimeout(() => { this.buildTown() }, 500);
   }
 
   /**------------------------------------------------------------------------
@@ -87,9 +90,9 @@ class Game{
    * ------------------------------------------------------------------------
    * Gathers up needed data and starts a battle.
    * ----------------------------------------------------------------------*/
-  startBattle = () => {
+  startBattle = isDebug => {
     debugLog("Starting Battle...");
-    this.battle = new Battle(this.dungeon.floor.isBossFloor,this.dungeon.floor.number);
+    this.battle = new Battle(this.dungeon.floor.isBossFloor,isDebug);
     this.battle.initAH(this.systemAH,this.gameAH,this.yourDgmn.dgmnAH,this.dungeon?.dungeonAH,this.digiBeetle?.digiBeetleAH);
     this.battle.init();
   }
@@ -134,6 +137,18 @@ class Game{
     // START EVERYTHING
     this.dungeon.init();
   }
+  
+  /**------------------------------------------------------------------------
+   * BUILD TOWN                                                 [[EXPORTED ]]
+   * ------------------------------------------------------------------------
+   * Gets everything ready and launches the Town
+   * ----------------------------------------------------------------------*/
+  buildTown = () => {
+    this.atTitle = false;
+
+    this.town = new Town(this.systemAH,this.gameAH);
+    this.town.init();
+  }
 
   /**------------------------------------------------------------------------
    * SETUP PARTY DGMN
@@ -163,6 +178,19 @@ class Game{
   onDungeonLoad = () => {
     debugLog("Dungeon Loaded...");
     this.drawGameScreen();
+  }
+
+  /**------------------------------------------------------------------------
+   * CLEAR DUNGEON                                               [[EXPORTED]]
+   * ------------------------------------------------------------------------
+   * Gets rid of the Dungeon and takes you back to Town
+   * ------------------------------------------------------------------------
+   * @param {Object} newObject  New item to add to the list
+   * ----------------------------------------------------------------------*/
+  clearDungeon = () => {
+    debugLog("Clearing Dungeon...");
+    this.dungeon = null;
+    this.buildTown();
   }
 
   /**------------------------------------------------------------------------
@@ -247,9 +275,10 @@ class Game{
   keyManager = (key, upDown) => {
     this.keyTimers[key]++;
 
-    if(this.atTitle){ this.titleKeyManager(key,upDown) }
-    if(this.battle?.battleActive){ this.battleKeyManager(key,upDown); }
-    if(this.dungeon?.dungeonState !== 'loading'){ this.dungeonKeyManager(key,upDown) } // TODO - Probably need to set the Dungeon state to not loading during battle and other events
+    if(this.atTitle){ this.titleKeyManager(key,upDown); return }
+    if(this.town?.inTown){ this.townKeyManager(key,upDown); return }
+    if(this.battle?.battleActive){ this.battleKeyManager(key,upDown); return }
+    if(this.dungeon?.dungeonState !== 'loading'){ this.dungeonKeyManager(key,upDown); return } // TODO - Probably need to set the Dungeon state to not loading during battle and other events
   }
     
     /**------------------------------------------------------------------------
@@ -262,6 +291,20 @@ class Game{
      * ----------------------------------------------------------------------*/
     titleKeyManager = (key,upDown) => {
       if(this.keyTimers[key] === 2){ this.titleMenu.titleMenuIO.keyTriage(key,upDown) }
+    }
+
+    /**------------------------------------------------------------------------
+     * TOWN KEY MANAGER
+     * ------------------------------------------------------------------------
+     * Key Manager for exploring the Town
+     * ------------------------------------------------------------------------
+     * @param {String} key    Not the event listener Key, but the System Action Key
+     * @param {String} upDown Picking up or putting down - up|down
+     * ----------------------------------------------------------------------*/
+    townKeyManager = (key,upDown) => {
+      if(this.keyTimers[key] == 2){
+        this.town.townIO.keyTriage(key,upDown);
+      }
     }
 
     

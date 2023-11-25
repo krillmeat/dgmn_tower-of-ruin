@@ -51,6 +51,8 @@ class DgmnUtility{
     return dgmnDB[speciesName].stage;
   }
 
+  getTypeAffinities = speciesName => dgmnDB[speciesName].types
+
   getAttribute = species => {
     return dgmnDB[species].attr;
   }
@@ -153,6 +155,15 @@ class DgmnUtility{
   calcFPStatBoost = (currentFP,stat) => {
     const field = FIELD_STATS[stat];
     return Math.floor(Math.pow(currentFP[field],1/2));
+  }
+
+  getConditionMessage = condition => {
+    switch(condition){
+      case 'overheat':
+        return ' is Overheating'
+      default:
+        return ''
+    }
   }
 
 }

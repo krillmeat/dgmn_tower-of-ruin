@@ -46,6 +46,7 @@ class PauseMenu extends Menu{
     this.addSubMenu('main',new IconMenu([16,16],['items','beetle'],'pause-main'));
     this.currSubMenu = 'main';
     this.subMenus.main.isVisible = true;
+    if(this.digiBeetleAH.getToolBoxItems().length === 0) this.subMenus.main.disabledIcons.push('items');
     this.subMenus.main.images = this.buildIconImages( this.subMenus.main.iconList );
     this.subMenus.main.drawIcons(0);
     this.drawMenu();
@@ -114,6 +115,7 @@ class PauseMenu extends Menu{
   }
 
   refreshItemMenu = () => {
+    if(this.digiBeetleAH.getToolBoxItems().length === 0){ this.closeItemMenu(); return }
     this.drawTopText('Select an Item');
     this.subMenus.items.currIndex = 0;
     this.subMenus.items.drawMenu();

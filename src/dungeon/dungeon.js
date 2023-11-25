@@ -78,12 +78,14 @@ class Dungeon{
     this.systemAH.startLoading(()=>{
       this.gameAH.addCanvasObject(this.dungeonCanvas);
       
-      this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch',this.dgmnAH,this.systemAH,this.gameAH,this.dungeonAH,'hatching');
+      this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch',this.dgmnAH,false,this.systemAH,this.gameAH,this.dungeonAH,'hatching');
         this.dungeonIO.setMenuAH(this.dgmnGrowthMenu.dgmnGrowthMenuAH);
       this.pauseMenu = new PauseMenu(this.yourParty,this.dgmnAH,this.digiBeetleAH,this.systemAH,this.gameAH,this.dungeonAH);
 
       this.systemAH.loadImages(fieldIcons, ()=>{
         this.dgmnGrowthMenu.gotoRewards([this.dgmnUtility.getRandomField()]);
+
+        this.dungeonCanvas.blackFill(); // Gets rid of all of the remaining Town Screen images
         this.drawDungeon();
         this.systemAH.stopLoading();
       });
@@ -247,6 +249,7 @@ class Dungeon{
   goUpFloor = () => {
     if(this.floorNumber === 5){ // TODO - This number should change
       debugLog("Dungeon Clear!");
+      this.goBackToTown();
     } else{
       debugLog("Ascending Floor...");
       this.moving = 'none';
@@ -269,7 +272,20 @@ class Dungeon{
         });
       })
     }
-    
+  }
+
+  
+  /**------------------------------------------------------------------------
+   * GO BACK TO TOWN                                               
+   * ------------------------------------------------------------------------
+   * Clears all of the Dungeon data and sends you back to the Town
+   * TODO - Also needs to reset your DGMN
+   * ----------------------------------------------------------------------*/
+  goBackToTown = () => {
+    debugLog("Returning to town...");
+    this.systemAH.startLoading(()=>{
+      this.gameAH.clearDungeon();
+    })
   }
 
   /**------------------------------------------------------------------------

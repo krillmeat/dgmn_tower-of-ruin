@@ -1,4 +1,3 @@
-import CFG from "../../config";
 import GameCanvas from "../canvas";
 
 class ContinueCursor{

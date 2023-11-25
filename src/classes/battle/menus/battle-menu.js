@@ -81,6 +81,8 @@ class BattleMenu extends Menu{
 
     this.menuCanvas.beetleNicknameTxt.instantText(this.menuCanvas.ctx,'GUNNER','white'); // TODO - Actual Nickname
     this.menuCanvas.beetleTxt.instantText(this.menuCanvas.ctx,'DigiBeetle','green'); // TODO - Beetle "Rank"
+
+    this.menuCanvas.drawDgmnPortrait(this.systemAH.fetchImage('beetlePortrait'))
   }
 
   /**------------------------------------------------------------------------
@@ -133,15 +135,16 @@ class BattleMenu extends Menu{
     let side = flow === 'attack' ? 'enemy' : itemsDB[itemByName[this.currItem.name]].target;
     let hitsAll = flow === 'attack' ? this.currAttackAction.targets === 'all' : itemsDB[itemByName[this.currItem.name]].hitsAll;
     let xOffset = side === 'enemy' ? 0 : 2;
+    let cursorImg = side === 'enemy' ? this.systemAH.fetchImage('cursorLeft') : this.systemAH.fetchImage('cursorRight');
     
     this.addSubMenu('target',new TargetSelect(side,hitsAll,this.dgmnIsDeadCB,this.menuCanvas.ctx,
-      [8+xOffset,2],3,3,4,['one','two','three'],this.systemAH.fetchImage('cursorLeft'),null,'target'));
+      [8+xOffset,2],3,3,4,['one','two','three'],cursorImg,null,'target'));
     this.subMenus.target.currIndex = this.getStartingTarget();
     this.subMenus.target.drawMenu(this.getStartingTarget());
   }
 
     // Used above ^
-    dgmnIsDeadCB = index => { return this.battleAH.getDgmnDataByIndex(index,['isDead'],true).isDead }
+    dgmnIsDeadCB = (index,side) => { return this.battleAH.getDgmnDataByIndex(index,['isDead'],side === 'enemy').isDead }
 
   /**------------------------------------------------------------------------
    * BUILD CANNON LIST 
@@ -217,10 +220,11 @@ class BattleMenu extends Menu{
       this.drawMenu();
     }
 
-  drawActionText = (species,message) => {
-    this.menuCanvas.clearBottomSection();
-    this.menuCanvas.drawDgmnPortrait(this.systemAH.fetchImage(species.toLowerCase()+'Portrait'));
-    this.actionTxt.timedText(this.menuCanvas.ctx,message,this.drawMenu);
+  drawActionText = (species,messages) => {
+    this.actionTxt.multiText(this.menuCanvas.ctx,messages,this.drawMenu,()=>{
+      this.menuCanvas.clearBottomSection();
+      this.menuCanvas.drawDgmnPortrait(this.systemAH.fetchImage(species.toLowerCase()+'Portrait'));
+    })
   }
 
   /**------------------------------------------------------------------------
@@ -469,6 +473,11 @@ class BattleMenu extends Menu{
     this.gotoNextChoice();  // TODO - name should be switched for something like "wrap up turn"
   }
 
+  /**------------------------------------------------------------------------
+   * SET CURRENT CANNON TARGETS
+   * ------------------------------------------------------------------------
+   * Adds Target Data to the current Cannon Options
+   * ----------------------------------------------------------------------*/
   setCurrentCannonTargets = (targets, isEnemy) => {
     this.removeSubMenu(this.currSubMenu);
     this.removeSubMenu('beetle');
@@ -482,7 +491,6 @@ class BattleMenu extends Menu{
    * ------------------------------------------------------------------------
    * After one Digimon is done, should go to the next one
    * TODO - This logic should be somehow merged with the initial drawing
-   * TODO - Getting too big, needs to be split out
    * ----------------------------------------------------------------------*/
   gotoNextChoice = () => {
     debugLog("  - Next Dgmn...");
@@ -554,12 +562,16 @@ class BattleMenu extends Menu{
    * DRAW VICTORY REWARDS 
    * ------------------------------------------------------------------------
    *  Draws the FP (and bonus XP) gained from a Battle on the Victory Screen
+   * ------------------------------------------------------------------------
+   * @param {Array} rewards List of all Rewards gained
+   * @param {Func}  callback  Runs when done (sets state and draws cursor)
    * ----------------------------------------------------------------------*/
   drawVictoryRewards = (rewards,callback) => {
     let i = 0;
     let rewardInterval = setInterval(()=>{
       let image = rewards[i] === 'XP' ? 'xpIconSmall' : `field${rewards[i]}Icon`;
       this.menuCanvas.paintImage(this.systemAH.fetchImage(image),(2+i)*CFG.tileSize,5*CFG.tileSize);
+      this.drawMenu();
       if(i >= rewards.length-1){
         clearInterval(rewardInterval);
         setTimeout(()=>{callback()},500)

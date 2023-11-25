@@ -18,7 +18,7 @@
     this.getDgmnAttackData = (dgmnIndex,data) => { return cbObj.getDgmnAttackDataCB(dgmnIndex,data) }
     this.addAction = (dgmnIndex,isEnemy,actionData) => cbObj.addActionCB(dgmnIndex,isEnemy,actionData)
     this.beginCombat = () => { cbObj.beginCombatCB() }
-    this.drawActionText = (species,message) => { cbObj.drawActionTextCB(species,message) }
+    this.drawActionText = (species,message,eMessage) => { cbObj.drawActionTextCB(species,message,eMessage) }
     this.drawAllStatuses = () => cbObj.drawAllStatusesCB()
     this.newTurn = () => cbObj.newTurnCB()
     this.checkBattleCondition = () => cbObj.checkBattleConditionCB()
