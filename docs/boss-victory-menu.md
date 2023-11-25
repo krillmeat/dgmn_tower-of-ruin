@@ -11,12 +11,12 @@ Here are the possible rewards:
 
 ---
 
-## EXTENDS
-[ListMenu](#boss-victory-menu) :arrow_right: [Menu](#boss-victory-menu)
+## CLASS INFO
 
----
+### EXTENDS
+[ListMenu](#boss-victory-menu) -> [Menu](#boss-victory-menu)
 
-## PARAMETERS 
+### PARAMETERS 
 
 | NAME | TYPE | DESCRIPTION |
 | --------- | ---- | ----------- |
@@ -60,6 +60,12 @@ Draws the Popup Menu for FP
 
 Draws a small, rectangular icon used to show the Upgrade and its unlocked levels
 
+| NAME | TYPE | DESCRIPTION |
+| --------- | ---- | ----------- |
+| row | number | Y Position |
+| col | number | X Position |
+| image | string | Name of the Image used for the Icon |
+
 ### LAUNCH FP SELECTION
 `launchFPSelection()`
 
@@ -76,11 +82,20 @@ Handles the action for Up on the D-Pad. Used for both the main Menu, as well as 
 Handles the action for Down on the D-Pad. Used for both the main Menu, as well as the FP Menu
 
 ### SELECT CHOICE
-`selectChoice()`
+`selectChoice(message,onDone)`
 
 Handles the action for the A Button. Used for both the main Menu, as well as the FP Menu
+
+| NAME | TYPE | DESCRIPTION |
+| --------- | ---- | ----------- |
+| message | string | Message to write after selection is made |
+| onDone | function | Callback for when the message is done writing |
 
 ### DRAW DGMN PORTRAIT
 `drawDgmnPortrait(portraitImg)`
 
 Draws the Portrait of the Currently Shown DGMN
+
+| NAME | TYPE | DESCRIPTION |
+| --------- | ---- | ----------- |
+|
