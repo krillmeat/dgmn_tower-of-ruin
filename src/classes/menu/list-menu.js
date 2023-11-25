@@ -4,6 +4,19 @@ import GameCanvas from "../canvas";
 import { warningLog } from "../../utils/log-utils";
 import TextArea from "../text-area";
 
+/**------------------------------------------------------------------------
+ * LIST MENU
+ * ------------------------------------------------------------------------
+ * Reusable List-style Menu
+ * ------------------------------------------------------------------------
+ * @param {Array}   coord       Coordinates for top-left of Menu : [x,y]
+ * @param {Number}  itemAmount  Number of items/rows
+ * @param {Number}  listWidth   How wide the Menu is
+ * @param {Number}  itemHeight  How many squares tall each item is : default 1
+ * @param {Array}   listItems   List of labels for the items
+ * @param {Image}   cursorImg   Which Cursor Image to use : miniCursor | cursor
+ * @param {Image}   backImg     Background Image for the Menu
+ * ----------------------------------------------------------------------*/
 class ListMenu extends SubMenu{
   constructor(coord,itemAmount,listWidth,itemHeight=1,listItems=[],cursorImg,backImg,...args){
     super(...args);

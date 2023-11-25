@@ -169,6 +169,7 @@ class DgmnGrowthMenu extends Menu{
     // Add Boss Reward SubMenu
     this.addSubMenu('bossReward', 
       new BossVictoryMenu(5,[0,0],3,8,2,['fp','xp','en'],this.systemAH.fetchImage('miniCursor'),null,'bossReward')); // TODO - The 5 is temporary
+
     this.subMenus.bossReward.isVisible = true;
     this.attachImageCallbacks('bossReward');
     this.subMenus.bossReward.drawList();
