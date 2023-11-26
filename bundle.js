@@ -3759,8 +3759,14 @@ var TextArea = function TextArea(x, y, width) {
       if (messages && messages.length !== 0 && messages[0]) _this.multiText(ctx, messages, drawCB, beforeEach);
     }, (currentMessage.length + 10) * 50);
   });
-  _defineProperty(this, "drawChar", function (ctx, _char2, col, row) {
+  _defineProperty(this, "drawChar", function (ctx, _char2) {
+    var col = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+    var row = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
     var color = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'white';
+    if (!ctx || !_char2) {
+      warningLog('drawChar is missing a parameter');
+      return;
+    }
     var coord = _this.getCharCoordinates(_char2);
     ctx.drawImage(_this.colorImages[color], coord[0] * 64, coord[1] * 64, 64, 64, (col + _this.x) * CFG.tileSize, (row + _this.y) * CFG.tileSize, CFG.tileSize, CFG.tileSize);
   });
@@ -3907,8 +3913,8 @@ var ListMenu = function (_SubMenu) {
     _this.cursorImg = cursorImg;
     _this.cursorOffset = 0;
     _this.menuCanvas = new GameCanvas("".concat(_this.label, "-menu"), listWidth * 8, itemAmount * (itemHeight * 8));
-    _this.menuCanvas.x = coord[0] * 8 * CFG.screenSize;
-    _this.menuCanvas.y = coord[1] * 8 * CFG.screenSize;
+    _this.menuCanvas.x = (coord === null || coord === void 0 ? void 0 : coord[0]) * 8 * CFG.screenSize || 0;
+    _this.menuCanvas.y = (coord === null || coord === void 0 ? void 0 : coord[1]) * 8 * CFG.screenSize || 0;
     return _this;
   }
   return ListMenu;
@@ -5385,7 +5391,21 @@ var LevelUpMenu = function (_SubMenu) {
   return LevelUpMenu;
 }(SubMenu);
 
-var REWARD_MESSAGES = ["Permanently upgrade FP", "Permanently upgrade XP", "Permanently upgrade EN"];
+var AUTO_ADVANCE_DELAY_DEFAULT = 1000;
+var AUTO_ADVANCE_DELAY_PER_CHAR = 50;
+var WARNING_TXT_MESSAGE_MISSING = 'WARNING: message is missing or empty';
+var getAutoAdvanceDelay = function getAutoAdvanceDelay(message) {
+  var delay = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : AUTO_ADVANCE_DELAY_DEFAULT;
+  if (!message || (message === null || message === void 0 ? void 0 : message.length) === 0) {
+    warningLog(WARNING_TXT_MESSAGE_MISSING);
+    return delay;
+  }
+  return message.length * AUTO_ADVANCE_DELAY_PER_CHAR + delay;
+};
+
+var REWARD_MESSAGES = ["Permanently upgrade FP", "Permanently upgrade XP", "Permanently upgrade EN"
+];
+var REWARD_SELECTED_MESSAGES = ["Select an FP to upgrade.", "XP Permanently upgraded!", "EN Permanently upgraded!"];
 var BossVictoryMenu = function (_ListMenu) {
   _inherits(BossVictoryMenu, _ListMenu);
   var _super = _createSuper(BossVictoryMenu);
@@ -5400,7 +5420,6 @@ var BossVictoryMenu = function (_ListMenu) {
       _this.infoTxt.instantText(_this.menuCanvas.ctx, REWARD_MESSAGES[0]);
     });
     _defineProperty(_assertThisInitialized(_this), "clearInfoTxt", function () {
-      console.log("?");
       _this.menuCanvas.ctx.fillStyle = "#00131A";
       _this.menuCanvas.ctx.fillRect(4 * CFG.tileSize, 14 * CFG.tileSize, 16 * CFG.tileSize, 4 * CFG.tileSize);
     });
@@ -5419,6 +5438,7 @@ var BossVictoryMenu = function (_ListMenu) {
       if (_this.inFPSelection) {
         _this.drawFPMenu();
       }
+      _this.redrawParentCB();
     });
     _defineProperty(_assertThisInitialized(_this), "drawFPMenu", function () {
       _this.menuCanvas.paintImage(_this.fetchImageCB('bossRewardFieldChoice'), 0, 0);
@@ -5433,7 +5453,6 @@ var BossVictoryMenu = function (_ListMenu) {
     _defineProperty(_assertThisInitialized(_this), "launchFPSelection", function () {
       _this.inFPSelection = true;
       _this.drawMenu();
-      _this.redrawParentCB();
     });
     _defineProperty(_assertThisInitialized(_this), "prevChoice", function () {
       if (!_this.inFPSelection) {
@@ -5446,11 +5465,10 @@ var BossVictoryMenu = function (_ListMenu) {
         if (_this.FPIndex > 0) _this.FPIndex--;
       }
       _this.drawMenu();
-      _this.redrawParentCB();
     });
     _defineProperty(_assertThisInitialized(_this), "nextChoice", function () {
       if (!_this.inFPSelection) {
-        if (_this.currIndex < 2) {
+        if (_this.currIndex < _this.listItems.length - 1) {
           _this.currIndex++;
           _this.clearInfoTxt();
           _this.infoTxt.instantText(_this.menuCanvas.ctx, REWARD_MESSAGES[_this.currIndex]);
@@ -5459,14 +5477,23 @@ var BossVictoryMenu = function (_ListMenu) {
         if (_this.FPIndex < 8) _this.FPIndex++;
       }
       _this.drawMenu();
-      _this.redrawParentCB();
     });
-    _defineProperty(_assertThisInitialized(_this), "selectChoice", function (message, onDone) {
+    _defineProperty(_assertThisInitialized(_this), "selectChoice", function (onDone) {
+      debugLog("Selecting Upgrade: ", _this.currIndex);
+      var message = REWARD_SELECTED_MESSAGES[_this.currIndex];
+      if (!_this.inFPSelection) {
+        if (_this.currIndex === 0) {
+          _this.launchFPSelection();
+          return;
+        }
+      } else {
+        message = 'Permanently gained 1 FP!';
+      }
       _this.clearInfoTxt();
       _this.infoTxt.timedText(_this.menuCanvas.ctx, message, _this.drawMenu);
       setTimeout(function () {
         onDone();
-      }, 3000);
+      }, getAutoAdvanceDelay(message, 2000));
     });
     _defineProperty(_assertThisInitialized(_this), "drawDgmnPortrait", function (portraitImg) {
       _this.menuCanvas.ctx.drawImage(portraitImg, 0, 0, 256, 248, 0, 112 * CFG.screenSize, 32 * CFG.screenSize, (32 - 1) * CFG.screenSize);
@@ -5478,9 +5505,9 @@ var BossVictoryMenu = function (_ListMenu) {
     _this.menuCanvas = new MenuCanvas("".concat(_this.label, "-menu"), 160, 144);
     _this.inFPSelection = false;
     _this.FPIndex = 0;
+    _this.FPText = [new TextArea(10, 3, 2, 1), new TextArea(10, 4, 2, 1), new TextArea(10, 5, 2, 1), new TextArea(10, 6, 2, 1), new TextArea(10, 7, 2, 1), new TextArea(10, 8, 2, 1), new TextArea(10, 9, 2, 1), new TextArea(10, 10, 2, 1)];
     _this.infoTxt = new TextArea(4, 14, 16, 4);
     _this.learnedAttackTxt = new TextArea(1, 12, 18, 1);
-    _this.FPText = [new TextArea(10, 3, 2, 1), new TextArea(10, 4, 2, 1), new TextArea(10, 5, 2, 1), new TextArea(10, 6, 2, 1), new TextArea(10, 7, 2, 1), new TextArea(10, 8, 2, 1), new TextArea(10, 9, 2, 1), new TextArea(10, 10, 2, 1)];
     _this.fetchImageCB;
     _this.redrawParentCB;
     _this.onDone;
@@ -5819,35 +5846,28 @@ var DgmnGrowthMenu = function (_Menu) {
       _this.subMenus.bossReward.nextChoice(_this.updateBossRewardText);
     });
     _defineProperty(_assertThisInitialized(_this), "selectBossReward", function () {
-      if (_this.state === 'loading') return;
-      _this.state = 'loading';
+      if (_this.currState === 'loading') return;
       var currBossReward = _this.subMenus.bossReward.listItems[_this.subMenus.bossReward.currIndex];
       var currDgmn = _this.dgmnAH.getDgmnParty()[_this.currDgmnIndex];
-      var currDgmnData = _this.getCurrDgmnData();
-      var upgradeMessage = '';
-      if (currBossReward === 'fp') {
-        if (_this.subMenus.bossReward.inFPSelection) {
-          _this.dgmnAH.giveUpgrade(currDgmn, 'FP', FIELD_LABELS[_this.subMenus.bossReward.FPIndex]);
-          upgradeMessage = "".concat(currDgmnData.nickname, " permanently gained 1 ").concat(FIELD_LABELS[_this.subMenus.bossReward.FPIndex], " FP!");
-        } else {
-          _this.subMenus.bossReward.launchFPSelection();
-          upgradeMessage = "Select an FP to gain!";
-        }
-      } else if (currBossReward === 'xp') {
-        _this.dgmnAH.giveUpgrade(currDgmn, 'XP');
-        upgradeMessage = "".concat(currDgmnData.nickname, " will now gain XP faster!");
-      } else if (currBossReward === 'en') {
-        _this.dgmnAH.giveUpgrade(currDgmn, 'EN');
-        upgradeMessage = "".concat(currDgmnData.nickname, " has more EN now!");
-      }
-      if (currBossReward !== 'fp' || upgradeMessage.indexOf("FP!") !== -1) {
-        console.log("SHOULD BE CLEARING?");
-        _this.subMenus.bossReward.selectChoice(upgradeMessage, function () {
+      var onDoneCallbacks = {
+        fp: function fp() {
+          if (_this.subMenus.bossReward.inFPSelection) {
+            _this.dgmnAH.giveUpgrade(currDgmn, 'FP', FIELD_LABELS[_this.subMenus.bossReward.FPIndex]);
+            _this.wrapUpBossReward();
+          }
+        },
+        xp: function xp() {
+          _this.dgmnAH.giveUpgrade(currDgmn, 'XP');
           _this.wrapUpBossReward();
-        });
-      } else {
-        _this.subMenus.bossReward.selectChoice(upgradeMessage, function () {});
-      }
+        },
+        en: function en() {
+          _this.dgmnAH.giveUpgrade(currDgmn, 'EN');
+          _this.wrapUpBossReward();
+        }
+      };
+      var isMovingForward = currBossReward === 'xp' || currBossReward === 'en' || currBossReward === 'fp' && _this.subMenus.bossReward.inFPSelection;
+      if (isMovingForward) _this.currState = 'loading';
+      _this.subMenus.bossReward.selectChoice(onDoneCallbacks[currBossReward]);
     });
     _defineProperty(_assertThisInitialized(_this), "confirmLevelUp", function () {
       _this.gotoNextScreen();

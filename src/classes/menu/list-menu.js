@@ -30,8 +30,8 @@ class ListMenu extends SubMenu{
     this.cursorOffset = 0;
 
     this.menuCanvas = new GameCanvas(`${this.label}-menu`,listWidth*8 ,itemAmount * (itemHeight * 8) )
-    this.menuCanvas.x = coord[0] * 8 * CFG.screenSize;
-    this.menuCanvas.y = coord[1] * 8 * CFG.screenSize;
+    this.menuCanvas.x = coord?.[0] * 8 * CFG.screenSize || 0;
+    this.menuCanvas.y = coord?.[1] * 8 * CFG.screenSize || 0;
   }
 
   
