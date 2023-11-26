@@ -1,5 +1,6 @@
 import CFG from "../config";
 import { fontImages, fontData } from "../data/font.db";
+import { warningLog } from "../utils/log-utils";
 
 class TextArea{
   constructor(x,y,width,height=1, colorizeCB){
@@ -119,11 +120,12 @@ class TextArea{
    * ------------------------------------------------------------------------
    * @param {Canvas.ctx}  ctx   Canvas ctx to draw on
    * @param {String}      char  Character to Draw
-   * @param {Number}      col   Column to draw at
-   * @param {Number}      row   Row to draw at
-   * @param {String}      color Color of text to draw
+   * @param {Number}      col   Column to draw at : default = 0
+   * @param {Number}      row   Row to draw at : default = 0
+   * @param {String}      color Color of text to draw : default = "white"
    * ----------------------------------------------------------------------*/
-  drawChar = (ctx,char,col,row,color='white') => {
+  drawChar = (ctx,char,col=0,row=0,color='white') => {
+    if(!ctx || !char){ warningLog('drawChar is missing a parameter'); return; }
     let coord = this.getCharCoordinates(char);
     ctx.drawImage(this.colorImages[color],
                   coord[0] * 64, coord[1] * 64, 64,64,

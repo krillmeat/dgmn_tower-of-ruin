@@ -169,6 +169,7 @@ class DgmnGrowthMenu extends Menu{
     // Add Boss Reward SubMenu
     this.addSubMenu('bossReward', 
       new BossVictoryMenu(5,[0,0],3,8,2,['fp','xp','en'],this.systemAH.fetchImage('miniCursor'),null,'bossReward')); // TODO - The 5 is temporary
+
     this.subMenus.bossReward.isVisible = true;
     this.attachImageCallbacks('bossReward');
     this.subMenus.bossReward.drawList();
@@ -542,48 +543,33 @@ class DgmnGrowthMenu extends Menu{
    * SELECT BOSS REWARD                                            [EXPORTED]
    * ------------------------------------------------------------------------
    * Select the currently chosen Reward
-   * TODO - Cleanup
    * ----------------------------------------------------------------------*/
   selectBossReward = () => {
-    if(this.state === 'loading') return;
+    if(this.currState === 'loading') return;
 
-    this.state = 'loading';
     let currBossReward = this.subMenus.bossReward.listItems[this.subMenus.bossReward.currIndex];
     let currDgmn = this.dgmnAH.getDgmnParty()[this.currDgmnIndex];
-    let currDgmnData = this.getCurrDgmnData();
-    let upgradeMessage = '';
 
-    if(currBossReward === 'fp'){
-      if(this.subMenus.bossReward.inFPSelection){
-        this.dgmnAH.giveUpgrade(currDgmn,'FP',FIELD_LABELS[this.subMenus.bossReward.FPIndex]);
-        upgradeMessage = `${currDgmnData.nickname} permanently gained 1 ${FIELD_LABELS[this.subMenus.bossReward.FPIndex]} FP!`
-      } else{
-        this.subMenus.bossReward.launchFPSelection();
-        upgradeMessage = "Select an FP to gain!"
-      }
-    }else if(currBossReward === 'xp'){
-      this.dgmnAH.giveUpgrade(currDgmn,'XP');
-      upgradeMessage = `${currDgmnData.nickname} will now gain XP faster!`;
-    } else if(currBossReward === 'en'){
-      this.dgmnAH.giveUpgrade(currDgmn,'EN');
-      upgradeMessage = `${currDgmnData.nickname} has more EN now!`;
+    // Each of the Upgrades have different actions to run when things are done.
+    const onDoneCallbacks = {
+      fp: () => {
+        if(this.subMenus.bossReward.inFPSelection){
+          this.dgmnAH.giveUpgrade(currDgmn,'FP',FIELD_LABELS[this.subMenus.bossReward.FPIndex]);
+          this.wrapUpBossReward();
+        }
+      },
+      xp: () => { this.dgmnAH.giveUpgrade(currDgmn,'XP'); this.wrapUpBossReward() },
+      en: () => { this.dgmnAH.giveUpgrade(currDgmn,'EN'); this.wrapUpBossReward() }
     }
 
-    // this.menuCanvas.clearBottomSection();
-    // this.bossRewardActionTxt.timedText(this.menuCanvas.ctx, upgradeMessage, this.drawMenu);
-    // this.updateBossRewardText(upgradeMessage,'timed');
-    // this.subMenus.bossReward.selectChoice(upgradeMessage,()=>{})
+    // Only move forward if you're not launching the FP Menu
+    let isMovingForward = currBossReward === 'xp' || 
+                          currBossReward === 'en' || 
+                          (currBossReward === 'fp' && this.subMenus.bossReward.inFPSelection);
 
-    if(currBossReward !== 'fp' || upgradeMessage.indexOf("FP!") !== -1) {
-      // setTimeout(()=>{
-      //   this.wrapUpBossReward();
-      // },2500)
-      console.log("SHOULD BE CLEARING?")
-      this.subMenus.bossReward.selectChoice(upgradeMessage,()=>{this.wrapUpBossReward()})
-    } else{
-      this.subMenus.bossReward.selectChoice(upgradeMessage,()=>{});
-    }
-    
+    if(isMovingForward) this.currState = 'loading';
+
+    this.subMenus.bossReward.selectChoice(onDoneCallbacks[currBossReward]);
    }
 
   /**------------------------------------------------------------------------

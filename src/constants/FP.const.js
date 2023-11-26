@@ -1,0 +1,1 @@
+export const FP_LIST = ['DR','NS','DS','JT','NA','ME','WG','VB'];
