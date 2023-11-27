@@ -1716,6 +1716,10 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   _defineProperty(this, "setInitialFP", function () {
     debugLog("  - Egg Field : ", _this.eggField);
     _this.currentFP[_this.eggField] = 1;
+    for (var _i = 0, _Object$keys = Object.keys(_this.permFP); _i < _Object$keys.length; _i++) {
+      var FP = _Object$keys[_i];
+      _this.currentFP[FP] += _this.permFP[FP];
+    }
   });
   _defineProperty(this, "getDgmnAttackByName", function (attackName) {
     for (var i = 0; i < _this.attacks.length; i++) {

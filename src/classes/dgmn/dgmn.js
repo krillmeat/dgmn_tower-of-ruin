@@ -112,10 +112,22 @@ class Dgmn {
     this.currentHP = this.currentStats.HP;
   }
 
+  /** -------------------------------------------------------------------------------------------
+   * SET INITIAL FP
+   * --------------------------------------------------------------------------------------------
+   * When Hatching, sets up a DGMN's initial FP to include both the free FP from the Egg, and
+   * any Permanent FP gained by Upgrades
+   * ------------------------------------------------------------------------------------------*/
   setInitialFP = () => {
     debugLog("  - Egg Field : ",this.eggField);
 
+    // Every DGMN hatches with 1 FP from the Egg it's hatching from
     this.currentFP[this.eggField] = 1;
+    
+    // Adds all Permanent FP Upgrades
+    for(let FP of Object.keys(this.permFP)){
+      this.currentFP[FP] += this.permFP[FP];
+    }
   }
 
   getDgmnAttackByName = attackName => {
