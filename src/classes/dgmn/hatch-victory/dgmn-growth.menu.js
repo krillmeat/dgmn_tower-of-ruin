@@ -17,8 +17,7 @@ class DgmnGrowthMenu extends Menu{
     this.origin = origin;   // Where the Menu is launched from [hatch|victory]
     this.currDgmnIndex = 0; // Which DGMN in the Party is Currently in-menu
     this.rewards = [];
-    // this.isBoss = isBoss;
-    this.isBoss = true; // TEMP
+    this.isBoss = isBoss;
 
     this.levelUps = {};
 

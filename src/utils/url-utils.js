@@ -9,6 +9,11 @@ export const inDebug = () => {
   return getAllQueryParams().debug === 'true';
 }
 
+export const hasFastBattles = () => {
+  return getAllQueryParams().fastbattle === 'true';
+}
+
+
 /**------------------------------------------------------------------------
  * GET ALL QUERY PARAMS
  * ------------------------------------------------------------------------

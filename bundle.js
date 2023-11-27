@@ -251,6 +251,9 @@ var CFG = {
 var inDebug = function inDebug() {
   return getAllQueryParams().debug === 'true';
 };
+var hasFastBattles = function hasFastBattles() {
+  return getAllQueryParams().fastbattle === 'true';
+};
 var getAllQueryParams = function getAllQueryParams() {
   var url = window.location.href;
   var params = url.substring(url.indexOf("?") + 1);
@@ -2505,7 +2508,7 @@ var EnemyGenerator = function EnemyGenerator(dgmnAH) {
       var field = _this.calcDgmnField();
       var dgmnName = _this.mapUtility.isBossFloor(currFloor) ? bossEncountersChartDB[bossEncoutnersMapDB.indexOf(currFloor)][_i] : _this.calcDgmnName(stage, field);
       var dgmnData = _this.mapUtility.isBossFloor(currFloor) ? bossEncountersDB[dgmnName] : dgmnEncounterDB[dgmnName];
-      if (inDebug() && DEBUG_EASY_WINS) dgmnData.currentStats.HP = 1;
+      if (hasFastBattles() && DEBUG_EASY_WINS) dgmnData.currentStats.HP = 1;
       _this.dgmnAH.createDgmn(_i, dgmnData, true);
     }
     return enemies;
@@ -5403,6 +5406,8 @@ var getAutoAdvanceDelay = function getAutoAdvanceDelay(message) {
   return message.length * AUTO_ADVANCE_DELAY_PER_CHAR + delay;
 };
 
+var FP_LIST = ['DR', 'NS', 'DS', 'JT', 'NA', 'ME', 'WG', 'VB'];
+
 var REWARD_MESSAGES = ["Permanently upgrade FP", "Permanently upgrade XP", "Permanently upgrade EN"
 ];
 var REWARD_SELECTED_MESSAGES = ["Select an FP to upgrade.", "XP Permanently upgraded!", "EN Permanently upgraded!"];
@@ -5474,7 +5479,7 @@ var BossVictoryMenu = function (_ListMenu) {
           _this.infoTxt.instantText(_this.menuCanvas.ctx, REWARD_MESSAGES[_this.currIndex]);
         }
       } else {
-        if (_this.FPIndex < 8) _this.FPIndex++;
+        if (_this.FPIndex < 7) _this.FPIndex++;
       }
       _this.drawMenu();
     });
@@ -5487,7 +5492,7 @@ var BossVictoryMenu = function (_ListMenu) {
           return;
         }
       } else {
-        message = 'Permanently gained 1 FP!';
+        message = "Permanently gained 1 ".concat(FP_LIST[_this.FPIndex], " FP!");
       }
       _this.clearInfoTxt();
       _this.infoTxt.timedText(_this.menuCanvas.ctx, message, _this.drawMenu);
@@ -5875,7 +5880,7 @@ var DgmnGrowthMenu = function (_Menu) {
     _this.origin = origin;
     _this.currDgmnIndex = 0;
     _this.rewards = [];
-    _this.isBoss = true;
+    _this.isBoss = isBoss;
     _this.levelUps = {};
     _this.topTxt = new TextArea(0, 0, 20, 1);
     _this.subTopTxt = new TextArea(0, 1, 20, 1);

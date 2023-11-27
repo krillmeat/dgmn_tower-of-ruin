@@ -87,7 +87,7 @@ export const bossEncountersChartDB = [
   ['Koro','Agu','Bota']
 ]
 
-export const dgmnEncounterFieldsDB = ['DR','NS','DS','WG','JT','ME','VB','NA'];
+export const dgmnEncounterFieldsDB = ['DR','NS','DS','WG','JT','ME','VB','NA']; // TODO - Use FP_LIST constant
 
 
 // TODO - For testing, HP is lowered (HP:5 -> HP:5 || HP:3 -> HP:10)
