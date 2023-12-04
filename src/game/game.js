@@ -261,6 +261,9 @@ class Game{
     
     if(keyState[CFG.keyBindings.left]){ this.keyManager('left','down')
     } else { this.keyTimers.left = 0; this.keyManager('left','up') }
+
+    if(keyState[CFG.keyBindings.debug]){ this.keyManager('debug','down')
+    } else { this.keyTimers.debug = 0; this.keyManager('debug','up') }
   }
 
   /**------------------------------------------------------------------------
@@ -337,7 +340,7 @@ class Game{
     dungeonKeyManager = (key,upDown) => {
       if(this.dungeon?.dungeonState === 'free'){ // TODO - Probably should be a more specific check
         // TODO - Logic that checks things like "held down" or "tapped" go here
-        if(key === 'start' || key === 'select'){ // Start and Select shouldn't be able to be "held down"
+        if(key === 'start' || key === 'select' || key === 'debug'){ // Start and Select (and debug) shouldn't be able to be "held down"
           if(this.keyTimers[key] === 2){ this.dungeon.dungeonIO.keyTriage(key,upDown) }
         } else {
           this.dungeon.dungeonIO.keyTriage(key,upDown);

@@ -136,6 +136,17 @@ export const REWARD_SELECTED_MESSAGES = [
     this.menuCanvas.paintImage(this.fetchImageCB(image),(col+11)*CFG.tileSize,((2*row)+2)*CFG.tileSize);
   }
 
+
+  /** -------------------------------------------------------------------------------------------
+   * DRAW LEARNED ATTACK MESSAGE
+   * --------------------------------------------------------------------------------------------
+   * When a DGMN has learned a new Attack, it should say that it has
+   * @param {string} attackName Name of the learned Attack
+   * ------------------------------------------------------------------------------------------*/
+  drawLearnedAttack = attackName => {
+    this.learnedAttackTxt.instantText(this.menuCanvas.ctx, `+ ${attackName}`);
+  }
+
   /** -------------------------------------------------------------------------------------------
    * LAUNCH FP SELECTION
    * --------------------------------------------------------------------------------------------

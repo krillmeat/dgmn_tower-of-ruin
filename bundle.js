@@ -240,7 +240,8 @@ var CFG = {
     down: 's',
     left: 'a',
     start: 'Shift',
-    select: 'q'
+    select: 'q',
+    debug: 't'
   },
   pixelKidMode: 'PKP',
   screenSize: 2,
@@ -250,6 +251,12 @@ var CFG = {
 
 var inDebug = function inDebug() {
   return getAllQueryParams().debug === 'true';
+};
+var hasFastBattles = function hasFastBattles() {
+  return getAllQueryParams().fastbattle === 'true';
+};
+var alwaysBoss = function alwaysBoss() {
+  return inDebug() && getAllQueryParams().alwaysboss === 'true';
 };
 var getAllQueryParams = function getAllQueryParams() {
   var url = window.location.href;
@@ -408,6 +415,9 @@ var DgmnAH = function DgmnAH(cbObj) {
   this.giveUpgrade = function (dgmnId, upgrade, FP) {
     return cbObj.giveUpgradeCB(dgmnId, upgrade, FP);
   };
+  this.learnPermAttack = function (dgmnId, attackName) {
+    return cbObj.learnPermAttackCB(dgmnId, attackName);
+  };
   this.getDgmnParty = function () {
     return cbObj.getDgmnPartyCB();
   };
@@ -419,6 +429,9 @@ var DgmnAH = function DgmnAH(cbObj) {
   };
   this.giveCondition = function (dgmnId, condition) {
     return cbObj.giveConditionCB(dgmnId, condition);
+  };
+  this.resetDgmnParty = function () {
+    return cbObj.resetDgmnPartyCB();
   };
 };
 
@@ -1049,7 +1062,7 @@ var dgmnDB = _objectSpread2(_objectSpread2({}, BABY_I_DB), {}, {
       ME: 3,
       VB: 2
     },
-    attack: 'bubbles'
+    attack: 'thunderKote'
   },
   PicoDevi: {
     stage: 3,
@@ -1704,6 +1717,7 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   });
   _defineProperty(this, "hatchSetup", function () {
     _this.setInitialFP();
+    _this.setInitialAttacks();
   });
   _defineProperty(this, "hatch", function (species) {
     _this.speciesName = species;
@@ -1713,6 +1727,24 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   _defineProperty(this, "setInitialFP", function () {
     debugLog("  - Egg Field : ", _this.eggField);
     _this.currentFP[_this.eggField] = 1;
+    for (var _i = 0, _Object$keys = Object.keys(_this.permFP); _i < _Object$keys.length; _i++) {
+      var FP = _Object$keys[_i];
+      _this.currentFP[FP] += _this.permFP[FP];
+    }
+  });
+  _defineProperty(this, "setInitialAttacks", function () {
+    var _iterator = _createForOfIteratorHelper(_this.permAttacks),
+        _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var attack = _step.value;
+        _this.attacks.unshift(new Attack(attack));
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
   });
   _defineProperty(this, "getDgmnAttackByName", function (attackName) {
     for (var i = 0; i < _this.attacks.length; i++) {
@@ -1736,7 +1768,7 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   _defineProperty(this, "levelUpFP", function () {
     var baseFP = _this.dgmnUtility.getBaseFP(_this.speciesName);
     for (var FP in baseFP) {
-      _this.currentFP[FP] += baseFP[FP];
+      _this.currentFP[FP] += baseFP[FP] + _this.permFP[FP];
     }
   });
   _defineProperty(this, "addFP", function (field, amount) {
@@ -1745,6 +1777,23 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   _defineProperty(this, "learnAttack", function () {
     var newAttack = _this.dgmnUtility.getAttack(_this.speciesName);
     if (newAttack) _this.attacks.unshift(new Attack(newAttack));
+  });
+  _defineProperty(this, "resetDgmn", function () {
+    _this.currentLevel = 1;
+    _this.currentXP = 0;
+    _this.currentEN = _this.maxEnergy;
+    for (var _i2 = 0, _Object$keys2 = Object.keys(_this.currentStats); _i2 < _Object$keys2.length; _i2++) {
+      var stat = _Object$keys2[_i2];
+      _this.currentStats[stat] = 0;
+    }
+    for (var _i3 = 0, _Object$keys3 = Object.keys(_this.currentFP); _i3 < _Object$keys3.length; _i3++) {
+      var FP = _Object$keys3[_i3];
+      _this.currentFP[FP] = 0;
+    }
+    _this.attackList = ['bubbles'];
+    _this.attacks = [new Attack('bubbles')];
+    _this.evoChain = [];
+    debugLog("DGMN Reset...");
   });
   _defineProperty(this, "getAllAttacks", function () {
     return _this.attacks;
@@ -1791,6 +1840,7 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
     XP: 0
   };
   this.maxEnergy = 100;
+  this.evoChain = [];
   this.currentLevel = 1;
   this.currentHP = 23;
   this.currentEN = this.maxEnergy;
@@ -1828,7 +1878,7 @@ var Dgmn = function Dgmn(id, nickname, speciesName, eggField) {
   this.combo = 0;
   this.weak = 0;
   this.condition;
-  this.attackList = ["bubbles", "babyFlame"];
+  this.attackList = ["bubbles"];
   this.attacks = [new Attack('bubbles')];
   this.isDead = false;
   this.dgmnCanvas;
@@ -2505,7 +2555,7 @@ var EnemyGenerator = function EnemyGenerator(dgmnAH) {
       var field = _this.calcDgmnField();
       var dgmnName = _this.mapUtility.isBossFloor(currFloor) ? bossEncountersChartDB[bossEncoutnersMapDB.indexOf(currFloor)][_i] : _this.calcDgmnName(stage, field);
       var dgmnData = _this.mapUtility.isBossFloor(currFloor) ? bossEncountersDB[dgmnName] : dgmnEncounterDB[dgmnName];
-      if (inDebug() && DEBUG_EASY_WINS) dgmnData.currentStats.HP = 1;
+      if (hasFastBattles() && DEBUG_EASY_WINS) dgmnData.currentStats.HP = 1;
       _this.dgmnAH.createDgmn(_i, dgmnData, true);
     }
     return enemies;
@@ -2837,6 +2887,7 @@ var DgmnManager = function DgmnManager(systemAH) {
     _this.allDgmn[dgmnId].speciesName = evoSpecies;
     _this.allDgmn[dgmnId].levelUpStats(true);
     _this.allDgmn[dgmnId].learnAttack();
+    _this.allDgmn[dgmnId].evoChain.push(evoSpecies);
   });
   _defineProperty(this, "buildStatGrowth", function (dgmnId, stat) {
     var baseGrowth = _this.dgmnUtility.getBaseStat(_this.allDgmn[dgmnId].speciesName, stat);
@@ -2887,6 +2938,55 @@ var DgmnManager = function DgmnManager(systemAH) {
     debugLog("  Upgrading EN");
     _this.allDgmn[dgmnId].upgrades.EN++;
     _this.allDgmn[dgmnId].maxEnergy += 5;
+  });
+  _defineProperty(this, "getDgmnOfStageInEvoChain", function (dgmnId, stage) {
+    var evoChain = _this.allDgmn[dgmnId].evoChain;
+    if (evoChain.length === 0) return;
+    var _iterator2 = _createForOfIteratorHelper(evoChain),
+        _step2;
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var dgmn = _step2.value;
+        if (_this.dgmnUtility.getStage(dgmn) === stage) return dgmn;
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+    return;
+  });
+  _defineProperty(this, "learnPermAttack", function (dgmnId, currFloor) {
+    var FLOOR_STAGES = {
+      5: 3,
+      10: 4,
+      20: 5,
+      30: 6,
+      40: 7,
+      50: 7
+    };
+    var potentialDgmn = _this.getDgmnOfStageInEvoChain(dgmnId, FLOOR_STAGES[currFloor]);
+    console.log("PD : ", potentialDgmn);
+    if (!potentialDgmn) return;
+    var attackName = _this.dgmnUtility.getAttack(potentialDgmn);
+    debugLog(dgmnId + " learning Attack Permanently: ", attackName);
+    if (_this.getDgmnData(dgmnId, ['permAttacks']).permAttacks.indexOf(attackName) !== -1) return;
+    _this.allDgmn[dgmnId].permAttacks.push(attackName);
+    return _this.attackUtility.getDisplayName(attackName);
+  });
+  _defineProperty(this, "resetDgmnParty", function () {
+    var _iterator3 = _createForOfIteratorHelper(_this.party),
+        _step3;
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var dgmn = _step3.value;
+        _this.allDgmn[dgmn].resetDgmn();
+      }
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
+    }
   });
   _defineProperty(this, "animateDgmn", function (dgmnId) {
     !_this.isEnemy(dgmnId) ? _this.allDgmn[dgmnId].startIdleAnimation() : _this.enemyDgmn[dgmnId].startIdleAnimation();
@@ -2955,10 +3055,12 @@ var DgmnManager = function DgmnManager(systemAH) {
     hatchEggCB: this.hatchEgg,
     useItemOnCB: this.useItemOn,
     giveUpgradeCB: this.giveUpgrade,
+    learnPermAttackCB: this.learnPermAttack,
     getDgmnPartyCB: this.getDgmnParty,
     buffDgmnStatCB: this.buffDgmnStat,
     deBuffDgmnStatCB: this.deBuffDgmnStat,
-    giveConditionCB: this.giveCondition
+    giveConditionCB: this.giveCondition,
+    resetDgmnPartyCB: this.resetDgmnParty
   });
   this.systemAH = systemAH;
   this.enemyGenerator = new EnemyGenerator(this.dgmnAH);
@@ -2966,6 +3068,7 @@ var DgmnManager = function DgmnManager(systemAH) {
   this.party = this.mockParty();
   this.tempDgmn = new Dgmn(0, 'EVO', 'Bota');
   this.dgmnUtility = new DgmnUtility();
+  this.attackUtility = new AttackUtility();
   this.itemUtility = new TreasureUtility();
 }
 ;
@@ -3325,6 +3428,8 @@ var IO = function IO() {
       _this.downKeyHandler(upDown);
     } else if (key === 'left') {
       _this.leftKeyHandler(upDown);
+    } else if (key === 'debug') {
+      _this.debugKeyHandler(upDown);
     }
   });
   _defineProperty(this, "actionKeyHandler", function (upDown) {});
@@ -3334,6 +3439,7 @@ var IO = function IO() {
   _defineProperty(this, "rightKeyHandler", function (upDown) {});
   _defineProperty(this, "downKeyHandler", function (upDown) {});
   _defineProperty(this, "leftKeyHandler", function (upDown) {});
+  _defineProperty(this, "debugKeyHandler", function (upDown) {});
 };
 
 var BattleIO = function (_IO) {
@@ -5112,6 +5218,9 @@ var DgmnGrowthMenuAH = function DgmnGrowthMenuAH(cbObj) {
   this.skipEvo = function () {
     cbObj.skipEvoCB();
   };
+  this.goBack = function () {
+    cbObj.goBackCB();
+  };
 };
 
 var MenuCanvas = function (_GameCanvas) {
@@ -5261,7 +5370,7 @@ var EvoMenu = function (_IconMenu) {
       var w = 0;
       var r = 0;
       for (var type in typeAffinities) {
-        if (typeAffinities[type] < 1) {
+        if (typeAffinities[type] > 1) {
           _this.menuCanvas.paintImage(_this.fetchImageCB("".concat(type, "TypeIcon")), (8 + r) * CFG.tileSize, 16 * CFG.tileSize);
           r++;
         } else if (typeAffinities[type] > 1) {
@@ -5403,6 +5512,8 @@ var getAutoAdvanceDelay = function getAutoAdvanceDelay(message) {
   return message.length * AUTO_ADVANCE_DELAY_PER_CHAR + delay;
 };
 
+var FP_LIST = ['DR', 'NS', 'DS', 'JT', 'NA', 'ME', 'WG', 'VB'];
+
 var REWARD_MESSAGES = ["Permanently upgrade FP", "Permanently upgrade XP", "Permanently upgrade EN"
 ];
 var REWARD_SELECTED_MESSAGES = ["Select an FP to upgrade.", "XP Permanently upgraded!", "EN Permanently upgraded!"];
@@ -5450,6 +5561,9 @@ var BossVictoryMenu = function (_ListMenu) {
     _defineProperty(_assertThisInitialized(_this), "drawIcon", function (row, col, image) {
       _this.menuCanvas.paintImage(_this.fetchImageCB(image), (col + 11) * CFG.tileSize, (2 * row + 2) * CFG.tileSize);
     });
+    _defineProperty(_assertThisInitialized(_this), "drawLearnedAttack", function (attackName) {
+      _this.learnedAttackTxt.instantText(_this.menuCanvas.ctx, "+ ".concat(attackName));
+    });
     _defineProperty(_assertThisInitialized(_this), "launchFPSelection", function () {
       _this.inFPSelection = true;
       _this.drawMenu();
@@ -5474,7 +5588,7 @@ var BossVictoryMenu = function (_ListMenu) {
           _this.infoTxt.instantText(_this.menuCanvas.ctx, REWARD_MESSAGES[_this.currIndex]);
         }
       } else {
-        if (_this.FPIndex < 8) _this.FPIndex++;
+        if (_this.FPIndex < 7) _this.FPIndex++;
       }
       _this.drawMenu();
     });
@@ -5487,7 +5601,7 @@ var BossVictoryMenu = function (_ListMenu) {
           return;
         }
       } else {
-        message = 'Permanently gained 1 FP!';
+        message = "Permanently gained 1 ".concat(FP_LIST[_this.FPIndex], " FP!");
       }
       _this.clearInfoTxt();
       _this.infoTxt.timedText(_this.menuCanvas.ctx, message, _this.drawMenu);
@@ -5520,11 +5634,11 @@ var BossVictoryMenu = function (_ListMenu) {
 var DgmnGrowthMenu = function (_Menu) {
   _inherits(DgmnGrowthMenu, _Menu);
   var _super = _createSuper(DgmnGrowthMenu);
-  function DgmnGrowthMenu(origin, dgmnAH, isBoss) {
+  function DgmnGrowthMenu(origin, dgmnAH, isBoss, currFloor) {
     var _this;
     _classCallCheck(this, DgmnGrowthMenu);
-    for (var _len = arguments.length, args = new Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
-      args[_key - 3] = arguments[_key];
+    for (var _len = arguments.length, args = new Array(_len > 4 ? _len - 4 : 0), _key = 4; _key < _len; _key++) {
+      args[_key - 4] = arguments[_key];
     }
     _this = _super.call.apply(_super, [this].concat(args));
     _defineProperty(_assertThisInitialized(_this), "gotoRewards", function (rewards) {
@@ -5594,6 +5708,9 @@ var DgmnGrowthMenu = function (_Menu) {
       _this.attachImageCallbacks('bossReward');
       _this.subMenus.bossReward.drawList();
       _this.subMenus.bossReward.drawDgmnPortrait(_this.systemAH.fetchImage("".concat(dgmnData.speciesName.toLowerCase(), "Portrait")));
+      var currDgmn = _this.dgmnAH.getDgmnParty()[_this.currDgmnIndex];
+      var learnedAttack = _this.dgmnAH.learnPermAttack(currDgmn, _this.currFloor);
+      if (learnedAttack) _this.subMenus.bossReward.drawLearnedAttack(learnedAttack);
       _this.drawMenu();
     });
     _defineProperty(_assertThisInitialized(_this), "updateRewardsList", function () {
@@ -5628,7 +5745,7 @@ var DgmnGrowthMenu = function (_Menu) {
       var currDgmn = _this.dgmnAH.getDgmnParty()[_this.currDgmnIndex];
       var currDgmnData = _this.getCurrDgmnData();
       _this.checkAllLevelUps();
-      if (_this.origin === 'victory' && _this.isBoss) {
+      if (_this.origin === 'victory' && (_this.isBoss || alwaysBoss())) {
         _this.gotoBossRewards(currDgmnData);
       } else if (_this.origin === 'hatch') {
         _this.gotoHatch(currDgmnData);
@@ -5751,6 +5868,7 @@ var DgmnGrowthMenu = function (_Menu) {
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var dgmn = _step.value;
+          debugLog("  - DGMN " + dgmn + " FP: ", _this.dgmnAH.getDgmnData(dgmn, ['currentFP']));
           if (_this.dgmnAH.checkLevelUp(dgmn)) _this.levelUps[dgmn] = true;
         }
       } catch (err) {
@@ -5768,6 +5886,7 @@ var DgmnGrowthMenu = function (_Menu) {
     _defineProperty(_assertThisInitialized(_this), "hatchDgmn", function () {
       var hatchIntoDgmn = _this.subMenus.hatch.selectedDgmn;
       _this.dgmnAH.hatchEgg(_this.dgmnAH.getDgmnParty()[_this.currDgmnIndex], hatchIntoDgmn);
+      debugLog("Hatching DGMN: ", _this.dgmnAH.getDgmnData(_this.dgmnAH.getDgmnParty()[_this.currDgmnIndex], ['currentFP']));
     });
     _defineProperty(_assertThisInitialized(_this), "evolveIntoDgmn", function () {
       var evolution = _this.subMenus.evolve.selectedDgmn;
@@ -5872,10 +5991,14 @@ var DgmnGrowthMenu = function (_Menu) {
     _defineProperty(_assertThisInitialized(_this), "confirmLevelUp", function () {
       _this.gotoNextScreen();
     });
+    _defineProperty(_assertThisInitialized(_this), "goBack", function () {
+      console.log("Go backwards");
+    });
     _this.origin = origin;
     _this.currDgmnIndex = 0;
     _this.rewards = [];
-    _this.isBoss = true;
+    _this.isBoss = isBoss;
+    _this.currFloor = currFloor;
     _this.levelUps = {};
     _this.topTxt = new TextArea(0, 0, 20, 1);
     _this.subTopTxt = new TextArea(0, 1, 20, 1);
@@ -5896,7 +6019,8 @@ var DgmnGrowthMenu = function (_Menu) {
       selectHatchCB: _this.selectHatch,
       selectEvoCB: _this.selectEvo,
       confirmLevelUpCB: _this.confirmLevelUp,
-      skipEvoCB: _this.skipEvo
+      skipEvoCB: _this.skipEvo,
+      goBackCB: _this.goBack
     });
     return _this;
   }
@@ -6198,7 +6322,7 @@ var Battle = function Battle(isBoss, isDebug) {
     _this.battleMenu.menuCanvas.clearCanvas();
     _this.battleMenu = null;
     _this.stopDgmnBattleCanvas();
-    _this.dgmnGrowthMenu = new DgmnGrowthMenu('victory', _this.dgmnAH, _this.isBoss, _this.systemAH, _this.gameAH, _this.battleAH, 'victory');
+    _this.dgmnGrowthMenu = new DgmnGrowthMenu('victory', _this.dgmnAH, _this.isBoss, _this.dungeonAH.getCurrentFloor(), _this.systemAH, _this.gameAH, _this.battleAH, 'victory');
     _this.battleIO.setMenuAH(_this.dgmnGrowthMenu.dgmnGrowthMenuAH);
     _this.dgmnGrowthMenu.gotoRewards(_this.battleRewards);
   });
@@ -6943,6 +7067,11 @@ var DungeonIO = function (_IO) {
         }
       }
     });
+    _defineProperty(_assertThisInitialized(_this), "debugKeyHandler", function (upDown) {
+      if (inDebug() && _this.dungeonAH.getDungeonState() === 'free' && upDown === 'down') {
+        _this.dungeonAH.goUpFloor();
+      }
+    });
     _this.dungeonAH = dungeonAH;
     _this.menuAH;
     return _this;
@@ -7315,7 +7444,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
     _this.yourParty = _this.gameAH.getDgmnParty();
     _this.systemAH.startLoading(function () {
       _this.gameAH.addCanvasObject(_this.dungeonCanvas);
-      _this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch', _this.dgmnAH, false, _this.systemAH, _this.gameAH, _this.dungeonAH, 'hatching');
+      _this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch', _this.dgmnAH, false, 0, _this.systemAH, _this.gameAH, _this.dungeonAH, 'hatching');
       _this.dungeonIO.setMenuAH(_this.dgmnGrowthMenu.dgmnGrowthMenuAH);
       _this.pauseMenu = new PauseMenu(_this.yourParty, _this.dgmnAH, _this.digiBeetleAH, _this.systemAH, _this.gameAH, _this.dungeonAH);
       _this.systemAH.loadImages(fieldIcons, function () {
@@ -7428,6 +7557,7 @@ var Dungeon = function Dungeon(isNewDungeon, loadedCallback) {
   _defineProperty(this, "goBackToTown", function () {
     debugLog("Returning to town...");
     _this.systemAH.startLoading(function () {
+      _this.dgmnAH.resetDgmnParty();
       _this.gameAH.clearDungeon();
     });
   });
@@ -7880,6 +8010,12 @@ var Game = function Game(systemAH) {
       _this.keyTimers.left = 0;
       _this.keyManager('left', 'up');
     }
+    if (keyState[CFG.keyBindings.debug]) {
+      _this.keyManager('debug', 'down');
+    } else {
+      _this.keyTimers.debug = 0;
+      _this.keyManager('debug', 'up');
+    }
   });
   _defineProperty(this, "keyManager", function (key, upDown) {
     var _this$town, _this$battle, _this$dungeon2;
@@ -7922,7 +8058,7 @@ var Game = function Game(systemAH) {
   _defineProperty(this, "dungeonKeyManager", function (key, upDown) {
     var _this$dungeon3, _this$dungeon4, _this$dungeon5, _this$dungeon6;
     if (((_this$dungeon3 = _this.dungeon) === null || _this$dungeon3 === void 0 ? void 0 : _this$dungeon3.dungeonState) === 'free') {
-      if (key === 'start' || key === 'select') {
+      if (key === 'start' || key === 'select' || key === 'debug') {
         if (_this.keyTimers[key] === 2) {
           _this.dungeon.dungeonIO.keyTriage(key, upDown);
         }

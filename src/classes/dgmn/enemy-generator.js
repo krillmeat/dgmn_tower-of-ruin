@@ -1,7 +1,7 @@
 import CFG from '../../config';
 import {bossEncountersDB, bossEncountersChartDB, bossEncoutnersMapDB, dgmnEncounterChartDB, dgmnEncounterDB, dgmnEncounterFieldsDB} from '../../data/encounters.db';
 import MapUtility from '../../dungeon/utils/map.util';
-import { inDebug } from '../../utils/url-utils';
+import { inDebug, hasFastBattles } from '../../utils/url-utils';
 import { DEBUG_DGMN } from '../../debug/dgmn.mock';
 
 const DEBUG_EASY_WINS = true;
@@ -29,7 +29,7 @@ class EnemyGenerator{
       let field = this.calcDgmnField(); // TODO - Pass in mods
       let dgmnName = this.mapUtility.isBossFloor(currFloor) ? bossEncountersChartDB[bossEncoutnersMapDB.indexOf(currFloor)][i] : this.calcDgmnName(stage,field);
       let dgmnData = this.mapUtility.isBossFloor(currFloor) ?  bossEncountersDB[dgmnName] : dgmnEncounterDB[dgmnName];
-      if(inDebug() && DEBUG_EASY_WINS) dgmnData.currentStats.HP = 1;
+      if(hasFastBattles() && DEBUG_EASY_WINS) dgmnData.currentStats.HP = 1;
       this.dgmnAH.createDgmn(i,dgmnData,true);
     }
 

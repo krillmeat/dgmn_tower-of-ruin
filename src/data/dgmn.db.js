@@ -140,8 +140,7 @@ export const dgmnDB = {
     types:{},
     fields: {ME:2,VB:1},
     evoFields:{ME:3,VB:2},
-    // attack: 'thunderKote'
-    attack: 'bubbles'
+    attack: 'thunderKote'
   },
   PicoDevi: {
     stage: 3, class: 'Virus',

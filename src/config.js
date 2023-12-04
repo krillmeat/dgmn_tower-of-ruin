@@ -10,7 +10,8 @@ let CFG = {
     down: 's',
     left: 'a',
     start: 'Shift',
-    select: 'q'
+    select: 'q',
+    debug: 't'
    },
   pixelKidMode: 'PKP',  // Handles which Images to load for a specific "version" of the Pixel Kid
   screenSize: 2,    // How much larger the screen is than the actual

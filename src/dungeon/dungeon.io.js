@@ -1,4 +1,5 @@
 import IO from "../classes/input-output/io";
+import { inDebug } from "../utils/url-utils";
 
 class DungeonIO extends IO{
   constructor(dungeonAH,...args){
@@ -132,6 +133,13 @@ class DungeonIO extends IO{
       }
     }
     
+  }
+
+
+  debugKeyHandler = upDown => {
+    if(inDebug() && this.dungeonAH.getDungeonState() === 'free' && upDown === 'down'){
+      this.dungeonAH.goUpFloor();
+    }
   }
 }
 

@@ -31,6 +31,8 @@ class Dgmn {
     this.upgrades = { FP:0, EN:0, XP:0 }
     this.maxEnergy = 100;
 
+    this.evoChain = []; // Keeps track of the evolutions gone through during a run
+
     this.currentLevel = 1;
     this.currentHP = 23;
     this.currentEN = this.maxEnergy;
@@ -43,7 +45,7 @@ class Dgmn {
     this.weak = 0;
     this.condition;
 
-    this.attackList = ["bubbles","babyFlame"];
+    this.attackList = ["bubbles"];
     this.attacks = [new Attack('bubbles')] // Every DGMN Starts with Bubbles
 
     this.isDead = false;
@@ -104,6 +106,7 @@ class Dgmn {
 
   hatchSetup = () => {
     this.setInitialFP();
+    this.setInitialAttacks();
   }
 
   hatch = species => {
@@ -112,10 +115,33 @@ class Dgmn {
     this.currentHP = this.currentStats.HP;
   }
 
+  /** -------------------------------------------------------------------------------------------
+   * SET INITIAL FP
+   * --------------------------------------------------------------------------------------------
+   * When Hatching, sets up a DGMN's initial FP to include both the free FP from the Egg, and
+   * any Permanent FP gained by Upgrades
+   * ------------------------------------------------------------------------------------------*/
   setInitialFP = () => {
     debugLog("  - Egg Field : ",this.eggField);
 
+    // Every DGMN hatches with 1 FP from the Egg it's hatching from
     this.currentFP[this.eggField] = 1;
+    
+    // Adds all Permanent FP Upgrades
+    for(let FP of Object.keys(this.permFP)){
+      this.currentFP[FP] += this.permFP[FP];
+    }
+  }
+
+  /** -------------------------------------------------------------------------------------------
+   * SET INITIAL ATTACKS
+   * --------------------------------------------------------------------------------------------
+   * Goes through the Permanent Attacks and adds them
+   * ------------------------------------------------------------------------------------------*/
+  setInitialAttacks = () => {
+    for(let attack of this.permAttacks){
+      this.attacks.unshift(new Attack(attack))
+    }
   }
 
   getDgmnAttackByName = attackName => {
@@ -148,7 +174,7 @@ class Dgmn {
   levelUpFP = () => {
     let baseFP = this.dgmnUtility.getBaseFP(this.speciesName);
     for(let FP in baseFP){
-      this.currentFP[FP] += baseFP[FP]; // TODO - Also add Perm FP
+      this.currentFP[FP] += baseFP[FP] + this.permFP[FP];
     }
   }
 
@@ -159,6 +185,27 @@ class Dgmn {
   learnAttack = () => {
     let newAttack = this.dgmnUtility.getAttack(this.speciesName);
     if(newAttack) this.attacks.unshift(new Attack(newAttack))
+  }
+
+  /** -------------------------------------------------------------------------------------------
+   * RESET DGMN
+   * --------------------------------------------------------------------------------------------
+   * Clears all things from a DGMN after a Run is ended
+   * 
+   * ------------------------------------------------------------------------------------------*/
+  resetDgmn = () => {
+    this.currentLevel = 1;
+    this.currentXP = 0;
+    this.currentEN = this.maxEnergy;
+
+    for(let stat of Object.keys(this.currentStats)){ this.currentStats[stat] = 0 }
+    for(let FP of Object.keys(this.currentFP)){ this.currentFP[FP] = 0 }
+
+    this.attackList = ['bubbles'];
+    this.attacks = [new Attack('bubbles')];
+
+    this.evoChain = [];
+    debugLog("DGMN Reset...");
   }
 
   getAllAttacks = () => { return this.attacks }
