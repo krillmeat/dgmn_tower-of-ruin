@@ -13,6 +13,10 @@ export const hasFastBattles = () => {
   return getAllQueryParams().fastbattle === 'true';
 }
 
+export const alwaysBoss = () => {
+  return inDebug() && getAllQueryParams().alwaysboss === 'true'
+}
+
 
 /**------------------------------------------------------------------------
  * GET ALL QUERY PARAMS

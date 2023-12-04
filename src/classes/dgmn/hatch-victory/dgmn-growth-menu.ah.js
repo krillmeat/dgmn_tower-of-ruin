@@ -14,6 +14,7 @@ class DgmnGrowthMenuAH{
     this.prevBossReward = () => { cbObj.prevBossRewardCB() }
     this.selectBossReward = () => { cbObj.selectBossRewardCB() }
     this.skipEvo = () => {cbObj.skipEvoCB() }
+    this.goBack = () => { cbObj.goBackCB() }
   }
 }
 

@@ -28,10 +28,12 @@ class DgmnAH{
     this.hatchEgg = (dgmnId,species) => cbObj.hatchEggCB(dgmnId,species)
     this.useItemOn = (dgmnId,item) => cbObj.useItemOnCB(dgmnId,item)
     this.giveUpgrade = (dgmnId,upgrade,FP) => cbObj.giveUpgradeCB(dgmnId,upgrade,FP)
+    this.learnPermAttack = (dgmnId,attackName) => cbObj.learnPermAttackCB(dgmnId,attackName);
     this.getDgmnParty = () => cbObj.getDgmnPartyCB()
     this.buffDgmnStat = (dgmnId,stat,amount) => cbObj.buffDgmnStatCB(dgmnId,stat,amount)
     this.deBuffDgmnStat = (dgmnId,stat,amount) => cbObj.deBuffDgmnStatCB(dgmnId,stat,amount)
     this.giveCondition = (dgmnId,condition) => cbObj.giveConditionCB(dgmnId,condition)
+    this.resetDgmnParty = () => cbObj.resetDgmnPartyCB()
   }
 }
 

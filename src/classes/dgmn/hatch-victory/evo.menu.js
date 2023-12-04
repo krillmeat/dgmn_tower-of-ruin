@@ -237,7 +237,7 @@ class EvoMenu extends IconMenu{
     let typeAffinities = this.dgmnUtility.getTypeAffinities(species);
     let w = 0; let r = 0; // Tracks how many W/R there are, so they move over
     for(let type in typeAffinities){
-      if(typeAffinities[type] < 1){
+      if(typeAffinities[type] > 1){
         this.menuCanvas.paintImage(this.fetchImageCB(`${type}TypeIcon`),
           (8+r)*CFG.tileSize,16*CFG.tileSize ); r++;
       } else if(typeAffinities[type] > 1){ this.menuCanvas.paintImage(this.fetchImageCB(`${type}TypeIcon`),

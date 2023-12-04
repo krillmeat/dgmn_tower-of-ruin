@@ -9,15 +9,17 @@ import EvoMenu from "./evo.menu";
 import LevelUpMenu from "./level-up.menu";
 import BossVictoryMenu from "../../menu/boss-victory-menu";
 import { FIELD_LABELS } from "../../../data/fields.db";
+import { alwaysBoss } from "../../../utils/url-utils";
 
 class DgmnGrowthMenu extends Menu{
-  constructor(origin,dgmnAH,isBoss,...args){
+  constructor(origin,dgmnAH,isBoss,currFloor,...args){
     super(...args);
 
     this.origin = origin;   // Where the Menu is launched from [hatch|victory]
     this.currDgmnIndex = 0; // Which DGMN in the Party is Currently in-menu
     this.rewards = [];
     this.isBoss = isBoss;
+    this.currFloor = currFloor;
 
     this.levelUps = {};
 
@@ -43,7 +45,8 @@ class DgmnGrowthMenu extends Menu{
       selectHatchCB: this.selectHatch,
       selectEvoCB: this.selectEvo,
       confirmLevelUpCB: this.confirmLevelUp,
-      skipEvoCB: this.skipEvo
+      skipEvoCB: this.skipEvo,
+      goBackCB: this.goBack
     });
   }
 
@@ -173,6 +176,12 @@ class DgmnGrowthMenu extends Menu{
     this.attachImageCallbacks('bossReward');
     this.subMenus.bossReward.drawList();
     this.subMenus.bossReward.drawDgmnPortrait( this.systemAH.fetchImage(`${dgmnData.speciesName.toLowerCase()}Portrait`) );
+
+    // Draw Learned Attack Text
+    let currDgmn = this.dgmnAH.getDgmnParty()[this.currDgmnIndex];
+    let learnedAttack = this.dgmnAH.learnPermAttack(currDgmn,this.currFloor);
+    
+    if(learnedAttack) this.subMenus.bossReward.drawLearnedAttack(learnedAttack)
     
     this.drawMenu();
   }
@@ -232,7 +241,7 @@ class DgmnGrowthMenu extends Menu{
     let currDgmnData = this.getCurrDgmnData();
     this.checkAllLevelUps();
 
-    if(this.origin === 'victory' && this.isBoss){ // BOSS VICTORY
+    if(this.origin === 'victory' && (this.isBoss || alwaysBoss())){ // BOSS VICTORY
       this.gotoBossRewards(currDgmnData);
     } else if(this.origin === 'hatch'){ // Hatch Menu should always go straight to Hatch
       this.gotoHatch(currDgmnData);
@@ -393,6 +402,7 @@ class DgmnGrowthMenu extends Menu{
    * ----------------------------------------------------------------------*/
   checkAllLevelUps = () => {
     for(let dgmn of this.dgmnAH.getDgmnParty()){
+      debugLog("  - DGMN "+dgmn+" FP: ",this.dgmnAH.getDgmnData(dgmn,['currentFP']))
       if( this.dgmnAH.checkLevelUp(dgmn) ) this.levelUps[dgmn] = true
     }
   }
@@ -417,6 +427,7 @@ class DgmnGrowthMenu extends Menu{
   hatchDgmn = () => {
     const hatchIntoDgmn = this.subMenus.hatch.selectedDgmn;
     this.dgmnAH.hatchEgg(this.dgmnAH.getDgmnParty()[this.currDgmnIndex],hatchIntoDgmn);
+    debugLog("Hatching DGMN: ",this.dgmnAH.getDgmnData(this.dgmnAH.getDgmnParty()[this.currDgmnIndex],['currentFP']))
   }
 
   /**------------------------------------------------------------------------
@@ -579,6 +590,11 @@ class DgmnGrowthMenu extends Menu{
   confirmLevelUp = () => {
     // do some stuff
     this.gotoNextScreen();
+  }
+
+  goBack = () => {
+    // Only really applies to denying Evolution
+    console.log("Go backwards")
   }
 
 }

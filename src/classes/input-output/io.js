@@ -16,6 +16,8 @@ class IO{
       this.downKeyHandler(upDown);
     } else if(key === 'left'){
       this.leftKeyHandler(upDown);
+    } else if(key === 'debug'){
+      this.debugKeyHandler(upDown);
     }
   }
 
@@ -27,6 +29,7 @@ class IO{
   rightKeyHandler = upDown => {}
   downKeyHandler = upDown => {}
   leftKeyHandler = upDown => {}
+  debugKeyHandler = upDown => {}
 }
 
 export default IO;

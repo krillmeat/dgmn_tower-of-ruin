@@ -486,7 +486,7 @@ class Battle {
     this.battleMenu = null;
     this.stopDgmnBattleCanvas();  // Get rid of the Animating DGMN Party
 
-    this.dgmnGrowthMenu = new DgmnGrowthMenu('victory',this.dgmnAH,this.isBoss,this.systemAH,this.gameAH,this.battleAH,'victory');
+    this.dgmnGrowthMenu = new DgmnGrowthMenu('victory',this.dgmnAH,this.isBoss,this.dungeonAH.getCurrentFloor(),this.systemAH,this.gameAH,this.battleAH,'victory');
         this.battleIO.setMenuAH(this.dgmnGrowthMenu.dgmnGrowthMenuAH);
     this.dgmnGrowthMenu.gotoRewards(this.battleRewards);
     // }

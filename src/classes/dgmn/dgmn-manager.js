@@ -8,6 +8,7 @@ import EnemyGenerator from "./enemy-generator";
 import DgmnUtility from "./utility/dgmn.util";
 import { debugLog } from "../../utils/log-utils";
 import TreasureUtility from "../../dungeon/utils/treasure.util";
+import AttackUtility from "./utility/attack.util";
 
 // TODO - THIS CLASS WILL NEVER WORK LIKE THIS. IT WILL INTERACT HEAVILY WITH THE SAVE DATA TO BUILD OUT THE allDgmn OBJECT
 // TODO - RENAME TO ALL DGMN
@@ -50,10 +51,12 @@ class DgmnManager{
       hatchEggCB: this.hatchEgg,
       useItemOnCB: this.useItemOn,
       giveUpgradeCB: this.giveUpgrade,
+      learnPermAttackCB: this.learnPermAttack,
       getDgmnPartyCB: this.getDgmnParty,
       buffDgmnStatCB: this.buffDgmnStat,
       deBuffDgmnStatCB: this.deBuffDgmnStat,
-      giveConditionCB: this.giveCondition
+      giveConditionCB: this.giveCondition,
+      resetDgmnPartyCB: this.resetDgmnParty
     });
 
     this.systemAH = systemAH;
@@ -67,7 +70,8 @@ class DgmnManager{
     this.tempDgmn = new Dgmn(0,'EVO','Bota'); // Used in various Menus to show a DGMN that doesn't exist (evos, database, etc.)
 
     this.dgmnUtility = new DgmnUtility;
-    this.itemUtility = new TreasureUtility(); // I need to rename this Class...
+    this.attackUtility = new AttackUtility;
+    this.itemUtility = new TreasureUtility; // I need to rename this Class...
   }
 
   // FOR NOW
@@ -317,6 +321,7 @@ class DgmnManager{
     this.allDgmn[dgmnId].speciesName = evoSpecies;
     this.allDgmn[dgmnId].levelUpStats(true);
     this.allDgmn[dgmnId].learnAttack();
+    this.allDgmn[dgmnId].evoChain.push(evoSpecies);
   }
 
   buildStatGrowth = (dgmnId,stat) => {
@@ -417,6 +422,56 @@ class DgmnManager{
     this.allDgmn[dgmnId].maxEnergy += 5;
   }
 
+  // TODO - Make static by passing in Evo Chain and move to dgmn.util
+  getDgmnOfStageInEvoChain = (dgmnId,stage) => {
+    let evoChain = this.allDgmn[dgmnId].evoChain;
+    if(evoChain.length === 0) return;
+    for(let dgmn of evoChain){
+      if(this.dgmnUtility.getStage(dgmn) === stage) return dgmn;
+    }
+    return;
+  }
+
+  /** -------------------------------------------------------------------------------------------
+   * LEARN PERMANENT ATTACK
+   * --------------------------------------------------------------------------------------------
+   * Permanently teaches an Attack to a DGMN
+   * @param {string} dgmnId     ID for the DGMN in your Party
+   * @param {number} currFloor  Current Dungeon Floor (to figure which Stage)
+   * @returns Name of Attack or undefined if nothing happened
+   * ------------------------------------------------------------------------------------------*/
+  learnPermAttack = (dgmnId,currFloor) => {
+    
+    const FLOOR_STAGES = { 5: 3, 10: 4, 20: 5, 30: 6, 40: 7, 50: 7 }
+    
+    let potentialDgmn = this.getDgmnOfStageInEvoChain(dgmnId,FLOOR_STAGES[currFloor]);
+    // let potentialDgmn = this.getDgmnOfStageInEvoChain(dgmnId,3); TODO - For testing quickly
+    console.log("PD : ",potentialDgmn);
+    if(!potentialDgmn) return;
+    
+    let attackName = this.dgmnUtility.getAttack(potentialDgmn);
+    debugLog(dgmnId + " learning Attack Permanently: ",attackName);
+
+    // If the DGMN already has the Attack, do nothing and move on
+    if(this.getDgmnData(dgmnId,['permAttacks']).permAttacks.indexOf(attackName) !== -1) return;
+
+    this.allDgmn[dgmnId].permAttacks.push(attackName);
+    return this.attackUtility.getDisplayName(attackName);
+
+  }
+
+  /** -------------------------------------------------------------------------------------------
+   * RESET DGMN PARTY
+   * --------------------------------------------------------------------------------------------
+   * Resets party after Ending a Run
+   * ------------------------------------------------------------------------------------------*/
+  resetDgmnParty = () => {
+    for(let dgmn of this.party){
+      this.allDgmn[dgmn].resetDgmn();
+    }
+    // this.party = []; // TODO - Needs to be part of the randomized eggs
+  }
+
   /**------------------------------------------------------------------------
    * TITLE
    * ------------------------------------------------------------------------
@@ -458,3 +513,4 @@ class DgmnManager{
 }
 
 export default DgmnManager;
+ 

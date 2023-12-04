@@ -78,7 +78,7 @@ class Dungeon{
     this.systemAH.startLoading(()=>{
       this.gameAH.addCanvasObject(this.dungeonCanvas);
       
-      this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch',this.dgmnAH,false,this.systemAH,this.gameAH,this.dungeonAH,'hatching');
+      this.dgmnGrowthMenu = new DgmnGrowthMenu('hatch',this.dgmnAH,false,0,this.systemAH,this.gameAH,this.dungeonAH,'hatching');
         this.dungeonIO.setMenuAH(this.dgmnGrowthMenu.dgmnGrowthMenuAH);
       this.pauseMenu = new PauseMenu(this.yourParty,this.dgmnAH,this.digiBeetleAH,this.systemAH,this.gameAH,this.dungeonAH);
 
@@ -284,6 +284,7 @@ class Dungeon{
   goBackToTown = () => {
     debugLog("Returning to town...");
     this.systemAH.startLoading(()=>{
+      this.dgmnAH.resetDgmnParty();
       this.gameAH.clearDungeon();
     })
   }
